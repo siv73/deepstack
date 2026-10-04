@@ -25,6 +25,7 @@ Pages are written with Claude (Anthropic) and reviewed by me.
 | `ui/` | Shared design system (`ts.css`), runtime (`ts.js`, `theme.js`), page templates |
 | `tools/` | `build.py`, `verify_page.py`, `render_check.py` |
 | `site.json` | Site name, public URL, author, licenses |
+| `authoring/` | How lessons are researched, written and checked |
 
 `site/` is generated and deployed by CI; it is not committed.
 
