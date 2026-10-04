@@ -1,0 +1,436 @@
+<section class="ts-part" id="why-vacuum" data-rung="1" data-min="4">
+<h2>Where a deleted row goes: nowhere, until something cleans it</h2>
+<p class="ts-problem">A <code>wallets</code> table has 2 million rows, and each balance changes about 50 times a day. That is 100 million old row versions left behind every day. Nothing in your app deletes them.</p>
+<p>Part 2 showed why they stay. <span class="ts-claim" data-claim="c1" data-src="s1">An UPDATE or DELETE does not remove the old row version immediately, because other transactions may still see it; once no transaction needs it, VACUUM reclaims its space for new rows.</span></p>
+<p>Think of a busy restaurant. Guests who leave are old row versions. The table stays taken until a waiter clears it. The waiter (VACUUM) may only clear tables whose whole party has left: if anyone in the party might come back for their coat (an open snapshot), the table waits. Cleared tables go on the host's list of free tables, and new guests are seated there. The restaurant never gets smaller.</p>
+<p><span class="ts-claim" data-claim="c2" data-src="s1">The docs give VACUUM four jobs: recover or reuse space taken by updated or deleted rows, update planner statistics, update the visibility map, and protect against transaction ID and multixact ID wraparound.</span> This page covers each of them except statistics, which belong to part 5 of the series.</p>
+<ol class="ts-steps">
+<li>Clear dead row versions so their space can be reused (parts 2 to 4).</li>
+<li>Run often enough on its own: autovacuum (parts 6 and 7).</li>
+<li>Deal with space that is free but never given back (parts 8 and 9).</li>
+<li>Stop transaction IDs from running out (parts 10 and 11).</li>
+</ol>
+<p><span class="ts-claim" data-claim="c3" data-src="s1">Standard VACUUM removes dead row versions from tables and indexes and marks the space reusable, but returns it to the operating system only when whole pages at the end of the table are free and an exclusive lock is easy to get.</span> That single sentence explains most "why is my table still so big" questions.</p>
+<p class="ts-takeaway">Every UPDATE and DELETE leaves an old row version behind, and VACUUM is the only thing that turns that space back into room for new rows.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c3">
+<p class="q">A nightly job deletes 30 percent of <code>audit_log</code>, then VACUUM runs. The next morning the table file is the same size. What happened?</p>
+<ol>
+<li data-why="VACUUM did its job; standard VACUUM is not expected to shrink the file.">VACUUM failed and must be run again</li>
+<li>The space is now free for new rows inside the file, but it was not given back to the operating system</li>
+<li data-why="The deleted rows are gone once no snapshot needs them; they are not kept for a day.">Deleted rows are kept for 24 hours before VACUUM can touch them</li>
+</ol>
+<p class="ts-why">Standard VACUUM makes the space reusable inside the table. Only empty pages at the very end can be cut off the file.</p>
+</div>
+<div class="ts-explain" data-points="Updates and deletes leave old versions behind|They can only be removed once no snapshot needs them|VACUUM makes the space reusable, it does not shrink the file|VACUUM also guards against transaction ID wraparound">
+<p class="q">In your own words: why does PostgreSQL need VACUUM at all, and what does it give back?</p>
+<div class="ts-model"><p>Under MVCC an UPDATE writes a new version and a DELETE only marks the old one, so dead versions pile up in the table and its indexes. VACUUM removes the ones no open snapshot can still need and marks their space as free for new rows in the same table. It usually does not shrink the file. It also has other jobs, the most important being the protection against transaction ID wraparound.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="vacuum-passes" data-rung="2" data-min="6">
+<h2>What one VACUUM run does, pass by pass</h2>
+<p class="ts-bridge">Last part: VACUUM turns dead versions into reusable space. Still unsolved: why does it take so long on a big table, and why does it touch the indexes?</p>
+<p class="ts-problem">VACUUM on a 300-gigabyte <code>orders</code> table has been in the "vacuuming indexes" phase for forty minutes. The table has 9 indexes. What is it doing in there?</p>
+<p>The trouble is that indexes point at row slots. Part 1 called a slot a line pointer: each index entry stores a page number and a line pointer number. If VACUUM freed a slot while an index entry still pointed at it, a new row could move into the slot and the old index entry would lead to the wrong row. So cleanup has to happen in a careful order.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c4" data-src="s25">In phase one, VACUUM scans the table's pages, pruning and freezing rows and collecting the addresses of dead row versions.</span> Pruning removes a dead version's data but leaves its slot marked dead: a <dfn data-def="A line pointer whose row data is gone, kept only because index entries may still point at it. It becomes free after the indexes are cleaned.">dead line pointer</dfn>.</li>
+<li><span class="ts-claim" data-claim="c5" data-src="s25">In phase two it deletes the index entries that point at those dead addresses.</span> <span class="ts-claim" data-claim="c6" data-src="s6">It can run several times in one VACUUM if maintenance_work_mem (or autovacuum_work_mem) is too small to hold all the dead addresses found.</span></li>
+<li><span class="ts-claim" data-claim="c7" data-src="s25">In phase three it revisits those pages and frees the dead slots for future rows.</span></li>
+<li><span class="ts-claim" data-claim="c8" data-src="s6">At the end it may truncate empty pages at the end of the table, then updates the free space map and the table's statistics in pg_class.</span></li>
+</ol>
+<figure class="ts-svg" data-title="One page and its index through a VACUUM run">
+<svg viewBox="0 0 700 330" role="img" aria-label="Four row slots: two live, two dead. Pruning turns the dead ones into dead stubs, the index pass removes their index entries, and the heap pass frees the slots.">
+<g class="node"><text x="60" y="44" text-anchor="middle">slot</text><text x="60" y="84" text-anchor="middle">1</text><text x="60" y="124" text-anchor="middle">2</text><text x="60" y="164" text-anchor="middle">3</text><text x="60" y="204" text-anchor="middle">4</text><text class="sub" x="60" y="250" text-anchor="middle">index</text><text class="sub" x="60" y="296" text-anchor="middle">free space</text></g>
+<g class="node" data-s="1"><text class="sub" x="187" y="44" text-anchor="middle">before</text><rect x="125" y="64" width="124" height="30" rx="4"/><text x="187" y="84" text-anchor="middle">live</text><rect x="125" y="104" width="124" height="30" rx="4"/><text x="187" y="124" text-anchor="middle">dead row</text><rect x="125" y="144" width="124" height="30" rx="4"/><text x="187" y="164" text-anchor="middle">dead row</text><rect x="125" y="184" width="124" height="30" rx="4"/><text x="187" y="204" text-anchor="middle">live</text><text class="sub" x="187" y="250" text-anchor="middle">4 entries</text><text class="sub" x="187" y="296" text-anchor="middle">little</text></g>
+<g class="node" data-s="2"><text class="sub" x="332" y="44" text-anchor="middle">1: scan and prune</text><rect x="270" y="64" width="124" height="30" rx="4"/><text x="332" y="84" text-anchor="middle">live</text><text class="sub" x="332" y="124" text-anchor="middle">dead stub</text><text class="sub" x="332" y="164" text-anchor="middle">dead stub</text><rect x="270" y="184" width="124" height="30" rx="4"/><text x="332" y="204" text-anchor="middle">live</text><text class="sub" x="332" y="250" text-anchor="middle">4 entries</text><text class="sub" x="332" y="296" text-anchor="middle">more</text></g>
+<g class="node" data-s="3"><text class="sub" x="477" y="44" text-anchor="middle">2: clean indexes</text><rect x="415" y="64" width="124" height="30" rx="4"/><text x="477" y="84" text-anchor="middle">live</text><text class="sub" x="477" y="124" text-anchor="middle">dead stub</text><text class="sub" x="477" y="164" text-anchor="middle">dead stub</text><rect x="415" y="184" width="124" height="30" rx="4"/><text x="477" y="204" text-anchor="middle">live</text><text class="sub" x="477" y="250" text-anchor="middle">2 entries</text><text class="sub" x="477" y="296" text-anchor="middle">more</text></g>
+<g class="node" data-s="4"><text class="sub" x="622" y="44" text-anchor="middle">3: free slots</text><rect x="560" y="64" width="124" height="30" rx="4"/><text x="622" y="84" text-anchor="middle">live</text><text class="sub" x="622" y="124" text-anchor="middle">unused</text><text class="sub" x="622" y="164" text-anchor="middle">unused</text><rect x="560" y="184" width="124" height="30" rx="4"/><text x="622" y="204" text-anchor="middle">live</text><text class="sub" x="622" y="250" text-anchor="middle">2 entries</text><text class="sub" x="622" y="296" text-anchor="middle">most, in the map</text></g>
+</svg>
+<ol class="ts-captions">
+<li>Before: slots 2 and 3 hold row versions no snapshot can see any more. All four have index entries.</li>
+<li>Phase one prunes the page. The dead data is gone and the page is compacted, but slots 2 and 3 stay as dead stubs because the index still points at them.</li>
+<li>Phase two deletes the two index entries that pointed at the dead slots. Every index on the table gets this pass.</li>
+<li>Phase three frees slots 2 and 3. New rows can now use them, and the free space map records the room.</li>
+</ol>
+</figure>
+<p>Back to the forty minutes: phase two has to visit all 9 indexes, so a table with many indexes can spend much of its VACUUM time there. <span class="ts-claim" data-claim="c9" data-src="s5">By default VACUUM may skip index vacuuming when the table has very few dead rows, because scanning every index would cost far more than it saves.</span></p>
+<p class="ts-takeaway">VACUUM prunes the table, then cleans every index, then frees the dead slots; the index pass is why indexes dominate the cost.</p>
+<div class="ts-order" data-claims="c4 c5 c7 c8">
+<p class="q">Put one VACUUM run on a table with indexes in order.</p>
+<ol>
+<li>Scan pages: prune dead versions and collect their addresses</li>
+<li>Delete index entries that point at the dead addresses</li>
+<li>Mark the dead slots as unused</li>
+<li>Truncate empty pages at the end and update the free space map</li>
+</ol>
+<p class="ts-why">Slots can only be freed after no index points at them, so the index pass sits between pruning and freeing.</p>
+</div>
+</section>
+
+<section class="ts-part" id="free-space-and-visibility-maps" data-rung="2" data-min="4">
+<h2>Two small maps that make VACUUM and index-only scans cheap</h2>
+<p class="ts-bridge">Last part: VACUUM frees slots inside pages. Still unsolved: how does an INSERT find those free slots, and how does the next VACUUM avoid rereading a huge table?</p>
+<p class="ts-problem">A 300-gigabyte table where only the last day's 2 gigabytes of rows change. Reading the whole table on every VACUUM would take hours each time.</p>
+<p>Two side files answer both questions. Think of them as the restaurant host's lists: one of tables with free seats, one of tables that need no attention.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c10" data-src="s2">Every table and index, except hash indexes, has a free space map stored in a separate fork with an _fsm suffix; its bottom level keeps one byte per page for the space available on it.</span> <span class="ts-claim" data-claim="c71" data-src="s26">The <dfn data-def="A small side file that records roughly how much free space each page of a table or index has, so new rows can find room.">free space map</dfn> exists to find a page with enough room for a new row quickly, or to decide that the table must grow by a page.</span></li>
+<li><span class="ts-claim" data-claim="c11" data-src="s3">Every table has a visibility map holding two bits per page: all-visible, meaning nothing on the page needs vacuuming, and all-frozen, meaning every row on the page is frozen.</span> Freezing is part 10's topic.</li>
+<li><span class="ts-claim" data-claim="c12" data-src="s3">Visibility map bits are set by vacuum and cleared by any change to the page.</span> <span class="ts-claim" data-claim="c72" data-src="s19">Before PostgreSQL 19, the only other way to mark pages all-visible was COPY ... FREEZE.</span></li>
+<li><span class="ts-claim" data-claim="c13" data-src="s1">VACUUM uses the all-visible bits to skip pages on its next run, and an index-only scan checks them to skip reading the table page for rows it already knows are visible.</span></li>
+</ol>
+<p>So the big table is cheap to vacuum if its old pages stay all-visible: VACUUM reads mostly the part that changed. The map is the reason "VACUUM reads the whole table" is usually wrong.</p>
+<p class="ts-takeaway">The free space map tells writers where room is; the visibility map tells VACUUM and index-only scans which pages need no work.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c12 c13">
+<p class="q">An <code>events</code> table only receives INSERTs. Its index-only scans still read many table pages ("Heap Fetches" is high). Which is the most likely cause?</p>
+<ol>
+<li>No VACUUM has run since the latest inserts, so those pages are not marked all-visible yet</li>
+<li data-why="Index-only scans use the visibility map whether or not rows were updated; inserts alone don't disable them.">Index-only scans don't work on tables that receive inserts</li>
+<li data-why="The free space map is about room for new rows; index-only scans read the visibility map.">The free space map is out of date</li>
+</ol>
+<p class="ts-why">Only vacuum sets the all-visible bit. New pages stay unmarked until a VACUUM visits them, so index-only scans must check the table for those rows.</p>
+</div>
+</section>
+
+<section class="ts-part" id="hot-updates" data-rung="2" data-min="6">
+<h2>HOT: updates that leave the indexes alone</h2>
+<p class="ts-bridge">Last part: the maps that make VACUUM skip work. Still unsolved: can an UPDATE avoid creating index work in the first place?</p>
+<p class="ts-problem">The <code>wallets</code> table has 6 indexes. A balance update changes one integer, yet the database writes 7 new entries: one row version and one entry in each index.</p>
+<p><span class="ts-claim" data-claim="c14" data-src="s13">When an UPDATE can't use the HOT optimisation, every index on the table needs a new entry pointing at the new version, including indexes whose columns did not change.</span> That is the cost above. PostgreSQL has a way around it, called a <dfn data-def="Heap-only tuple: a new row version written on the same page as the old one, with no new index entries; indexes keep pointing at the old slot and follow a chain to the new version.">HOT update</dfn>.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c15" data-src="s4">An update can be HOT only when it changes no column used by the table's indexes (summarizing indexes such as BRIN don't count) and the page holding the old row has enough free space for the new one.</span></li>
+<li><span class="ts-claim" data-claim="c16" data-src="s4">A HOT update needs no new index entries, although summarizing indexes may still need updating.</span> The index keeps pointing at the old slot, and the old version points forward to the new one.</li>
+<li><span class="ts-claim" data-claim="c17" data-src="s4">After repeated HOT updates, versions between the oldest and newest can be removed during normal work, including SELECTs, without waiting for VACUUM; the original slot becomes a redirect to the oldest version still visible.</span> This is <dfn data-def="Cleaning dead row versions out of one page during a normal read or write, without a VACUUM. Indexes are not touched.">pruning</dfn> on access.</li>
+<li><span class="ts-claim" data-claim="c18" data-src="s23">If a page may hold removable versions, on-access pruning is attempted when an earlier UPDATE found no room on it, or when its free space falls below the table's fillfactor target, with a floor of 10 percent of the page.</span></li>
+</ol>
+<figure class="ts-svg" data-title="Three HOT updates of wallet 7, then pruning">
+<svg viewBox="0 0 700 270" role="img" aria-label="An index entry points at slot 1. HOT updates add versions in slots 2 and 3 on the same page, linked forward. Pruning removes the old data and turns slot 1 into a redirect to slot 3.">
+<g class="node"><rect x="20" y="60" width="160" height="44" rx="6"/><text x="100" y="87" text-anchor="middle">index: wallet 7</text></g>
+<g class="edge"><path d="M182 82 L 262 82"/><path class="arrowhead" d="M256 76 L 262 82 L 256 88 Z"/></g>
+<g class="node" data-s="1"><text class="sub" x="300" y="40" text-anchor="middle">slot</text><text x="300" y="87" text-anchor="middle">1</text><rect x="330" y="62" width="190" height="40" rx="4"/><text x="425" y="87" text-anchor="middle">v1 balance 100</text></g>
+<g class="node" data-s="2"><text x="300" y="157" text-anchor="middle">2</text><rect x="330" y="132" width="190" height="40" rx="4"/><text x="425" y="157" text-anchor="middle">v2 balance 110</text></g>
+<g class="edge" data-s="2"><path d="M520 82 C 560 82, 560 152, 524 152"/><path class="arrowhead" d="M530 146 L 524 152 L 530 158 Z"/></g>
+<g class="node" data-s="3"><text x="300" y="227" text-anchor="middle">3</text><rect x="330" y="202" width="190" height="40" rx="4"/><text x="425" y="227" text-anchor="middle">v3 balance 120</text></g>
+<g class="edge" data-s="3"><path d="M520 152 C 560 152, 560 222, 524 222"/><path class="arrowhead" d="M530 216 L 524 222 L 530 228 Z"/></g>
+<g class="edge" data-s="4"><path d="M340 82 L 510 82"/><path d="M340 152 L 510 152"/><path d="M320 92 C 250 120, 250 200, 324 220"/><path class="arrowhead" d="M316 222 L 324 220 L 318 213 Z"/></g>
+<g class="node" data-s="4"><text class="sub" x="620" y="87" text-anchor="middle">slot 1: redirect</text><text class="sub" x="620" y="157" text-anchor="middle">slot 2: unused</text><text class="sub" x="620" y="227" text-anchor="middle">slot 3: current</text></g>
+</svg>
+<ol class="ts-captions">
+<li>The index entry for wallet 7 points at slot 1, which holds version 1.</li>
+<li>A HOT update writes version 2 into slot 2 on the same page. The index is not touched; version 1 points forward to it.</li>
+<li>Another HOT update writes version 3. Still no index writes. Readers follow the chain from slot 1.</li>
+<li>Once no snapshot needs versions 1 and 2, pruning removes their data. Slot 1 becomes a redirect to slot 3, and slot 2 is free again.</li>
+</ol>
+</figure>
+<p class="ts-takeaway">If an UPDATE changes no indexed column and fits on the same page, it skips every index, and its old versions can be cleaned during normal reads.</p>
+<div class="ts-predict" data-claims="c14 c15">
+<p class="q">A <code>sessions</code> table has a B-tree index on <code>last_seen_at</code>, and every request runs <code>UPDATE sessions SET last_seen_at = now()</code>. Predict the share of HOT updates, and what each update costs.</p>
+<div class="ts-reveal"><p>Zero HOT updates. Each update changes an indexed column, so it can never be HOT, and it adds a new entry to every index on the table, not only to <code>last_seen_at</code>'s index. Dropping that index (or not updating the column on every request) brings HOT back.</p></div>
+</div>
+<div class="ts-explain" data-points="Pruning removes dead data but leaves dead slots until indexes are cleaned|VACUUM cleans every index before freeing slots|The visibility map lets VACUUM skip unchanged pages|HOT needs no indexed column change and room on the same page">
+<p class="q">Explain to a teammate why updating one non-indexed column can be cheap, while updating an indexed timestamp makes the table and all its indexes grow.</p>
+<div class="ts-model"><p>An update that changes no indexed column and fits on the same page is HOT: indexes keep pointing at the old slot and follow a chain on the page, and old versions can be pruned during normal reads. An update that changes an indexed column needs a new entry in every index. Those dead index entries can only be removed by VACUUM's index pass, after which the dead slots are freed. So the table and all its indexes collect garbage between VACUUM runs.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="measure-hot" data-rung="3" data-min="5">
+<h2>Measuring HOT updates and choosing a fillfactor</h2>
+<p class="ts-bridge">Last part: HOT updates skip the indexes. Still unsolved: how do you know whether your updates are HOT, and what do you change when they aren't?</p>
+<p class="ts-problem">Write latency on <code>orders</code> doubled after a release. Nothing in the query plans changed. You suspect updates stopped being HOT.</p>
+<p>The statistics view counts three kinds of update for every table:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c19" data-src="s7">In pg_stat_user_tables, n_tup_upd counts all updated rows, n_tup_hot_upd the HOT ones, and n_tup_newpage_upd the ones whose new version went to a different page, which are never HOT.</span></li>
+<li>Many updates going to a new page means pages are full. Few new-page updates but no HOT means an indexed column is changing.</li>
+<li><span class="ts-claim" data-claim="c20" data-src="s8">fillfactor is a percentage from 10 to 100, with 100 (full packing) as the default; a lower value leaves room on each page for updated rows and makes HOT updates more likely.</span> <dfn data-def="The percentage of each table page that INSERT fills, leaving the rest free for updated versions of rows on that page.">fillfactor</dfn> was introduced in part 1; here is what to do with it.</li>
+<li><span class="ts-claim" data-claim="c21" data-src="s9">ALTER TABLE ... SET (fillfactor = ...) does not rewrite existing pages; a rewrite such as VACUUM FULL or CLUSTER is needed for the full effect, and the command takes a SHARE UPDATE EXCLUSIVE lock.</span></li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="HOT ratio per table" data-verified="spec" data-claims="c19">
+<pre><code>SELECT relname, n_tup_upd, n_tup_hot_upd, n_tup_newpage_upd,
+       round(100.0 * n_tup_hot_upd / nullif(n_tup_upd, 0), 1) AS hot_pct
+FROM pg_stat_user_tables
+ORDER BY n_tup_upd DESC
+LIMIT 20;</code></pre>
+</div>
+<p>The script below turns one row of that result into a diagnosis. Its tests use figures from a test run: small transactions on a table at fillfactor 100 were 99 percent HOT, because pruning kept making room, while adding an index on the updated column dropped HOT to zero.</p>
+<div class="ts-code" data-lang="python" data-title="health.py" data-file="health.py" data-verified="ran"></div>
+<div class="ts-trap"><p>The release that slowed <code>orders</code> added an index on <code>updated_at</code> for a dashboard. Every UPDATE sets that column, so every UPDATE stopped being HOT and started writing to every index. Check the HOT ratio before and after any migration that adds an index to a busy table.</p></div>
+<div class="ts-interview"><p><strong>"This table gets 5,000 updates a second. How do you keep it cheap?"</strong> A strong answer: keep the updated columns out of indexes, keep the row narrow, and lower fillfactor on the hot table, then measure n_tup_hot_upd against n_tup_upd. It names the cost: lower fillfactor means more pages for the same rows, so scans read more.</p></div>
+<p class="ts-takeaway">Compare n_tup_hot_upd with n_tup_upd: new-page updates mean lower the fillfactor; no HOT with room on the page means an indexed column is changing.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c19 c20">
+<p class="q">A table shows n_tup_upd 1,000,000, n_tup_hot_upd 120,000 and n_tup_newpage_upd 850,000. No indexed column changes. What do you try first?</p>
+<ol>
+<li data-why="No indexed column changes, so dropping indexes won't make these updates HOT; the pages are full.">Drop indexes until updates become HOT</li>
+<li data-why="Raising fillfactor packs pages tighter, leaving even less room; 100 is already the maximum.">Raise fillfactor to pack pages tighter</li>
+<li>Lower fillfactor, then rewrite the table so existing pages get the free room</li>
+</ol>
+<p class="ts-why">85 percent of updates moved to a new page: the old page had no room. A lower fillfactor reserves room, and a rewrite applies it to existing pages.</p>
+</div>
+</section>
+
+<section class="ts-part" id="autovacuum-trigger" data-rung="3" data-min="5">
+<h2>When autovacuum decides a table needs cleaning</h2>
+<p class="ts-bridge">Last part: measuring HOT. Still unsolved: who runs VACUUM, and when?</p>
+<p class="ts-problem">A 50-million-row <code>payments</code> table collects dead rows all day, but autovacuum seems to visit it only every few days. Is autovacuum broken?</p>
+<p><dfn data-def="The background system that starts VACUUM and ANALYZE on tables automatically, based on how many rows changed.">Autovacuum</dfn> is a launcher plus worker processes. <span class="ts-claim" data-claim="c22" data-src="s1">The launcher tries to start one worker in each database every autovacuum_naptime seconds, and at most autovacuum_max_workers workers run at once.</span> <span class="ts-claim" data-claim="c23" data-src="s10">autovacuum_naptime is one minute and autovacuum_max_workers is 3 out of the box.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c24" data-src="s1">A table is vacuumed when the rows updated or deleted since its last VACUUM exceed min(max threshold, base threshold + scale factor × pg_class.reltuples).</span></li>
+<li><span class="ts-claim" data-claim="c25" data-src="s10">The base threshold (autovacuum_vacuum_threshold) is 50 rows, the scale factor (autovacuum_vacuum_scale_factor) is 0.2, and the cap (autovacuum_vacuum_max_threshold) is 100,000,000 rows.</span> <span class="ts-claim" data-claim="c26" data-src="s18">The cap is new in PostgreSQL 18.</span></li>
+<li><span class="ts-claim" data-claim="c27" data-src="s1 s10">Inserts have their own trigger: 1000 rows plus 0.2 × reltuples × the fraction of pages not yet all-frozen.</span> That lets append-only tables get their visibility map set and rows frozen.</li>
+<li><span class="ts-claim" data-claim="c28" data-src="s1">Separately, any table whose relfrozenxid is older than autovacuum_freeze_max_age is always vacuumed.</span> Part 10 explains that one.</li>
+</ol>
+<p>So the payments table waits for 20 percent of 50 million rows, about 10 million dead rows, before autovacuum touches it. Autovacuum isn't broken; the scale factor is too big for a large, busy table. The code below does the arithmetic, and its tests pin the numbers on this page.</p>
+<div class="ts-code" data-lang="python" data-title="autovac.py" data-file="autovac.py" data-verified="ran"></div>
+<p class="ts-takeaway">Autovacuum waits for a fixed share of the table to change, so the bigger the table, the more dead rows it collects before cleanup starts.</p>
+<div class="ts-predict" data-claims="c24 c25">
+<p class="q">A 2-billion-row <code>events_archive</code> table gets occasional deletes. With settings out of the box, how many dead rows trigger autovacuum: 400 million, or something else?</p>
+<div class="ts-reveal"><p>100 million. The formula gives 50 + 0.2 × 2 billion, about 400 million, but PostgreSQL 18 caps it at autovacuum_vacuum_max_threshold. Before version 18 there was no cap, so such a table would wait for about 400 million dead rows.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="autovacuum-tuning" data-rung="3" data-min="6">
+<h2>Tuning autovacuum for hot tables, and its speed limit</h2>
+<p class="ts-bridge">Last part: the trigger formula. Still unsolved: how do you make it react sooner for one table, and why is it slow once it starts?</p>
+<p class="ts-problem">After you lower the trigger for <code>payments</code>, autovacuum starts often but each run takes three hours, and dead rows keep growing. Adding workers doesn't help.</p>
+<p><span class="ts-claim" data-claim="c29" data-src="s1 s8">The thresholds, scale factors and cost settings can be overridden per table with storage parameters, and a per-table value wins over the global one.</span> Tune the few big, busy tables; leave the rest alone.</p>
+<div class="ts-code" data-lang="sql" data-title="React sooner on one busy table" data-verified="spec" data-claims="c29 c21">
+<pre><code>ALTER TABLE payments SET (
+  autovacuum_vacuum_scale_factor = 0.01,
+  autovacuum_vacuum_threshold    = 1000
+);</code></pre>
+</div>
+<p>Now the speed limit. Autovacuum is throttled on purpose, so it doesn't swamp the disk:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c30" data-src="s10">VACUUM keeps a running cost count of its I/O, and when it reaches vacuum_cost_limit it sleeps for vacuum_cost_delay, then resets and carries on.</span></li>
+<li><span class="ts-claim" data-claim="c31" data-src="s10">Each page costs 1 if found in shared buffers, 2 if read from disk and 20 more if vacuum dirties it, and vacuum_cost_limit is 200.</span></li>
+<li><span class="ts-claim" data-claim="c32" data-src="s10">autovacuum_vacuum_cost_delay is 2 milliseconds, and autovacuum_vacuum_cost_limit is -1, meaning it uses vacuum_cost_limit.</span> <span class="ts-claim" data-claim="c33" data-src="s10">For manual VACUUM, vacuum_cost_delay is 0, so throttling is off.</span></li>
+<li><span class="ts-claim" data-claim="c34" data-src="s10 s1">The autovacuum cost limit is shared out among the running workers, so their total does not exceed it; workers on tables with their own cost settings are left out of this sharing.</span></li>
+</ol>
+<p>The arithmetic in autovac.py's tests: a page read from disk and dirtied costs 22, so 200 per 2-millisecond sleep allows at most about 4,500 pages a second, for all workers together. A third worker gets a third of the same budget. That is why adding workers didn't help.</p>
+<div class="ts-interview"><p><strong>"Autovacuum can't keep up. Do you add workers?"</strong> A strong answer: not first. Workers share one cost budget, so more workers mean slower each. Raise autovacuum_vacuum_cost_limit (or lower the delay) globally or for the lagging table, check disk headroom, and confirm nothing holds back the xmin horizon (part 2). Add workers when many tables need vacuum at once, not when one table is slow.</p></div>
+<p><span class="ts-claim" data-claim="c35" data-src="s15">maintenance_work_mem is 64 MB, and autovacuum can use up to autovacuum_max_workers times that much.</span> Too little memory forces extra index passes (part 2). <span class="ts-claim" data-claim="c36" data-src="s16">log_autovacuum_min_duration logs every autovacuum action that runs at least that long; it is 10 minutes out of the box.</span> Lowering it shows you what each run did. <span class="ts-claim" data-claim="c74" data-src="s1">Autovacuum holds a SHARE UPDATE EXCLUSIVE lock on the table, and a session asking for a conflicting lock normally interrupts it.</span></p>
+<p class="ts-takeaway">Tune triggers per table, and when vacuum is slow, raise its shared cost budget rather than adding workers.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c31 c32 c34">
+<p class="q">You raise autovacuum_max_workers from 3 to 6 and keep the cost settings. Two big tables are being vacuumed. What happens to their speed?</p>
+<ol>
+<li data-why="Workers split one shared cost budget, so extra workers don't add I/O budget.">Each doubles, since there are twice as many workers</li>
+<li>Roughly nothing: the two workers still share the same cost budget</li>
+<li data-why="Idle workers don't consume the budget; only running ones share it.">Both slow down, because 6 workers now split the budget even when idle</li>
+</ol>
+<p class="ts-why">The cost limit is divided among running workers. Two running workers split it the same way whether the maximum is 3 or 6.</p>
+</div>
+<div class="ts-explain" data-points="Trigger is base plus scale factor times rows, capped|Big tables need a smaller per-table scale factor|Speed is set by the cost limit and delay|Workers share one budget">
+<p class="q">Explain why a large, busy table can collect millions of dead rows even with autovacuum on, and the two settings you would change.</p>
+<div class="ts-model"><p>Autovacuum starts when dead rows exceed 50 plus 20 percent of the table, so a 50-million-row table waits for about 10 million. Lower the scale factor for that table so it starts sooner. Once running, vacuum is throttled by a cost budget shared by all workers, so on a big table each run can take hours. Raise the cost limit, globally or for that table, rather than adding workers.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="bloat" data-rung="4" data-min="5">
+<h2>Bloat: measuring space you pay for but don't use</h2>
+<p class="ts-bridge">Last part: tuning autovacuum. Still unsolved: when cleanup falls behind anyway, how much space is wasted, and where?</p>
+<p class="ts-problem">At ten times the write rate, dead rows arrive faster than the throttled worker removes them. The table grows from 40 to 120 gigabytes while holding the same 20 million live rows, and its indexes triple too.</p>
+<p><dfn data-def="Space in a table or index taken by dead row versions or by free space that is not being reused, beyond what the live rows need.">Bloat</dfn> comes in two kinds:</p>
+<ol class="ts-steps">
+<li>Table bloat: dead versions not yet cleaned up, plus free space inside pages. Free space that new rows keep reusing is healthy; free space nothing will reuse is waste.</li>
+<li>Index bloat: <span class="ts-claim" data-claim="c37" data-src="s14">completely empty B-tree pages are reused, but a page with only a few keys left stays allocated, so deleting most but not all keys in each range wastes space and calls for periodic reindexing.</span></li>
+<li>Why the file doesn't shrink: as the first part of this page said, only empty pages at the end can be cut off. <span class="ts-claim" data-claim="c38" data-src="s10">That truncation is controlled by vacuum_truncate, on out of the box, and needs an ACCESS EXCLUSIVE lock on the table.</span></li>
+</ol>
+<p>To measure it, use the pgstattuple extension. <span class="ts-claim" data-claim="c39" data-src="s12">pgstattuple reads the whole table and reports its length, dead tuple percentage and free space; pgstattuple_approx is faster because it skips pages the visibility map marks all-visible.</span> <span class="ts-claim" data-claim="c40" data-src="s12">pgstatindex reports a B-tree's average leaf density and leaf fragmentation.</span> <span class="ts-claim" data-claim="c41" data-src="s12">By default only members of the pg_stat_scan_tables role (and superusers) may run these functions.</span></p>
+<div class="ts-code" data-lang="sql" data-title="How bloated is it?" data-verified="spec" data-claims="c39 c40">
+<pre><code>CREATE EXTENSION IF NOT EXISTS pgstattuple;
+SELECT table_len, dead_tuple_percent, free_percent
+FROM pgstattuple_approx('orders');
+SELECT avg_leaf_density, leaf_fragmentation
+FROM pgstatindex('orders_pkey');</code></pre>
+</div>
+<p>How to see it coming without scanning: alert on n_dead_tup rising while last_autovacuum gets older (part 6's view), and on table size per live row. The health.py function from part 5 reads a pgstattuple row: many dead rows means find what blocks VACUUM; mostly empty pages that won't refill means a rewrite.</p>
+<div class="ts-trap"><p>Running pgstattuple on a 500-gigabyte table during peak hours reads every page of it. Use pgstattuple_approx, or run the exact one on a replica.</p></div>
+<p class="ts-takeaway">Dead rows are VACUUM's job; empty space that will never be reused, in the table or its B-trees, needs a rewrite.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c3 c39">
+<p class="q">pgstattuple on <code>sessions</code> shows dead_tuple_percent 0.5 and free_percent 70. The app keeps inserting new sessions all day. What do you do?</p>
+<ol>
+<li data-why="There are almost no dead rows; VACUUM has already done its part.">Run VACUUM again</li>
+<li>Probably nothing: steady inserts will reuse the free space</li>
+<li data-why="A rewrite would shrink it briefly, but steady inserts would grow it straight back.">Rewrite it now with VACUUM FULL</li>
+</ol>
+<p class="ts-why">Free space is only waste if nothing will reuse it. A table that keeps receiving rows will fill it again; a rewrite would buy a few hours.</p>
+</div>
+</section>
+
+<section class="ts-part" id="reclaim-space" data-rung="4" data-min="6">
+<h2>Getting disk space back without taking the table offline</h2>
+<p class="ts-bridge">Last part: measuring bloat. Still unsolved: when space really must come back, which tool, and what does it lock?</p>
+<p class="ts-problem">After archiving two years of data, <code>orders</code> is 400 gigabytes with 70 percent free space, and it won't refill. The disk is 85 percent full. The app can't stop for hours.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c42" data-src="s1">VACUUM FULL, CLUSTER and table-rewriting forms of ALTER TABLE write a complete new copy of the table and its indexes, hold an ACCESS EXCLUSIVE lock, and temporarily need extra disk about the size of the table.</span> <span class="ts-claim" data-claim="c43" data-src="s17">ACCESS EXCLUSIVE conflicts with every lock mode, including the one a plain SELECT takes.</span> So the table is unreadable for the whole run.</li>
+<li><span class="ts-claim" data-claim="c44" data-src="s20">pg_repack rebuilds the table online: it holds an ACCESS EXCLUSIVE lock only briefly at the start and end, and a SHARE UPDATE EXCLUSIVE lock during the copy, so reads and writes continue.</span></li>
+<li><span class="ts-claim" data-claim="c45" data-src="s20">pg_repack needs a primary key or a unique index on NOT NULL columns, free disk of about twice the size of the table and its indexes, and no DDL on the table while it runs.</span></li>
+<li><span class="ts-claim" data-claim="c46" data-src="s14">For bloated indexes alone, REINDEX CONCURRENTLY rebuilds them while holding only a SHARE UPDATE EXCLUSIVE lock.</span></li>
+<li><span class="ts-claim" data-claim="c47" data-src="s1">If a table's whole contents are deleted on a schedule, TRUNCATE frees the space at once with no VACUUM needed, at the cost of not following strict MVCC rules.</span> Dropping old partitions works the same way for time-based data.</li>
+</ol>
+<p>For the 400-gigabyte table: VACUUM FULL is out (hours of no access, and a full extra copy's worth of disk you may not have). pg_repack works if you can free about twice the size of the live data plus indexes, and pause migrations. If that disk isn't available, repack the largest indexes first with REINDEX CONCURRENTLY and plan partitioning so the next archive is a partition drop.</p>
+<div class="ts-trap"><p>pg_repack still takes ACCESS EXCLUSIVE twice. If a long transaction holds a lock on the table, pg_repack has to wait for it. <span class="ts-claim" data-claim="c48" data-src="s20">pg_repack's --wait-timeout (60 seconds by default) limits how long it waits for that lock before it cancels conflicting queries.</span> Run it in a quiet hour, with long transactions ended first.</p></div>
+<div class="ts-interview"><p><strong>"The table is 80 percent empty. How do you shrink it in production?"</strong> A strong answer first asks whether it will refill (then do nothing). If not: pg_repack or partition and drop, never VACUUM FULL on a live table. It names the disk headroom needed, the brief exclusive locks at start and end, and the need for a primary key.</p></div>
+<p class="ts-takeaway">VACUUM FULL blocks even reads for the whole rewrite; pg_repack and REINDEX CONCURRENTLY rebuild online but need spare disk and a quiet moment for their short locks.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c42 c43">
+<p class="q">Why can't you run VACUUM FULL on <code>orders</code> at noon even if the API only reads from it?</p>
+<ol>
+<li data-why="VACUUM FULL's lock conflicts with every lock mode, including the one plain reads take.">You can: VACUUM FULL only blocks writes</li>
+<li data-why="Standard VACUUM is the one that runs alongside normal work; VACUUM FULL takes an exclusive lock.">VACUUM FULL can't run while autovacuum is enabled</li>
+<li>Its ACCESS EXCLUSIVE lock conflicts with the lock every SELECT takes, so reads wait until it finishes</li>
+</ol>
+<p class="ts-why">ACCESS EXCLUSIVE conflicts with all lock modes. Every SELECT on the table waits for the whole rewrite.</p>
+</div>
+</section>
+
+<section class="ts-part" id="freezing" data-rung="4" data-min="6">
+<h2>Freezing: the deadline every table has</h2>
+<p class="ts-bridge">Last part: getting space back. Still unsolved: part 2 said transaction IDs wrap around. What stops that from corrupting old rows?</p>
+<p class="ts-problem">A payments platform uses 50 million transaction IDs a day. Rows written in January are still read in December. After a few billion IDs, how does PostgreSQL still know those January rows are in the past?</p>
+<p><span class="ts-claim" data-claim="c49" data-src="s1">Transaction IDs are 32 bits and compared modulo 2^32, so every ID has about two billion older and two billion newer IDs; a row version left untouched for more than two billion transactions would suddenly look like it is in the future, and become invisible.</span> <span class="ts-claim" data-claim="c50" data-src="s1">To prevent that, every table in every database must be vacuumed at least once every two billion transactions.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c51" data-src="s1">VACUUM freezes old rows: a frozen row counts as older than every normal transaction ID, so it stays visible however many transactions pass; since version 9.4 freezing sets a flag bit and keeps the original xmin.</span> That is <dfn data-def="Marking a row version as older than every transaction, so its xmin no longer needs to be compared and wraparound can't hide it.">freezing</dfn>.</li>
+<li><span class="ts-claim" data-claim="c52" data-src="s10">vacuum_freeze_min_age, 50 million transactions out of the box, is the cutoff age at which an XID makes VACUUM trigger freezing of the page holding it.</span></li>
+<li><span class="ts-claim" data-claim="c53" data-src="s1 s10">Normal VACUUMs skip all-visible pages, so they can leave old rows unfrozen; when a table's relfrozenxid reaches vacuum_freeze_table_age (150 million) VACUUM runs aggressively, visiting every page that might hold unfrozen IDs.</span></li>
+<li><span class="ts-claim" data-claim="c54" data-src="s1">pg_class.relfrozenxid records the oldest unfrozen XID left in a table after the last VACUUM that advanced it, and pg_database.datfrozenxid is the minimum of those values in the database.</span></li>
+<li><span class="ts-claim" data-claim="c55" data-src="s10">Once relfrozenxid is older than autovacuum_freeze_max_age, 200 million out of the box, a VACUUM is forced on the table even if autovacuum is turned off.</span> <span class="ts-claim" data-claim="c56" data-src="s1">This anti-wraparound autovacuum shows "(to prevent wraparound)" in pg_stat_activity and, unlike a normal one, is not cancelled when another session asks for a conflicting lock.</span></li>
+</ol>
+<figure class="ts-svg" data-title="The age of a table's oldest unfrozen XID (not to scale)">
+<svg viewBox="0 0 700 230" role="img" aria-label="An age ruler from 0 to about 2.1 billion with markers: 50 million freeze rows, 150 million aggressive scan, 200 million forced autovacuum, 1.6 billion failsafe, 40 million before the limit warnings, 3 million before the limit writes refused.">
+<g class="edge"><path d="M40 120 L 680 120"/></g>
+<g class="node"><text class="sub" x="40" y="150" text-anchor="start">age 0</text></g>
+<g class="edge" data-s="1"><path d="M100 108 L 100 132"/></g>
+<g class="node" data-s="1"><text x="100" y="70" text-anchor="middle">freeze rows</text><text class="sub" x="100" y="90" text-anchor="middle">50 million</text></g>
+<g class="edge" data-s="2"><path d="M190 108 L 190 132"/></g>
+<g class="node" data-s="2"><text x="190" y="170" text-anchor="middle">aggressive scan</text><text class="sub" x="190" y="190" text-anchor="middle">150 million</text></g>
+<g class="edge" data-s="3"><path d="M290 108 L 290 132"/></g>
+<g class="node" data-s="3"><text x="290" y="70" text-anchor="middle">forced autovacuum</text><text class="sub" x="290" y="90" text-anchor="middle">200 million</text></g>
+<g class="edge" data-s="4"><path d="M450 108 L 450 132"/></g>
+<g class="node" data-s="4"><text x="450" y="170" text-anchor="middle">failsafe</text><text class="sub" x="450" y="190" text-anchor="middle">1.6 billion</text></g>
+<g class="edge" data-s="5"><path d="M570 108 L 570 132"/></g>
+<g class="node" data-s="5"><text x="570" y="70" text-anchor="middle">warnings</text><text class="sub" x="570" y="90" text-anchor="middle">limit − 40 million</text></g>
+<g class="edge" data-s="6"><path d="M650 108 L 650 132"/></g>
+<g class="node" data-s="6"><text x="640" y="170" text-anchor="middle">writes refused</text><text class="sub" x="640" y="190" text-anchor="middle">limit − 3 million</text></g>
+</svg>
+<ol class="ts-captions">
+<li>Rows older than vacuum_freeze_min_age get frozen when VACUUM passes their page.</li>
+<li>At vacuum_freeze_table_age, VACUUM reads every page that might hold unfrozen rows, not only pages with dead rows.</li>
+<li>At autovacuum_freeze_max_age, autovacuum is forced on the table, even if autovacuum is off, and it isn't cancelled by lock requests.</li>
+<li>At vacuum_failsafe_age, VACUUM drops its throttling and skips index cleanup to finish faster (next part).</li>
+<li>About 40 million transactions before the limit, every new transaction ID comes with a warning.</li>
+<li>About 3 million before the limit, PostgreSQL refuses to hand out new transaction IDs: no more writes.</li>
+</ol>
+</figure>
+<p><span class="ts-claim" data-claim="c57" data-src="s10 s18">Since PostgreSQL 18, normal vacuums may also freeze some all-visible pages early, spreading out the work of later aggressive vacuums; vacuum_max_eager_freeze_failure_rate (0.03) caps wasted attempts.</span> Watch the number that matters with the query below; <span class="ts-claim" data-claim="c58" data-src="s24">the source computes the limit as the oldest datfrozenxid plus 2^31 − 1 and counts the warning and refusal points back from there.</span></p>
+<div class="ts-code" data-lang="sql" data-title="How close is each database?" data-verified="spec" data-claims="c54">
+<pre><code>SELECT datname, age(datfrozenxid) AS xid_age,
+       mxid_age(datminmxid)      AS mxid_age
+FROM pg_database
+ORDER BY xid_age DESC;</code></pre>
+</div>
+<div class="ts-code" data-lang="python" data-title="wraparound.py" data-file="wraparound.py" data-verified="ran"></div>
+<div class="ts-note" data-label="Multixacts, briefly"><p><span class="ts-claim" data-claim="c67" data-src="s1 s10">When several transactions lock one row, PostgreSQL stores a multixact ID in xmax; multixact IDs are also 32-bit, have their own forced-vacuum age, autovacuum_multixact_freeze_max_age (400 million), and running out blocks only writes that need a new multixact.</span> Watch mxid_age(datminmxid) too.</p></div>
+<p class="ts-takeaway">VACUUM must freeze every old row before its table's oldest XID gets about two billion transactions old, and PostgreSQL forces that work long before the limit.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c74 c56">
+<p class="q">You run <code>ALTER TABLE ledger ADD COLUMN note text</code> and it hangs. pg_stat_activity shows <code>autovacuum: VACUUM public.ledger (to prevent wraparound)</code>. What is going on?</p>
+<ol>
+<li>The anti-wraparound autovacuum holds a lock ALTER TABLE needs, and it won't step aside the way a normal autovacuum would</li>
+<li data-why="Wraparound protection only refuses new XIDs near the limit; this table is at autovacuum_freeze_max_age, far from it.">The database has stopped accepting writes</li>
+<li data-why="This autovacuum is not cancelled by conflicting lock requests, so waiting longer is the only safe option short of cancelling it by hand.">ALTER TABLE will cancel the autovacuum in a few seconds</li>
+</ol>
+<p class="ts-why">A normal autovacuum gives way when someone needs a conflicting lock. An anti-wraparound one doesn't, so the DDL waits until it finishes.</p>
+</div>
+</section>
+
+<section class="ts-part" id="wraparound-incidents" data-rung="4" data-min="6">
+<h2>When the counter runs out: two real outages</h2>
+<p class="ts-bridge">Last part: freezing and the forced autovacuum. Still unsolved: what if even that can't finish?</p>
+<p class="ts-problem">Write traffic grows ten times after a launch. The wraparound.py tests show the gap: from an age of 150 million, at 50 million IDs a day writes stop in about forty days; at 500 million a day, in four.</p>
+<p>Near the limit, PostgreSQL escalates:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c59" data-src="s10">Past vacuum_failsafe_age, 1.6 billion out of the box, VACUUM stops applying cost-based delays, skips non-essential work such as index vacuuming, and stops limiting how much of shared buffers it uses.</span></li>
+<li><span class="ts-claim" data-claim="c60" data-src="s1">Warnings start when the oldest XIDs are 40 million transactions from wraparound; with fewer than 3 million left, new XIDs are refused: running transactions continue, only read-only transactions can start, and VACUUM still runs.</span></li>
+<li><span class="ts-claim" data-claim="c61" data-src="s1">The documented recovery: resolve old prepared transactions, end long-running transactions, drop stale replication slots, then VACUUM the database; not VACUUM FULL, which needs an XID, and not VACUUM FREEZE, which does more work than needed.</span> <span class="ts-claim" data-claim="c62" data-src="s1">The docs say that in typical scenarios, stopping the server for single-user mode is no longer needed and should be avoided.</span></li>
+</ol>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c63" data-src="s21">On 20 July 2015 Sentry was down for most of the US working day after its write-heavy PostgreSQL, with very large tables, hit wraparound protection and stopped accepting writes; it recovered once Sentry truncated the one huge table whose autovacuum hadn't finished.</span> <span class="ts-claim" data-claim="c64" data-src="s21">Afterwards Sentry doubled autovacuum workers from 3 to 6, set autovacuum_freeze_max_age to 500 million, autovacuum_naptime to 15 seconds and autovacuum_vacuum_cost_delay to 0.</span></p></div>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c65" data-src="s22">From 05:35 UTC on 4 February to 22:09 UTC on 5 February 2019, Mailchimp's Mandrill sent only 80 percent of queued email because one hot shard of its PostgreSQL key-value store hit the XID limit; its autovacuum had likely fallen behind under the extra writes.</span> <span class="ts-claim" data-claim="c66" data-src="s22">Their highest estimate for the vacuum was 40 days, so they truncated two large tables, after which it finished in about an hour; XID wraparound alerting was added the same day.</span></p></div>
+<p>The pattern in both: writes grew, autovacuum's throughput didn't, and no alert watched XID age. Alert when age(datfrozenxid) stays above autovacuum_freeze_max_age (forced vacuums aren't finishing), and on how fast it climbs.</p>
+<div class="ts-interview"><p><strong>"Your database says it is not accepting commands to avoid wraparound. What do you do?"</strong> A strong answer: don't restart and don't reach for single-user mode. Find what holds back cleanup (prepared transactions, long sessions, stale slots), end it, then run a plain VACUUM on the oldest tables first. Then name the cause: writes grew, vacuum budget and alerting didn't.</p></div>
+<p class="ts-takeaway">Wraparound outages come from vacuum throughput not growing with writes; alert on XID age and its rate, and recover with plain VACUUM after removing blockers.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c60 c61">
+<p class="q">Writes are failing with the wraparound error. A teammate proposes VACUUM FULL on the biggest table to "really fix it". What's wrong with that?</p>
+<ol>
+<li data-why="VACUUM is still allowed in this state; the problem is specific to VACUUM FULL.">Nothing can run until the server is restarted in single-user mode</li>
+<li>VACUUM FULL needs a transaction ID, which the database is refusing to hand out; a plain VACUUM is the documented fix</li>
+<li data-why="VACUUM FULL does freeze what it rewrites; the problem is that it can't start, not that it doesn't freeze.">VACUUM FULL doesn't freeze rows</li>
+</ol>
+<p class="ts-why">With fewer than 3 million IDs left, new XIDs are refused. VACUUM FULL needs one; plain VACUUM doesn't, so it is the way out.</p>
+</div>
+<div class="ts-explain" data-points="Dead rows are removed only once no snapshot needs them, and only as fast as the cost budget allows|Space is reused, not returned; online rewrites need spare disk and short exclusive locks|Rows must be frozen before their XID is about two billion transactions old|Outages came from write growth without vacuum budget growth or XID-age alerts">
+<p class="q">Explain to an on-call engineer what goes wrong first when write volume grows ten times, and how they would see each problem coming.</p>
+<div class="ts-model"><p>Dead rows arrive faster than a throttled autovacuum removes them, so tables and indexes bloat; you see n_dead_tup rising and last_autovacuum aging. Freed space is reused but not returned, so shrinking needs pg_repack or partitions, with spare disk. XIDs are used ten times faster, so tables hit the forced-freeze age sooner and the margin before writes are refused shrinks from weeks to days; you see age(datfrozenxid) and its daily rate climbing. Sentry and Mandrill both hit that wall because vacuum capacity and alerting didn't grow with writes.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="tuning-decisions" data-rung="5" data-min="5">
+<h2>Choosing the fix: symptoms, settings and tools</h2>
+<p class="ts-bridge">Last part: wraparound outages. Still unsolved: faced with a symptom, which lever do you pull, and what does it cost?</p>
+<p class="ts-problem">You inherit a database with 4 bloated tables, a 0 percent HOT ratio on the busiest one, and an XID age climbing by 30 million a day. You can change one thing this week.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Symptom</th><th>Check first</th><th>Fix</th><th>What it costs</th></tr></thead>
+<tbody>
+<tr><td>Big table, dead rows in the millions, autovacuum rare</td><td>Trigger formula (part 6)</td><td>Per-table scale factor around 0.01 plus a threshold</td><td>More frequent vacuums of that table</td></tr>
+<tr><td>Autovacuum always running, never catching up</td><td>Cost budget (part 7)</td><td>Raise autovacuum_vacuum_cost_limit</td><td>More disk I/O during the day</td></tr>
+<tr><td>VACUUM VERBOSE reports rows "dead but not yet removable"</td><td>xmin horizon (part 2 of the series)</td><td>End the old transaction, slot or prepared transaction</td><td>Possibly killing someone's session</td></tr>
+<tr><td>Low HOT ratio, many new-page updates</td><td>Free room per page (part 5)</td><td>Lower fillfactor, then rewrite</td><td>More pages for the same rows</td></tr>
+<tr><td>Low HOT ratio, few new-page updates</td><td>Indexes on updated columns (part 4)</td><td>Drop or change that index</td><td>Queries that used the index</td></tr>
+<tr><td>Lots of free space that won't refill</td><td>pgstattuple (part 8)</td><td>pg_repack, REINDEX CONCURRENTLY, or partitions</td><td>Spare disk, brief exclusive locks</td></tr>
+<tr><td>age(datfrozenxid) climbing steadily</td><td>Anti-wraparound vacuums finishing? (part 10)</td><td>Cost budget, remove blockers, VACUUM big static tables in quiet hours</td><td>I/O while it runs</td></tr>
+</tbody>
+</table></div>
+<p>And the space-reclaim tools side by side, from parts 8 and 9:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Tool</th><th>Blocks</th><th>Extra disk</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>VACUUM (and autovacuum)</td><td>Nothing for normal reads and writes</td><td>None</td><td>Always: space is reused, file stays the same size</td></tr>
+<tr><td>VACUUM FULL or CLUSTER</td><td>Everything, for the whole rewrite</td><td>About the table's size</td><td>Maintenance window, small table, or the table is offline anyway</td></tr>
+<tr><td>pg_repack</td><td>Only briefly at start and end</td><td>About twice table plus indexes</td><td>Live table, has a primary key, space won't refill</td></tr>
+<tr><td>REINDEX CONCURRENTLY</td><td>No reads or writes</td><td>One index at a time</td><td>The indexes are bloated, the table isn't</td></tr>
+<tr><td>TRUNCATE or dropping a partition</td><td>Briefly</td><td>None</td><td>Whole table or whole time range goes at once</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="PostgreSQL 19 (beta)"><p>This page follows PostgreSQL 18. The PostgreSQL 19 release notes, still for a beta: <span class="ts-claim" data-claim="c68" data-src="s19">a new REPACK command replaces VACUUM FULL and CLUSTER, which remain for compatibility.</span> <span class="ts-claim" data-claim="c75" data-src="s27">With REPACK's CONCURRENTLY option, the ACCESS EXCLUSIVE lock is taken only to swap the table and index files, which is typically short.</span> <span class="ts-claim" data-claim="c73" data-src="s19">Wraparound warnings start at 100 million remaining XIDs instead of 40 million.</span> <span class="ts-claim" data-claim="c69" data-src="s19">Autovacuum can use parallel workers, a scoring system orders the tables it processes, and ordinary table scans can mark pages all-visible too.</span> Check the final release before relying on any of it.</p></div>
+<div class="ts-interview"><p><strong>"Would you ever turn autovacuum off for a table?"</strong> A strong answer: almost never. <span class="ts-claim" data-claim="c70" data-src="s8">With autovacuum_enabled set to false the table is still vacuumed to prevent wraparound</span>, so you lose routine cleanup but not the forced kind, and that forced run arrives at the worst time. The legitimate case is a staging table you load and drop within minutes.</p></div>
+<p class="ts-takeaway">Match the symptom to its cause first: trigger, budget, xmin horizon, page room, indexed columns or unreusable space; each fix has a cost you should name.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c55 c60">
+<p class="q">Back to the inherited database. Which of the three problems do you fix first, and why?</p>
+<ol>
+<li data-why="Bloat costs disk and cache, but it doesn't stop the database.">The bloated tables, because they waste the most disk</li>
+<li>The climbing XID age, because at 30 million a day it ends in refused writes, while the others only cost performance</li>
+<li data-why="A low HOT ratio raises write cost; it can't take the database down.">The HOT ratio, because it doubles write cost</li>
+</ol>
+<p class="ts-why">Only the XID age has a hard stop. Find why anti-wraparound vacuums aren't keeping up and fix that first.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="7">
+<h2>Interview drill: VACUUM questions at the senior bar</h2>
+<p class="ts-bridge">Last part: the decision table. Still unsolved: can you answer under pressure?</p>
+<p class="ts-problem">An interviewer at a payments company takes your ledger design and asks three questions about cleanup. Commit to an answer before opening each reference.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. "Your <code>wallet_balances</code> table gets 20,000 updates a second. What will hurt first, and how do you design for it?"</p>
+<div class="ts-reveal"><p>Dead versions and index writes. Design for HOT: keep the balance and anything updated per request out of indexes, keep the row narrow, set fillfactor below 100 on that table. Give it its own autovacuum settings: a small scale factor and a higher cost limit. Watch n_tup_hot_upd against n_tup_upd and n_dead_tup. Trade-off: lower fillfactor means more pages, and a bigger vacuum budget means more I/O.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. "Your write volume grows 10 times next quarter. What breaks in PostgreSQL maintenance, and what do you change before it does?"</p>
+<div class="ts-reveal"><p>XIDs are used 10 times faster, so tables reach the forced-autovacuum age 10 times sooner, and the headroom to the hard stop shrinks from weeks to days. Dead rows also arrive faster than a throttled autovacuum removes them, so bloat grows. Before the growth: raise the cost budget, tune the busiest tables, alert on XID age and its daily rate, and cut XID use by batching small write transactions. Trade-off: more background I/O and bigger transactions.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">3. "A 1 TB table is 60 percent empty after a data purge. Shrink it with zero downtime."</p>
+<div class="ts-reveal"><p>First ask whether it will refill; if yes, leave it. If not: pg_repack with enough spare disk for the copy, a primary key, no DDL during the run, and a quiet hour for its two brief exclusive locks, with long transactions ended first. Or partition so future purges are partition drops. Never VACUUM FULL on a live table. Trade-off: spare disk and a rebuild's I/O, versus a maintenance window.</p></div>
+</div>
+<div class="ts-note" data-label="Beyond senior"><p>Staff-level versions add fleet-wide autovacuum policy across many clusters, standard XID-age alerting for every team, and planning partitioning migrations so purges never need rewrites. This page stops at one service.</p></div>
+<p class="ts-takeaway">Senior VACUUM answers name the mechanism (dead versions, HOT, budget, freezing), the signal you would watch, and the cost of the fix.</p>
+<div class="ts-explain" data-points="Name the mechanism behind the symptom|Give the metric you would watch|Pick a fix that keeps the table online|State the trade-off">
+<p class="q">Answer one of the three prompts out loud, in under two minutes, as you would in the interview.</p>
+<div class="ts-model"><p>A strong answer ties the symptom to its mechanism: dead versions and index entries for update-heavy tables, autovacuum's trigger and shared cost budget for cleanup lag, freezing for XID age. It names the metric that shows it: HOT ratio, n_dead_tup, last_autovacuum, age(datfrozenxid) and its rate. It picks a fix that keeps the table online (per-table settings, pg_repack, partitions) and says what that costs in I/O, disk or pages.</p></div>
+</div>
+</section>

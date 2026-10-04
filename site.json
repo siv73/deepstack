@@ -1,0 +1,9 @@
+{
+  "name": "deepstack",
+  "site_url": "https://siv73.github.io/deepstack",
+  "repo_url": "https://github.com/siv73/deepstack",
+  "author": "Sivasai Gavara",
+  "year": "2026",
+  "content_license": {"name": "CC BY-NC-SA 4.0", "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/"},
+  "code_license": {"name": "MIT", "url": "https://opensource.org/license/mit"}
+}

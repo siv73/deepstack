@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="teach-site v1">
+<title>{{TITLE}}</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="canonical" href="{{CANONICAL}}">
+<meta name="author" content="{{AUTHOR}}">
+<meta name="robots" content="noai, noimageai">
+<link rel="icon" href="../_ts/favicon.svg" type="image/svg+xml">
+<script src="../_ts/theme.js"></script>
+<link rel="stylesheet" href="../_ts/ts.css">
+</head>
+<body class="ts-page" data-slug="{{SLUG}}">
+<header class="ts-bar">
+  <div class="ts-bar-in">
+    <a class="ts-home" href="../index.html"><span class="ts-home-mark" aria-hidden="true"></span><span class="ts-home-text">{{SITE_NAME}}</span></a>
+    <span class="ts-bar-title">{{TITLE}}</span>
+    <div class="ts-tools"></div>
+  </div>
+  <div class="ts-progress" aria-hidden="true"><i></i></div>
+</header>
+<div class="ts-wrap">
+  <nav class="ts-rail" aria-label="Parts of this topic"></nav>
+  <main class="ts-main">
+    <section class="ts-hero">
+      <h1>{{TITLE}}</h1>
+      <p class="ts-tldr">{{TLDR}}</p>
+      <ul class="ts-route" aria-label="Route through this topic">{{ROUTE}}</ul>
+      <div class="ts-meta">{{META_LINE}}</div>
+      {{PREREQS}}
+    </section>
+{{BODY}}
+    <section class="ts-nextup">
+      <h2>Where to go next</h2>
+      {{NEXTUP}}
+    </section>
+    <section class="ts-sources" id="ts-sources">
+      <h2>Sources</h2>
+    </section>
+    <p class="ts-foot">Generated {{GENERATED}}. Facts were checked against the sources above on the dates shown.</p>
+    {{LICENSE_FOOT}}
+  </main>
+</div>
+<script type="application/json" id="ts-meta">{{META_JSON}}</script>
+<script type="application/json" id="ts-ledger">{{LEDGER_JSON}}</script>
+<script src="../_ts/ts.js"></script>
+</body>
+</html>

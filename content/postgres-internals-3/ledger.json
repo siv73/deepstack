@@ -1,0 +1,2815 @@
+{
+ "verified": "2026-10-01",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "PostgreSQL 18 docs: 24.1 Routine Vacuuming",
+   "url": "https://www.postgresql.org/docs/18/routine-vacuuming.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s2",
+   "title": "PostgreSQL 18 docs: 66.3 Free Space Map",
+   "url": "https://www.postgresql.org/docs/18/storage-fsm.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s3",
+   "title": "PostgreSQL 18 docs: 66.4 Visibility Map",
+   "url": "https://www.postgresql.org/docs/18/storage-vm.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s4",
+   "title": "PostgreSQL 18 docs: 66.7 Heap-Only Tuples (HOT)",
+   "url": "https://www.postgresql.org/docs/18/storage-hot.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s5",
+   "title": "PostgreSQL 18 docs: VACUUM command reference",
+   "url": "https://www.postgresql.org/docs/18/sql-vacuum.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s6",
+   "title": "PostgreSQL 18 docs: 27.4 Progress Reporting (VACUUM phases)",
+   "url": "https://www.postgresql.org/docs/18/progress-reporting.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s7",
+   "title": "PostgreSQL 18 docs: 27.2 The Cumulative Statistics System (pg_stat_all_tables)",
+   "url": "https://www.postgresql.org/docs/18/monitoring-stats.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s8",
+   "title": "PostgreSQL 18 docs: CREATE TABLE (storage parameters)",
+   "url": "https://www.postgresql.org/docs/18/sql-createtable.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s9",
+   "title": "PostgreSQL 18 docs: ALTER TABLE",
+   "url": "https://www.postgresql.org/docs/18/sql-altertable.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s10",
+   "title": "PostgreSQL 18 docs: 19.10 Vacuuming (configuration)",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-vacuum.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s12",
+   "title": "PostgreSQL 18 docs: F.33 pgstattuple",
+   "url": "https://www.postgresql.org/docs/18/pgstattuple.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s13",
+   "title": "PostgreSQL 18 docs: B-Tree indexes, bottom-up index deletion",
+   "url": "https://www.postgresql.org/docs/18/btree.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s14",
+   "title": "PostgreSQL 18 docs: 24.2 Routine Reindexing",
+   "url": "https://www.postgresql.org/docs/18/routine-reindex.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s15",
+   "title": "PostgreSQL 18 docs: 19.4 Resource Consumption (memory)",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-resource.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s16",
+   "title": "PostgreSQL 18 docs: 19.8 Error Reporting and Logging",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-logging.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s17",
+   "title": "PostgreSQL 18 docs: 13.3 Explicit Locking",
+   "url": "https://www.postgresql.org/docs/18/explicit-locking.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s18",
+   "title": "PostgreSQL 18 release notes",
+   "url": "https://www.postgresql.org/docs/18/release-18.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s19",
+   "title": "PostgreSQL 19 release notes (beta, unreleased)",
+   "url": "https://www.postgresql.org/docs/19/release-19.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s20",
+   "title": "pg_repack documentation",
+   "url": "https://reorg.github.io/pg_repack/",
+   "kind": "primary",
+   "publisher": "pg_repack project (reorg)",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s21",
+   "title": "Sentry blog: Transaction ID Wraparound in Postgres",
+   "url": "https://blog.sentry.io/transaction-id-wraparound-in-postgres",
+   "kind": "primary",
+   "publisher": "Sentry (first-party postmortem; used only for claims about its own incident)",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s22",
+   "title": "Mailchimp: What we learned from the recent Mandrill outage",
+   "url": "https://mailchimp.com/what-we-learned-from-the-recent-mandrill-outage/",
+   "kind": "primary",
+   "publisher": "Mailchimp (first-party postmortem; used only for claims about its own incident)",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s23",
+   "title": "PostgreSQL 18 source file pruneheap.c (heap_page_prune_opt)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/heap/pruneheap.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s24",
+   "title": "PostgreSQL 18 source file varsup.c (SetTransactionIdLimit)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/transam/varsup.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s26",
+   "title": "PostgreSQL 18 source: free space map README (storage/freespace)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/storage/freespace/README",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s27",
+   "title": "PostgreSQL 19 docs (beta): REPACK",
+   "url": "https://www.postgresql.org/docs/19/sql-repack.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s25",
+   "title": "PostgreSQL 18 source file vacuumlazy.c (header comment on vacuum phases)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/heap/vacuumlazy.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "An UPDATE or DELETE does not remove the old row version immediately, because other transactions may still see it; once no transaction needs it, VACUUM reclaims its space for new rows.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "The docs give VACUUM four jobs: recover or reuse space taken by updated or deleted rows, update planner statistics, update the visibility map, and protect against transaction ID and multixact ID wraparound.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.1 Vacuuming Basics",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.1 Vacuuming Basics",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.1 Vacuuming Basics",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "Standard VACUUM removes dead row versions from tables and indexes and marks the space reusable, but returns it to the operating system only when whole pages at the end of the table are free and an exclusive lock is easy to get.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "In phase one, VACUUM scans the table's pages, pruning and freezing rows and collecting the addresses of dead row versions.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "file header comment (phase I)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "file header comment (phase I)",
+     "result": "supported",
+     "at": "2026-10-02T00:40",
+     "method": "browser: verbatim text of raw.githubusercontent.com REL_18_STABLE file"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "file header comment (phase I)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "In phase two it deletes the index entries that point at those dead addresses.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "file header comment (phase II)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "file header comment (phase II)",
+     "result": "supported",
+     "at": "2026-10-02T00:40",
+     "method": "browser: verbatim text of raw.githubusercontent.com REL_18_STABLE file"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "file header comment (phase II)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "It can run several times in one VACUUM if maintenance_work_mem (or autovacuum_work_mem) is too small to hold all the dead addresses found.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "27.4.5 VACUUM Phases: vacuuming indexes",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "27.4.5 VACUUM Phases: vacuuming indexes",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard; wording revised after strict review"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "In phase three it revisits those pages and frees the dead slots for future rows.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "file header comment (phase III)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "file header comment (phase III)",
+     "result": "supported",
+     "at": "2026-10-02T00:40",
+     "method": "browser: verbatim text of raw.githubusercontent.com REL_18_STABLE file"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "file header comment (phase III)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "At the end it may truncate empty pages at the end of the table, then updates the free space map and the table's statistics in pg_class.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "27.4.5 VACUUM Phases: truncating heap, performing final cleanup",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "27.4.5 VACUUM Phases: truncating heap, performing final cleanup",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "27.4.5 VACUUM Phases: truncating heap, performing final cleanup",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "By default VACUUM may skip index vacuuming when the table has very few dead rows, because scanning every index would cost far more than it saves.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Parameters: INDEX_CLEANUP",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Parameters: INDEX_CLEANUP",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Parameters: INDEX_CLEANUP",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Every table and index, except hash indexes, has a free space map stored in a separate fork with an _fsm suffix; its bottom level keeps one byte per page for the space available on it.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.3 Free Space Map",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.3 Free Space Map",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "66.3 Free Space Map",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Every table has a visibility map holding two bits per page: all-visible, meaning nothing on the page needs vacuuming, and all-frozen, meaning every row on the page is frozen.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.4 Visibility Map",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.4 Visibility Map",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "66.4 Visibility Map",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "Visibility map bits are set by vacuum and cleared by any change to the page.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.4 Visibility Map",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.4 Visibility Map",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard; wording revised after strict review"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "VACUUM uses the all-visible bits to skip pages on its next run, and an index-only scan checks them to skip reading the table page for rows it already knows are visible.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.4 Updating the Visibility Map",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.4 Updating the Visibility Map",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.4 Updating the Visibility Map",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "When an UPDATE can't use the HOT optimisation, every index on the table needs a new entry pointing at the new version, including indexes whose columns did not change.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Bottom-up Index Deletion",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Bottom-up Index Deletion",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "Bottom-up Index Deletion",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "An update can be HOT only when it changes no column used by the table's indexes (summarizing indexes such as BRIN don't count) and the page holding the old row has enough free space for the new one.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "A HOT update needs no new index entries, although summarizing indexes may still need updating.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "After repeated HOT updates, versions between the oldest and newest can be removed during normal work, including SELECTs, without waiting for VACUUM; the original slot becomes a redirect to the oldest version still visible.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "If a page may hold removable versions, on-access pruning is attempted when an earlier UPDATE found no room on it, or when its free space falls below the table's fillfactor target, with a floor of 10 percent of the page.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "heap_page_prune_opt()",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "heap_page_prune_opt()",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "browser: fresh verbatim read of raw.githubusercontent.com REL_18_STABLE file; wording revised after strict review"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "In pg_stat_user_tables, n_tup_upd counts all updated rows, n_tup_hot_upd the HOT ones, and n_tup_newpage_upd the ones whose new version went to a different page, which are never HOT.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "pg_stat_all_tables view: n_tup_upd, n_tup_hot_upd, n_tup_newpage_upd",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "pg_stat_all_tables view: n_tup_upd, n_tup_hot_upd, n_tup_newpage_upd",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "pg_stat_all_tables view: n_tup_upd, n_tup_hot_upd, n_tup_newpage_upd",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "fillfactor is a percentage from 10 to 100, with 100 (full packing) as the default; a lower value leaves room on each page for updated rows and makes HOT updates more likely.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Storage Parameters: fillfactor",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Storage Parameters: fillfactor",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Storage Parameters: fillfactor",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "ALTER TABLE ... SET (fillfactor = ...) does not rewrite existing pages; a rewrite such as VACUUM FULL or CLUSTER is needed for the full effect, and the command takes a SHARE UPDATE EXCLUSIVE lock.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Description: SET ( storage_parameter ... )",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Description: SET ( storage_parameter ... )",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "Description: SET ( storage_parameter ... )",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "The launcher tries to start one worker in each database every autovacuum_naptime seconds, and at most autovacuum_max_workers workers run at once.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "autovacuum_naptime is one minute and autovacuum_max_workers is 3 out of the box.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_naptime, autovacuum_max_workers",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_naptime, autovacuum_max_workers",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_naptime, autovacuum_max_workers",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "A table is vacuumed when the rows updated or deleted since its last VACUUM exceed min(max threshold, base threshold + scale factor × pg_class.reltuples).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (vacuum threshold formula)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (vacuum threshold formula)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (vacuum threshold formula)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "The base threshold (autovacuum_vacuum_threshold) is 50 rows, the scale factor (autovacuum_vacuum_scale_factor) is 0.2, and the cap (autovacuum_vacuum_max_threshold) is 100,000,000 rows.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_vacuum_threshold, _scale_factor, _max_threshold",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_vacuum_threshold, _scale_factor, _max_threshold",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_vacuum_threshold, _scale_factor, _max_threshold",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "The cap is new in PostgreSQL 18.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Server Configuration: fixed number of dead tuples that will trigger an autovacuum",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Server Configuration: fixed number of dead tuples that will trigger an autovacuum",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "Server Configuration: fixed number of dead tuples that will trigger an autovacuum",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "Inserts have their own trigger: 1000 rows plus 0.2 × reltuples × the fraction of pages not yet all-frozen.",
+   "sources": [
+    "s1",
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (insert threshold formula)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_insert_threshold, autovacuum_vacuum_insert_scale_factor",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (insert threshold formula)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_insert_threshold, autovacuum_vacuum_insert_scale_factor",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (insert threshold formula)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "Separately, any table whose relfrozenxid is older than autovacuum_freeze_max_age is always vacuumed.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "The thresholds, scale factors and cost settings can be overridden per table with storage parameters, and a per-table value wins over the global one.",
+   "sources": [
+    "s1",
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Storage Parameters: autovacuum_*",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Storage Parameters: autovacuum_*",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "VACUUM keeps a running cost count of its I/O, and when it reaches vacuum_cost_limit it sleeps for vacuum_cost_delay, then resets and carries on.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Cost-based Vacuum Delay",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Cost-based Vacuum Delay",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Cost-based Vacuum Delay",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "Each page costs 1 if found in shared buffers, 2 if read from disk and 20 more if vacuum dirties it, and vacuum_cost_limit is 200.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "vacuum_cost_page_hit, vacuum_cost_page_miss, vacuum_cost_page_dirty, vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "vacuum_cost_page_hit, vacuum_cost_page_miss, vacuum_cost_page_dirty, vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "vacuum_cost_page_hit, vacuum_cost_page_miss, vacuum_cost_page_dirty, vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "autovacuum_vacuum_cost_delay is 2 milliseconds, and autovacuum_vacuum_cost_limit is -1, meaning it uses vacuum_cost_limit.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_cost_delay, autovacuum_vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_cost_delay, autovacuum_vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_cost_delay, autovacuum_vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "For manual VACUUM, vacuum_cost_delay is 0, so throttling is off.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Cost-based Vacuum Delay; vacuum_cost_delay",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Cost-based Vacuum Delay; vacuum_cost_delay",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Cost-based Vacuum Delay; vacuum_cost_delay",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "The autovacuum cost limit is shared out among the running workers, so their total does not exceed it; workers on tables with their own cost settings are left out of this sharing.",
+   "sources": [
+    "s10",
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (balancing)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (balancing)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "autovacuum_vacuum_cost_limit",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "maintenance_work_mem is 64 MB, and autovacuum can use up to autovacuum_max_workers times that much.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "maintenance_work_mem",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "maintenance_work_mem",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "maintenance_work_mem",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "log_autovacuum_min_duration logs every autovacuum action that runs at least that long; it is 10 minutes out of the box.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "log_autovacuum_min_duration",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "log_autovacuum_min_duration",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "log_autovacuum_min_duration",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "completely empty B-tree pages are reused, but a page with only a few keys left stays allocated, so deleting most but not all keys in each range wastes space and calls for periodic reindexing.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "24.2 Routine Reindexing",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "24.2 Routine Reindexing",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "24.2 Routine Reindexing",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "That truncation is controlled by vacuum_truncate, on out of the box, and needs an ACCESS EXCLUSIVE lock on the table.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Default Behavior: vacuum_truncate",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Default Behavior: vacuum_truncate",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Default Behavior: vacuum_truncate",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "pgstattuple reads the whole table and reports its length, dead tuple percentage and free space; pgstattuple_approx is faster because it skips pages the visibility map marks all-visible.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Functions: pgstattuple, pgstattuple_approx",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Functions: pgstattuple, pgstattuple_approx",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "Functions: pgstattuple, pgstattuple_approx",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "pgstatindex reports a B-tree's average leaf density and leaf fragmentation.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Functions: pgstatindex",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Functions: pgstatindex",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "Functions: pgstatindex",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "By default only members of the pg_stat_scan_tables role (and superusers) may run these functions.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "module introduction (access restriction)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "module introduction (access restriction)",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "module introduction (access restriction)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "VACUUM FULL, CLUSTER and table-rewriting forms of ALTER TABLE write a complete new copy of the table and its indexes, hold an ACCESS EXCLUSIVE lock, and temporarily need extra disk about the size of the table.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "ACCESS EXCLUSIVE conflicts with every lock mode, including the one a plain SELECT takes.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "13.3.1 Table-Level Locks: ACCESS EXCLUSIVE, ACCESS SHARE",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "13.3.1 Table-Level Locks: ACCESS EXCLUSIVE, ACCESS SHARE",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "13.3.1 Table-Level Locks: ACCESS EXCLUSIVE, ACCESS SHARE",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "pg_repack rebuilds the table online: it holds an ACCESS EXCLUSIVE lock only briefly at the start and end, and a SHARE UPDATE EXCLUSIVE lock during the copy, so reads and writes continue.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Details / Requirements: locks taken",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Details / Requirements: locks taken",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Details / Requirements: locks taken",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "pg_repack needs a primary key or a unique index on NOT NULL columns, free disk of about twice the size of the table and its indexes, and no DDL on the table while it runs.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Requirements; Restrictions",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Requirements; Restrictions",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Requirements; Restrictions",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "For bloated indexes alone, REINDEX CONCURRENTLY rebuilds them while holding only a SHARE UPDATE EXCLUSIVE lock.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "24.2 Routine Reindexing",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "24.2 Routine Reindexing",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "24.2 Routine Reindexing",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "If a table's whole contents are deleted on a schedule, TRUNCATE frees the space at once with no VACUUM needed, at the cost of not following strict MVCC rules.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.2 Recovering Disk Space",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "pg_repack's --wait-timeout (60 seconds by default) limits how long it waits for that lock before it cancels conflicting queries.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Options: --wait-timeout",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Options: --wait-timeout",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Options: --wait-timeout",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "Transaction IDs are 32 bits and compared modulo 2^32, so every ID has about two billion older and two billion newer IDs; a row version left untouched for more than two billion transactions would suddenly look like it is in the future, and become invisible.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "To prevent that, every table in every database must be vacuumed at least once every two billion transactions.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "VACUUM freezes old rows: a frozen row counts as older than every normal transaction ID, so it stays visible however many transactions pass; since version 9.4 freezing sets a flag bit and keeps the original xmin.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (and note on 9.4)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (and note on 9.4)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (and note on 9.4)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "vacuum_freeze_min_age, 50 million transactions out of the box, is the cutoff age at which an XID makes VACUUM trigger freezing of the page holding it.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Freezing: vacuum_freeze_min_age",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Freezing: vacuum_freeze_min_age",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard; wording revised after strict review"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "Normal VACUUMs skip all-visible pages, so they can leave old rows unfrozen; when a table's relfrozenxid reaches vacuum_freeze_table_age (150 million) VACUUM runs aggressively, visiting every page that might hold unfrozen IDs.",
+   "sources": [
+    "s1",
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Freezing: vacuum_freeze_table_age",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Freezing: vacuum_freeze_table_age",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "pg_class.relfrozenxid records the oldest unfrozen XID left in a table after the last VACUUM that advanced it, and pg_database.datfrozenxid is the minimum of those values in the database.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (relfrozenxid, datfrozenxid)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (relfrozenxid, datfrozenxid)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (relfrozenxid, datfrozenxid)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "Once relfrozenxid is older than autovacuum_freeze_max_age, 200 million out of the box, a VACUUM is forced on the table even if autovacuum is turned off.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_freeze_max_age",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_freeze_max_age",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Automatic Vacuuming: autovacuum_freeze_max_age",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "This anti-wraparound autovacuum shows \"(to prevent wraparound)\" in pg_stat_activity and, unlike a normal one, is not cancelled when another session asks for a conflicting lock.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (lock interruption)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (lock interruption)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (lock interruption)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "Since PostgreSQL 18, normal vacuums may also freeze some all-visible pages early, spreading out the work of later aggressive vacuums; vacuum_max_eager_freeze_failure_rate (0.03) caps wasted attempts.",
+   "sources": [
+    "s10",
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Freezing: vacuum_max_eager_freeze_failure_rate",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "General Performance: normal vacuums freeze some all-visible pages",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Freezing: vacuum_max_eager_freeze_failure_rate",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "General Performance: normal vacuums freeze some all-visible pages",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Freezing: vacuum_max_eager_freeze_failure_rate",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "the source computes the limit as the oldest datfrozenxid plus 2^31 − 1 and counts the warning and refusal points back from there.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "SetTransactionIdLimit()",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "SetTransactionIdLimit()",
+     "result": "supported",
+     "at": "2026-10-02T00:40",
+     "method": "browser: verbatim text of raw.githubusercontent.com REL_18_STABLE file"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "SetTransactionIdLimit()",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "Past vacuum_failsafe_age, 1.6 billion out of the box, VACUUM stops applying cost-based delays, skips non-essential work such as index vacuuming, and stops limiting how much of shared buffers it uses.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Freezing: vacuum_failsafe_age",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Freezing: vacuum_failsafe_age",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Freezing: vacuum_failsafe_age",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "Warnings start when the oldest XIDs are 40 million transactions from wraparound; with fewer than 3 million left, new XIDs are refused: running transactions continue, only read-only transactions can start, and VACUUM still runs.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (warnings and refusal)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (warnings and refusal)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (warnings and refusal)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "The documented recovery: resolve old prepared transactions, end long-running transactions, drop stale replication slots, then VACUUM the database; not VACUUM FULL, which needs an XID, and not VACUUM FREEZE, which does more work than needed.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (recovery steps)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (recovery steps)",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (recovery steps)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "The docs say that in typical scenarios, stopping the server for single-user mode is no longer needed and should be avoided.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (note on single-user mode)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5 Preventing Transaction ID Wraparound Failures (note on single-user mode)",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard; wording revised after strict review"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "On 20 July 2015 Sentry was down for most of the US working day after its write-heavy PostgreSQL, with very large tables, hit wraparound protection and stopped accepting writes; it recovered once Sentry truncated the one huge table whose autovacuum hadn't finished.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "incident description",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "incident description",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "incident description",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "Afterwards Sentry doubled autovacuum workers from 3 to 6, set autovacuum_freeze_max_age to 500 million, autovacuum_naptime to 15 seconds and autovacuum_vacuum_cost_delay to 0.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "configuration changes",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "configuration changes",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "configuration changes",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "From 05:35 UTC on 4 February to 22:09 UTC on 5 February 2019, Mailchimp's Mandrill sent only 80 percent of queued email because one hot shard of its PostgreSQL key-value store hit the XID limit; its autovacuum had likely fallen behind under the extra writes.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "What happened",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "What happened",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "What happened",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "Their highest estimate for the vacuum was 40 days, so they truncated two large tables, after which it finished in about an hour; XID wraparound alerting was added the same day.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "Recovery; what we changed",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "Recovery; what we changed",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "Recovery; what we changed",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "When several transactions lock one row, PostgreSQL stores a multixact ID in xmax; multixact IDs are also 32-bit, have their own forced-vacuum age, autovacuum_multixact_freeze_max_age (400 million), and running out blocks only writes that need a new multixact.",
+   "sources": [
+    "s1",
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.5.1 Multixacts and Wraparound",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "autovacuum_multixact_freeze_max_age",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.5.1 Multixacts and Wraparound",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "autovacuum_multixact_freeze_max_age",
+     "result": "supported",
+     "at": "2026-10-02T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "24.1.5.1 Multixacts and Wraparound",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c68",
+   "text": "a new REPACK command replaces VACUUM FULL and CLUSTER, which remain for compatibility.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "E.1.3.3 Utility Commands: REPACK",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "E.1.3.3 Utility Commands: REPACK",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard; wording revised after strict review"
+    }
+   ]
+  },
+  {
+   "id": "c69",
+   "text": "Autovacuum can use parallel workers, a scoring system orders the tables it processes, and ordinary table scans can mark pages all-visible too.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "E.1.3.1.2 General Performance; E.1.3.1.5 Server Configuration",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "E.1.3.1.2 General Performance; E.1.3.1.5 Server Configuration",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard; wording revised after strict review"
+    }
+   ]
+  },
+  {
+   "id": "c70",
+   "text": "With autovacuum_enabled set to false the table is still vacuumed to prevent wraparound",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Storage Parameters: autovacuum_enabled",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Storage Parameters: autovacuum_enabled",
+     "result": "supported",
+     "at": "2026-10-02T00:35",
+     "method": "browser: verbatim text of live page"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Storage Parameters: autovacuum_enabled",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c71",
+   "text": "The free space map exists to find a page with enough room for a new row quickly, or to decide that the table must grow by a page.",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "Free Space Map (purpose)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "Free Space Map (purpose)",
+     "result": "supported",
+     "at": "2026-10-02T00:40",
+     "method": "browser: verbatim text of raw.githubusercontent.com REL_18_STABLE file"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "Free Space Map (purpose)",
+     "result": "supported",
+     "at": "2026-10-02T01:10",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c72",
+   "text": "Before PostgreSQL 19, the only other way to mark pages all-visible was COPY ... FREEZE.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "E.1.3.1.2 General Performance: query table scans mark pages all-visible",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "E.1.3.1.2 General Performance: query table scans mark pages all-visible",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c73",
+   "text": "Wraparound warnings start at 100 million remaining XIDs instead of 40 million.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "E.1.3.1.4 Monitoring: wraparound warnings at 100 million",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "E.1.3.1.4 Monitoring: wraparound warnings at 100 million",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c74",
+   "text": "Autovacuum holds a SHARE UPDATE EXCLUSIVE lock on the table, and a session asking for a conflicting lock normally interrupts it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (lock interruption)",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "24.1.6 The Autovacuum Daemon (lock interruption)",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c75",
+   "text": "With REPACK's CONCURRENTLY option, the ACCESS EXCLUSIVE lock is taken only to swap the table and index files, which is typically short.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "Description / Notes: CONCURRENTLY lock",
+     "result": "supported",
+     "at": "2026-10-01T23:30",
+     "method": "browser: verbatim text of live page (first read) / WebFetch with locator prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "Description / Notes: CONCURRENTLY lock",
+     "result": "supported",
+     "at": "2026-10-02T01:30",
+     "method": "fresh WebFetch, neutral prompt with NOT IN CONTENT guard"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Each index pass of VACUUM always runs at least once on a table with indexes.",
+   "reason": "strict review: the progress docs say so, but the VACUUM reference and vacuumlazy.c say the index pass may be skipped when there are very few dead entries or the failsafe triggers; the page now only says it can repeat when memory is short"
+  },
+  {
+   "text": "Only VACUUM sets visibility map bits.",
+   "reason": "strict review: the PostgreSQL 19 release notes say COPY ... FREEZE could also set them before 19; the page states both"
+  },
+  {
+   "text": "REPACK CONCURRENTLY never takes an access-exclusive lock.",
+   "reason": "the PostgreSQL 19 REPACK docs say the lock is still taken briefly to swap files; reworded"
+  },
+  {
+   "text": "A lock request queued behind pg_repack's exclusive lock makes all later queries wait too.",
+   "reason": "no official source read for lock-queue behaviour; removed from the trap"
+  },
+  {
+   "text": "Replicas receive a pg_repack or VACUUM FULL rewrite as a full copy through WAL.",
+   "reason": "not confirmed in an official source in this pass"
+  },
+  {
+   "text": "Sentry's outage happened because autovacuum could not keep up.",
+   "reason": "the post says autovacuum tuning was insufficient but does not state the cause that directly; the page now quotes what the post does say"
+  },
+  {
+   "text": "Mandrill's outage lasted about 41 hours.",
+   "reason": "the post gives start and end times, not a duration; the page gives the times"
+  },
+  {
+   "text": "HOT ratios measured on a PostgreSQL 16 test server (99 percent at fillfactor 100, 0 percent after indexing the updated column).",
+   "reason": "own experiment, not an official source; used only as test data in health.py, not as a claim"
+  }
+ ]
+}

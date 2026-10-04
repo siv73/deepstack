@@ -1,0 +1,2058 @@
+{
+ "verified": "2026-09-29",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "Python 3.14 docs: Coroutines and tasks",
+   "url": "https://docs.python.org/3/library/asyncio-task.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s2",
+   "title": "Python 3.14 docs: Developing with asyncio",
+   "url": "https://docs.python.org/3/library/asyncio-dev.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s3",
+   "title": "Python 3.14 docs: asyncio Runners",
+   "url": "https://docs.python.org/3/library/asyncio-runner.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s4",
+   "title": "Python 3.14 docs: A Conceptual Overview of asyncio (HOWTO)",
+   "url": "https://docs.python.org/3/howto/a-conceptual-overview-of-asyncio.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s5",
+   "title": "Python 3.14 docs: concurrent.futures",
+   "url": "https://docs.python.org/3/library/concurrent.futures.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s6",
+   "title": "Python 3.14 docs: asyncio Event Loop",
+   "url": "https://docs.python.org/3/library/asyncio-eventloop.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s7",
+   "title": "What's New in Python 3.8",
+   "url": "https://docs.python.org/3/whatsnew/3.8.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s8",
+   "title": "What's New in Python 3.11",
+   "url": "https://docs.python.org/3/whatsnew/3.11.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s9",
+   "title": "FastAPI docs: Concurrency and async / await",
+   "url": "https://fastapi.tiangolo.com/async/",
+   "kind": "primary",
+   "publisher": "FastAPI (project docs)",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s10",
+   "title": "Python 3.14 docs: asyncio Synchronization Primitives",
+   "url": "https://docs.python.org/3/library/asyncio-sync.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s11",
+   "title": "What's New in Python 3.14",
+   "url": "https://docs.python.org/3/whatsnew/3.14.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s12",
+   "title": "CPython 3.14 source: Lib/asyncio/threads.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/threads.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s13",
+   "title": "Python 3.14 docs: asyncio (module overview)",
+   "url": "https://docs.python.org/3/library/asyncio.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s16",
+   "title": "Python 3.14 docs: asyncio Exceptions",
+   "url": "https://docs.python.org/3/library/asyncio-exceptions.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s14",
+   "title": "Python 3.14 docs: Compound statements (except* clause)",
+   "url": "https://docs.python.org/3/reference/compound_stmts.html#except-star",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s15",
+   "title": "Ruff docs: blind-except (BLE001)",
+   "url": "https://docs.astral.sh/ruff/rules/blind-except/",
+   "kind": "primary",
+   "publisher": "Astral (Ruff project docs)",
+   "accessed": "2026-09-29"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "The Python docs describe asyncio as a library for writing concurrent code with the async/await syntax.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "module intro",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "module intro",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "The docs call asyncio often a perfect fit for IO-bound and high-level structured network code.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "module intro",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "module intro",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "An event loop runs in one thread and executes all its callbacks and tasks in that thread.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "While a task is running in the event loop, no other task can run in the same thread.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "Calling a coroutine function does not schedule it to run; it only returns a coroutine object.",
+   "sources": [
+    "s1",
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Coroutines; Asynchronous functions and coroutines",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Coroutines; Asynchronous functions and coroutines",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Asynchronous functions and coroutines",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "If a coroutine is never awaited or scheduled as a task, asyncio emits a RuntimeWarning saying it was never awaited.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Detect never-awaited coroutines",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Detect never-awaited coroutines",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "Awaiting a task hands control back to the event loop; awaiting a coroutine does not, by itself.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "await",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "await",
+     "result": "supported",
+     "at": "2026-09-29T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)",
+     "note": "reviewer: overstated as first worded; reworded to 'does not, by itself' and re-checked"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "asyncio.create_task() wraps a coroutine in a Task and schedules it to run soon.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Creating tasks: create_task",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Creating tasks: create_task",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "asyncio.TaskGroup was added in Python 3.11.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: versionadded 3.11",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: versionadded 3.11",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Its async with block waits for every task in the group to finish.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "The first time a task in the group fails with an exception other than CancelledError, the group cancels the remaining tasks.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "After all tasks finish, the failures are combined into an ExceptionGroup (or BaseExceptionGroup) and raised.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "An asyncio.Semaphore keeps a counter; acquire() waits while the counter is zero, until another task calls release().",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Semaphore",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Semaphore",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The preferred way to use a Semaphore is an async with statement.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Semaphore",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Semaphore",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "asyncio.timeout() cancels the current task when the delay runs out and turns the resulting CancelledError into a TimeoutError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: timeout()",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: timeout()",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "That TimeoutError can only be caught outside the async with block.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: timeout() note",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: timeout() note",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "asyncio.timeout() was added in Python 3.11, and timeout contexts can be safely nested.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: versionadded 3.11",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: versionadded 3.11",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "asyncio.wait_for() cancels the awaitable on timeout and waits until it is actually cancelled, so the total wait can exceed the timeout.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: wait_for()",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: wait_for()",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "Since Python 3.11, wait_for() raises the built-in TimeoutError instead of asyncio.TimeoutError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "wait_for: versionchanged 3.11",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "wait_for: versionchanged 3.11",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "The docs' own example: a CPU-heavy function that takes 1 second delays every other task and all IO by 1 second.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Running Blocking Code",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Running Blocking Code",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "asyncio.to_thread() runs a sync function in a separate thread and returns a coroutine you await for the result.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Running in threads",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running in threads",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "Because of the GIL, to_thread() usually helps only IO-bound functions, unless the extension module releases the GIL or the Python implementation has none.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Running in threads: note",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running in threads: note",
+     "result": "supported",
+     "at": "2026-09-29T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)",
+     "note": "reviewer: incomplete; added 'or the Python implementation has none' and re-checked"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "to_thread() passes the call to the loop's default executor.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "to_thread body: run_in_executor(None, ...)",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "to_thread body: run_in_executor(None, ...)",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "Unless you set another, the default executor is a ThreadPoolExecutor created on first use.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "loop.run_in_executor",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "loop.run_in_executor",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "Since Python 3.13, a ThreadPoolExecutor with no max_workers uses at most min(32, (os.process_cpu_count() or 1) + 4) threads.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "ThreadPoolExecutor: versionchanged 3.13",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "ThreadPoolExecutor: versionchanged 3.13",
+     "result": "supported",
+     "at": "2026-09-29T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)",
+     "note": "reviewer: 'gets N threads' overstated; reworded to 'at most' and re-checked"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "For CPU-bound work, the docs say a process pool is in general preferable.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "loop.run_in_executor example",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "loop.run_in_executor example",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "FastAPI runs endpoints declared with plain def in an external thread pool that is then awaited.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Path operation functions",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Path operation functions",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "FastAPI's docs say to declare an endpoint with plain def when it uses a third-party library that does not support await.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "In a hurry?",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "In a hurry?",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "Debug mode can be turned on with PYTHONASYNCIODEBUG=1, Python Development Mode, asyncio.run(..., debug=True) or loop.set_debug().",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Debug Mode",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Debug Mode",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "In debug mode, callbacks that take longer than 100 ms are logged, and loop.slow_callback_duration sets that threshold in seconds.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Debug Mode",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Debug Mode",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "The docs warn that network logging can block the event loop and suggest a separate thread for log handling.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Logging",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Logging",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "The event loop keeps only weak references to tasks, so a task nothing else references can be garbage collected before it is done.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "create_task: important",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "create_task: important",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "The docs' fix for fire-and-forget: keep each task in a set and remove it with add_done_callback when it finishes.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "create_task: important",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "create_task: important",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "If nothing awaits a task or reads its result, its exception is never retrieved; asyncio logs \"Task exception was never retrieved\" when it is garbage collected.",
+   "sources": [
+    "s1",
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "create_task: important; Detect never-retrieved exceptions",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "create_task: important; Detect never-retrieved exceptions",
+     "result": "supported",
+     "at": "2026-09-29T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Detect never-retrieved exceptions",
+     "result": "supported",
+     "at": "2026-09-29T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)",
+     "note": "reviewer: overstated; reworded to 'if nothing awaits a task or reads its result' and re-checked"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "gather() runs its awaitables concurrently and returns results in the order they were passed.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Running tasks concurrently: gather",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running tasks concurrently: gather",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "With the default return_exceptions=False, the first exception goes straight to the caller, and the other awaitables are not cancelled; they keep running.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "With return_exceptions=True, exceptions are returned in the result list like normal results.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "If gather() itself is cancelled, all its unfinished awaitables are cancelled too.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "The docs say TaskGroup gives stronger safety guarantees than gather(): when a task fails, TaskGroup cancels the rest and gather() does not.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather: note",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather: note",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "Since Python 3.8, asyncio.CancelledError inherits from BaseException, not Exception.",
+   "sources": [
+    "s7",
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "asyncio changes; Task cancellation",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "asyncio changes; Task cancellation",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "The docs recommend try/finally for cleanup, and if you catch CancelledError, re-raising it once cleanup is done.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "TaskGroup and asyncio.timeout() are built on cancellation and can misbehave if a coroutine swallows CancelledError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "asyncio.run() cannot be called while another event loop is running in the same thread.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Running an asyncio Program",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Running an asyncio Program",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "The docs say asyncio.run() should be the program's main entry point and ideally be called only once.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Running an asyncio Program",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Running an asyncio Program",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "asyncio.run() creates the loop, runs the coroutine, finalizes async generators, closes the default executor and closes the loop.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Running an asyncio Program",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Running an asyncio Program",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "Since Python 3.14, asyncio.get_event_loop() raises RuntimeError when there is no current event loop.",
+   "sources": [
+    "s6",
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "get_event_loop: versionchanged 3.14; What's New 3.14, Removed: asyncio",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "get_event_loop: versionchanged 3.14; What's New 3.14, Removed: asyncio",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Removed: asyncio (whatsnew/3.14.rst line 2409)",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "verbatim rst fetched fresh (WebFetch returned NOT IN CONTENT)"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "The Python 3.14 What's New says most get_event_loop() patterns can be replaced with asyncio.run().",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Removed: asyncio",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Removed: asyncio (verbatim Doc/whatsnew/3.14.rst, fresh raw fetch, lines 2409-2419)",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "verbatim rst fetched fresh from raw.githubusercontent.com (WebFetch returned NOT IN CONTENT)"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "The @asyncio.coroutine decorator for generator-based coroutines was removed in Python 3.11; use async def instead.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Removed",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Removed (verbatim Doc/whatsnew/3.11.rst, fresh raw fetch, line 1955)",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "verbatim rst fetched fresh from raw.githubusercontent.com (WebFetch returned NOT IN CONTENT)"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "asyncio.sleep() always suspends the current task, and sleep(0) is an optimized way to let other tasks run.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Sleeping",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Sleeping",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "If any argument to gather() is a coroutine, gather() schedules it as a Task automatically.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "An except* clause matches by type against the exceptions inside the group; the unmatched ones propagate on in a new group.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "except* clause",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "except* clause",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "Ruff's rule BLE001 (blind-except) flags except BaseException and except Exception clauses, unless they re-raise or log the exception with exc_info.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "What it does",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "What it does",
+     "result": "supported",
+     "at": "2026-09-29T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)",
+     "note": "reviewer: missing exc_info exemption; added and re-checked"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "A concurrent.futures call that is already running cannot be cancelled; cancel() returns False.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Future Objects: cancel()",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Future Objects: cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "asyncio.TimeoutError is now a deprecated alias of the built-in TimeoutError.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "asyncio.TimeoutError",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "asyncio.TimeoutError",
+     "result": "supported",
+     "at": "2026-09-29T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "This page follows the Python 3.14 documentation.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "page title: Python 3.14.7 documentation",
+     "result": "supported",
+     "at": "2026-09-29T00:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "page title: Python 3.14.7 documentation",
+     "result": "supported",
+     "at": "2026-09-29T01:05",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T01:30",
+     "method": "strict-mode reviewer (separate agent; WebFetch + verbatim CPython 3.14 rst/source)"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Debug mode logs coroutines that hold the loop for 100 ms or longer (conceptual HOWTO wording).",
+   "reason": "duplicated the Developing-with-asyncio claim about slow callbacks; kept the reference-doc wording only"
+  },
+  {
+   "text": "Debug mode adds overhead, so don't run it in production.",
+   "reason": "no official source states the overhead; replaced with advice to measure loop lag"
+  },
+  {
+   "text": "Calling asyncio.run() inside Jupyter fails because the notebook already runs an event loop.",
+   "reason": "about Jupyter/IPython, not verified in their docs; page keeps only the tested async-def case"
+  },
+  {
+   "text": "Python 3.14's free-threaded build lets to_thread() speed up CPU-bound pure-Python code.",
+   "reason": "deferred to Part 2 / the threads topic; not verified for this page"
+  }
+ ]
+}

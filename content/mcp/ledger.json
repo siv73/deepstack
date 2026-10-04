@@ -1,0 +1,3427 @@
+{
+ "verified": "2026-09-27",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "MCP Specification 2026-07-28: Overview",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s2",
+   "title": "MCP Specification 2026-07-28: Architecture",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/architecture",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s3",
+   "title": "MCP Specification 2026-07-28: Server features overview",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/server",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s4",
+   "title": "MCP Specification 2026-07-28: Base protocol",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s5",
+   "title": "MCP Specification 2026-07-28: Transports overview",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s6",
+   "title": "MCP Specification 2026-07-28: stdio transport",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s7",
+   "title": "MCP Specification 2026-07-28: Streamable HTTP",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s8",
+   "title": "MCP Specification 2026-07-28: Multi Round-Trip Requests",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/mrtr",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s9",
+   "title": "MCP Specification 2026-07-28: Tools",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s10",
+   "title": "MCP Specification 2026-07-28: Versioning and Compatibility",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s11",
+   "title": "MCP Specification 2026-07-28: Authorization",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s12",
+   "title": "MCP Specification 2026-07-28: Authorization Security Considerations",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/security-considerations",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s37",
+   "title": "MCP Specification 2026-07-28: Authorization Server Discovery",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/authorization-server-discovery",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s13",
+   "title": "MCP Specification 2026-07-28: Deprecated Features",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/deprecated",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s14",
+   "title": "MCP Specification 2026-07-28: Key Changes (changelog)",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s15",
+   "title": "MCP Security Best Practices (2026-07-28)",
+   "url": "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s16",
+   "title": "MCP Roadmap (last updated 2026-08-22)",
+   "url": "https://modelcontextprotocol.io/development/roadmap",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s17",
+   "title": "The 2026-07-28 Specification (MCP blog)",
+   "url": "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+   "kind": "primary",
+   "publisher": "MCP maintainers",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s18",
+   "title": "Introducing the Model Context Protocol",
+   "url": "https://www.anthropic.com/news/model-context-protocol",
+   "kind": "primary",
+   "publisher": "Anthropic",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s19",
+   "title": "Linux Foundation Announces the Formation of the Agentic AI Foundation (AAIF)",
+   "url": "https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation",
+   "kind": "primary",
+   "publisher": "Linux Foundation",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s20",
+   "title": "MCP joins the Agentic AI Foundation (MCP blog)",
+   "url": "https://blog.modelcontextprotocol.io/posts/2025-12-09-mcp-joins-agentic-ai-foundation/",
+   "kind": "primary",
+   "publisher": "MCP maintainers",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s21",
+   "title": "A2A joins AAIF's open agentic stack",
+   "url": "https://aaif.io/blog/a2a-joins-aaif",
+   "kind": "primary",
+   "publisher": "Agentic AI Foundation",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s22",
+   "title": "A2A and MCP",
+   "url": "https://a2a-protocol.org/latest/topics/a2a-and-mcp/",
+   "kind": "primary",
+   "publisher": "A2A project",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s23",
+   "title": "Code execution with MCP: building more efficient agents",
+   "url": "https://www.anthropic.com/engineering/code-execution-with-mcp",
+   "kind": "primary",
+   "publisher": "Anthropic",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s24",
+   "title": "Code Mode: the better way to use MCP",
+   "url": "https://blog.cloudflare.com/code-mode/",
+   "kind": "secondary",
+   "publisher": "Cloudflare",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s25",
+   "title": "Agent Skills Specification",
+   "url": "https://agentskills.io/specification",
+   "kind": "primary",
+   "publisher": "Agent Skills project",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s26",
+   "title": "MCP Extensions: Skills",
+   "url": "https://modelcontextprotocol.io/extensions/skills/overview",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s27",
+   "title": "WebMCP (Draft Community Group Report)",
+   "url": "https://webmachinelearning.github.io/webmcp/",
+   "kind": "primary",
+   "publisher": "W3C Web Machine Learning Community Group",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s28",
+   "title": "NVD: CVE-2025-49596",
+   "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-49596",
+   "kind": "primary",
+   "publisher": "NIST NVD",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s29",
+   "title": "NVD: CVE-2025-6514",
+   "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-6514",
+   "kind": "primary",
+   "publisher": "NIST NVD",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s30",
+   "title": "MCP Python SDK README (v2.2.0)",
+   "url": "https://github.com/modelcontextprotocol/python-sdk",
+   "kind": "primary",
+   "publisher": "MCP Python SDK maintainers",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s31",
+   "title": "MCP Python SDK docs: Multi-round-trip requests",
+   "url": "https://py.sdk.modelcontextprotocol.io/handlers/multi-round-trip/",
+   "kind": "primary",
+   "publisher": "MCP Python SDK maintainers",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s32",
+   "title": "MCP Python SDK docs: Elicitation",
+   "url": "https://py.sdk.modelcontextprotocol.io/handlers/elicitation/",
+   "kind": "primary",
+   "publisher": "MCP Python SDK maintainers",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s36",
+   "title": "MCP Specification 2026-07-28: Message patterns",
+   "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns",
+   "kind": "primary",
+   "publisher": "MCP (LF Projects)",
+   "accessed": "2026-09-27"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "The spec describes MCP as an open protocol that connects LLM applications to external data sources and tools.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "intro paragraph",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Overview; Security and Trust & Safety",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "Anthropic open-sourced MCP on 25 November 2024.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "post date and first paragraph",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "opening paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "Its launch post named the problem: every new data source needed its own custom implementation.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "problem paragraph",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "opening paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "The spec says MCP takes inspiration from the Language Server Protocol, which standardised how development tools add support for programming languages.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Overview; Security and Trust & Safety",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "The spec names three roles: hosts (the LLM applications), clients (connectors inside the host) and servers (services that provide context and capabilities).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Overview; Security and Trust & Safety",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "A host creates and manages several clients, and each client talks to exactly one server.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Core Components: Host, Clients",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Core Components; Design Principles",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "The host enforces security policies and consent, and handles the user's authorization decisions.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Core Components: Host",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Core Components; Design Principles",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "A design principle: servers should not be able to read the whole conversation or see into other servers; the full history stays with the host.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Design Principles, item 3",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Core Components; Design Principles",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "Servers can be local processes or remote services.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Core Components: Servers",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Core Components; Design Principles",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Servers offer three primitives: tools (functions the model can run), resources (data that gives the model context) and prompts (templates that guide interactions).",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Overview list",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Overview table",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "The spec assigns control: prompts are user-controlled, resources are application-controlled and tools are model-controlled.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "control hierarchy table",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Overview table",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "The spec's examples: prompts as slash commands or menu options, resources as file contents or git history, tools as API POST requests or file writing.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "control hierarchy table, Example column",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Overview table",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "Each tool is identified by a unique name and carries an inputSchema, a JSON Schema for its arguments.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "intro; Listing Tools example",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "intro; Listing Tools example",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "The spec says there SHOULD always be a human in the loop who can deny a tool call.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "User Interaction Model (warning)",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "User Interaction Model (warning)",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "MCP messages are JSON-RPC 2.0.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Overview; Security and Trust & Safety",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "Since version 2026-07-28, MCP is stateless: each request carries everything needed to process it, and servers must not rely on earlier requests on the same connection.",
+   "sources": [
+    "s4",
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Statelessness",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Major changes: stateless MCP protocol",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Statelessness; _meta per-request fields",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Major/Minor changes; Deprecated; Governance",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "Every request carries its protocol version and client capabilities in _meta, under io.modelcontextprotocol/protocolVersion and io.modelcontextprotocol/clientCapabilities.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "_meta: Per-request protocol fields",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Statelessness; _meta per-request fields",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "If the server does not support the requested version, it replies with UnsupportedProtocolVersionError listing the versions it does support.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Protocol Version Negotiation",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Terminology; Protocol Version Negotiation",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "Servers must implement server/discover; clients may call it first to learn versions and capabilities, but don't have to.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Protocol Version Negotiation",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Terminology; Protocol Version Negotiation",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "The client finds tools with tools/list and runs one with tools/call, passing the tool name and arguments.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Listing Tools; Calling Tools",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Listing Tools; Calling Tools",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Version 2026-07-28 removed the initialize handshake and the Mcp-Session-Id header.",
+   "sources": [
+    "s14",
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Major changes items 1-2",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "No Handshake or Sessions",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Major/Minor changes; Deprecated; Governance",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "No handshake or sessions; opening paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "The spec defines two standard transports: stdio and Streamable HTTP.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "intro list",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "intro list",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "With stdio, the client launches the server as a subprocess, and messages are newline-delimited JSON-RPC over stdin and stdout.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "intro",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "intro bullets",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "The server must not write anything to stdout that is not a valid MCP message; it may write logs to stderr.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "intro bullets",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "intro bullets",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "With Streamable HTTP, the server exposes one MCP endpoint and every client message is its own HTTP POST.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "intro; Sending Messages",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "intro; Sending Messages",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "The server answers each request with either one JSON object or an SSE stream scoped to that request.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "intro bullets",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "intro bullets",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "Every request POST must carry an MCP-Protocol-Version header plus Mcp-Method, and, for tools/call, resources/read and prompts/get, Mcp-Name, so gateways can route without parsing the body.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Request Metadata: Protocol Version Header; Standard Request Headers",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Request Metadata: Protocol Version Header; Standard Request Headers",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "The older HTTP+SSE transport is deprecated, with Streamable HTTP as the migration path.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Deprecated table, HTTP+SSE row",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Deprecated table",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "When a server needs more input to finish a request, it returns an InputRequiredResult instead of sending its own request to the client.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Note; Multi Round-Trip Requests",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Core Types; Supported Requests; Server/Client Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "An InputRequiredResult can carry inputRequests (an elicitation, a sampling request or a roots list) and requestState (an opaque string only the server understands).",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Core Types: InputRequiredResult",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Core Types; Supported Requests; Server/Client Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "The client gathers the answers and retries the original request with inputResponses and the exact requestState, under a new JSON-RPC id.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Client Requirements (Basic Workflow)",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Core Types; Supported Requests; Server/Client Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Only tools/call, resources/read and prompts/get may be answered with an InputRequiredResult.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Supported Requests",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Core Types; Supported Requests; Server/Client Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "Servers must treat requestState as attacker-controlled and, when it affects authorization, resource access or business logic, protect its integrity, for example with an HMAC or AEAD.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Server Requirements item 4",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Core Types; Supported Requests; Server/Client Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "Servers must not initiate JSON-RPC requests; every interaction begins with the client.",
+   "sources": [
+    "s36"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s36",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s36",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s36",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "Roots, sampling and logging were deprecated in 2026-07-28; the earliest removal is the first revision released on or after 2027-07-28.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Deprecated table",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Deprecated table",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "Version 2 of the MCP Python SDK is its current stable line and supports the 2026-07-28 spec.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "README note",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "README note; A server in 15 lines",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "With the SDK's MCPServer, the type hints on a Python function become the tool's input schema.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "A server in 15 lines",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "README note; A server in 15 lines",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "Tools report two kinds of errors: protocol errors as JSON-RPC errors (for example an unknown tool) and tool execution errors inside the result with isError: true.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Error Handling",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Error Handling",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "Clients SHOULD pass tool execution errors to the model so it can correct itself.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Error Handling",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Error Handling",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "Servers SHOULD return tools/list in a deterministic order, which helps clients cache the list and improves LLM prompt-cache hits.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Capabilities",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Capabilities",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "In the Python SDK, a resolver on a tool parameter can return Elicit(...) to ask the user; on a 2026-07-28 connection the SDK returns the question from the call, and the client's retry carries the answer.",
+   "sources": [
+    "s32"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s32",
+     "locator": "Ask with a resolver",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s32",
+     "locator": "Ask with a resolver",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s32",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "A server must not put a request type in inputRequests that the client has not declared support for in its capabilities.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Server Requirements item 7",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Core Types; Supported Requests; Server/Client Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "MCPServer seals requestState by default, under a key generated when the process starts.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "Protecting requestState",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Protecting requestState; What the seal carries; Rotating keys; The client side",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "With that default key, a retry that reaches another instance or a restarted server is rejected; deployments with several instances pass shared keys with RequestStateSecurity(keys=[...]).",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "Protecting requestState",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Protecting requestState; What the seal carries; Rotating keys; The client side",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "The seal binds each token to an expiry (600 seconds by default), to the originating request and, when the SDK validated an OAuth token, to the caller.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "What the seal carries",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Protecting requestState; What the seal carries; Rotating keys; The client side",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "The SDK's Client runs the retry loop for you and gives up after 10 rounds by default.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "The client side",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Protecting requestState; What the seal carries; Rotating keys; The client side",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "Authorization is optional. HTTP-based servers SHOULD follow the MCP authorization spec; stdio servers SHOULD NOT, and read credentials from the environment instead.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Protocol Requirements",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Protocol Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "A protected MCP server acts as an OAuth 2.1 resource server, and the MCP client acts as an OAuth 2.1 client.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Roles",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Roles",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "After a 401, the client finds the server's Protected Resource Metadata (RFC 9728), which names the authorization server, through the WWW-Authenticate header or, when that has no pointer, a well-known URI.",
+   "sources": [
+    "s11",
+    "s37"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Authorization Flow Steps (diagram); Overview item 4",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s37",
+     "locator": "Protected Resource Metadata Discovery Requirements",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Authorization Flow Steps (diagram); Overview item 4",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s37",
+     "locator": "Protected Resource Metadata Discovery Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "The client uses PKCE, sends a resource parameter naming the MCP server (RFC 8707), and, when the callback carries an iss value, checks it against the expected issuer (RFC 9207).",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Authorization Flow Steps (diagram); Authorization Response Validation",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Authorization Flow Steps (diagram); Authorization Response Validation",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "Servers must check that the token was issued for them as its audience, and must not pass the client's token through to upstream APIs.",
+   "sources": [
+    "s11",
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Token Handling",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Access Token Privilege Restriction",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Token Handling",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Access Token Privilege Restriction",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "Clients and authorization servers SHOULD support Client ID Metadata Documents; Dynamic Client Registration is deprecated and kept for backward compatibility.",
+   "sources": [
+    "s11",
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Overview items 2-3",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Deprecated table",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Overview items 2-3",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Deprecated table",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "The token goes in the Authorization: Bearer header on every request, never in the query string.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Token Requirements",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Token Requirements",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "The release notes say any request can now land on any server instance behind a plain round-robin load balancer, without shared storage.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "No handshake or sessions",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "No handshake or sessions; opening paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "Results of tools/list, the other list methods and resources/read now carry ttlMs, a hint for how long clients may cache them, and cacheScope, which says whether shared caches may store them.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Minor changes item 5",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Major/Minor changes; Deprecated; Governance",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "State that spans calls, such as a cart or a database transaction, should live behind an explicit handle that one tool returns and later calls pass back.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Stateful Tools",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Stateful Tools",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "Servers must not treat possession of a handle as authentication, and should bind handles to the authenticated user, for example by keying state as user_id:handle.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "State Handle Hijacking: Mitigation",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "State Handle Hijacking; Local MCP Server Compromise",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "Servers SHOULD send X-Accel-Buffering: no on SSE responses so proxies such as nginx don't buffer events.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Receiving Messages",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Receiving Messages",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "Resuming a dropped SSE stream with Last-Event-ID is not supported in 2026-07-28.",
+   "sources": [
+    "s7",
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Receiving Messages",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Major changes item 9",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Receiving Messages",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Major/Minor changes; Deprecated; Governance",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "On Streamable HTTP, closing the response stream is how the client cancels a request.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Cancellation",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Cancellation",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "The spec treats tools as arbitrary code execution, and says tool descriptions such as annotations are untrusted unless they come from a trusted server.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Security and Trust & Safety: Tool Safety",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Overview; Security and Trust & Safety",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "Hosts must obtain explicit user consent before invoking any tool.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Key Principles: Tool Safety",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Overview; Security and Trust & Safety",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "HTTP servers must validate the Origin header to stop DNS rebinding and, when running locally, should bind to 127.0.0.1 rather than 0.0.0.0.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Security & Endpoint",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Security & Endpoint",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "CVE-2025-49596: MCP Inspector versions below 0.14.1 allowed remote code execution because there was no authentication between the Inspector client and its proxy (CVSS 4.0 score 9.4, critical).",
+   "sources": [
+    "s28"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s28",
+     "locator": "Description; CVSS 4.0 metrics",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s28",
+     "locator": "NVD API record: description, CVSS 4.0",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s28",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "CVE-2025-6514: mcp-remote was open to OS command injection when connecting to an untrusted MCP server, through a crafted authorization_endpoint URL (CVSS 3.1 score 9.6, critical).",
+   "sources": [
+    "s29"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s29",
+     "locator": "Description; CVSS 3.1 metrics",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s29",
+     "locator": "NVD API record: description, CVSS 3.1",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s29",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "For one-click local server setup, the client must show the exact command, without truncation, and require explicit approval.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Local MCP Server Compromise: Mitigation",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "State Handle Hijacking; Local MCP Server Compromise",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "Clients SHOULD show tool inputs to the user before calling the server, validate tool results before passing them to the model, and set timeouts on tool calls.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Security Considerations item 2",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Security Considerations item 2",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c68",
+   "text": "Servers MUST validate all tool inputs, apply access controls, rate limit tool calls and sanitise tool outputs.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Security Considerations item 1",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Security Considerations item 1",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c69",
+   "text": "The A2A project describes A2A as connecting agents to each other and MCP as connecting each agent to its own tools, and calls the two complementary.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "page body",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "A2A and MCP: Complementary Protocols",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c70",
+   "text": "An Agent Skill is a folder with a SKILL.md file; agents load only its name and description (about 100 tokens) at startup, and the full instructions when the skill is activated.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "Directory structure; Progressive disclosure",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "Directory structure; Progressive disclosure",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c71",
+   "text": "The official MCP Skills extension lets servers offer Agent Skills to clients: skills/list and skills/get to discover them, and resources/read to fetch their files.",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "intro; Capabilities",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "intro",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c72",
+   "text": "In an example workflow, Anthropic showed that having the agent write code against MCP tools, instead of calling each tool directly, cuts token use from 150,000 to 2,000, a 98.7% saving.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "body, token example",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Code execution with MCP improves context efficiency; complexity note",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c73",
+   "text": "Anthropic notes that running agent-written code needs a secure sandbox, resource limits and monitoring.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "caveats paragraph",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Code execution with MCP improves context efficiency; complexity note",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c74",
+   "text": "Cloudflare calls the same pattern Code Mode: it turns MCP tools into a TypeScript API that the model writes code against.",
+   "sources": [
+    "s23",
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "mentions Cloudflare Code Mode",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "intro",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Code execution with MCP improves context efficiency; complexity note",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "intro",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c75",
+   "text": "WebMCP, which lets web pages register tools for agents in the browser, is a Draft Community Group Report of the W3C Web Machine Learning Community Group, not a W3C standard.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "status section",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "Status of this document",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c76",
+   "text": "On 9 December 2025 the Linux Foundation formed the Agentic AI Foundation (AAIF); Anthropic contributed MCP, Block contributed goose and OpenAI contributed AGENTS.md.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "headline and first paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "dateline paragraph",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c77",
+   "text": "MCP's maintainers said their governance model and the SEP process continue unchanged.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "What stays the same",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "MCP's maintainer structure stays the same; opening paragraph",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c78",
+   "text": "On 17 August 2026, A2A joined AAIF as a hosted project, next to MCP.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "post body",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "heading and byline; Where A2A fits",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c79",
+   "text": "The 2026-07-28 release post reports close to half a billion monthly downloads across the Tier 1 SDKs, which are TypeScript, Python, Go and C#.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "intro statistics; Updated SDKs",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "No handshake or sessions; opening paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c80",
+   "text": "The roadmap (last updated 2026-08-22) lists Streamable HTTP as the single binding, spoken over stdio for local servers; progressive discovery of tools; a redesigned tools/call result; and agent identity work including DPoP.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Priority Areas 2, 3, 4",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Priority Areas 2-4",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c81",
+   "text": "The roadmap describes progressive discovery as clients learning tools and resources as they need them, instead of loading the full catalog up front.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Priority Area 4: Progressive discovery",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Priority Areas 2-4",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c82",
+   "text": "At the AAIF announcement, the MCP blog listed support in ChatGPT, Claude, Cursor, Gemini, Microsoft Copilot and Visual Studio Code.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "adoption paragraph",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "MCP's maintainer structure stays the same; opening paragraph",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c83",
+   "text": "Pass directories through tool parameters, resource URIs or server configuration instead of roots; call LLM provider APIs directly instead of sampling; and log to stderr on stdio, or use OpenTelemetry, instead of MCP logging.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Deprecated table, migration path column",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Deprecated table",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c84",
+   "text": "The SDK's maintainers call v2 a major rework and publish a migration guide for its breaking changes from v1.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "README note",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "README note; A server in 15 lines",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c85",
+   "text": "In the Python SDK the first key in the list seals new state and every key in the list can verify, so you add a new key as a verifier everywhere before making it the one that seals.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "Rotating keys",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Protecting requestState; What the seal carries; Rotating keys; The client side",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c86",
+   "text": "The tool list may vary with the authorization on the request, for example showing only the tools the caller's scopes permit.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Capabilities",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Capabilities",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c87",
+   "text": "The feature lifecycle policy adopted in this release sets a minimum twelve-month deprecation window.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Governance and Process Updates",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Major/Minor changes; Deprecated; Governance",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer audit (reworded after review, re-checked in pass 2)",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c88",
+   "text": "Protocol versions up to and including 2025-11-25 set up a session with an initialize handshake.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Terminology (Legacy)",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Terminology; Protocol Version Negotiation",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  },
+  {
+   "id": "c89",
+   "text": "The client must send an Accept header listing both application/json and text/event-stream.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Sending Messages item 2",
+     "result": "supported",
+     "at": "2026-09-27T02:30",
+     "method": "read: verbatim spec source (git) or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Sending Messages item 2",
+     "result": "supported",
+     "at": "2026-09-27T03:40",
+     "method": "fresh WebFetch of live page, verbatim text or neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-27T04:30",
+     "method": "strict-mode reviewer (separate agent, WebFetch + verbatim spec/SDK clones)"
+    }
+   ]
+  }
+ ],
+ "cut": []
+}

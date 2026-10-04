@@ -1,0 +1,409 @@
+<section class="ts-part" id="why-part-2" data-rung="1" data-min="4">
+<h2>Starting tasks is easy; stopping them is the job</h2>
+<p class="ts-problem">Your async order service passes every test. In production, each deploy leaves about 1 in 500 orders half-written, memory climbs from 300 MB to 4 GB during a partner outage, and logs sometimes carry another customer's request id.</p>
+<p>Part 1 was about getting work to run at the same time. Real services fail at the edges of that work: when it has to stop, when it arrives faster than you can handle it, and when several tasks touch the same thing.</p>
+<p>Think of a restaurant kitchen at closing time. Starting orders was never the hard part. The hard part is: telling cooks to stop without leaving a half-cooked dish on the pass; not accepting 400 orders when the kitchen fits 40; making sure each plate goes to the table that ordered it.</p>
+<ol class="ts-steps">
+<li><strong>Stopping:</strong> how a task is asked to stop, and how it cleans up (parts 2, 4, 7, 10, 11).</li>
+<li><strong>Bounding:</strong> how to accept only as much work as you can finish (parts 5, 9).</li>
+<li><strong>Sharing:</strong> how tasks and threads share state and request data safely (parts 3, 6, 8).</li>
+<li><strong>Seeing it:</strong> how to find a stuck task in a live process and test all of this (part 12).</li>
+</ol>
+<p>Each of the three production symptoms above maps to one of these: half-written orders to stopping, memory growth to bounding, the wrong request id to sharing.</p>
+<p class="ts-takeaway">Async services break at the edges: stopping work, bounding work, and sharing state between tasks.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">During a partner outage, memory grows by 1 GB per minute. Which of the three edges is this most likely?</p>
+<ol>
+<li data-why="Stopping problems show up at deploys and timeouts, not as steady growth while the service is up.">Stopping</li>
+<li>Bounding: work keeps arriving faster than it finishes and piles up in memory</li>
+<li data-why="Sharing problems corrupt data or mix up requests; they don't usually make memory climb.">Sharing</li>
+</ol>
+<p class="ts-why">When a downstream slows, work that can't finish waits somewhere. Without a limit, that somewhere is memory.</p>
+</div>
+<div class="ts-explain" data-points="Part 1 is about running work concurrently; Part 2 is about its edges|Stopping: cancellation and shutdown without half-done work|Bounding: accept only what you can finish (backpressure)|Sharing: state and request data across tasks and threads">
+<p class="q">In your own words: what three problems does this page solve that Part 1 didn't?</p>
+<div class="ts-model"><p>Part 1 showed how to run many waits at once. This part covers what happens at the edges. Stopping: asking tasks to stop and letting them clean up, including at deploy time. Bounding: making producers slow down when consumers can't keep up, so memory stays flat. Sharing: keeping state and per-request data correct when many tasks, and sometimes threads, touch them.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="cancel-mechanics" data-rung="2" data-min="5">
+<h2>cancel() is a request, not a kill</h2>
+<p class="ts-bridge">Last part: three edges. Still unsolved: what exactly happens when you stop a task?</p>
+<p class="ts-problem">An engineer calls <code>task.cancel()</code> on a stuck export job and logs "export stopped". The job writes 12 more rows before it actually stops.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c1" data-src="s1">Task.cancel() arranges for a CancelledError to be thrown into the coroutine on the next cycle of the event loop.</span> Until then the task keeps running.</li>
+<li>The error appears at the task's current <code>await</code>. Code between awaits always finishes.</li>
+<li><span class="ts-claim" data-claim="c3" data-src="s1">The coroutine can clean up, or even deny the request by suppressing the exception, so cancel() does not guarantee the task will be cancelled.</span></li>
+<li><span class="ts-claim" data-claim="c5" data-src="s1">cancelled() returns True only if the coroutine let the CancelledError propagate.</span></li>
+</ol>
+<figure class="ts-seq" data-title="What cancel() actually does">
+<script type="application/json">
+{"actors": [
+ {"id": "caller", "label": "Caller", "sub": "e.g. a timeout"},
+ {"id": "loop", "label": "Event loop"},
+ {"id": "task", "label": "Export task", "sub": "awaiting a DB write"}],
+ "steps": [
+ {"from": "caller", "to": "task", "label": "task.cancel()", "note": "The caller asks. cancel() returns True at once, but nothing has stopped yet."},
+ {"from": "caller", "to": "loop", "label": "control returns to loop", "dashed": true, "note": "The caller keeps running until its own next await."},
+ {"from": "loop", "to": "task", "label": "throw CancelledError at its await", "note": "On the loop's next cycle, the error is raised at the line where the task is paused."},
+ {"from": "task", "to": "task", "label": "cleanup", "note": "The task's cleanup code runs. It may await, so cleanup takes real time."},
+ {"from": "task", "to": "caller", "label": "re-raises: task ends cancelled", "dashed": true, "note": "If the task re-raises, cancelled() is True and anyone awaiting it gets CancelledError."}]}
+</script>
+</figure>
+<div class="ts-code" data-lang="python" data-title="cancel_basics.py" data-file="cancel_basics.py" data-verified="ran"></div>
+<p><span class="ts-claim" data-claim="c2" data-src="s1">cancel() returns False if the task is already done or cancelled, and True otherwise.</span> <span class="ts-claim" data-claim="c6" data-src="s1">Since Python 3.11, the msg passed to cancel() is propagated from the cancelled task to its awaiter.</span> Pass a reason, <code>task.cancel("deploy")</code>, so the log says why.</p>
+<p><code>stubborn</code> returns "finished anyway" and <code>cancelled()</code> is False. <span class="ts-claim" data-claim="c4" data-src="s1">The docs call completely suppressing cancellation uncommon and actively discouraged.</span></p>
+<p class="ts-takeaway">cancel() only asks; the task stops at its next await, after its cleanup, and only if it lets the error through.</p>
+<div class="ts-predict" data-claims="c1">
+<p class="q">You call <code>t = asyncio.create_task(polite(log))</code> and immediately <code>t.cancel()</code>, before any await. Does "rolled back" get logged?</p>
+<div class="ts-reveal"><p>No. The task had not started, so the CancelledError is thrown in before the first line of the body runs. There is no <code>try</code> active yet, so no cleanup runs. The tests confirm the log stays empty.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="contextvars" data-rung="2" data-min="4">
+<h2>How a request id follows a request across tasks</h2>
+<p class="ts-bridge">Last part: how stopping works. Still unsolved: the "wrong request id in logs" symptom.</p>
+<p class="ts-problem">A team stores the current request id in a module-level global for logging. Under load, 2% of log lines show another request's id, because 200 requests share one thread and switch at every await.</p>
+<p>A global is shared by every task on the loop. What you want is a value that belongs to "this request", wherever its code runs. That is a <dfn data-def="A contextvars.ContextVar: a variable whose value belongs to the current context, so each task (and each request) can see its own value.">context variable</dfn>.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c11" data-src="s7">Context variables are natively supported in asyncio with no extra configuration.</span></li>
+<li><span class="ts-claim" data-claim="c12" data-src="s1">If no context is given, a task copies the current context and runs its coroutine in the copy.</span></li>
+<li>So a child task sees the parent's value, but a change in the child stays in the child.</li>
+<li><span class="ts-claim" data-claim="c13" data-src="s1">asyncio.to_thread() propagates the current contextvars context to the worker thread.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="request_ctx.py" data-file="request_ctx.py" data-verified="ran"></div>
+<p>Two requests run at the same time in the tests. Every line is tagged with its own id, in the child task, after an await, and in the thread. The child's <code>set()</code> does not reach the parent.</p>
+<p>Set the value once at the edge, in middleware, and read it in your log formatter. The copy is taken when the task is created, so set the value before you start child tasks.</p>
+<p class="ts-takeaway">Per-request data goes in a ContextVar: each task gets a copy at creation, so values follow the request and never leak between requests.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c12">
+<p class="q">A handler starts a background task, then calls <code>request_id.set("req-9")</code>. What does the background task see?</p>
+<ol>
+<li data-why="The task holds its own copy of the context; later changes in the parent don't reach it.">"req-9", because it shares the parent's context</li>
+<li data-why="Context variables work without configuration in asyncio; there is no error.">It raises LookupError because tasks don't support contextvars</li>
+<li>Whatever the value was when the task was created</li>
+</ol>
+<p class="ts-why">The task copied the context at creation. Set the value first, then create the task.</p>
+</div>
+</section>
+
+<section class="ts-part" id="shield" data-rung="3" data-min="5">
+<h2>Keeping a commit alive when the client hangs up</h2>
+<p class="ts-bridge">Last part: per-request data. Still unsolved: some work must finish even if the request is cancelled.</p>
+<p class="ts-problem">A client closes the connection 20 ms into a 50 ms "create order" call. The server framework cancels the handler. The payment row is written but the order row is not: 1 in 500 orders is half-written.</p>
+<ol class="ts-steps">
+<li>Put the must-finish step in its own task, and await it through <code>asyncio.shield()</code>.</li>
+<li><span class="ts-claim" data-claim="c14" data-src="s1">From the shielded task's point of view the cancellation did not happen, but the caller's await still raises CancelledError.</span></li>
+<li><span class="ts-claim" data-claim="c15" data-src="s1">The docs say to save a reference to tasks passed to shield(), since the loop keeps only weak references.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="commit.py" data-file="commit.py" data-verified="ran"></div>
+<p>The tests cancel <code>create_order</code> after 10 ms. The handler raises CancelledError, as it should, and 40 ms later the order is in the database.</p>
+<div class="ts-trap">
+<p>shield() protects against the caller being cancelled, not against the process ending. <span class="ts-claim" data-claim="c17" data-src="s12">When asyncio.run() finishes, it cancels every task that is still pending, then finalizes async generators and shuts down the default executor.</span> A test shows a shielded commit that is still running when <code>main()</code> returns is cancelled and never written. At shutdown, wait for <code>_pending</code> before returning.</p>
+</div>
+<p>Better still, make the operation safe to interrupt: one transaction for both rows, so a cancel means "nothing written" instead of "half written". Use shield for the short commit step, not for a long job.</p>
+<div class="ts-interview">
+<p><strong>"A client disconnect leaves data half-written. How do you fix it?"</strong> A strong answer first makes the write atomic (one transaction, idempotency key), then protects only the commit with a shielded, referenced task, and makes shutdown wait for those tasks. It notes that shield changes nothing for a process kill, so anything that must happen goes through a durable outbox.</p>
+</div>
+<p class="ts-takeaway">shield() lets a referenced task finish when its caller is cancelled, but not when the process exits; atomic writes are the real fix.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c14">
+<p class="q">A shielded commit is running when the handler is cancelled. What does the handler's <code>await asyncio.shield(task)</code> do?</p>
+<ol>
+<li>Raises CancelledError right away, while the commit task keeps running</li>
+<li data-why="shield protects the inner task, not the caller; the caller is still cancelled.">Waits for the commit to finish, then returns normally</li>
+<li data-why="That is what happens without shield: the inner task is cancelled along with its caller.">Cancels the commit and raises CancelledError</li>
+</ol>
+<p class="ts-why">The caller is cancelled as usual; only the inner task is protected.</p>
+</div>
+</section>
+
+<section class="ts-part" id="queue-backpressure" data-rung="3" data-min="6">
+<h2>Making producers slow down: bounded queues</h2>
+<p class="ts-bridge">Last part: protecting one step from cancellation. Still unsolved: the memory that grows during an outage.</p>
+<p class="ts-problem">A consumer reads 2,000 events per second from a stream and hands each to <code>create_task</code>. The enrichment API slows from 20 ms to 2 s. Tasks pile up: 4,000 new ones every second, each holding its event and buffers.</p>
+<p>The fix is <dfn data-def="Slowing the producer down to the speed of the consumer, instead of buffering without limit.">backpressure</dfn>: when consumers fall behind, the producer waits. A queue with a size limit does it for you.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c19" data-src="s4">With maxsize above 0, await put() waits when the queue is full until get() removes an item.</span></li>
+<li>A fixed number of worker tasks each loop over <code>get()</code>. That number is your concurrency cap.</li>
+<li><span class="ts-claim" data-claim="c20" data-src="s4">join() waits until task_done() has been called once for every item that was put.</span></li>
+<li><span class="ts-claim" data-claim="c21" data-src="s4">Queue.shutdown() was added in Python 3.13; after it, put() raises QueueShutDown and get() raises it once the queue is empty.</span> Workers use that as their signal to exit.</li>
+</ol>
+<figure class="ts-graph" data-title="Bounded pipeline">
+<script type="application/json">
+{"nodes": [
+ {"id": "prod", "label": "Producer", "sub": "reads the stream", "col": 0, "row": 1},
+ {"id": "q", "label": "Queue", "sub": "maxsize=100", "col": 1, "row": 1},
+ {"id": "w1", "label": "Worker 1", "col": 2, "row": 0},
+ {"id": "w2", "label": "Worker 2", "col": 2, "row": 1},
+ {"id": "w3", "label": "Worker N", "col": 2, "row": 2},
+ {"id": "api", "label": "Enrichment API", "sub": "slow today", "col": 3, "row": 1, "step": 2}],
+ "edges": [
+ {"from": "prod", "to": "q", "label": "await put()", "step": 1},
+ {"from": "q", "to": "w1", "label": "get()", "step": 1},
+ {"from": "q", "to": "w2", "label": "get()", "step": 1},
+ {"from": "q", "to": "w3", "label": "get()", "step": 1},
+ {"from": "w2", "to": "api", "label": "one call each", "step": 2},
+ {"from": "q", "to": "prod", "label": "full: put() waits", "dashed": true, "step": 3}],
+ "captions": [
+ "The producer puts items in a queue with a size limit. N workers take items out.",
+ "Each worker handles one item at a time, so at most N calls reach the API at once.",
+ "When the API slows, workers fall behind and the queue fills. put() then waits, so the producer reads the stream more slowly. Memory stays at about 100 items."]}
+</script>
+</figure>
+<div class="ts-code" data-lang="python" data-title="pipeline.py" data-file="pipeline.py" data-verified="ran"></div>
+<p>The tests push 200 items through 4 workers with <code>maxsize=10</code>: every item is handled, at most 4 are in flight, and the queue never holds more than 10.</p>
+<p>The producer pausing is the point. With a stream such as Kafka, the unread events stay in the broker, which is built to hold them, instead of in your process.</p>
+<div class="ts-interview">
+<p><strong>"Your consumer's memory grows when a downstream slows. What do you change?"</strong> A strong answer replaces unbounded task creation with a bounded queue and a fixed worker pool, sizes the pool from the downstream's limit, puts a timeout on each call, and lets the producer block so the backlog stays in the broker. It adds a metric for queue depth.</p>
+</div>
+<p class="ts-takeaway">A bounded queue plus a fixed set of workers turns "more work than we can handle" into "the producer waits".</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">The enrichment API slows down. Put what happens in order.</p>
+<ol>
+<li>Each worker takes longer per item</li>
+<li>Items are removed from the queue more slowly than they arrive</li>
+<li>The queue reaches maxsize</li>
+<li>The producer's put() waits</li>
+<li>The producer reads from the stream more slowly; the backlog stays in the broker</li>
+</ol>
+<p class="ts-why">Slowness flows backward: worker, then queue, then producer, then the broker.</p>
+</div>
+</section>
+
+<section class="ts-part" id="locks" data-rung="3" data-min="5">
+<h2>Races on one thread: when you need a lock</h2>
+<p class="ts-bridge">Last part: bounded queues. Still unsolved: can two tasks on one thread corrupt shared state?</p>
+<p class="ts-problem">A flash sale has 1 unit left. 10 requests arrive together. Each checks <code>units &gt; 0</code>, writes an audit row, then decrements. You sell 10 units and stock ends at −9.</p>
+<p>"One thread, so no races" is wrong. A task can only be interrupted at an await, but a check and an act with an await between them are two steps. Every other task can run in that gap.</p>
+<ol class="ts-steps">
+<li>Code with no await between the check and the act is safe: nothing else runs in between.</li>
+<li>With an await in between, the check may be stale when you act.</li>
+<li><span class="ts-claim" data-claim="c26" data-src="s5">An asyncio.Lock gives exclusive access to a shared resource, and the preferred way to use it is async with.</span></li>
+<li><span class="ts-claim" data-claim="c27" data-src="s5">Acquiring an asyncio.Lock is fair: the first coroutine that started waiting proceeds first.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="stock.py" data-file="stock.py" data-verified="ran"></div>
+<p>The tests run 10 reservations at once: <code>reserve_racy</code> gives 10 successes and −9 units; <code>reserve_safe</code> gives exactly 1 and 0 units.</p>
+<p>Scope matters. An asyncio lock protects state inside one process. Two pods selling the same stock need the database to decide, for example <code>UPDATE ... SET units = units - 1 WHERE units &gt; 0</code> and checking the row count. <span class="ts-claim" data-claim="c25" data-src="s5">asyncio synchronization primitives are not thread-safe; use the threading module to synchronize OS threads.</span></p>
+<p class="ts-takeaway">Any await between a check and an act is a race window; hold an asyncio.Lock across it, or let the database do the check.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">Which function needs a lock when 100 tasks call it at once?</p>
+<ol>
+<li data-why="There is no await between the read and the write, so no other task can run in between.">A function that does <code>counter += 1</code> with no await</li>
+<li>A function that reads a cached token, awaits a refresh call if it's expired, then stores the new token</li>
+<li data-why="Each task writes its own key; there is no shared check-then-act.">A function that sets <code>results[task_id] = value</code></li>
+</ol>
+<p class="ts-why">Many tasks can see the expired token, all await a refresh, and all overwrite each other. A lock around check-refresh-store makes one refresh.</p>
+</div>
+</section>
+
+<section class="ts-part" id="graceful-shutdown" data-rung="3" data-min="6">
+<h2>Shutting down on SIGTERM without losing work</h2>
+<p class="ts-bridge">Last part: races between tasks. Still unsolved: the half-finished work at every deploy.</p>
+<p class="ts-problem">Every deploy, Kubernetes stops your worker pod. Two jobs are mid-flight. The process dies instantly, both jobs are redelivered, and one charge happens twice.</p>
+<p><span class="ts-claim" data-claim="c31" data-src="s13">On Pod termination, Kubernetes normally sends SIGTERM to the main process in each container, then SIGKILL to anything still running when the grace period ends.</span> <span class="ts-claim" data-claim="c32" data-src="s13">The default grace period is 30 seconds.</span> By default, Python does nothing special with SIGTERM. <span class="ts-claim" data-claim="c29" data-src="s8">Python installs only a few default signal handlers: SIGPIPE is ignored and SIGINT becomes KeyboardInterrupt, unless the parent process changed it.</span></p>
+<ol class="ts-steps">
+<li>Register a handler. <span class="ts-claim" data-claim="c30" data-src="s6">loop.add_signal_handler() is Unix-only; it runs the callback inside the event loop, so unlike signal.signal() handlers it may interact with the loop, and it must be called in the main thread.</span></li>
+<li>The handler only sets an Event. Main code waits on it.</li>
+<li>Stop taking new work: <code>queue.shutdown(immediate=True)</code>. <span class="ts-claim" data-claim="c22" data-src="s4">With immediate=True, shutdown() drains the queue at once and blocked get() callers raise QueueShutDown.</span></li>
+<li>In-flight jobs finish; workers exit; the TaskGroup closes; the process exits 0 well inside 30 s.</li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="graceful.py" data-file="graceful.py" data-verified="ran"></div>
+<p>The tests run this as a real process and send it SIGTERM. With the handler: jobs 0 and 1 finish, job 2 never starts, exit code 0. Without it: exit code −15, nothing finished, no <code>finally</code> ran.</p>
+<p>Dropped jobs must go back to the broker: don't acknowledge a message until its job is done, so the next pod picks it up. Ctrl-C is different: <span class="ts-claim" data-claim="c28" data-src="s3 s12">Since Python 3.11, asyncio.Runner, which asyncio.run() uses, handles Ctrl-C (SIGINT) in the main thread by cancelling the main task, so try/finally cleanup runs, then raises KeyboardInterrupt.</span></p>
+<p class="ts-takeaway">Handle SIGTERM with add_signal_handler, stop intake, let in-flight work finish, and acknowledge messages only after the work is done.</p>
+<div class="ts-explain" data-points="shield keeps a referenced task alive when its caller is cancelled, not at process exit|A bounded queue with fixed workers gives backpressure|An await between check and act is a race window; use a lock or the database|SIGTERM needs a handler: stop intake, finish in-flight work, ack after done">
+<p class="q">Walk through how you'd make an async queue worker safe to deploy 20 times a day.</p>
+<div class="ts-model"><p>Workers pull from a bounded queue, so memory stays flat and the backlog stays in the broker. I register a SIGTERM handler with add_signal_handler that sets an event; on it I shut the queue down so no new work starts, let in-flight jobs finish, and exit before the 30-second kill. Messages are acknowledged only after their job completes, so dropped work is redelivered. Writes are atomic or idempotent, so a redelivery can't double-charge, and any shared state touched across an await is behind a lock.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="crossing-threads" data-rung="3" data-min="5">
+<h2>When a thread needs to talk to the loop</h2>
+<p class="ts-bridge">Last part: clean shutdown. Still unsolved: sync libraries that call you back on their own threads.</p>
+<p class="ts-problem">A sync message-queue client delivers messages on its own thread. Its callback calls <code>queue.put_nowait(msg)</code> on an asyncio queue. It works in tests, then once a day a worker never wakes up for a message sitting in the queue.</p>
+<p><span class="ts-claim" data-claim="c51" data-src="s2">Almost all asyncio objects are not thread safe.</span> <span class="ts-claim" data-claim="c23" data-src="s4">asyncio queues are not thread-safe.</span> Touching them from another thread corrupts their internal state in ways that only show under load. The fix is to hand the work to the loop's own thread.</p>
+<ol class="ts-steps">
+<li>Fire and forget: <span class="ts-claim" data-claim="c35" data-src="s6">call_soon_threadsafe() must be used to schedule callbacks from another thread, because call_soon() is not thread-safe.</span></li>
+<li>Run a coroutine and wait for its result: <span class="ts-claim" data-claim="c34" data-src="s1">run_coroutine_threadsafe() submits a coroutine to a given loop from another OS thread and returns a concurrent.futures.Future to wait on.</span></li>
+<li>Pass the loop to the thread up front: get it with <code>asyncio.get_running_loop()</code> while you are on the loop.</li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="bridge.py" data-file="bridge.py" data-verified="ran"></div>
+<p>The tests confirm every handler ran on the loop's thread, in order, and that a message sent with <code>call_soon_threadsafe</code> reaches a waiting <code>get()</code>.</p>
+<p>Waiting on <code>fut.result(timeout=5)</code> in the consumer thread is deliberate: the sync client doesn't fetch the next message until the async handler finishes. That is backpressure across the thread boundary.</p>
+<div class="ts-trap">
+<p>At shutdown the loop may close while the thread is still delivering. <span class="ts-claim" data-claim="c36" data-src="s6">call_soon_threadsafe() raises RuntimeError if the loop has been closed, which can happen on a secondary thread during shutdown.</span> Stop the client's thread first, then let the loop close.</p>
+</div>
+<p class="ts-takeaway">Never touch asyncio objects from another thread; hand work over with call_soon_threadsafe or run_coroutine_threadsafe.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c34 c35">
+<p class="q">A sync SDK's callback thread must run <code>await save(event)</code> and know if it failed. What should the callback do?</p>
+<ol>
+<li data-why="asyncio.run starts a second event loop in that thread; save() may use connections that belong to the main loop.">Start a new loop in the thread with asyncio.run()</li>
+<li data-why="call_soon_threadsafe schedules a plain callback; it doesn't run a coroutine or give you its result.">Schedule save with the loop's call_soon_threadsafe()</li>
+<li>Submit it with run_coroutine_threadsafe() and wait on the returned Future with a timeout</li>
+</ol>
+<p class="ts-why">It runs the coroutine on the main loop and gives the thread a Future whose result raises if save() failed.</p>
+</div>
+</section>
+
+<section class="ts-part" id="queue-traps" data-rung="4" data-min="5">
+<h2>The worker loop that hangs forever</h2>
+<p class="ts-bridge">Last part: crossing threads. Still unsolved: what breaks first when a queue-based service meets bad data or 10× load.</p>
+<p class="ts-problem">A nightly job puts 50,000 rows in a queue, starts 8 workers, and awaits <code>queue.join()</code>. Row 3 has a bad date. The job never finishes and never errors. It is killed at 6 a.m. by the scheduler.</p>
+<div class="ts-code" data-lang="python" data-title="worker_bug.py" data-file="worker_bug.py" data-verified="ran"></div>
+<ol class="ts-steps">
+<li>The worker raises on the bad row. <code>task_done()</code> is skipped and the worker task ends.</li>
+<li>The unfinished count can never reach zero, so <code>join()</code> waits forever. The test proves it with a timeout.</li>
+<li>Nobody awaits the worker, so its error surfaces only as a late "Task exception was never retrieved" log line; the test run shows exactly that.</li>
+<li>If all workers die this way, the queue fills and producers block too.</li>
+</ol>
+<p><strong>The fix</strong> is <code>pipeline.py</code> from part 5: <code>task_done()</code> in a <code>finally</code>, workers owned by a TaskGroup so one failure stops the job with an ExceptionGroup, and <code>shutdown()</code> to end workers instead of cancelling them. A test shows it failing fast instead of hanging. Decide per job whether one bad row should stop the batch or go to a dead-letter list and continue.</p>
+<p><strong>At 10× load</strong> the first thing to break is an unbounded queue. <span class="ts-claim" data-claim="c18" data-src="s4">An asyncio.Queue with maxsize less than or equal to zero has no size limit.</span> The default is 0, so <code>put()</code> never waits and the backlog lives in memory; a test fills one with 100,000 items and <code>full()</code> is still False.</p>
+<p><strong>Detect it:</strong> export <code>qsize()</code> as a gauge and alert on sustained growth; put a timeout on <code>join()</code>; alert on worker count dropping.</p>
+<div class="ts-trap">
+<p><span class="ts-claim" data-claim="c24" data-src="s4">Queue methods have no timeout parameter; the docs point to asyncio.wait_for().</span> Wrap <code>join()</code> or <code>put()</code> in <code>asyncio.timeout()</code> so a stuck pipeline turns into an error you see, not a job that runs until someone kills it.</p>
+</div>
+<p class="ts-takeaway">task_done() goes in finally, workers belong to a TaskGroup, queues have a maxsize, and join() has a deadline.</p>
+<div class="ts-predict" data-claims="c20">
+<p class="q">3 workers, 30 items, and each worker's loop has <code>task_done()</code> after the handler, not in a finally. Items 4, 9 and 17 raise. What happens to <code>await queue.join()</code>?</p>
+<div class="ts-reveal"><p>It never returns. Each failure kills one worker and skips one task_done(). After three failures no workers are left, the remaining items sit in the queue, and the unfinished count stays above zero. Nothing raises in the caller.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="cancel-traps" data-rung="4" data-min="6">
+<h2>Refusing a cancel: the bookkeeping you break</h2>
+<p class="ts-bridge">Last part: queues that hang. Still unsolved: code that catches CancelledError "just this once".</p>
+<p class="ts-problem">A request handler wraps a slow cache call in <code>except asyncio.CancelledError</code>, logs "cache cancelled, continuing", and carries on. Weeks later, requests where an unrelated TaskGroup fails end with CancelledError instead of the real error, and the 500s show no cause.</p>
+<p>Timeouts and TaskGroup need to know whether a cancel was theirs or came from outside. They keep a count on the task.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c7" data-src="s1">cancelling() returns the number of cancel() calls minus the number of uncancel() calls.</span></li>
+<li><span class="ts-claim" data-claim="c8" data-src="s1">asyncio.timeout() and TaskGroup use uncancel() so that a cancellation meant for their block does not spill into the code after it.</span></li>
+<li>If you swallow a cancel, the count stays at 1. Later, when a child of some TaskGroup fails, the group sees that count, concludes an outside cancel is still pending, and cancels the task again.</li>
+<li><span class="ts-claim" data-claim="c9" data-src="s1">The docs say uncancel() is used by asyncio's internals and isn't expected in end-user code, but code that suppresses CancelledError needs to call it.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="stale_cancel.py" data-file="stale_cancel.py" data-verified="ran"></div>
+<p>Without <code>uncancel()</code>, the task ends with CancelledError even though every error was handled and "done" was about to be returned. With it, the task returns "done". <span class="ts-claim" data-claim="c10" data-src="s1">TaskGroup's handling of simultaneous internal and external cancellations changed in Python 3.13.</span> On Python 3.12 this test does not fail the same way, so the test only runs on 3.13 and later. Version-dependent behaviour is another reason not to rely on it.</p>
+<p><strong>The rule:</strong> don't catch CancelledError to continue. To give up on a slow call and carry on, put the call in its own <code>asyncio.timeout()</code> block and catch <code>TimeoutError</code> outside it. The timeout does the uncancel bookkeeping for you. If you truly must suppress a cancel, call <code>uncancel()</code> in the same except block.</p>
+<div class="ts-note" data-label="Stopping a TaskGroup early">
+<p>There is no <code>tg.cancel()</code>. <span class="ts-claim" data-claim="c49" data-src="s1">The docs show how to stop a TaskGroup early: add a task that raises a custom exception, and catch it with except*.</span></p>
+</div>
+<div class="ts-interview">
+<p><strong>"When is it OK to catch CancelledError?"</strong> A strong answer: to clean up and re-raise, always. To suppress, almost never; use a timeout block and catch TimeoutError instead. If you must suppress, call uncancel() so timeouts and TaskGroups further up still behave. It mentions that the exact behaviour changed across 3.11 to 3.13.</p>
+</div>
+<p class="ts-takeaway">Catching CancelledError to continue leaves a stale cancel count that breaks later TaskGroups; use a timeout block, or uncancel() if you must.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c8 c9">
+<p class="q">You want "try the cache for 50 ms, else fall back to the DB". Which is correct?</p>
+<ol>
+<li data-why="The except CancelledError in the handler also catches a real cancel of the handler itself (a disconnect, a shutdown) and swallows it, which is exactly the stale-count bug. It can be made to work, but the timeout block does the bookkeeping for you.">Start a task for the cache call, cancel it after 50 ms, and catch CancelledError in the handler to continue</li>
+<li><code>try: async with asyncio.timeout(0.05): v = await cache.get(k)</code> <code>except TimeoutError: v = await db.get(k)</code></li>
+<li data-why="Catching BaseException also swallows real cancellations from outside, such as a shutdown or client disconnect.">Wrap the cache call in <code>except BaseException</code> and fall back</li>
+</ol>
+<p class="ts-why">asyncio.timeout cancels, then uncancels and converts to TimeoutError, so the rest of the handler is unaffected.</p>
+</div>
+</section>
+
+<section class="ts-part" id="async-generators" data-rung="4" data-min="5">
+<h2>Async generators that clean up too late</h2>
+<p class="ts-bridge">Last part: stale cancel counts. Still unsolved: cleanup that is written correctly but runs at the wrong time.</p>
+<p class="ts-problem">A service streams rows from Postgres with an async generator and stops after the first match. Under load, the connection pool runs dry: cursors stay open well after each request returns.</p>
+<ol class="ts-steps">
+<li>Leaving an <code>async for</code> early leaves the generator paused at its <code>yield</code>. Its <code>finally</code> has not run.</li>
+<li><span class="ts-claim" data-claim="c38" data-src="s2">If an async generator exits early, its async cleanup may run later, after tasks it depends on have finished, or during loop shutdown via the garbage-collection hook.</span></li>
+<li><span class="ts-claim" data-claim="c37" data-src="s2">The docs recommend closing async generators explicitly with aclose() or contextlib.aclosing().</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="cursor.py" data-file="cursor.py" data-verified="ran"></div>
+<p>In the tests, right after <code>first_big_leaky</code> returns, the log still says only "cursor opened"; "cursor closed" appears later, from another task. With <code>aclosing()</code>, it is closed before the function returns.</p>
+<p>Why it hurts: the late cleanup runs outside your request, after your connection may be back in the pool, and possibly during shutdown when the database client is already closed. The error, if any, lands in a log line far from the cause.</p>
+<p><strong>Detect it:</strong> pool "connections in use" not returning to baseline between requests; "unhandled exception during asyncio.run() shutdown" in logs.</p>
+<p class="ts-takeaway">Any async generator you might leave early goes inside contextlib.aclosing(), so its cleanup runs now, in your task.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c37 c38">
+<p class="q">An async generator yields rows and closes its cursor in <code>finally</code>. A caller does <code>async for r in rows(): if match(r): break</code>. When does the cursor close?</p>
+<ol>
+<li>Later, whenever the paused generator is finalized, possibly in another task or at shutdown</li>
+<li data-why="break leaves the generator paused at yield; it does not run finally by itself.">Immediately at the break</li>
+<li data-why="The generator is eventually finalized; the cleanup is late, not skipped for good in a normal run.">Never</li>
+</ol>
+<p class="ts-why">Without aclosing() or aclose(), cleanup is deferred to finalization.</p>
+</div>
+</section>
+
+<section class="ts-part" id="debug-and-test" data-rung="4" data-min="5">
+<h2>Finding a stuck task in production, and testing without flakes</h2>
+<p class="ts-bridge">Last part: late cleanup. Still unsolved: how to see these failures when they happen.</p>
+<p class="ts-problem">A worker pod is "up" but has processed nothing for 20 minutes. CPU is 0%. Restarting it fixes the symptom and destroys the evidence.</p>
+<p><strong>Look inside the live process.</strong> <span class="ts-claim" data-claim="c39" data-src="s10 s11">Python 3.14 adds python -m asyncio ps PID and python -m asyncio pstree PID to inspect the tasks of a running process without modifying or restarting it.</span> <span class="ts-claim" data-claim="c40" data-src="s10">pstree shows each task's coroutine stack nested under the task awaiting it.</span> <span class="ts-claim" data-claim="c52" data-src="s10">The commands are only available on supported platforms and may require permission to inspect another process.</span> In a container that can mean allowing ptrace for a debug session. A worker stuck in <code>Queue.join</code>, or a TaskGroup waiting on one child blocked in a lock, shows up directly. Name your tasks (<code>create_task(..., name="worker-3")</code>) so the output is readable.</p>
+<p><strong>Watch for leaks.</strong> <span class="ts-claim" data-claim="c42" data-src="s1">asyncio.all_tasks() returns the set of not-yet-finished tasks run by the loop.</span> Export its size as a gauge. A count that climbs between requests means tasks are being started and never finished.</p>
+<p><strong>Test with a fresh loop per test.</strong> <span class="ts-claim" data-claim="c41" data-src="s9">unittest.IsolatedAsyncioTestCase (Python 3.8+) accepts coroutines as test methods and has asyncSetUp() and asyncTearDown().</span> It needs no plugin and runs under pytest.</p>
+<div class="ts-code" data-lang="python" data-title="test_isolated.py" data-file="test_isolated.py" data-verified="ran"></div>
+<p>The second test asserts no tasks are left running: a cheap guard against the lost-task bugs from Part 1. For timing-sensitive code, test with short real sleeps and generous bounds, as this page's tests do, or inject the slow dependency so the test controls it.</p>
+<p class="ts-takeaway">Use python -m asyncio pstree on the live process before restarting it, export the task count, and assert no tasks leak in tests.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c39 c40">
+<p class="q">A pod is idle but stuck. What gives you the most evidence before a restart?</p>
+<ol>
+<li data-why="Debug mode must be on before the problem happens; turning it on after doesn't show where tasks are stuck now.">Restart it with PYTHONASYNCIODEBUG=1 and wait</li>
+<li data-why="CPU is 0%, so a CPU profile shows nothing; the problem is where tasks are waiting.">Take a CPU profile</li>
+<li>Run <code>python -m asyncio pstree PID</code> against the running process</li>
+</ol>
+<p class="ts-why">It shows every task and the exact await each is stuck at, without touching the process.</p>
+</div>
+<div class="ts-explain" data-points="A worker that dies without task_done() hangs join(); use finally and a TaskGroup|Swallowing a cancel without uncancel() breaks later TaskGroups; use a timeout block|Async generators left early clean up late; use aclosing()|Inspect live tasks with python -m asyncio pstree; export all_tasks() size">
+<p class="q">Name the four failures from this rung and how you'd detect each in production.</p>
+<div class="ts-model"><p>A queue worker that raises skips task_done() and dies, so join() hangs; a queue-depth gauge, a deadline on join(), and pstree showing the job stuck in Queue.join catch it. A handler that swallows CancelledError leaves a stale cancel count, so later failures surface as bare CancelledError; 500s with no cause and a grep for except CancelledError find it. Async generators left early close their cursors late; pool usage that doesn't return to baseline shows it. Tasks that never finish show as a climbing all_tasks() gauge.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="pick-the-tool" data-rung="5" data-min="5">
+<h2>Choosing the right tool for coordinating async work</h2>
+<p class="ts-bridge">Last part: debugging and testing. Still unsolved: picking between the tools across both parts.</p>
+<p class="ts-problem">Four tasks land on your team: enrich 50,000 rows, call 6 services per page view, consume a stream at 2,000 events per second, and send receipts that must never be lost.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Tool</th><th>Pick it when</th><th>What you give up</th></tr></thead>
+<tbody>
+<tr><td>TaskGroup (+ timeout)</td><td>A fixed set of calls that succeed or fail together: a page's 6 service calls</td><td>All tasks exist at once; not for unbounded input</td></tr>
+<tr><td>Semaphore + TaskGroup</td><td>A known list of items with a concurrency cap: 500 API calls</td><td>One task per item in memory; fine for thousands, not millions</td></tr>
+<tr><td>Bounded Queue + workers</td><td>A stream or a large input: backpressure and flat memory</td><td>More code: shutdown, task_done, worker failure handling</td></tr>
+<tr><td>Durable queue or outbox (outside the process)</td><td>Work that must survive a deploy or crash: receipts, payments</td><td>Another system to run; at-least-once delivery means idempotent handlers</td></tr>
+</tbody>
+</table></div>
+<p>For the four tasks: Semaphore + TaskGroup for the 50,000 rows (or workers, if memory is tight); TaskGroup for the page; bounded queue + workers for the stream; an outbox for receipts.</p>
+<p><strong>Performance knobs, once the design is right:</strong></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c43" data-src="s1">eager_task_factory (Python 3.12+) makes coroutines start running synchronously during Task construction; they are scheduled on the loop only if they block.</span> <span class="ts-claim" data-claim="c45" data-src="s1">The docs name coroutines that use caching or memoization to skip real IO as a common case where eager tasks help.</span></li>
+<li><span class="ts-claim" data-claim="c44" data-src="s1">The docs warn that eager execution is a semantic change that is likely to change task execution order.</span> The <code>eager.py</code> test shows the order flip.</li>
+<li><span class="ts-claim" data-claim="c47" data-src="s15">uvloop describes itself as a fast, drop-in replacement for the built-in asyncio event loop, built on libuv.</span> <span class="ts-claim" data-claim="c46" data-src="s3">The runner docs recommend configuring the event loop with loop_factory instead of policies.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="eager.py" data-file="eager.py" data-verified="ran"></div>
+<p>Beyond the standard library: <span class="ts-claim" data-claim="c48" data-src="s14">AnyIO works on top of asyncio or Trio and implements Trio-like structured concurrency on top of asyncio.</span> You'll meet it inside libraries; the ideas on these two pages carry over.</p>
+<p class="ts-takeaway">Match the tool to the input: TaskGroup for fixed sets, a semaphore for known lists, a bounded queue for streams, a durable queue for must-happen work.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">A consumer reads an unbounded Kafka topic and calls a rate-limited API for each event. Which fits?</p>
+<ol>
+<li data-why="A TaskGroup with one task per event has no limit on how many exist; memory grows with the backlog.">A TaskGroup that creates a task per event</li>
+<li data-why="A semaphore caps concurrent calls, but tasks waiting on it still pile up in memory for an unbounded stream.">create_task per event, capped by a Semaphore</li>
+<li>A bounded Queue with a fixed number of workers</li>
+</ol>
+<p class="ts-why">Unbounded input needs backpressure: the queue makes the reader wait, keeping the backlog in Kafka.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill-2" data-rung="5" data-min="7">
+<h2>Interview drill: stopping, bounding, sharing</h2>
+<p class="ts-bridge">Last part: choosing the tool. Still unsolved: defending those choices out loud.</p>
+<p class="ts-problem">Ten minutes per prompt. Commit to your answer before opening the reference.</p>
+<p>A strong answer names the tool, the limit, the failure path, and what you give up.</p>
+<div class="ts-predict" data-claims="c19 c21 c30 c31 c32">
+<p class="q"><strong>Prompt 1.</strong> Design an async worker that consumes payment events from Kafka, calls a fraud API (p99 300 ms, limit 50 concurrent), and writes results to Postgres. It is deployed 20 times a day on Kubernetes.</p>
+<div class="ts-reveal"><p>A reader task puts events into a Queue with a small maxsize; 50 workers call the fraud API, each call under asyncio.timeout. Offsets are committed only after the Postgres write, and writes are idempotent by event id, so redelivery is safe. A SIGTERM handler set with add_signal_handler shuts the queue down, lets in-flight events finish, commits offsets and exits within the 30 s grace period. Metrics: queue depth, worker count, loop lag. Trade-off: at-least-once processing with idempotent writes, in exchange for never losing an event.</p></div>
+</div>
+<div class="ts-predict" data-claims="c14 c15 c17">
+<p class="q"><strong>Prompt 2.</strong> Your API's "create order" writes an order row, then calls a payments service, then writes a payment row. Client disconnects leave inconsistent data. Fix it.</p>
+<div class="ts-reveal"><p>First make it recoverable: write the order with status "pending" and an idempotency key, call payments with that key, then update the status in one transaction. Put the payment call and final write in a shielded, referenced task so a disconnect doesn't cancel them, and have shutdown await pending tasks. A reconciler job fixes anything left "pending" after a crash, because shield does nothing for a killed process. Trade-off: a status column and a reconciler, in exchange for consistency.</p></div>
+</div>
+<div class="ts-predict" data-claims="c8 c9 c20 c39">
+<p class="q"><strong>Prompt 3.</strong> A batch job sometimes never finishes; another service sometimes returns 500s whose only error is CancelledError. How do you investigate both?</p>
+<div class="ts-reveal"><p>For the hanging job: run python -m asyncio pstree on the live process; a stack parked in Queue.join with fewer workers than expected points at workers dying without task_done(). Fix with task_done in finally and workers in a TaskGroup, and put a deadline on join. For the CancelledError 500s: search for except CancelledError or bare except that continue without re-raising; a swallowed cancel leaves the count raised, so a later TaskGroup whose child fails re-cancels the task, and the request ends in CancelledError instead of the real error. Replace them with timeout blocks catching TimeoutError.</p></div>
+</div>
+<p class="ts-takeaway">For every async design, say how work is bounded, how it stops, and what happens to in-flight work on failure or deploy.</p>
+<div class="ts-explain" data-points="Bounded queue plus fixed workers for streams, with per-call timeouts|SIGTERM handler: stop intake, finish in-flight, ack after done, inside the grace period|Idempotent writes because delivery is at-least-once|Detect with queue depth, task count and pstree">
+<p class="q">In 4 sentences, explain to an interviewer how your async consumer survives a deploy without losing or duplicating a payment.</p>
+<div class="ts-model"><p>Kubernetes sends SIGTERM, and my handler stops reading new events by shutting down the bounded queue. Workers finish the events already in flight, and I commit offsets only after each result is written, so anything unfinished is redelivered to the next pod. Writes are idempotent by event id, so a redelivered event can't create a second payment. All of this completes well inside the 30-second grace period, and a queue-depth metric and pstree let me see if it doesn't.</p></div>
+</div>
+</section>

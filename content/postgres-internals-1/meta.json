@@ -1,0 +1,16 @@
+{
+ "slug": "postgres-internals-1",
+ "title": "PostgreSQL internals, Part 1: how a row is stored on disk",
+ "tldr": "How PostgreSQL lays a table out on disk: files and forks, the 8 kB page with its line pointers, the 23-byte row header, null bitmap and alignment padding, and TOAST for large values. Then measuring real table sizes, ordering columns to cut padding, per-column TOAST settings, what breaks at 10 times the data, and how to choose a layout in design interviews.",
+ "category": "Databases",
+ "created": "2026-10-01",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "Basic SQL: CREATE TABLE, UPDATE, indexes"}
+ ],
+ "related": [
+  {"label": "PostgreSQL internals, Part 2: MVCC", "why": "what t_xmin, t_xmax and row versions do"},
+  {"label": "PostgreSQL internals, Part 3: VACUUM and bloat", "why": "dead row versions, HOT updates and fillfactor in depth"},
+  {"label": "PostgreSQL internals, Part 4: indexes beyond B-tree", "slug": "postgres-internals-4", "why": "how indexes point at ctids, and index-only scans"}
+ ]
+}

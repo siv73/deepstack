@@ -1,0 +1,1281 @@
+{
+ "verified": "2026-10-01",
+ "volatility": "stable",
+ "strict": false,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "PostgreSQL 18 docs: 13.1 Concurrency Control, Introduction",
+   "url": "https://www.postgresql.org/docs/18/mvcc-intro.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s2",
+   "title": "PostgreSQL 18 docs: 5.6 System Columns",
+   "url": "https://www.postgresql.org/docs/18/ddl-system-columns.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s3",
+   "title": "PostgreSQL 18 docs: 24.1 Routine Vacuuming",
+   "url": "https://www.postgresql.org/docs/18/routine-vacuuming.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s4",
+   "title": "PostgreSQL 18 docs: 66.6 Database Page Layout",
+   "url": "https://www.postgresql.org/docs/18/storage-page-layout.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s5",
+   "title": "PostgreSQL 18 docs: 67.1 Transactions and Identifiers",
+   "url": "https://www.postgresql.org/docs/18/transaction-id.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s6",
+   "title": "PostgreSQL 18 docs: 9.27 System Information Functions (transaction IDs and snapshots)",
+   "url": "https://www.postgresql.org/docs/18/functions-info.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s7",
+   "title": "PostgreSQL 18 docs: F.23 pageinspect",
+   "url": "https://www.postgresql.org/docs/18/pageinspect.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s8",
+   "title": "PostgreSQL 18 docs: 27.2 The Cumulative Statistics System",
+   "url": "https://www.postgresql.org/docs/18/monitoring-stats.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s9",
+   "title": "PostgreSQL 18 docs: 19.11 Client Connection Defaults",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-client.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s10",
+   "title": "PostgreSQL 18 docs: 19.6 Replication",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-replication.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s11",
+   "title": "PostgreSQL 18 source file heapam_visibility.c (visibility rules)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/heap/heapam_visibility.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s12",
+   "title": "PostgreSQL 18 docs: 26.4 Hot Standby",
+   "url": "https://www.postgresql.org/docs/18/hot-standby.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s13",
+   "title": "PostgreSQL 18 docs: 19.5 Write Ahead Log",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-wal.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s14",
+   "title": "GitLab blog: Why we spent the last month eliminating PostgreSQL subtransactions",
+   "url": "https://about.gitlab.com/blog/2021/09/29/why-we-spent-the-last-month-eliminating-postgresql-subtransactions/",
+   "kind": "primary",
+   "publisher": "GitLab",
+   "accessed": "2026-10-01",
+   "note": "First-party account by GitLab of its own production incident; used only for the In the wild case."
+  },
+  {
+   "id": "s15",
+   "title": "MySQL 8.4 Reference Manual: 17.3 InnoDB Multi-Versioning",
+   "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-multi-versioning.html",
+   "kind": "primary",
+   "publisher": "Oracle / MySQL",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s17",
+   "title": "PostgreSQL 18 docs: 13.2 Transaction Isolation",
+   "url": "https://www.postgresql.org/docs/18/transaction-iso.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s18",
+   "title": "PostgreSQL 18 docs: 67.2 Transactions and Locking",
+   "url": "https://www.postgresql.org/docs/18/xact-locking.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s19",
+   "title": "PostgreSQL 18 docs: 67.3 Subtransactions",
+   "url": "https://www.postgresql.org/docs/18/subxacts.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Each SQL statement sees a snapshot of the data as it was at some earlier moment, regardless of the current state of the underlying rows.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "In MVCC, locks taken for reading don't conflict with locks taken for writing, so reading never blocks writing and writing never blocks reading.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "A row version is one state of a row, and each update of a row creates a new row version for the same logical row.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "xmin, xmax, ctid",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "xmin / xmax / ctid entries",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "xmin is the ID of the transaction that inserted this row version.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "xmin, xmax, ctid",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "xmin / xmax / ctid entries",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "xmax is the ID of the transaction that deleted it, or zero; it can be nonzero in a visible version, usually because the deleting transaction hasn't committed yet or was rolled back.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "xmin, xmax, ctid",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "xmin / xmax / ctid entries",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "An UPDATE or DELETE does not immediately remove the old version: it must stay while other transactions might still see it, and VACUUM reclaims its space later.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 steps 1-3",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "A row's ctid changes when it is updated or moved by VACUUM FULL, so the docs say to identify rows by primary key, not ctid.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "xmin, xmax, ctid",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "xmin / xmax / ctid entries",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "Each version's header has a t_ctid field: the ctid of this version or of a newer one.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table 66.4 HeapTupleHeaderData Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table 66.4 HeapTupleHeaderData Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "A transaction gets a real transaction ID (xid) only when it first writes to the database; xids come from one global counter shared by every database in the cluster.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "67.1",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "67.1 Transactions and Identifiers",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Every transaction also has a virtual transaction ID, and read-only transactions have a virtual ID but no real xid.",
+   "sources": [
+    "s5",
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "67.1",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "67.2",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "67.1 Transactions and Identifiers",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "67.2 Transactions and Locking",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "The xid type is 32 bits wide and wraps around every 4 billion transactions; the 64-bit xid8 type adds an epoch and doesn't wrap.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "67.1",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "67.1 Transactions and Identifiers",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "When a top-level transaction with an xid commits, it is marked as committed in the pg_xact directory.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "67.1",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "67.1 Transactions and Identifiers",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "pg_xact_status reports whether a recent transaction is in progress, committed or aborted, and the docs suggest it for checking whether a COMMIT went through after the connection dropped.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Transaction ID and Snapshot Information Functions; Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Table 9.84 functions; Table 9.85 Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "A snapshot records xmin, the lowest transaction ID still active; xmax, one past the highest completed ID; and xip_list, the IDs in progress; its text form is xmin:xmax:xip_list.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Transaction ID and Snapshot Information Functions; Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Table 9.84 functions; Table 9.85 Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "IDs below xmin had finished; IDs at or above xmax had not finished and are invisible; IDs in between had finished unless they are in xip_list.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Transaction ID and Snapshot Information Functions; Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Table 9.84 functions; Table 9.85 Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "pg_current_snapshot() returns the current snapshot, and only top-level transaction IDs appear in it.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Transaction ID and Snapshot Information Functions; Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Table 9.84 functions; Table 9.85 Snapshot Components",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "In Read Committed, the default level, a SELECT sees a snapshot as of the instant the query begins, so two SELECTs in one transaction can see different data.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "13.2.1 Read Committed; 13.2.2 Repeatable Read",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "13.2.1 Read Committed; 13.2.2 Repeatable Read",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "In Repeatable Read, every query in the transaction sees a snapshot as of the start of its first non-transaction-control statement.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "13.2.1 Read Committed; 13.2.2 Repeatable Read",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "13.2.1 Read Committed; 13.2.2 Repeatable Read",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "Either way, a query sees the effects of earlier updates made inside its own transaction, even before they commit.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "13.2.1 Read Committed; 13.2.2 Repeatable Read",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "13.2.1 Read Committed; 13.2.2 Repeatable Read",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "pageinspect's heap_page_items shows every line pointer on a heap page, whether or not the row versions are visible to an MVCC snapshot.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "intro; Heap Functions: heap_page_items",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "module intro; heap_page_items",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "All pageinspect functions may be used only by superusers.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "intro; Heap Functions: heap_page_items",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "module intro; heap_page_items",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "pg_stat_activity shows each backend's top-level transaction ID in backend_xid and its xmin horizon in backend_xmin.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "pg_stat_activity view; wait events tables",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Table 27.3 pg_stat_activity; Table 27.12 Wait Events of Type LWLock",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "The docs tell you to find long-running open transactions by checking pg_stat_activity for rows where age(backend_xid) or age(backend_xmin) is large.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 steps 1-3",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "idle_in_transaction_session_timeout terminates a session that has been idle inside an open transaction for longer than the set time; 0, the default, disables it.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "idle_in_transaction_session_timeout; transaction_timeout",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "idle_in_transaction_session_timeout; transaction_timeout",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "An open transaction prevents vacuuming away recently-dead tuples that may be visible only to it, so a session that stays idle for long can contribute to table bloat.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "idle_in_transaction_session_timeout; transaction_timeout",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "idle_in_transaction_session_timeout; transaction_timeout",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "transaction_timeout terminates any session that spends longer than the set time in a transaction; it is 0 (off) by default, and the docs advise against setting it in postgresql.conf because it would affect all sessions.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "idle_in_transaction_session_timeout; transaction_timeout",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "idle_in_transaction_session_timeout; transaction_timeout",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "hot_standby_feedback lets a standby tell the primary about queries running on it; this avoids query cancels on the standby but can cause bloat on the primary.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "hot_standby_feedback",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "hot_standby_feedback",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "The docs' list of things to fix also names old prepared transactions and old replication slots, found through pg_prepared_xacts and pg_replication_slots.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 steps 1-3",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "Visibility checks set hint bits on a row version once they see that its inserting or deleting transaction has committed or aborted, and then mark the page as dirty.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "file header comment",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim source from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "file header NOTE comment",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "Hint bits set on the primary are not WAL-logged, so a standby writes them again itself and performs disk writes even when all its users only read.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "26.4.4 Administrator's Overview",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "26.4.3 Administrator's Overview",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "If data checksums are enabled, hint bit updates are always WAL-logged.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "wal_log_hints",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "wal_log_hints",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Subtransactions are started with SAVEPOINT, and also in other ways such as a PL/pgSQL EXCEPTION clause.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "67.3",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "67.3 Subtransactions",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "A read-only subtransaction gets no ID, but once it writes, it and all its parents get transaction IDs.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "67.3",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "67.3 Subtransactions",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "Up to 64 open subtransaction IDs are cached in shared memory per backend; beyond that, storage I/O rises significantly because of extra lookups in pg_subtrans.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "67.3",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "67.3 Subtransactions",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "In a post from 29 September 2021, GitLab described stalls in which queries on its replicas waited on SubtransControlLock.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "post body",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "post body (LWLocks / SubtransControlLock; SAVEPOINT removal)",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "They traced it to SAVEPOINTs run on the primary while a long-running transaction was open, and fixed it by removing SAVEPOINT use from the application.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "post body",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "post body (LWLocks / SubtransControlLock; SAVEPOINT removal)",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "InnoDB keeps old versions of changed rows in undo tablespaces, in a structure called a rollback segment.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "page body",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "page body",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "InnoDB updates records in its clustered index in place.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "page body",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "page body",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "Long-running transactions, even read-only ones, stop InnoDB discarding undo logs, which can grow until they fill the undo tablespace.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "page body",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "page body",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "PostgreSQL keeps this guarantee even at the strictest isolation level, Serializable, through Serializable Snapshot Isolation (SSI).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "standard VACUUM marks the space of dead versions as reusable but does not return it to the operating system, except when whole pages at the end of the table become free.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 Preventing Transaction ID Wraparound Failures",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "24.1.2 Recovering Disk Space; 24.1.5 steps 1-3",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "waits on the subtransaction cache appear in pg_stat_activity as the wait events SubtransSLRU and SubtransBuffer.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "pg_stat_activity view; wait events tables",
+     "result": "supported",
+     "at": "2026-10-01T01:05",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Table 27.3 pg_stat_activity; Table 27.12 Wait Events of Type LWLock",
+     "result": "supported",
+     "at": "2026-10-01T01:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "ROLLBACK in PostgreSQL takes constant time regardless of transaction size.",
+   "reason": "no official doc states it; page only says rollback marks the transaction aborted and leaves its versions"
+  },
+  {
+   "text": "Running VACUUM right after a bulk load sets hint bits so the first query doesn't pay.",
+   "reason": "not confirmed in official docs for this purpose"
+  },
+  {
+   "text": "GitLab's replicas slowed once more than 64 subtransactions were open.",
+   "reason": "the post's numeric details could not be confirmed in a second read; page only cites the symptom, trigger and fix"
+  },
+  {
+   "text": "Django's nested atomic() and Rails' requires_new use SAVEPOINT.",
+   "reason": "framework docs not checked in this pass; page tells the reader to check their ORM instead"
+  }
+ ]
+}

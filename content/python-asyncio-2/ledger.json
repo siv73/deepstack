@@ -1,0 +1,1828 @@
+{
+ "verified": "2026-09-29",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "Python 3.14 docs: Coroutines and tasks",
+   "url": "https://docs.python.org/3/library/asyncio-task.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s2",
+   "title": "Python 3.14 docs: Developing with asyncio",
+   "url": "https://docs.python.org/3/library/asyncio-dev.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s3",
+   "title": "Python 3.14 docs: asyncio Runners",
+   "url": "https://docs.python.org/3/library/asyncio-runner.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s4",
+   "title": "Python 3.14 docs: asyncio Queues",
+   "url": "https://docs.python.org/3/library/asyncio-queue.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s5",
+   "title": "Python 3.14 docs: asyncio Synchronization Primitives",
+   "url": "https://docs.python.org/3/library/asyncio-sync.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s6",
+   "title": "Python 3.14 docs: asyncio Event Loop",
+   "url": "https://docs.python.org/3/library/asyncio-eventloop.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s7",
+   "title": "Python 3.14 docs: contextvars",
+   "url": "https://docs.python.org/3/library/contextvars.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s8",
+   "title": "Python 3.14 docs: signal",
+   "url": "https://docs.python.org/3/library/signal.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s9",
+   "title": "Python 3.14 docs: unittest",
+   "url": "https://docs.python.org/3/library/unittest.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s10",
+   "title": "Python 3.14 docs: asyncio command-line introspection tools",
+   "url": "https://docs.python.org/3/library/asyncio-tools.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s11",
+   "title": "What's New in Python 3.14",
+   "url": "https://docs.python.org/3/whatsnew/3.14.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s12",
+   "title": "CPython 3.14 source: Lib/asyncio/runners.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/runners.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s13",
+   "title": "Kubernetes docs: Pod Lifecycle (Termination of Pods)",
+   "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/",
+   "kind": "primary",
+   "publisher": "Kubernetes (CNCF)",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s14",
+   "title": "AnyIO documentation",
+   "url": "https://anyio.readthedocs.io/en/stable/",
+   "kind": "primary",
+   "publisher": "AnyIO project",
+   "accessed": "2026-09-29"
+  },
+  {
+   "id": "s15",
+   "title": "uvloop documentation",
+   "url": "https://uvloop.readthedocs.io/",
+   "kind": "primary",
+   "publisher": "uvloop project (MagicStack)",
+   "accessed": "2026-09-29"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Task.cancel() arranges for a CancelledError to be thrown into the coroutine on the next cycle of the event loop.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "cancel() returns False if the task is already done or cancelled, and True otherwise.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "The coroutine can clean up, or even deny the request by suppressing the exception, so cancel() does not guarantee the task will be cancelled.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "The docs call completely suppressing cancellation uncommon and actively discouraged.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "at": "2026-09-29T02:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)",
+     "note": "reviewer: 'completely' misplaced; reworded and re-checked"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "cancelled() returns True only if the coroutine let the CancelledError propagate.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object; Task.cancelled()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object; Task.cancelled()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "Since Python 3.11, the msg passed to cancel() is propagated from the cancelled task to its awaiter.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.cancel(): versionchanged 3.11",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.cancel(): versionchanged 3.11",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "cancelling() returns the number of cancel() calls minus the number of uncancel() calls.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.cancelling()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.cancelling()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "asyncio.timeout() and TaskGroup use uncancel() so that a cancellation meant for their block does not spill into the code after it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.uncancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.uncancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "The docs say uncancel() is used by asyncio's internals and isn't expected in end-user code, but code that suppresses CancelledError needs to call it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task.uncancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task.uncancel()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "TaskGroup's handling of simultaneous internal and external cancellations changed in Python 3.13.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: versionchanged 3.13",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: versionchanged 3.13",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Context variables are natively supported in asyncio with no extra configuration.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "asyncio support",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "asyncio support",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "If no context is given, a task copies the current context and runs its coroutine in the copy.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object: context argument",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object: context argument",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "asyncio.to_thread() propagates the current contextvars context to the worker thread.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Running in threads: to_thread",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running in threads: to_thread",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "From the shielded task's point of view the cancellation did not happen, but the caller's await still raises CancelledError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Shielding from cancellation",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Shielding from cancellation",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The docs say to save a reference to tasks passed to shield(), since the loop keeps only weak references.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Shielding from cancellation: important",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Shielding from cancellation: important",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "When asyncio.run() finishes, it cancels every task that is still pending, then finalizes async generators and shuts down the default executor.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Runner.close(): _cancel_all_tasks, shutdown_asyncgens, shutdown_default_executor",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Runner.close(): _cancel_all_tasks, shutdown_asyncgens, shutdown_default_executor",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "An asyncio.Queue with maxsize less than or equal to zero has no size limit.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Queue(maxsize)",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Queue(maxsize)",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "With maxsize above 0, await put() waits when the queue is full until get() removes an item.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Queue(maxsize)",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Queue(maxsize)",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "join() waits until task_done() has been called once for every item that was put.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Queue.join / task_done",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Queue.join / task_done",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Queue.shutdown() was added in Python 3.13; after it, put() raises QueueShutDown and get() raises it once the queue is empty.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Queue.shutdown: versionadded 3.13; get/put",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Queue.shutdown: versionadded 3.13; get/put",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "With immediate=True, shutdown() drains the queue at once and blocked get() callers raise QueueShutDown.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Queue.shutdown(immediate)",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Queue.shutdown(immediate)",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "asyncio queues are not thread-safe.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Queues intro",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Queues intro",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Queue methods have no timeout parameter; the docs point to asyncio.wait_for().",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Queues intro",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Queues intro",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "asyncio synchronization primitives are not thread-safe; use the threading module to synchronize OS threads.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Synchronization Primitives intro",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Synchronization Primitives intro",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "An asyncio.Lock gives exclusive access to a shared resource, and the preferred way to use it is async with.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Lock",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Lock",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "Acquiring an asyncio.Lock is fair: the first coroutine that started waiting proceeds first.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Lock.acquire",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Lock.acquire",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "Since Python 3.11, asyncio.Runner, which asyncio.run() uses, handles Ctrl-C (SIGINT) in the main thread by cancelling the main task, so try/finally cleanup runs, then raises KeyboardInterrupt.",
+   "sources": [
+    "s3",
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Handling Keyboard Interruption (versionadded 3.11); Runner.run installs the handler only in the main thread; run() delegates to Runner.run",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Handling Keyboard Interruption (versionadded 3.11); Runner.run installs the handler only in the main thread; run() delegates to Runner.run",
+     "result": "supported",
+     "at": "2026-09-29T02:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Runner.run: main-thread + default_int_handler check; run(): return runner.run(main)",
+     "result": "supported",
+     "at": "2026-09-29T02:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)",
+     "note": "reviewer: missing main-thread condition; added and re-checked against runners.py"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "Python installs only a few default signal handlers: SIGPIPE is ignored and SIGINT becomes KeyboardInterrupt, unless the parent process changed it.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "General rules",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "General rules",
+     "result": "supported",
+     "at": "2026-09-29T02:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)",
+     "note": "reviewer: optional parent-process condition added"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "loop.add_signal_handler() is Unix-only; it runs the callback inside the event loop, so unlike signal.signal() handlers it may interact with the loop, and it must be called in the main thread.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Unix signals: loop.add_signal_handler (availability: Unix)",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Unix signals: loop.add_signal_handler (availability: Unix)",
+     "result": "supported",
+     "at": "2026-09-29T02:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)",
+     "note": "reviewer: missing Unix-only; added and re-checked"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "On Pod termination, Kubernetes normally sends SIGTERM to the main process in each container, then SIGKILL to anything still running when the grace period ends.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Termination of Pods",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Termination of Pods (lines 855-861; 916)",
+     "result": "supported",
+     "at": "2026-09-29T02:20",
+     "method": "verbatim markdown source re-fetched fresh from raw.githubusercontent.com/kubernetes/website (WebFetch of rendered page returned NOT IN CONTENT)"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "The default grace period is 30 seconds.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Termination of Pods (terminationGracePeriodSeconds default)",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Termination of Pods (lines 855-861; 916)",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "verbatim markdown source re-fetched fresh from raw.githubusercontent.com/kubernetes/website (WebFetch of rendered page returned NOT IN CONTENT)"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "run_coroutine_threadsafe() submits a coroutine to a given loop from another OS thread and returns a concurrent.futures.Future to wait on.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Scheduling from other threads",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Scheduling from other threads",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "call_soon_threadsafe() must be used to schedule callbacks from another thread, because call_soon() is not thread-safe.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "loop.call_soon_threadsafe",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "loop.call_soon_threadsafe",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "call_soon_threadsafe() raises RuntimeError if the loop has been closed, which can happen on a secondary thread during shutdown.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "loop.call_soon_threadsafe",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "loop.call_soon_threadsafe",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "The docs recommend closing async generators explicitly with aclose() or contextlib.aclosing().",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Asynchronous generators best practices: Close asynchronous generators explicitly",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Asynchronous generators best practices: Close asynchronous generators explicitly",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "If an async generator exits early, its async cleanup may run later, after tasks it depends on have finished, or during loop shutdown via the garbage-collection hook.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Asynchronous generators best practices",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Asynchronous generators best practices",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "Python 3.14 adds python -m asyncio ps PID and python -m asyncio pstree PID to inspect the tasks of a running process without modifying or restarting it.",
+   "sources": [
+    "s10",
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "asyncio-tools intro (versionadded 3.14); What's New: Asyncio introspection capabilities",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "asyncio-tools intro (versionadded 3.14); What's New: Asyncio introspection capabilities",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Asyncio introspection capabilities (lines 695-696)",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "verbatim rst re-fetched fresh from raw.githubusercontent.com"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)",
+     "note": "reviewer: missing permission condition; added as c52"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "pstree shows each task's coroutine stack nested under the task awaiting it.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "pstree option",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "pstree option",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "unittest.IsolatedAsyncioTestCase (Python 3.8+) accepts coroutines as test methods and has asyncSetUp() and asyncTearDown().",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "IsolatedAsyncioTestCase",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "IsolatedAsyncioTestCase",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "asyncio.all_tasks() returns the set of not-yet-finished tasks run by the loop.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Introspection: all_tasks",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Introspection: all_tasks",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "eager_task_factory (Python 3.12+) makes coroutines start running synchronously during Task construction; they are scheduled on the loop only if they block.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Eager task factory",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Eager task factory",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "The docs warn that eager execution is a semantic change that is likely to change task execution order.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Eager task factory: note",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Eager task factory: note",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "The docs name coroutines that use caching or memoization to skip real IO as a common case where eager tasks help.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Eager task factory",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Eager task factory",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "The runner docs recommend configuring the event loop with loop_factory instead of policies.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Running an asyncio Program: run()",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Running an asyncio Program: run()",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "uvloop describes itself as a fast, drop-in replacement for the built-in asyncio event loop, built on libuv.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "intro paragraph",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "intro paragraph",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "AnyIO works on top of asyncio or Trio and implements Trio-like structured concurrency on top of asyncio.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "intro paragraph",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "intro paragraph",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "The docs show how to stop a TaskGroup early: add a task that raises a custom exception, and catch it with except*.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Terminating a task group",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Terminating a task group",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "Almost all asyncio objects are not thread safe.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "at": "2026-09-29T01:55",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-09-29T02:10",
+     "method": "strict-mode reviewer (separate agent; verbatim CPython 3.14 rst/source, Kubernetes source, WebFetch)"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "The commands are only available on supported platforms and may require permission to inspect another process.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "asyncio-tools intro",
+     "result": "supported",
+     "at": "2026-09-29T01:20",
+     "method": "read: verbatim CPython 3.14 Doc/*.rst and Lib source (git clone), Kubernetes website source (raw GitHub), or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "asyncio-tools intro",
+     "result": "supported",
+     "at": "2026-09-29T02:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "uvloop makes asyncio 2-4x faster.",
+   "reason": "benchmark figure from the project's own marketing; not a stable, verifiable fact for this page"
+  },
+  {
+   "text": "pytest-asyncio is the standard way to test async code.",
+   "reason": "third-party; page teaches the stdlib IsolatedAsyncioTestCase instead"
+  },
+  {
+   "text": "On the free-threaded 3.14 build, asyncio can use several cores.",
+   "reason": "not verified for this page; belongs in the threads/GIL topic"
+  },
+  {
+   "text": "asyncio.run() waits up to 5 minutes for the default executor at exit.",
+   "reason": "verified in Part 1's sources but left off this page to keep the shutdown part short"
+  }
+ ]
+}

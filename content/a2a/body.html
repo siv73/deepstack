@@ -1,0 +1,496 @@
+<section class="ts-part" id="why-a2a" data-rung="1" data-min="4">
+<h2>Why agents need a way to hand work to other agents</h2>
+<p class="ts-problem">Your payments company has a customer-support agent. Customers ask it 3 kinds of hard question: where is my refund, is my KYC done, why was my card charged twice. The answers live with 3 other agents: one run by the payments team, one by a KYC vendor, one by the risk team. Each is built on a different framework.</p>
+<p>Think of a hammer and a contractor. You pick up a hammer and use it: one action, one result. You hire a contractor differently. You describe the job, they ask questions, they send updates, they hand over the finished work, and you never see their toolbox.</p>
+<p><span class="ts-claim" data-claim="c1" data-src="s1">The spec describes A2A as an open standard for communication between independent, possibly opaque AI agents, built on different frameworks, in different languages or by different vendors.</span> <span class="ts-claim" data-claim="c2" data-src="s1">Its stated goal is that agents can work together without needing access to each other's internal state, memory or tools.</span></p>
+<ol class="ts-steps">
+<li>Each agent publishes a description of what it can do and how to reach it.</li>
+<li>The support agent sends a job to the right agent in one shared format.</li>
+<li>The remote agent works its own way. It may ask a question or report progress.</li>
+<li>It hands back the result in the same shared format.</li>
+</ol>
+<p>Why not expose each agent as a plain function call, the way an agent calls a tool? <span class="ts-claim" data-claim="c3" data-src="s4">The A2A docs argue that wrapping an agent as a tool limits it, and that A2A lets agents be exposed as they are.</span> A tool call is one request and one answer. A job for another agent can take days and need a conversation.</p>
+<p><span class="ts-claim" data-claim="c4" data-src="s9">Google announced A2A on 9 April 2025, with more than 50 technology partners.</span> <span class="ts-claim" data-claim="c5" data-src="s3">The A2A docs describe MCP as the way an agent reaches its tools and resources, A2A as the way agents collaborate with each other, and the two as complementary.</span></p>
+<figure class="ts-graph" data-title="A2A between agents, MCP inside each one">
+<script type="application/json">
+{"nodes": [
+ {"id": "support", "label": "Support agent", "sub": "your team", "col": 0, "row": 1},
+ {"id": "refund", "label": "Refund agent", "sub": "payments team", "col": 2, "row": 0},
+ {"id": "kyc", "label": "KYC agent", "sub": "vendor", "col": 2, "row": 2},
+ {"id": "db", "label": "Payments DB", "sub": "tool", "col": 3, "row": 0, "step": 2},
+ {"id": "kycapi", "label": "KYC API", "sub": "tool", "col": 3, "row": 2, "step": 2}],
+ "edges": [
+ {"from": "support", "to": "refund", "label": "A2A: hand over a job", "step": 1},
+ {"from": "support", "to": "kyc", "label": "A2A: hand over a job", "step": 1},
+ {"from": "refund", "to": "db", "label": "MCP: tool call", "step": 2, "dashed": true},
+ {"from": "kyc", "to": "kycapi", "label": "MCP: tool call", "step": 2, "dashed": true}],
+ "captions": [
+ "The support agent hands whole jobs to agents run by other teams or vendors. That hop is A2A.",
+ "Inside, each remote agent reaches its own systems, often through MCP. The support agent never sees those tools."]}
+</script>
+</figure>
+<p class="ts-takeaway">MCP gives an agent tools; A2A lets an agent hand a whole job to another agent it doesn't control.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c3 c5">
+<p class="q">Which of these is an A2A job rather than an MCP tool call?</p>
+<ol>
+<li data-why="A query with fixed inputs and one structured answer is exactly what a tool is for.">The support agent reads a customer's last 5 orders from Postgres</li>
+<li>The support agent hands a disputed charge to the risk team's agent, which may ask questions and takes hours</li>
+<li data-why="A single lookup with a fixed shape is a tool call, even if a remote service answers it.">The support agent converts ₹ to $ through an exchange-rate API</li>
+</ol>
+<p class="ts-why">The dispute goes to an independent agent that runs its own process, may need more input, and takes a long time. That is delegation to a peer, which is what A2A is for.</p>
+</div>
+</section>
+
+<section class="ts-part" id="roles" data-rung="1" data-min="4">
+<h2>Who is who, and what stays hidden</h2>
+<p class="ts-bridge">Last part: A2A lets one agent hand a job to another. Still unsolved: what must the two sides agree on, and what may they keep private?</p>
+<p class="ts-problem">The refund agent runs on LangGraph with its own Postgres. The support agent runs on a different stack. If either side needs the other's prompts, memory or tool list, every internal change on one team breaks the other.</p>
+<p>Think of a restaurant order ticket. The waiter writes the order in a fixed format. Any kitchen can read it. The waiter never needs the recipe, and the kitchen never needs the menu design.</p>
+<p><span class="ts-claim" data-claim="c6" data-src="s1">The spec calls the side that starts a request the A2A client, and the agent that serves it the A2A server, or remote agent.</span> In our example the support agent is the <dfn data-def="The application or agent that sends requests to another agent over A2A, on behalf of a user or another system.">A2A client</dfn>. The refund agent is the <dfn data-def="An agent that exposes an A2A endpoint and does the work it is sent. The spec also calls it the A2A server.">remote agent</dfn>.</p>
+<p><span class="ts-claim" data-claim="c7" data-src="s1">One guiding principle is opaque execution: agents collaborate through declared capabilities and exchanged information, without sharing internal thoughts, plans or tool code.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c8" data-src="s1">The spec has three layers: a data model, abstract operations, and protocol bindings that map those operations onto JSON-RPC, gRPC and HTTP+JSON/REST.</span></li>
+<li>A <dfn data-def="A concrete mapping of A2A's operations onto one wire format, such as JSON-RPC over HTTP or gRPC.">binding</dfn> is only the envelope. The meaning of each operation is the same in every binding.</li>
+<li><span class="ts-claim" data-claim="c9" data-src="s1">The file a2a.proto is the single authoritative definition of the protocol's data objects; schemas and SDK types must be generated from it.</span></li>
+<li><span class="ts-claim" data-claim="c10" data-src="s1">An agent that offers several bindings must provide the same operations and equivalent results on each of them.</span></li>
+</ol>
+<p>So the two teams agree on the envelope: the data model, the operations and one binding. Everything behind the endpoint stays theirs to change.</p>
+<p class="ts-takeaway">Agents agree on the envelope (data model, operations, binding), never on each other's internals.</p>
+<div class="ts-explain" data-points="An agent job can be long, stateful and need follow-up questions; a tool call is one request and one answer|A2A lets the remote agent stay opaque: no shared prompts, memory or tools|The two sides agree only on A2A's data model, operations and a binding|Inside, each agent still uses tools (often via MCP)">
+<p class="q">In your own words: why not expose the refund agent as one more MCP tool of the support agent?</p>
+<div class="ts-model"><p>A tool call is one structured request with one answer. A job for another agent can run for hours, ask for missing details and send progress, which a tool call can't express. A2A treats the refund agent as a peer that stays opaque: the support agent sees neither its prompts, memory nor tools. The teams agree only on A2A's data model, operations and a binding. Inside, the refund agent still reaches its database through its own tools, often over MCP.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="agent-card" data-rung="2" data-min="5">
+<h2>How one agent learns what another can do</h2>
+<p class="ts-bridge">Last part: both sides agree on a shared envelope and keep their internals private. Still unsolved: how does the support agent find the refund agent's address, abilities and login rules?</p>
+<p class="ts-problem">The support agent must know 5 things before its first call: the URL, the binding, whether streaming works, which login scheme to use, and what jobs the agent is good at. Hard-coding them in 3 client teams means 3 broken clients on every change.</p>
+<p>Think of a shop's signboard plus its opening-hours sticker: who they are, what they sell, which door to use, which cards they accept.</p>
+<p><span class="ts-claim" data-claim="c11" data-src="s1">Every A2A server must make an Agent Card available.</span> An <dfn data-def="A JSON document an agent publishes about itself: name, endpoints, optional features, login schemes and skills.">Agent Card</dfn> is that signboard. <span class="ts-claim" data-claim="c12" data-src="s1">One way to find it is the well-known URI https://{server_domain}/.well-known/agent-card.json; registries and direct configuration are the others.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c13" data-src="s2">Required fields include name, description, version, supportedInterfaces, capabilities, defaultInputModes, defaultOutputModes and skills.</span></li>
+<li><span class="ts-claim" data-claim="c14" data-src="s2 s1">Each supportedInterfaces entry gives a URL, a protocolBinding (the core values are JSONRPC, GRPC and HTTP+JSON; custom bindings use a URI) and a protocolVersion; the list is in preference order and clients pick the first entry they support.</span></li>
+<li><span class="ts-claim" data-claim="c15" data-src="s2">The capabilities object flags optional features: streaming, pushNotifications, extendedAgentCard and extensions.</span></li>
+<li><span class="ts-claim" data-claim="c16" data-src="s2">A skill has an id, a name, a description and tags, and can list example prompts and its own input and output media types.</span> A <dfn data-def="One kind of job an agent says it is good at, described for both humans and other agents.">skill</dfn> is a menu item, not a function signature.</li>
+<li><span class="ts-claim" data-claim="c17" data-src="s1">JSON uses camelCase field names, so the proto field protocol_version becomes protocolVersion.</span></li>
+</ol>
+<div class="ts-tabs">
+<div data-tab="What the client receives">
+<div class="ts-code" data-lang="json" data-title="GET /.well-known/agent-card.json" data-verified="spec" data-claims="c12 c13 c14 c15 c16 c17">
+<pre><code>{
+  "name": "Refund Status Agent",
+  "description": "Looks up the status of a customer refund by order ID.",
+  "version": "1.0.0",
+  "supportedInterfaces": [
+    {"url": "https://refunds.example.com/a2a",
+     "protocolBinding": "JSONRPC", "protocolVersion": "1.0"}
+  ],
+  "capabilities": {"streaming": true, "pushNotifications": false},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [{
+    "id": "refund-status", "name": "Refund status",
+    "description": "Given an order ID like ORD-1234, returns where its refund is.",
+    "tags": ["payments", "refunds"],
+    "examples": ["Where is the refund for ORD-1234?"]
+  }]
+}</code></pre>
+</div>
+</div>
+<div data-tab="card.py (how it was built)">
+<div class="ts-code" data-lang="python" data-title="card.py" data-file="card.py" data-verified="ran"></div>
+</div>
+</div>
+<p>The JSON tab is the exact card the tested server returns for card.py.</p>
+<p class="ts-takeaway">The Agent Card is the contract: where to call, over which binding, which optional features work, and what the agent is good at.</p>
+<div class="ts-predict" data-claims="c18">
+<p class="q">The card above says pushNotifications is false. A client tries to register a webhook for a task anyway. What should happen?</p>
+<div class="ts-reveal"><p><span class="ts-claim" data-claim="c18" data-src="s1">If pushNotifications is false or missing, webhook setup calls must fail with PushNotificationNotSupportedError; if streaming is false or missing, streaming calls must fail with UnsupportedOperationError.</span> The card is binding, not decoration: the client should read it before trying optional features.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="task" data-rung="2" data-min="5">
+<h2>A job with a status: the Task</h2>
+<p class="ts-bridge">Last part: the Agent Card says where and how to call. Still unsolved: what comes back when one job finishes in a blink and another runs for days?</p>
+<p class="ts-problem">A refund lookup is back in a couple of seconds. A chargeback investigation runs for days and waits on a human analyst for part of it. One request-and-response shape can't carry both.</p>
+<p>Think of a courier tracking number. You get it the moment you hand over the parcel. It moves through states you can check, and the parcel itself arrives separately.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c19" data-src="s1">When a client sends a message, the agent may reply with a direct Message for simple interactions, or create a Task that tracks the work.</span></li>
+<li><span class="ts-claim" data-claim="c20" data-src="s2 s1">A Task has a server-generated id, a contextId, a status, and lists of artifacts and history.</span> A <dfn data-def="A stateful unit of work with an id and a lifecycle; the tracking number for one job.">Task</dfn> is the tracking number.</li>
+<li><span class="ts-claim" data-claim="c21" data-src="s2">Its states are submitted, working, input-required, auth-required, completed, failed, canceled and rejected, written on the wire as TASK_STATE_SUBMITTED and so on.</span></li>
+<li><span class="ts-claim" data-claim="c22" data-src="s2">Completed, failed, canceled and rejected are terminal states; input-required and auth-required are interrupted states.</span></li>
+<li><span class="ts-claim" data-claim="c23" data-src="s1">The spec says results should come back as Artifacts, not Messages; messages are for talk such as questions and status updates.</span> An <dfn data-def="An output of a task, such as a report, a file or a JSON result, made of one or more parts.">artifact</dfn> is the parcel.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c24" data-src="s2">An Artifact holds one or more Parts, and each Part carries exactly one of text, raw bytes, a url or structured data, plus an optional mediaType.</span> A <dfn data-def="An identifier that groups related tasks and messages into one conversation.">contextId</dfn> groups related tasks, like one customer's case file.</p>
+<figure class="ts-graph" data-title="Task states">
+<script type="application/json">
+{"nodes": [
+ {"id": "sub", "label": "submitted", "col": 0, "row": 1},
+ {"id": "work", "label": "working", "col": 1, "row": 1},
+ {"id": "inp", "label": "input-required", "sub": "interrupted", "col": 1, "row": 0, "step": 2},
+ {"id": "auth", "label": "auth-required", "sub": "interrupted", "col": 1, "row": 2, "step": 2},
+ {"id": "done", "label": "completed", "sub": "terminal", "col": 3, "row": 1},
+ {"id": "fail", "label": "failed", "sub": "terminal", "col": 3, "row": 0, "step": 3},
+ {"id": "canc", "label": "canceled", "sub": "terminal", "col": 3, "row": 2, "step": 3},
+ {"id": "rej", "label": "rejected", "sub": "terminal", "col": 0, "row": 2, "step": 3}],
+ "edges": [
+ {"from": "sub", "to": "work", "label": "agent starts", "step": 1},
+ {"from": "work", "to": "done", "label": "artifacts ready", "step": 1},
+ {"from": "work", "to": "inp", "label": "needs a detail", "step": 2},
+ {"from": "inp", "to": "work", "label": "client replies", "step": 2, "dashed": true},
+ {"from": "work", "to": "auth", "label": "needs a credential", "step": 2},
+ {"from": "work", "to": "fail", "label": "error", "step": 3},
+ {"from": "work", "to": "canc", "label": "CancelTask", "step": 3},
+ {"from": "sub", "to": "rej", "label": "agent won't do it", "step": 3}],
+ "captions": [
+ "The happy path: the task is accepted, worked on, and ends in completed with its artifacts attached.",
+ "Interrupted states pause the task until the client supplies a missing detail or a credential. The task keeps its id.",
+ "Terminal states end the task for good: failed, canceled or rejected. Nothing moves out of them."]}
+</script>
+</figure>
+<p class="ts-takeaway">Tasks carry state, artifacts carry results, and a terminal task is final.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c25 c26">
+<p class="q">A refund task is completed. The customer now says: send the refund to a different card. What should the support agent send?</p>
+<ol>
+<li data-why="Terminal tasks can't restart; the agent is required to refuse more messages to them.">A new message with the same taskId, so the old task continues</li>
+<li>A new message with the same contextId, pointing at the old task in referenceTaskIds</li>
+<li data-why="Cancel only applies to tasks still running; a completed task isn't cancelable.">CancelTask on the old task, then the same message again</li>
+</ol>
+<p class="ts-why"><span class="ts-claim" data-claim="c25" data-src="s5">A task in a terminal state cannot restart; a follow-up must start a new task in the same contextId.</span> <span class="ts-claim" data-claim="c26" data-src="s1">Clients should use the Message field referenceTaskIds to point at related earlier tasks.</span></p>
+</div>
+</section>
+
+<section class="ts-part" id="wire" data-rung="2" data-min="5">
+<h2>What actually goes over the wire</h2>
+<p class="ts-bridge">Last part: work is tracked as a Task that moves through states. Still unsolved: what do the requests and replies look like, and how does a paused task resume?</p>
+<p class="ts-problem">A customer types "Where is my refund?" with no order number. The refund agent can't answer yet. It needs to ask one question and then carry on the same job.</p>
+<figure class="ts-seq" data-title="A task that pauses for input">
+<script type="application/json">
+{"actors": [
+ {"id": "sup", "label": "Support agent", "sub": "A2A client"},
+ {"id": "ref", "label": "Refund agent", "sub": "remote agent"}],
+ "steps": [
+ {"from": "sup", "to": "ref", "label": "GET agent card", "note": "Discovery first: GET /.well-known/agent-card.json. The card says JSON-RPC at /a2a, version 1.0."},
+ {"from": "ref", "to": "sup", "label": "Agent Card", "dashed": true, "note": "The client picks the first interface it supports."},
+ {"from": "sup", "to": "ref", "label": "SendMessage", "note": "A JSON-RPC request carrying one user message, \"Where is my refund?\". No taskId: this starts new work."},
+ {"from": "ref", "to": "sup", "label": "Task: input-required", "dashed": true, "note": "The agent creates a task, then pauses it in TASK_STATE_INPUT_REQUIRED with a status message asking which order ID."},
+ {"from": "sup", "to": "ref", "label": "Answer, same taskId", "note": "The answer, ORD-1234, is sent with the same taskId and contextId, so the agent resumes the task instead of starting over."},
+ {"from": "ref", "to": "sup", "label": "Task: completed", "dashed": true, "note": "Same task id, now TASK_STATE_COMPLETED. The result is a data artifact, not a chat message."}]}
+</script>
+</figure>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c27" data-src="s1">In the JSON-RPC binding, methods use PascalCase names such as SendMessage and GetTask over HTTP(S), and streaming uses Server-Sent Events.</span></li>
+<li><span class="ts-claim" data-claim="c28" data-src="s2 s1">A Message needs a messageId set by whoever creates it, a role (ROLE_USER from the client, ROLE_AGENT from the agent) and at least one Part.</span></li>
+<li><span class="ts-claim" data-claim="c29" data-src="s1">Task ids are always generated by the server; a client may only send a taskId that refers to an existing task.</span></li>
+<li><span class="ts-claim" data-claim="c30" data-src="s1">To answer an input-required task, the client sends a new message with the same taskId and contextId.</span></li>
+<li><span class="ts-claim" data-claim="c31" data-src="s1">Agents must reject a message whose contextId differs from its task's contextId, and must infer the contextId when only a taskId is sent.</span></li>
+</ol>
+<div class="ts-tabs">
+<div data-tab="Request 2">
+<div class="ts-code" data-lang="json" data-title="POST /a2a (A2A-Version: 1.0)" data-verified="spec" data-claims="c27 c28 c30 c32">
+<pre><code>{"jsonrpc": "2.0", "id": 1, "method": "SendMessage",
+ "params": {"message": {
+   "messageId": "9b1c…", "role": "ROLE_USER",
+   "taskId": "a086…", "contextId": "4277…",
+   "parts": [{"text": "It is ORD-1234"}]}}}</code></pre>
+</div>
+</div>
+<div data-tab="Reply 2">
+<div class="ts-code" data-lang="json" data-title="200 OK" data-verified="spec" data-claims="c20 c24 c32">
+<pre><code>{"jsonrpc": "2.0", "id": 1, "result": {"task": {
+  "id": "a086…", "contextId": "4277…",
+  "status": {"state": "TASK_STATE_COMPLETED"},
+  "artifacts": [{"artifactId": "1bca…", "name": "refund-status",
+    "parts": [{"data": {"order": "ORD-1234", "refund": "processed"}}]}]}}}</code></pre>
+</div>
+</div>
+</div>
+<p><span class="ts-claim" data-claim="c32" data-src="s1">Enum values travel as their proto names in SCREAMING_SNAKE_CASE, for example "TASK_STATE_INPUT_REQUIRED" and "ROLE_USER".</span> The page's tests send these exact shapes to the official SDK server.</p>
+<p class="ts-takeaway">A paused task resumes when the client replies with the same taskId and contextId; the result arrives as an artifact on that task.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the exchange in order.</p>
+<ol>
+<li>Client fetches the Agent Card</li>
+<li>Client sends SendMessage without a taskId</li>
+<li>Agent replies with a Task in TASK_STATE_INPUT_REQUIRED</li>
+<li>Client sends SendMessage with that taskId and contextId</li>
+<li>Agent replies with the same Task, completed, with an artifact</li>
+</ol>
+<p class="ts-why">Discovery comes first. The first message creates the task; only the server mints its id, so the client can reference it only after the reply.</p>
+</div>
+</section>
+
+<section class="ts-part" id="updates" data-rung="2" data-min="6">
+<h2>Waiting for slow work: block, poll, stream or webhook</h2>
+<p class="ts-bridge">Last part: a message creates or resumes a task, and the reply carries its state. Still unsolved: what if the job runs for days?</p>
+<p class="ts-problem">The chargeback investigation runs for days. Your API gateway kills any request after 60 s. Holding one HTTP call open until the job ends is not an option.</p>
+<p>Think of a tailor. You can wait in the shop, phone every hour, stay on a live call, or leave your number so they ring you when it's ready.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c33" data-src="s1 s2">SendMessage is blocking unless told otherwise: the server waits until the task is terminal or interrupted before it replies.</span> That is waiting in the shop.</li>
+<li><span class="ts-claim" data-claim="c34" data-src="s1">With returnImmediately set to true, the server replies as soon as the task exists, and the caller then polls, subscribes or relies on push notifications.</span></li>
+<li><span class="ts-claim" data-claim="c35" data-src="s1">A task stream starts with the Task object, then status and artifact update events, and closes when the task reaches a terminal state.</span> That is the live call.</li>
+<li><span class="ts-claim" data-claim="c36" data-src="s1">SubscribeToTask reconnects to a running task and must send the current Task as its first event, so nothing is lost between a GetTask and the subscription.</span></li>
+<li><span class="ts-claim" data-claim="c37" data-src="s1">Push notifications are HTTP POSTs to a webhook the client registered, carrying the same StreamResponse payload a stream would.</span> That is leaving your number.</li>
+</ol>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Way to get updates</th><th>Pick it when (the spec's own guidance)</th><th>Cost</th></tr></thead>
+<tbody>
+<tr><td>Poll with GetTask</td><td><span class="ts-claim" data-claim="c38" data-src="s1">Simple integrations, infrequent updates, clients behind restrictive firewalls</span></td><td>Delay between polls, many wasted calls</td></tr>
+<tr><td>Stream (SSE)</td><td><span class="ts-claim" data-claim="c39" data-src="s1">Interactive apps and live progress; needs capabilities.streaming set to true</span></td><td>One open connection per watcher</td></tr>
+<tr><td>Push (webhook)</td><td><span class="ts-claim" data-claim="c40" data-src="s1">Server-to-server work, long-running tasks, event-driven systems; the client must be reachable over HTTP</span></td><td>You run and secure a public endpoint</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c41" data-src="s1">Events must arrive in the order they were generated, and several clients may stream the same task at once.</span> <span class="ts-claim" data-claim="c42" data-src="s1">For push, the agent must attempt delivery at least once, and clients should process notifications idempotently because duplicates may occur.</span></p>
+<p class="ts-takeaway">Block for quick jobs; for long ones, return at once and choose poll, stream or webhook by who can hold a connection and who can receive a call.</p>
+<div class="ts-predict" data-claims="c36 c43 c98 c18">
+<p class="q">The support agent is streaming a task. A network blip drops the connection for 20 s. How does it catch up, and what might it have missed?</p>
+<div class="ts-reveal"><p>It calls SubscribeToTask, which needs the streaming capability. The first event is the task's current state, so its status and artifacts are up to date. <span class="ts-claim" data-claim="c98" data-src="s1">If the task reached a terminal state during the gap, SubscribeToTask fails with UnsupportedOperationError</span>, so the client falls back to GetTask. <span class="ts-claim" data-claim="c43" data-src="s1">A client that disconnects and reconnects may miss status messages, so messages must not be treated as reliable delivery for critical information.</span> Anything that matters must live in the task's state or artifacts.</p></div>
+</div>
+<div class="ts-explain" data-points="The client discovers the agent and its interface from the Agent Card|The first SendMessage creates a server-owned Task; input-required pauses it|The client answers with the same taskId and contextId; the result is an artifact|Long work: return immediately, then poll, stream or webhook">
+<p class="q">Walk through, end to end, how the support agent gets a refund status from the refund agent, including what changes if the job takes 3 days.</p>
+<div class="ts-model"><p>The support agent fetches the Agent Card and picks the first interface it supports. It sends SendMessage with the customer's text. The refund agent creates a Task and, missing the order ID, moves it to input-required with a question. The support agent replies with the same taskId and contextId; the task completes with a data artifact. For a 3-day job the client sets returnImmediately, gets the task at once, and then polls GetTask, streams, or registers a webhook.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="build-agent" data-rung="3" data-min="6">
+<h2>Build the refund agent with the official SDK</h2>
+<p class="ts-bridge">Last part: clients can block, poll, stream or take webhooks. Still unsolved: what does a correct agent look like in code?</p>
+<p class="ts-problem">The payments team wants 3 other teams' agents to look up refund status. They need a server that publishes a card, runs the task lifecycle and speaks JSON-RPC, without writing protocol plumbing by hand.</p>
+<p><span class="ts-claim" data-claim="c44" data-src="s8">The A2A project hosts official SDKs in six languages: Python, Go, JavaScript, Java, .NET and Rust.</span> <span class="ts-claim" data-claim="c45" data-src="s14">The Python SDK, a2a-sdk, implements spec version 1.0 over JSON-RPC, HTTP+JSON/REST and gRPC, with a compatibility mode for 0.3.</span></p>
+<ol class="ts-steps">
+<li>Your logic lives in an <dfn data-def="The SDK class you subclass: execute() does the work and publishes events; cancel() stops it.">AgentExecutor</dfn>. It publishes events to a queue; the SDK turns them into replies, streams and stored task state.</li>
+<li><span class="ts-claim" data-claim="c46" data-src="s16">Since SDK version 1.0, an executor must pick one pattern per stream: exactly one Message, or a Task first followed by update events; mixing them fails with InvalidAgentResponseError.</span></li>
+<li><span class="ts-claim" data-claim="c47" data-src="s21">The SDK's executor contract: to ask for input, publish an input-required status and return; the request resumes when the user's input arrives.</span></li>
+<li><span class="ts-claim" data-claim="c48" data-src="s16">Since SDK version 1.0, the server is assembled from Starlette route factories such as create_agent_card_routes and create_jsonrpc_routes.</span></li>
+</ol>
+<div class="ts-tabs">
+<div data-tab="refund_agent.py">
+<div class="ts-code" data-lang="python" data-title="refund_agent.py" data-file="refund_agent.py" data-verified="ran"></div>
+</div>
+<div data-tab="app.py">
+<div class="ts-code" data-lang="python" data-title="app.py" data-file="app.py" data-verified="ran"></div>
+</div>
+</div>
+<p>The tests call this server in process and check each behaviour on this page: the pause, the resume, the artifact, the stream order and the error codes.</p>
+<p>Production changes from this sketch:</p>
+<ul>
+<li>Swap InMemoryTaskStore for a database store. <span class="ts-claim" data-claim="c49" data-src="s14">The SDK has optional extras for PostgreSQL, MySQL and SQLite.</span> Part 10 shows what breaks without it.</li>
+<li>Put the real HTTPS URL in supportedInterfaces and add securitySchemes (part 9).</li>
+<li>Return a Task, not a Message, for anything that may pause, fail or be audited later.</li>
+<li>If you turn on push notifications, turn on the push-URL validator too (part 11).</li>
+</ul>
+<div class="ts-interview"><p><b>"Why return a Task for a 2-second lookup instead of a plain Message?"</b> A strong answer: a Task gives a server-owned id you can log, audit and re-read with GetTask; it can pause for input and it records a terminal state. A Message is fine for chit-chat or negotiating scope. The cost is stored state per request, so you need a durable store and a retention policy.</p></div>
+<p class="ts-takeaway">Write an executor that publishes a Task first, then status and artifact events; the SDK handles the wire, the card and the stored state.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c33 c46 c47">
+<p class="q">In refund_agent.py, when the order ID is missing, why does execute() publish input-required and return, instead of waiting for the answer?</p>
+<ol>
+<li data-why="Waiting doesn't break the stream order rule; the reason is that the reply arrives as a separate request.">Because waiting would publish events in the wrong order</li>
+<li data-why="The task keeps its id and state; it isn't discarded when execute() returns.">Because returning deletes the task, and the next message starts clean</li>
+<li>Because the client's answer comes as a new SendMessage, and the SDK calls execute() again with the paused task as current_task</li>
+<li data-why="Blocking SendMessage returns on interrupted states too, so the caller isn't stuck; the reason is how the answer arrives.">Because blocking calls never return until the task completes</li>
+</ol>
+<p class="ts-why">The reply is a separate request. The executor returns, the task sits in input-required, and the next message with that taskId resumes it: that's why the code checks context.current_task.</p>
+</div>
+</section>
+
+<section class="ts-part" id="call-agent" data-rung="3" data-min="6">
+<h2>Call it with plain HTTP, and read its errors</h2>
+<p class="ts-bridge">Last part: the SDK runs the agent. Still unsolved: what must a client send, and what do failures look like?</p>
+<p class="ts-problem">A partner team calls your agent from Go with no A2A SDK. Their first request fails with a version error, though they never picked a version.</p>
+<div class="ts-code" data-lang="python" data-title="raw_client.py" data-file="raw_client.py" data-verified="ran"></div>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c50" data-src="s1">Clients (other than 0.3 clients) must send the protocol version with each request, normally as an A2A-Version header such as 1.0; agents must treat an empty value as 0.3.</span></li>
+<li><span class="ts-claim" data-claim="c51" data-src="s1">If the requested version isn't supported, the agent returns VersionNotSupportedError.</span> That was the partner's bug: they sent no header.</li>
+<li><span class="ts-claim" data-claim="c52" data-src="s1">Error details are an array of objects, each with an @type key, and google.rpc types such as ErrorInfo should be used.</span></li>
+</ol>
+<div class="ts-code" data-lang="json" data-title="Reply with no A2A-Version header (from the tests)" data-verified="spec" data-claims="c50 c51 c52 c53">
+<pre><code>{"jsonrpc": "2.0", "id": 1, "error": {
+  "code": -32009,
+  "message": "A2A version '0.3' is not supported by this handler. Expected version '1.0'.",
+  "data": [{"@type": "type.googleapis.com/google.rpc.ErrorInfo",
+            "reason": "VERSION_NOT_SUPPORTED", "domain": "a2a-protocol.org"}]}}</code></pre>
+</div>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>A2A error</th><th>JSON-RPC code</th><th>You'll see it when</th></tr></thead>
+<tbody>
+<tr><td>TaskNotFoundError</td><td><span class="ts-claim" data-claim="c53" data-src="s1">-32001</span></td><td>The id is wrong, purged, or not yours</td></tr>
+<tr><td>TaskNotCancelableError</td><td><span class="ts-claim" data-claim="c53" data-src="s1">-32002</span></td><td>Canceling a task that has already ended</td></tr>
+<tr><td>PushNotificationNotSupportedError</td><td><span class="ts-claim" data-claim="c53" data-src="s1">-32003</span></td><td>Webhook setup on an agent without push</td></tr>
+<tr><td>UnsupportedOperationError</td><td><span class="ts-claim" data-claim="c53" data-src="s1">-32004</span></td><td>Streaming without the capability; messaging a terminal task</td></tr>
+<tr><td>VersionNotSupportedError</td><td><span class="ts-claim" data-claim="c53" data-src="s1">-32009</span></td><td>Missing or unsupported A2A-Version</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c54" data-src="s1">Servers must not reveal that a resource exists to a caller who isn't allowed to see it; "does not exist" and "not authorized" should look the same.</span></p>
+<div class="ts-legacy"><p>You will meet A2A v0.3 in tutorials, older SDKs and some platforms. <span class="ts-claim" data-claim="c55" data-src="s6">It used slash-style method names such as message/send, tasks/get and tasks/resubscribe; v1.0 renamed them SendMessage, GetTask and SubscribeToTask.</span> <span class="ts-claim" data-claim="c56" data-src="s6">It used lowercase values such as "completed", "input-required" and "user", now TASK_STATE_COMPLETED, TASK_STATE_INPUT_REQUIRED and ROLE_USER.</span> <span class="ts-claim" data-claim="c57" data-src="s6">Its parts had a kind field (text, file, data), replaced by one Part type holding text, raw, url or data, and its card named the primary endpoint in a top-level url field, now supportedInterfaces[0].url.</span> <span class="ts-claim" data-claim="c58" data-src="s7">Version 1.0.0 shipped these breaking changes on 12 March 2026; 1.0.1 followed on 26 May 2026.</span></p></div>
+<p class="ts-takeaway">Always send the A2A-Version header; a missing header silently means v0.3.</p>
+<div class="ts-predict" data-claims="c50 c51 c59 c99 c100">
+<p class="q">A client built from a 2025 tutorial sends method message/send with role "user" and no version header. What does a 1.0 agent built on a2a-sdk do, and how can the agent's team keep that client working during migration?</p>
+<div class="ts-reveal"><p><span class="ts-claim" data-claim="c100" data-src="s24">In this page's tests, a2a-sdk 1.1.5 answered message/send with -32601, with or without a version header</span>: it doesn't know that method name. <span class="ts-claim" data-claim="c99" data-src="s1">In the JSON-RPC binding, -32601 is the standard Method not found error.</span> A 1.0 method name sent without the header gets VersionNotSupportedError (-32009) instead, because an empty version counts as 0.3. <span class="ts-claim" data-claim="c59" data-src="s16">The Python SDK can serve 0.3 clients alongside 1.0 if you add a 0.3 interface to the card and turn on the route factory's 0.3 compatibility flag.</span></p></div>
+</div>
+</section>
+
+<section class="ts-part" id="auth" data-rung="3" data-min="6">
+<h2>Who is calling: identity lives outside the message</h2>
+<p class="ts-bridge">Last part: clients send a version header and read standard error codes. Still unsolved: how does the refund agent know who is calling, and what may they see?</p>
+<p class="ts-problem">The KYC vendor's agent must accept calls only from your company, and only for your customers. The refund agent must never show customer A's refunds to a call made for customer B.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c60" data-src="s1">The client learns the required schemes from the card's securitySchemes, gets credentials outside A2A, and sends them in headers or metadata on every request.</span></li>
+<li><span class="ts-claim" data-claim="c61" data-src="s1">The server must authenticate every incoming request.</span> <span class="ts-claim" data-claim="c62" data-src="s19">The A2A docs say protocol payloads don't carry user or client identity; identity is set at the transport or HTTP layer.</span></li>
+<li><span class="ts-claim" data-claim="c63" data-src="s2">Scheme types are API key, HTTP auth such as Bearer, OAuth 2.0, OpenID Connect and mutual TLS, modelled on OpenAPI security schemes.</span></li>
+<li><span class="ts-claim" data-claim="c64" data-src="s1">Production deployments must use HTTPS for HTTP bindings and TLS for gRPC.</span></li>
+</ol>
+<div class="ts-legacy"><p><span class="ts-claim" data-claim="c65" data-src="s2">In v1.0 the OAuth implicit and password flows are deprecated in the card; it offers authorization code (with a pkceRequired flag), client credentials and device code.</span></p></div>
+<p>Sometimes the agent needs a credential in the middle of a job, such as a token for a downstream bank API. <span class="ts-claim" data-claim="c66" data-src="s1">The agent can move the task to auth-required and explain in its status message what authorization it needs.</span> <span class="ts-claim" data-claim="c67" data-src="s1">The agent may carry on as soon as it receives the credential out of band, so a client without an open stream should subscribe, register a webhook or poll to avoid missing updates.</span></p>
+<p><span class="ts-claim" data-claim="c68" data-src="s1">If credentials are passed in-band through a chain of agents, every agent in the chain can see them, so the spec recommends binding them to the agent that requested them.</span> <span class="ts-claim" data-claim="c69" data-src="s1">An agent can also serve a richer, extended Agent Card to authenticated callers when capabilities.extendedAgentCard is true; that call must be authenticated.</span></p>
+<div class="ts-interview"><p><b>"Your orchestrator calls the refund agent on behalf of a customer. How does the refund agent decide which refunds to return?"</b> A strong answer: from a validated token, never from text or metadata in the message. Use an OAuth token that carries the end user (or a delegated scope), check it on every request, and scope every task read and list to that caller. The trade-off: user-delegated tokens need a token exchange hop per call; service-only tokens are simpler but make the refund agent trust the orchestrator for the user's identity.</p></div>
+<p class="ts-takeaway">Identity comes from credentials checked on every request, never from the message body.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c61 c62">
+<p class="q">Where should the refund agent get the identity of the customer it is serving?</p>
+<ol>
+<li data-why="Anything in the payload is written by the caller; A2A doesn't carry identity there, and a buggy or hostile client can put any id in it.">A customerId field the client puts in message metadata</li>
+<li>The credential in the request's Authorization header, validated on every call</li>
+<li data-why="A contextId groups a conversation; it isn't a credential and proves nothing about who is calling.">The contextId, since each customer has their own context</li>
+</ol>
+<p class="ts-why">A2A leaves identity to the HTTP layer, and the server must authenticate every request. Payload fields are caller-controlled.</p>
+</div>
+<div class="ts-explain" data-points="The card declares schemes; credentials come from outside A2A (for example an OAuth flow)|Every request is authenticated; identity comes from the transport, not the payload|auth-required pauses a task until a credential arrives out of band; stay subscribed or poll|Pass credentials through agent chains only if bound to the requesting agent">
+<p class="q">Explain how authentication works in A2A, including what happens when an agent needs a new credential in the middle of a task.</p>
+<div class="ts-model"><p>The Agent Card lists security schemes such as OAuth 2.0 or mTLS. The client gets credentials outside A2A and sends them on every request; the server authenticates each one, because the payload carries no identity. If a job needs another credential halfway, the agent moves the task to auth-required and says what it needs. The credential usually arrives out of band and the agent resumes on its own, so the client should keep a stream, webhook or poll going. Credentials passed through chains of agents should be bound to the agent that asked.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="scale" data-rung="4" data-min="6">
+<h2>What breaks first at 10× load</h2>
+<p class="ts-bridge">Last part: identity comes from credentials checked on every request. Still unsolved: what fails when traffic grows, and how do you see it coming?</p>
+<p class="ts-problem">A sale week pushes refund questions from 200 to 2,000 a minute. Chargeback tasks can run for most of an hour. The refund agent runs on 3 replicas behind a round-robin load balancer, using the in-memory store from part 7.</p>
+<ol class="ts-steps">
+<li><b>Blocked connections.</b> Blocking is what you get unless you ask otherwise (part 6). If calls last 30 s on average, 2,000 a minute means about 1,000 requests held open at once. Workers and gateway slots run out first. Fix: returnImmediately for anything slow, then webhook or stream.</li>
+<li><b>Lost and "missing" tasks.</b> An in-memory store forgets every task on restart. With 3 replicas, a GetTask lands on a replica that never saw the task about 2 times in 3. Fix: a shared database store; keep streams on the replica that runs the task or fan events out through a shared bus.</li>
+<li><b>Slow stream readers.</b> One watcher that reads slowly can back up events for everyone on that task. <span class="ts-claim" data-claim="c70" data-src="s15">In a2a-sdk version 1.1.4 (7 September 2026), a full subscriber queue now evicts that subscriber instead of wedging dispatch.</span></li>
+<li><b>Webhook storms.</b> <span class="ts-claim" data-claim="c71" data-src="s1">Agents should time out webhook calls (10 to 30 seconds recommended) and may stop after a set number of consecutive failures; on retrying with exponential backoff the spec says MAY in one section and SHOULD in another.</span> A slow receiver turns into retries, then duplicates.</li>
+<li><b>Listing everything.</b> <span class="ts-claim" data-claim="c72" data-src="s2 s1">ListTasks uses cursor pagination; with pageSize unset it returns at most 50 tasks, pageSize may not exceed 100, and nextPageToken is an empty string on the last page.</span></li>
+</ol>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c73" data-src="s22">The SDK's own code notes that after a cancel, a client that was streaming may not receive the terminal state and may have to re-read the task.</span> Treat GetTask as the source of truth after any cancel or reconnect, not the last event you saw.</p></div>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Signal</th><th>What to measure</th><th>Likely fix</th></tr></thead>
+<tbody>
+<tr><td>Tasks stuck</td><td>Age of tasks in working or input-required, p99 per skill</td><td>Timeouts in the executor; move stuck tasks to failed</td></tr>
+<tr><td>TaskNotFound spikes after a deploy</td><td>-32001 rate per replica</td><td>Shared task store</td></tr>
+<tr><td>Connection exhaustion</td><td>Open SSE streams and in-flight blocking calls</td><td>returnImmediately plus webhooks</td></tr>
+<tr><td>Webhook trouble</td><td>Non-2xx rate, retries and duplicate deliveries per client</td><td>Backoff, per-client limits, idempotency keys on the receiver</td></tr>
+<tr><td>Version skew</td><td>-32009 count by client</td><td>Enable 0.3 compatibility or chase the client team</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c74" data-src="s1">For the card itself, the spec recommends Cache-Control and an ETag on the server and conditional requests on the client.</span> Clients shouldn't fetch the card on every call.</p>
+<div class="ts-interview"><p><b>"How do you run an A2A agent on 3 replicas?"</b> A strong answer: task state in a shared store; replies to blocking calls from any replica; streams either pinned to the replica running the task or fed from a shared event bus; long tasks via returnImmediately and webhooks; idempotent webhook receivers. What you give up: a database round trip per event and more moving parts than one process.</p></div>
+<p class="ts-takeaway">At scale, move long work off blocking calls, keep task state in a shared store, and treat GetTask as the truth.</p>
+<div class="ts-predict" data-claims="c34 c53">
+<p class="q">3 replicas, in-memory store, round-robin load balancer. A client sends a message with returnImmediately and then polls GetTask 6 times. What does it see?</p>
+<div class="ts-reveal"><p>Only the replica that created the task knows it. About 4 of the 6 polls land elsewhere and get TaskNotFoundError (-32001). The client may give up on a task that is running fine. A shared task store fixes it; sticky sessions only hide it until that replica restarts.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="attacks" data-rung="4" data-min="6">
+<h2>What an attacker or a careless peer does</h2>
+<p class="ts-bridge">Last part: what breaks under load and how to see it. Still unsolved: what goes wrong when a caller is hostile, or a peer isn't who it claims to be?</p>
+<p class="ts-problem">Your agent accepts webhook URLs from any authenticated partner. One partner registers a webhook URL inside your private 10.x network: your cache admin endpoint. Every task update now makes your server call your own internal admin endpoint.</p>
+<ol class="ts-steps">
+<li><b>Webhook SSRF.</b> <span class="ts-claim" data-claim="c75" data-src="s1">The spec says agents should validate webhook URLs against SSRF: reject private ranges such as 10.0.0.0/8 and 192.168.0.0/16, reject localhost and link-local addresses, and use allowlists where appropriate.</span> <span class="ts-claim" data-claim="c76" data-src="s15 s23">a2a-sdk 1.1.4 added push-URL checks both when a config is created and again before dispatch, as SSRF hardening; they run only if you pass a push_url_validator to the request handler, which is unset by default.</span></li>
+<li><b>Reading other callers' tasks.</b> <span class="ts-claim" data-claim="c77" data-src="s1">Every operation must be authorization-checked and scoped to the caller, including ListTasks with no filter, and the check must run before any query that could reveal whether a resource exists.</span> <span class="ts-claim" data-claim="c78" data-src="s15">The same SDK release made cancel and subscribe check the task's owner.</span></li>
+<li><b>A fake agent.</b> <span class="ts-claim" data-claim="c79" data-src="s1">Agent Cards may be signed with JWS (RFC 7515) over a JCS-canonicalized form (RFC 8785), and clients should verify at least one signature before trusting a card.</span> <span class="ts-claim" data-claim="c80" data-src="s1">Clients should also verify the server's TLS certificate against trusted certificate authorities.</span></li>
+<li><b>Forged notifications.</b> <span class="ts-claim" data-claim="c81" data-src="s1">Webhook receivers must validate the credentials on each notification; on checking that the task ID is one they created, the spec says MUST in one section and SHOULD in another.</span></li>
+<li><b>Hostile content.</b> A remote agent's text and artifacts come from another party. Treat them like user input before they reach your own model or tools.</li>
+</ol>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c82" data-src="s15">The official Python SDK's 1.1.4 release fixed bugs in each of these areas: SSRF checks on push URLs, owner scoping on cancel and subscribe, and a subscriber queue that could wedge dispatch.</span> If you pinned an older version, you had these gaps. <a href="https://github.com/a2aproject/a2a-python/blob/v1.1.5/CHANGELOG.md">Changelog</a>.</p></div>
+<div class="ts-interview"><p><b>"A partner agent can register webhooks on your agent. What do you check?"</b> A strong answer: HTTPS only; resolve the host and reject private, loopback and link-local addresses at dispatch time, not only at registration (DNS can change); an allowlist per partner where possible; a unique token per config; timeouts and retry caps. The trade-off: strict allowlists slow partner onboarding.</p></div>
+<p class="ts-takeaway">Treat every URL, card and message from another agent as untrusted: validate webhooks, scope every task read, verify who the peer is.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c75 c76">
+<p class="q">A partner registers https://hooks.partner.example as its webhook. It passed your checks, but a week later its DNS points to 10.0.4.12. Which defence still stops the attack?</p>
+<ol>
+<li data-why="The address was public at registration; the DNS change came a week later, so a one-time check passes it.">Rejecting private addresses when the webhook is registered</li>
+<li data-why="The token proves your calls to the receiver; it does nothing to stop the call to an internal host.">Sending a unique Bearer token with each notification</li>
+<li>Resolving the host and rejecting private addresses right before each delivery</li>
+</ol>
+<p class="ts-why">A check at registration saw a public address. Only a check at dispatch sees where the name points now, which is why the SDK checks at both points. Connect to the address you checked, or a second DNS lookup can still switch it.</p>
+</div>
+</section>
+
+<section class="ts-part" id="spec-vs-sdk" data-rung="4" data-min="5">
+<h2>The spec says MUST; test what your peer actually does</h2>
+<p class="ts-bridge">Last part: validate webhooks, scope tasks, verify peers. Still unsolved: can you trust a peer to follow the spec even when nobody is attacking?</p>
+<p class="ts-problem">You integrate with 4 agents from 4 teams. Your client branches on error codes from the spec. Against one of them, every "task already finished" case lands in your generic error path.</p>
+<p>This page's tests ran the official Python SDK against the spec. Two behaviours differ:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Situation</th><th>Spec</th><th>a2a-sdk in this page's tests</th></tr></thead>
+<tbody>
+<tr><td>Message to a completed task</td><td><span class="ts-claim" data-claim="c83" data-src="s1">UnsupportedOperationError (-32004)</span></td><td><span class="ts-claim" data-claim="c84" data-src="s22">Rejected, but as invalid params (-32602), in a2a-sdk 1.1.5</span></td></tr>
+<tr><td>contextId doesn't match the task</td><td><span class="ts-claim" data-claim="c31" data-src="s1">Must reject</span></td><td><span class="ts-claim" data-claim="c85" data-src="s23">Accepted and processed by the default handler in a2a-sdk 1.1.5</span></td></tr>
+</tbody>
+</table></div>
+<p>Hosted platforms add their own limits:</p>
+<ul>
+<li><span class="ts-claim" data-claim="c88" data-src="s18">Microsoft Foundry's a2a tool is generally available on protocol 1.0; when the remote agent is itself a Foundry agent, version 1.0 uses JSON-RPC, only text is supported and streaming responses aren't.</span></li>
+<li><span class="ts-claim" data-claim="c89" data-src="s17">AWS AgentCore Runtime expects an A2A server to speak JSON-RPC 2.0 on port 9000 at the root path, serve its card at /.well-known/agent-card.json, and its contract page's sample card shows protocolVersion 0.3.0.</span></li>
+</ul>
+<p>So a defensive client does 4 things. It sends A2A-Version on every call. It checks the card's capabilities before optional features. It branches on the task's state from GetTask, not on exact error codes. It checks that returned taskId and contextId match what it sent.</p>
+<div class="ts-note"><p><span class="ts-claim" data-claim="c90" data-src="s8">The A2A project offers a Technology Compatibility Kit (a2a-tck) and the A2A Inspector to help validate agents.</span> Run them in CI against every peer you depend on.</p></div>
+<div class="ts-interview"><p><b>"You depend on a vendor's A2A agent. How do you stop their upgrade from breaking you?"</b> A strong answer: pin A2A-Version; run contract tests (the TCK, plus your own golden flows) against their staging agent in CI; alert on -32009 and on unexpected states; branch on task state rather than error codes. The trade-off: a contract suite you must maintain for every external peer.</p></div>
+<p class="ts-takeaway">Interoperability is tested, not assumed: code against task state, check capabilities, and run conformance tests on every peer.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c83 c84">
+<p class="q">Your client treats error -32004 on SendMessage as "that task already finished, start a new task in the same context". What happens against an agent on a2a-sdk 1.1.5?</p>
+<ol>
+<li data-why="The SDK does refuse the message; it just uses a different code.">The message is accepted and the finished task changes</li>
+<li>The client gets -32602, misses its branch, and shows the user a generic error</li>
+<li data-why="The SDK rejects it; the problem is the code, not silence.">The call hangs until the task times out</li>
+</ol>
+<p class="ts-why">The spec names -32004 for this case, but the SDK answers -32602. Calling GetTask and branching on a terminal state works against both.</p>
+</div>
+</section>
+
+<section class="ts-part" id="alternatives" data-rung="5" data-min="5">
+<h2>A2A, MCP, a plain API, or one process?</h2>
+<p class="ts-bridge">Last part: peers drift from the spec, so test and code defensively. Still unsolved: when is A2A the right tool at all?</p>
+<p class="ts-problem">Your team must connect a support agent to 6 things: 2 databases, a ticketing API, the refund agent, the KYC vendor's agent and a summariser your own team runs in the same service.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Option</th><th>What it connects</th><th>Pick it when</th><th>What you give up</th></tr></thead>
+<tbody>
+<tr><td>A2A</td><td><span class="ts-claim" data-claim="c91" data-src="s3">Independent agents that reason, plan and keep state over multi-turn work</span></td><td>The other side is an agent you don't run, work is long or needs questions back</td><td>A task store, auth per peer, conformance testing</td></tr>
+<tr><td>MCP</td><td><span class="ts-claim" data-claim="c92" data-src="s3">Tools and resources with well-defined, structured inputs and outputs</span></td><td>Your agent calls a system: a database, an API, a file store</td><td>The tool can't ask questions or run for days as a peer</td></tr>
+<tr><td>Plain REST or gRPC API</td><td>Services with fixed contracts</td><td>No model on the other side; a normal service call is enough</td><td>Every agent team writes its own glue</td></tr>
+<tr><td>One process, one framework</td><td>Sub-agents inside your own service</td><td>One team owns all agents, same deploy, same language</td><td>No boundary between teams or vendors; doesn't cross company lines</td></tr>
+</tbody>
+</table></div>
+<p>Who stands behind A2A matters when you bet on it. <span class="ts-claim" data-claim="c93" data-src="s10 s12">In June 2025 the Linux Foundation launched the Agent2Agent project for the protocol Google had created, with AWS, Cisco, Microsoft, Salesforce, SAP and ServiceNow among its founding organizations.</span> <span class="ts-claim" data-claim="c94" data-src="s13">In August 2025 IBM's Agent Communication Protocol (ACP) team wound down ACP development and joined A2A.</span> <span class="ts-claim" data-claim="c95" data-src="s11">By April 2026 the Linux Foundation counted more than 150 supporting organizations, with A2A in Azure AI Foundry, Copilot Studio and Amazon Bedrock AgentCore.</span> <span class="ts-claim" data-claim="c96" data-src="s12">On 17 August 2026 the Agentic AI Foundation announced that A2A is joining it as a hosted project, next to MCP.</span></p>
+<p><span class="ts-claim" data-claim="c97" data-src="s8">The roadmap (last updated 15 September 2026) lists version 1.1 work and bidirectional streaming as near-term items.</span> Expect more change; pin versions.</p>
+<p class="ts-takeaway">Use A2A only at the boundary between independent agents; tools go through MCP, services through normal APIs, and your own sub-agents stay in-process.</p>
+<div class="ts-quiz" data-answer="d" data-claims="c91 c92">
+<p class="q">Which of the 6 connections above should be A2A?</p>
+<ol>
+<li data-why="Databases are tools with fixed inputs and outputs: MCP or a driver.">Both databases</li>
+<li data-why="A ticketing API has a fixed contract and no reasoning on the other side.">The ticketing API</li>
+<li data-why="Same team, same service: a function call is cheaper and has no trust boundary to cross.">The in-house summariser</li>
+<li>The refund agent and the KYC vendor's agent</li>
+</ol>
+<p class="ts-why">Only those two are independent agents run by other teams or companies, doing multi-step work you delegate.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="6">
+<h2>Interview drill: designs where A2A is the crux</h2>
+<p class="ts-bridge">Last part: A2A belongs only at the boundary between independent agents. Still unsolved: can you defend a design with it under questioning?</p>
+<p class="ts-problem">3 prompts of the kind asked in senior system-design rounds. Answer each out loud, in about three minutes, before opening the reference.</p>
+<div class="ts-explain" data-points="Orchestrator speaks A2A to agents owned by other teams or vendors; MCP or APIs for its own tools|Read each peer's Agent Card: interfaces, capabilities, security schemes|Long work: returnImmediately with webhooks or streams; shared task store|Identity from validated tokens; tasks scoped per caller; trade-off stated">
+<p class="q">Prompt 1: Design a support orchestrator that delegates to a refund agent (payments team), a KYC agent (vendor) and a dispute agent (risk team). Walk through discovery, a long dispute, and security.</p>
+<div class="ts-model"><p>The orchestrator is an A2A client to three remote agents. It caches each Agent Card (ETag) and picks the first supported interface. Refund lookups use blocking SendMessage; disputes use returnImmediately plus a webhook, with an idempotent receiver that re-reads GetTask. Each peer gets an OAuth token scoped to the customer; peers scope every task to the caller. Trade-off: A2A adds a task store and a contract per peer, but lets three teams change their internals without breaking the orchestrator.</p></div>
+</div>
+<div class="ts-predict" data-claims="c33 c34 c42">
+<p class="q">Prompt 2: A partner's agent takes 6 hours per task. Your gateway cuts requests at 60 s, and your webhook endpoint sometimes returns 503 during deploys. What goes wrong with a naive integration, and what is your design?</p>
+<div class="ts-reveal"><p>Naive: a blocking SendMessage is held until the task ends, so the gateway cuts it and the client never learns the task id. Design: set returnImmediately to get the task id at once; register a webhook; make the receiver idempotent, since delivery is attempted at least once and may repeat; run a reconciler that polls GetTask for tasks with no update in N minutes, to cover notifications that never arrive, since retries are optional. Trade-off: you now run a public webhook plus a reconciler job instead of one call.</p></div>
+</div>
+<div class="ts-explain" data-points="MCP when callers want a fixed, structured refund lookup|A2A when callers delegate a job that may need questions, time or judgment|Offering both is possible; they share one backend|Cost: A2A brings task state, auth per peer and conformance testing">
+<p class="q">Prompt 3: Partners want to use your refund service from their agents. Do you expose it as an MCP server or an A2A agent? Defend the choice.</p>
+<div class="ts-model"><p>If partners want a fixed lookup (order ID in, status out), MCP is simpler: one tool, no task state. If they want to hand over a job, such as resolving why a refund failed, which may need questions and hours, A2A fits: tasks, input-required and webhooks are built in. You can offer both over one backend. The trade-off: A2A costs you a task store, per-peer auth and conformance tests; MCP costs your partners the orchestration of any multi-step work.</p></div>
+</div>
+<p class="ts-takeaway">In interviews, place A2A at team or company boundaries, move long work off blocking calls, take identity from tokens, and say what the extra protocol costs.</p>
+</section>

@@ -1,0 +1,19 @@
+{
+ "slug": "postgres-internals-4",
+ "title": "PostgreSQL internals, Part 4: indexes beyond B-tree",
+ "tldr": "How PostgreSQL indexes work on disk and when each pays: B-tree pages and ctid pointers, why a non-HOT UPDATE writes every index, index-only scans, column order and PG18 skip scan, partial, expression and covering indexes, GIN, GiST, SP-GiST, BRIN and Hash with their operator classes, building concurrently, write amplification, GIN pending-list stalls, ignored indexes, and an interview drill.",
+ "category": "Databases",
+ "created": "2026-10-02",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "PostgreSQL internals, Part 1: how a row is stored on disk", "slug": "postgres-internals-1"},
+  {"label": "PostgreSQL internals, Part 2: MVCC and row versions", "slug": "postgres-internals-2"},
+  {"label": "PostgreSQL internals, Part 3: VACUUM and bloat", "slug": "postgres-internals-3"}
+ ],
+ "related": [
+  {"label": "PostgreSQL internals, Part 1", "slug": "postgres-internals-1", "why": "pages, line pointers and the ctid every index entry points at"},
+  {"label": "PostgreSQL internals, Part 3", "slug": "postgres-internals-3", "why": "HOT updates, the visibility map, B-tree bloat and REINDEX CONCURRENTLY"},
+  {"label": "PostgreSQL internals, Part 5: query planning and EXPLAIN", "why": "how the planner costs index scans, bitmap scans and sequential scans, and reading plans in depth"},
+  {"label": "PostgreSQL internals, Part 6: isolation levels and locking", "why": "lock modes such as SHARE and SHARE UPDATE EXCLUSIVE that index builds take"}
+ ]
+}

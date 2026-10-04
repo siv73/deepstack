@@ -1,0 +1,2532 @@
+{
+ "verified": "2026-09-27",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "RFC 6749: The OAuth 2.0 Authorization Framework",
+   "url": "https://www.rfc-editor.org/rfc/rfc6749.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s2",
+   "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+   "url": "https://www.rfc-editor.org/rfc/rfc9700.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s3",
+   "title": "RFC 7636: Proof Key for Code Exchange (PKCE)",
+   "url": "https://www.rfc-editor.org/rfc/rfc7636.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s4",
+   "title": "RFC 6750: OAuth 2.0 Bearer Token Usage",
+   "url": "https://www.rfc-editor.org/rfc/rfc6750.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s5",
+   "title": "RFC 9068: JWT Profile for OAuth 2.0 Access Tokens",
+   "url": "https://www.rfc-editor.org/rfc/rfc9068.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s6",
+   "title": "RFC 7662: OAuth 2.0 Token Introspection",
+   "url": "https://www.rfc-editor.org/rfc/rfc7662.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s7",
+   "title": "RFC 8628: OAuth 2.0 Device Authorization Grant",
+   "url": "https://www.rfc-editor.org/rfc/rfc8628.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s8",
+   "title": "OpenID Connect Core 1.0",
+   "url": "https://openid.net/specs/openid-connect-core-1_0.html",
+   "kind": "primary",
+   "publisher": "OpenID Foundation",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s9",
+   "title": "RFC 9449: OAuth 2.0 Demonstrating Proof of Possession (DPoP)",
+   "url": "https://www.rfc-editor.org/rfc/rfc9449.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s10",
+   "title": "RFC 10017: OAuth 2.0 for Browser-Based Applications",
+   "url": "https://www.rfc-editor.org/rfc/rfc10017.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s11",
+   "title": "RFC 8414: OAuth 2.0 Authorization Server Metadata",
+   "url": "https://www.rfc-editor.org/rfc/rfc8414.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s12",
+   "title": "RFC 8252: OAuth 2.0 for Native Apps",
+   "url": "https://www.rfc-editor.org/rfc/rfc8252.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s13",
+   "title": "RFC 7009: OAuth 2.0 Token Revocation",
+   "url": "https://www.rfc-editor.org/rfc/rfc7009.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s14",
+   "title": "The OAuth 2.1 Authorization Framework (Internet-Draft)",
+   "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s15",
+   "title": "GitHub Blog: Security alert, stolen OAuth user tokens",
+   "url": "https://github.blog/news-insights/company-news/security-alert-stolen-oauth-user-tokens/",
+   "kind": "primary",
+   "publisher": "GitHub",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s16",
+   "title": "GitHub Docs: Authorizing OAuth apps",
+   "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+   "kind": "primary",
+   "publisher": "GitHub",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s17",
+   "title": "PyJWT API reference",
+   "url": "https://pyjwt.readthedocs.io/en/stable/api.html",
+   "kind": "primary",
+   "publisher": "PyJWT",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s18",
+   "title": "RFC Editor info page for RFC 6749",
+   "url": "https://www.rfc-editor.org/info/rfc6749",
+   "kind": "primary",
+   "publisher": "RFC Editor",
+   "accessed": "2026-09-27"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "The spec names four roles: the resource owner (you), the client (the app), the authorization server (issues the keys) and the resource server (hosts the data).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a71.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a71.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a71.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "An access token is a string that represents an authorization issued to the client.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a71.4",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a71.4",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a71.4",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "Whoever holds a bearer token can use it; they don't have to prove they own any key.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "\u00a71.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "\u00a71.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "\u00a71.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "Clients send the token in the Authorization header using the Bearer scheme: Authorization: Bearer followed by the token.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "The spec says bearer tokens should not be passed in page URLs, because URLs end up in places like browser history and logs.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "\u00a75.3",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "\u00a75.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "\u00a75.3",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "The authorization request carries response_type=code and client_id, and usually redirect_uri, scope and state.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a74.1.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a74.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a74.1.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "PKCE adds two parameters to that request: code_challenge and code_challenge_method.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "\u00a74.3",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "\u00a74.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "\u00a74.3",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "The spec says the code must expire shortly after it is issued and recommends a maximum lifetime of 10 minutes.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "The client must not use an authorization code more than once.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "If a code is used more than once, the login server must deny the request.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a74.1.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "RFC 9700 says clients should not use the implicit grant (response type token), because access tokens returned in the redirect can leak and be replayed.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "RFC 9700 was published in January 2025 as a Best Current Practice.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "document header",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "document header",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "document header",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "PKCE was designed against an attack where a malicious app on the same device intercepts the code meant for the real app.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "The app makes a code_verifier: a random string of 43 to 128 characters drawn from letters, digits and the symbols - . _ ~.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "\u00a74.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "\u00a74.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "\u00a74.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "With the S256 method, the code_challenge is BASE64URL(SHA256(code_verifier)).",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "\u00a74.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "\u00a74.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "\u00a74.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "At the token endpoint the server transforms the code_verifier and compares it with the stored challenge; if they differ, it returns an invalid_grant error.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "\u00a74.6",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "\u00a74.6",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "\u00a74.6",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "RFC 9700 notes that PKCE was designed to protect native apps, but its advice now applies to all kinds of clients, including web applications.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "RFC 9700 says public clients must use PKCE and recommends it for confidential clients too.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "Clients should use S256, currently the only PKCE method that doesn't expose the verifier in the authorization request.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "Authorization servers must support PKCE and must reject a token request with a code_verifier when the authorization request carried no code_challenge.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "If code_challenge_method is left out, it defaults to plain, where the challenge is the verifier itself.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "\u00a74.2, \u00a74.3",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "\u00a74.2, \u00a74.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "\u00a74.2, \u00a74.3",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "Refresh tokens are used only with the authorization server and are never sent to resource servers.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a71.5",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a71.5",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a71.5",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "The client exchanges a refresh token at the token endpoint with grant_type=refresh_token, and the server may issue a new refresh token at the same time.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a71.5, \u00a76",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a71.5, \u00a76",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a71.5, \u00a76",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "The spec splits clients into confidential clients, which can keep a secret (typically server-side apps), and public clients, which can't (native apps and apps running in the browser).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "For public clients, RFC 9700 requires refresh tokens to be sender-constrained or rotated.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.2.2, \u00a74.14.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.2.2, \u00a74.14.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.2.2, \u00a74.14.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "Rotation means every refresh returns a new refresh token and invalidates the previous one.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a74.14.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a74.14.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a74.14.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer's fetch was truncated (NOT IN CONTENT); resolved from verbatim section text in the browser",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "If an old refresh token is used again, which happens when both a thief and the real app hold it, the login server can detect the reuse and revoke the active refresh token.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a74.14.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a74.14.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a74.14.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer's fetch was truncated (NOT IN CONTENT); resolved from verbatim section text in the browser",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "The token request sends grant_type=authorization_code and the code, plus the redirect_uri if the first request had one, and with PKCE the code_verifier; a client that doesn't authenticate also sends its client_id.",
+   "sources": [
+    "s1",
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a74.1.3",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a74.1.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "\u00a74.5",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "\u00a74.5",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a74.1.3",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "Login servers must compare the redirect URI you send with the registered one character for character, apart from the port of a localhost redirect for native apps.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "RFC 9068 says a JWT access token must declare itself in its typ header, normally as at+jwt, which lets APIs tell it apart from other JWTs such as ID tokens.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "The resource server must check that typ is at+jwt, that iss exactly matches the expected issuer, that aud contains its own identifier, that the signature is valid, and that exp is in the future, and must reject tokens with alg none.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "\u00a74",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "\u00a74",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "\u00a74",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "Required claims in a JWT access token are iss, exp, aud, sub, client_id, iat and jti.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "\u00a72.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "\u00a72.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "\u00a72.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "If scopes were requested, the token should carry them in a scope claim.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "\u00a72.2.3",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "\u00a72.2.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "\u00a72.2.3",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "When a token is rejected, the error invalid_token goes with HTTP 401 and insufficient_scope with HTTP 403.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "\u00a73.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "\u00a73.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "\u00a73.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "PyJWT's documentation warns never to build the algorithms list from the token's own alg header.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "jwt.decode, algorithms warning",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "jwt.decode, algorithms warning",
+     "result": "supported",
+     "method": "WebFetch claim check",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "jwt.decode, algorithms warning",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c16b",
+   "text": "RFC 9700 requires PKCE for public clients and recommends it for all others.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "The client credentials grant is for a client acting on resources it controls or has pre-arranged access to, and only confidential clients may use it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "\u00a74.4",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "\u00a74.4",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "\u00a74.4",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "The device authorization grant is for devices that have no browser or can't easily take input, such as smart TVs and printers.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Native apps must send the authorization request through an external user-agent such as the system browser, not an embedded web view.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "\u00a75, \u00a78.12",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "\u00a75, \u00a78.12",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "\u00a75, \u00a78.12",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "While polling, the error authorization_pending means keep polling and slow_down means poll less often.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "\u00a73.5",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "\u00a73.5",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "\u00a73.5",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "GitHub documents the device flow for headless apps such as CLI tools, and in its web flow supports PKCE with S256 only.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Device flow; Web application flow",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Device flow; Web application flow",
+     "result": "supported",
+     "method": "WebFetch claim check",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Device flow; Web application flow",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "RFC 9700 says the resource owner password credentials grant must not be used.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.4",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.4",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.4",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Authorization servers must compare redirect URIs by exact string match; the only exception is the port of a localhost redirect for native apps.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "Clients and authorization servers must not expose open redirectors, pages that forward the browser to any URL given in a query parameter.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "Clients must prevent CSRF, either with a one-time state value bound to the user's browser or by relying on PKCE when the authorization server is known to support it.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "Such a client should use the iss response parameter to tell the servers apart, or failing that, a distinct redirect URI per server.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "RFC 9700 allows a client to rely on PKCE for CSRF protection once it has ensured the login server supports PKCE.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "In April 2022, attackers used OAuth user tokens stolen from two GitHub integrators, Heroku and Travis CI, to list and clone private repositories of dozens of organisations.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "opening paragraph; April 27 update",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "opening paragraph; April 27 update",
+     "result": "supported",
+     "method": "WebFetch claim check",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "opening paragraph; April 27 update",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "GitHub spotted it when a compromised AWS key was used to access npm's production infrastructure; it revoked the tokens tied to its own use of the affected apps and asked Heroku and Travis CI to revoke all the others.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Impact section",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Impact section",
+     "result": "supported",
+     "method": "WebFetch claim check",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Impact section",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "RFC 9700 says access tokens should be audience-restricted to a specific resource server and limited to the privileges needed.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.3",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.3",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "RFC 9700 says authorization and resource servers should use sender-constrained access tokens, through mutual TLS (RFC 8705) or DPoP (RFC 9449).",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.2.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.2.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.2.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "The revocation endpoint takes a token by POST, and revoking a refresh token should also invalidate the access tokens issued from the same grant, if the server supports that.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "\u00a72.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "With DPoP the client signs a small proof JWT for each request with its private key; the proof names the HTTP method and URL, includes a hash of the access token when calling an API, and travels in a DPoP header.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "\u00a71, \u00a74.1, \u00a74.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "\u00a71, \u00a74.1, \u00a74.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "\u00a71, \u00a74.1, \u00a74.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "With token introspection the API POSTs the token to the authorization server, which answers with JSON whose required active field says whether the token is currently valid.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "\u00a72.1, \u00a72.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "\u00a72.1, \u00a72.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "\u00a72.1, \u00a72.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "RFC 7662 describes the caching trade-off: a longer cache cuts load on the introspection endpoint, but a revoked token can stay usable until the cache entry expires.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "\u00a74",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "\u00a74",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "\u00a74",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "For local checks, the authorization server can publish its signing keys at a jwks_uri listed in its metadata, and RFC 9068 says it should do so for resource servers.",
+   "sources": [
+    "s11",
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "\u00a72 (jwks_uri); RFC 9068 \u00a74",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "\u00a72 (jwks_uri); RFC 9068 \u00a74",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "\u00a72 (jwks_uri); RFC 9068 \u00a74",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "\u00a72 (jwks_uri); RFC 9068 \u00a74",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "\u00a72 (jwks_uri); RFC 9068 \u00a74",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "By default that metadata lives at /.well-known/oauth-authorization-server on the issuer's host, placed before any path the issuer URL has.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "\u00a73",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "\u00a73",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "\u00a73",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "PyJWT's decode function takes a leeway argument that allows a small margin when checking expiry, for clocks that are slightly out of sync.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "jwt.decode, leeway",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "jwt.decode, leeway",
+     "result": "supported",
+     "method": "WebFetch claim check",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "jwt.decode, leeway",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "OpenID Connect is an identity layer on top of OAuth 2.0; OAuth by itself does not tell the app who the user is or how they authenticated.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "\u00a71",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "An OpenID Connect request must include openid in its scope.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "\u00a73.1.2.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "\u00a73.1.2.1",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "\u00a73.1.2.1",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "OpenID Connect adds the ID token, a JWT whose required claims include iss, sub, aud, exp and iat, with aud including the client's ID.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "\u00a72",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "\u00a72",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "\u00a72",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "reviewer flagged wording; sentence corrected and re-checked",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "RFC 10017 (August 2026), on browser-based apps, strongly recommends the Backend for Frontend pattern for business applications, sensitive applications and apps that handle personal data.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "\u00a76.1.4.3; header",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "\u00a76.1.4.3; header",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "\u00a76.1.4.3; header",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "In a BFF a server-side component acts as the confidential OAuth client and keeps the tokens, so there are no tokens in the browser to steal.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "\u00a76.1, \u00a76.1.4.2",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "\u00a76.1, \u00a76.1.4.2",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "\u00a76.1, \u00a76.1.4.2",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "RFC 10017 notes one attack remains: someone who hijacks the app inside the user's browser can still act through it, a problem inherent to web applications.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "\u00a76.1.4.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "\u00a76.1.4.3",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "RFC 6749 is still the core OAuth 2.0 spec; RFC 8252, RFC 8996 and RFC 9700 update it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Updated by",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Updated by",
+     "result": "supported",
+     "method": "WebFetch claim check",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Updated by",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "OAuth 2.1, which folds these best practices into one document meant to replace RFC 6749 and RFC 6750, is still an IETF working-group draft as of September 2026.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "document status and abstract",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "document status and abstract",
+     "result": "supported",
+     "method": "WebFetch claim check",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "document status and abstract",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "RFC 9700 recommends asymmetric client authentication, such as mutual TLS or signed JWTs with a private key, over shared secrets.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "\u00a72.5",
+     "result": "supported",
+     "method": "WebFetch summary",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "\u00a72.5",
+     "result": "supported",
+     "method": "browser: verbatim section text",
+     "at": "2026-09-27"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "\u00a72.5",
+     "result": "supported",
+     "method": "strict-mode independent reviewer",
+     "note": "independent reviewer agrees",
+     "at": "2026-09-27"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Single-page apps used the implicit grant for years",
+   "reason": "historical usage claim with no official source"
+  },
+  {
+   "text": "Many login servers issue access tokens as JWTs",
+   "reason": "no official survey; reworded as a conditional"
+  },
+  {
+   "text": "The password grant still turns up in older internal tools",
+   "reason": "anecdotal, no source"
+  },
+  {
+   "text": "How PKCE is pronounced",
+   "reason": "not needed; removed rather than verified"
+  }
+ ]
+}

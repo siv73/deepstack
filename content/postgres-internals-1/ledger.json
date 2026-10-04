@@ -1,0 +1,1838 @@
+{
+ "verified": "2026-10-01",
+ "volatility": "stable",
+ "strict": false,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "PostgreSQL 18 docs: 66.1 Database File Layout",
+   "url": "https://www.postgresql.org/docs/18/storage-file-layout.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s2",
+   "title": "PostgreSQL 18 docs: 66.2 TOAST",
+   "url": "https://www.postgresql.org/docs/18/storage-toast.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s3",
+   "title": "PostgreSQL 18 docs: 66.6 Database Page Layout",
+   "url": "https://www.postgresql.org/docs/18/storage-page-layout.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s4",
+   "title": "PostgreSQL 18 docs: Appendix K. PostgreSQL Limits",
+   "url": "https://www.postgresql.org/docs/18/limits.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s5",
+   "title": "PostgreSQL 18 docs: pg_type catalog",
+   "url": "https://www.postgresql.org/docs/18/catalog-pg-type.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s6",
+   "title": "PostgreSQL 18 docs: 9.28 System Administration Functions (Database Object Management)",
+   "url": "https://www.postgresql.org/docs/18/functions-admin.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s7",
+   "title": "PostgreSQL 18 docs: 19.11 Client Connection Defaults",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-client.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s8",
+   "title": "PostgreSQL 18 docs: CREATE TABLE",
+   "url": "https://www.postgresql.org/docs/18/sql-createtable.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s9",
+   "title": "PostgreSQL 18 docs: ALTER TABLE",
+   "url": "https://www.postgresql.org/docs/18/sql-altertable.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s10",
+   "title": "PostgreSQL 18 docs: 8.3 Character Types",
+   "url": "https://www.postgresql.org/docs/18/datatype-character.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s11",
+   "title": "PostgreSQL 18 docs: 8.1 Numeric Types",
+   "url": "https://www.postgresql.org/docs/18/datatype-numeric.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s12",
+   "title": "PostgreSQL 18 docs: 8.5 Date/Time Types",
+   "url": "https://www.postgresql.org/docs/18/datatype-datetime.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s13",
+   "title": "PostgreSQL 18 docs: 8.6 Boolean Type",
+   "url": "https://www.postgresql.org/docs/18/datatype-boolean.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s14",
+   "title": "PostgreSQL 18 source file bufpage.c (page item placement)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/storage/page/bufpage.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s15",
+   "title": "PostgreSQL 18 source file htup_details.h (heap tuple limits)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/include/access/htup_details.h",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s16",
+   "title": "GitLab Docs: Ordering table columns in PostgreSQL",
+   "url": "https://docs.gitlab.com/development/database/ordering_table_columns/",
+   "kind": "primary",
+   "publisher": "GitLab",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s17",
+   "title": "PostgreSQL: Versioning Policy (supported releases)",
+   "url": "https://www.postgresql.org/support/versioning/",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s19",
+   "title": "PostgreSQL 18 docs: 66.4 Visibility Map",
+   "url": "https://www.postgresql.org/docs/18/storage-vm.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s20",
+   "title": "PostgreSQL 18 docs: 66.7 Heap-Only Tuples (HOT)",
+   "url": "https://www.postgresql.org/docs/18/storage-hot.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s21",
+   "title": "PostgreSQL 19 docs (beta): Release 19 notes",
+   "url": "https://www.postgresql.org/docs/19/release-19.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  },
+  {
+   "id": "s22",
+   "title": "PostgreSQL 18 source file toast_internals.c (saving TOAST values)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/common/toast_internals.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-01"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "PostgreSQL 18, first released on 25 September 2025, is the newest supported major version, and this page follows its documentation.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "Releases table",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "Releases table (and news header: 19 Beta 4)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "Every table and index is stored as an array of fixed-size pages, usually 8 kB.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "Each table and index is stored in its own file, named after its filenode number from pg_class.relfilenode.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "66.1 Database File Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "66.1 Database File Layout (incl. Caution box)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "When a table or index grows past 1 GB, it is split into 1 GB segment files named filenode, filenode.1, filenode.2 and so on.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "66.1 Database File Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "66.1 Database File Layout (incl. Caution box)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "Besides the main fork, each table has a free space map (suffix _fsm) and a visibility map (suffix _vm); unlogged tables also have an initialization fork (_init).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "66.1 Database File Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "66.1 Database File Layout (incl. Caution box)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "TRUNCATE, REINDEX, CLUSTER and some forms of ALTER TABLE can change the filenode while keeping the table's OID.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "66.1 Database File Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "66.1 Database File Layout (incl. Caution box)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "pg_relation_filepath() shows the path of a relation's first main-fork segment, relative to the data directory.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "66.1 Database File Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "66.1 Database File Layout (incl. Caution box)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "A table with columns that can hold large values has a TOAST table, linked from pg_class.reltoastrelid.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "66.1 Database File Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "66.1 Database File Layout (incl. Caution box)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Every page starts with a 24-byte header that holds, among other things, pd_lower and pd_upper: the offsets where free space starts and ends.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "After the header comes an array of item identifiers, 4 bytes each, holding the offset and length of each row.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "New item identifiers are taken from the start of the free space, and new rows are placed at its end, so the two grow toward each other.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "Ordinary tables leave the special space at the end of the page empty; B-tree indexes use it for links to neighbouring pages.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "A ctid, the pointer to a row, is a page number plus the index of an item identifier on that page.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "An item identifier is never moved until it is freed, so it stays valid even when the row it points to is moved within the page to compact free space.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "An UPDATE adds a new version of the row to the table rather than changing it in place.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "Each row version's header has a t_ctid field: the ctid of this version or of a newer one.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "Every row starts with a fixed header of 23 bytes on most machines, then an optional null bitmap, then the column data.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "The header holds t_xmin and t_xmax, the IDs of the transactions that inserted and deleted this row version.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "The null bitmap exists only if the row has at least one NULL, and has one bit per column.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Column data begins at offset t_hoff, which is always a multiple of the platform's MAXALIGN distance.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout / 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "66.6 Database Page Layout, Tables 66.2-66.4, 66.6.1 Table Row Layout",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "Each type has an alignment: c needs none, s is 2 bytes and i is 4 bytes on most machines, and d is 8 bytes on many machines; padding is inserted before a value so it starts on its boundary.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "typalign",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "typalign column",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ],
+   "note": "Reworded after pass 2 to match the source's qualifiers; pass 2 re-run on the new wording."
+  },
+  {
+   "id": "c23",
+   "text": "bigint and timestamptz take 8 bytes, integer and date take 4, smallint takes 2 and boolean takes 1.",
+   "sources": [
+    "s11",
+    "s12",
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Table 8.2 Numeric Types",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Table 8.9 Date/Time Types",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Table 8.19 Boolean Data Type",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Table 8.2 Numeric Types",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Table 8.9 Date/Time Types",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Table 8.19 Boolean Data Type",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Strings up to 126 bytes are stored with a 1-byte header; longer ones have a 4-byte header.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "8.3 Character Types, storage requirement paragraph",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "storage requirement paragraph",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "Values with a 1-byte header are not aligned, while values with a 4-byte header are aligned on at least a 4-byte boundary.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "PostgreSQL does not let a row span pages, so large values are compressed and/or split into multiple rows in a separate TOAST table.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "TOAST kicks in only when a row is wider than TOAST_TUPLE_THRESHOLD, normally 2 kB; it then compresses or moves values out until the row is under TOAST_TUPLE_TARGET, also normally 2 kB, or nothing more can be gained.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "Out-of-line values are cut into chunks of about 2000 bytes, each stored as its own row in the TOAST table with chunk_id, chunk_seq and chunk_data.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "For a value moved out of line, the main row keeps only an 18-byte TOAST pointer, whatever the size of the value.",
+   "sources": [
+    "s2",
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table K.1 and notes",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table K.1 and the paragraphs after it",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ],
+   "note": "Earlier wording ('What stays in the main row is an 18-byte TOAST pointer') was judged ambiguous against s4 in pass 2 (it omitted 'for a value moved out of line'); reworded and re-checked against s2 and s4."
+  },
+  {
+   "id": "c30",
+   "text": "The four storage strategies are PLAIN (no compression, no out-of-line), EXTENDED (both; the default for most TOAST-able types), EXTERNAL (out-of-line, not compressed) and MAIN (compressed, out-of-line only as a last resort).",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "With EXTENDED, compression is tried first, then out-of-line storage if the row is still too big.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Only variable-length (varlena) types can be TOASTed, and any such value is limited to 1 GB.",
+   "sources": [
+    "s2",
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table K.1 and notes",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table K.1 and the paragraphs after it",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "Wide TOASTed values are only fetched, if selected at all, when the result is sent to the client; so the main table stays small and more rows fit in the buffer cache.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "An UPDATE that doesn't change any out-of-line values incurs no TOAST cost.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "pg_column_size shows the bytes used to store a value, including any compression.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Table 9.97 Database Object Size Functions",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Database Object Size Functions table",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "pg_relation_size returns the size of one fork (main by default; also fsm, vm or init).",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Table 9.97 Database Object Size Functions",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Database Object Size Functions table",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "pg_table_size counts the table without indexes but with its TOAST table, free space map and visibility map; pg_total_relation_size adds the indexes.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Table 9.97 Database Object Size Functions",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Database Object Size Functions table",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "pg_column_compression returns the compression method used for a value, or NULL if it isn't compressed.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Table 9.97 Database Object Size Functions",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Database Object Size Functions table",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "When PostgreSQL adds a row to a page, it reserves the row's length rounded up to MAXALIGN.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "PageAddItemExtended: alignedSize = MAXALIGN(size)",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "PageAddItemExtended: alignedSize = MAXALIGN(size)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "The source defines the most rows a heap page can hold, MaxHeapTuplesPerPage, as the space after the page header divided by the smallest aligned row header plus one line pointer.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "MaxHeapTuplesPerPage definition",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "#define MaxHeapTuplesPerPage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "GitLab's development guidelines require new tables to order columns by size, largest first, with variable-length types at the end.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "page body: size ordering rule and events example",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "page body: ordering rule and events example",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "Their example: reordering the events table cut the fixed part of each row from 48 to 40 bytes, which they estimate saves at least 610 MB across 80 million rows.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "page body: size ordering rule and events example",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "page body: ordering rule and events example",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "ALTER TABLE ... SET STORAGE doesn't change existing rows; it only sets the strategy for future updates.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "SET STORAGE / SET COMPRESSION",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "SET STORAGE; SET COMPRESSION",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "SET COMPRESSION doesn't rewrite the table, so existing values may stay compressed with the old method.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "SET STORAGE / SET COMPRESSION",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "SET STORAGE; SET COMPRESSION",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "The supported compression methods are pglz and lz4; lz4 is available only if PostgreSQL was built with --with-lz4.",
+   "sources": [
+    "s9",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "SET STORAGE / SET COMPRESSION",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "default_toast_compression",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "SET STORAGE; SET COMPRESSION",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "default_toast_compression",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "In PostgreSQL 18, default_toast_compression defaults to pglz.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "default_toast_compression",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "default_toast_compression",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "PostgreSQL 19, not yet released at the time of writing, changes the default TOAST compression method from pglz to lz4.",
+   "sources": [
+    "s21",
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "E.1.3.1.2 General Performance",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "Releases table",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "E.1.3.1.2 General Performance",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "Releases table (and news header: 19 Beta 4)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "toast_tuple_target defaults to 2040 bytes on 8 kB pages, can be set between 128 and 8160 bytes, applies only to new rows, and cannot be set on TOAST tables.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Storage Parameters",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Storage Parameters: toast_tuple_target, fillfactor",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "fillfactor is a percentage between 10 and 100, 100 by default; lower values leave room on each page so an UPDATE can put the new row version on the same page.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Storage Parameters",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Storage Parameters: toast_tuple_target, fillfactor",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "The docs note that the default is often close to optimal and that changing it can hurt in some cases.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Storage Parameters",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Storage Parameters: toast_tuple_target, fillfactor",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "A single relation can hold at most 32 TB with the default 8 kB block size.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table K.1 and notes",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table K.1 and the paragraphs after it",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "A table can have at most 1,600 columns, and fewer in practice because a row must fit on one 8 kB page: 1,600 integer columns fit, 1,600 bigint columns don't.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table K.1 and notes",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table K.1 and the paragraphs after it",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "Dropped columns still count toward the 1,600-column limit, and their slots still take space in the null bitmap.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table K.1 and notes",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table K.1 and the paragraphs after it",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "Each table can hold at most 2^32 out-of-line values because each is identified by a 32-bit OID; as the OID space fills up, finding a free one gets slow, slowing INSERT and UPDATE.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table K.1 and notes",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table K.1 and the paragraphs after it",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "The docs suggest partitioning as a workaround and say this usually matters only for tables with many terabytes of data.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table K.1 and notes",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table K.1 and the paragraphs after it",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "When a changed value is TOASTed again, PostgreSQL normally picks a new unused OID for it and writes its chunks as new rows.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "toast_save_datum: choose an OID for the value",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "toast_save_datum: normal case GetNewOidWithIndex; heap_insert per chunk",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "An UPDATE can skip creating new index entries (a heap-only tuple, HOT) only if it changes no indexed columns and the new version fits on the same page.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "The pg_stat_all_tables view lets you monitor how often updates are HOT and how often they are not.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "66.7 Heap-Only Tuples (HOT)",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ],
+   "note": "Reworded after pass 2 to match the source's qualifiers; pass 2 re-run on the new wording."
+  },
+  {
+   "id": "c61",
+   "text": "EXTERNAL makes substring operations on large text and bytea columns faster, at the cost of more storage, because only the needed part of an uncompressed out-of-line value is fetched.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "66.2 TOAST / 66.2.1 Out-of-Line, On-Disk TOAST Storage",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "The visibility map keeps two bits per heap page: all-visible and all-frozen.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "66.4 Visibility Map",
+     "result": "supported",
+     "at": "2026-10-01T00:40",
+     "method": "read: verbatim SGML/source from postgres/postgres git (REL_18_STABLE / REL_19_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "66.4 Visibility Map",
+     "result": "supported",
+     "at": "2026-10-01T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "MAXALIGN is 8 bytes on all 64-bit platforms.",
+   "reason": "no official doc states the value; the page states it only as what the test server used and pins byte counts with tests"
+  },
+  {
+   "text": "lz4 compresses JSON N times faster than pglz.",
+   "reason": "no official benchmark figure; only the release notes' 'more efficient' wording"
+  },
+  {
+   "text": "TOAST_MAX_CHUNK_SIZE is exactly 1996 bytes.",
+   "reason": "docs say 'about 2000 bytes'; exact value depends on build constants"
+  },
+  {
+   "text": "PostgreSQL has no way to reorder the columns of an existing table.",
+   "reason": "not stated explicitly in the docs; page only says reordering means copying into a new table"
+  },
+  {
+   "text": "On-disk TOAST pointers become 22 bytes with 8-byte OIDs.",
+   "reason": "only in the development branch (future version 20); not in 18 or 19"
+  }
+ ]
+}

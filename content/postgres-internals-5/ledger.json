@@ -1,0 +1,4536 @@
+{
+ "verified": "2026-10-03",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "PostgreSQL 18 docs: 14.1 Using EXPLAIN",
+   "url": "https://www.postgresql.org/docs/18/using-explain.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s2",
+   "title": "PostgreSQL 18 docs: 14.2 Statistics Used by the Planner",
+   "url": "https://www.postgresql.org/docs/18/planner-stats.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s3",
+   "title": "PostgreSQL 18 docs: 14.3 Controlling the Planner with Explicit JOIN Clauses",
+   "url": "https://www.postgresql.org/docs/18/explicit-joins.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s4",
+   "title": "PostgreSQL 18 docs: 14.4 Populating a Database",
+   "url": "https://www.postgresql.org/docs/18/populate.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s5",
+   "title": "PostgreSQL 18 docs: 69.1 Row Estimation Examples",
+   "url": "https://www.postgresql.org/docs/18/row-estimation-examples.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s6",
+   "title": "PostgreSQL 18 docs: 69.2 Multivariate Statistics Examples",
+   "url": "https://www.postgresql.org/docs/18/multivariate-statistics-examples.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s7",
+   "title": "PostgreSQL 18 docs: 19.7 Query Planning",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-query.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s8",
+   "title": "PostgreSQL 18 docs: 19.4 Resource Consumption",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-resource.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s9",
+   "title": "PostgreSQL 18 docs: PREPARE",
+   "url": "https://www.postgresql.org/docs/18/sql-prepare.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s10",
+   "title": "PostgreSQL 18 docs: EXPLAIN",
+   "url": "https://www.postgresql.org/docs/18/sql-explain.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s11",
+   "title": "PostgreSQL 18 docs: 53.29 pg_stats",
+   "url": "https://www.postgresql.org/docs/18/view-pg-stats.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s12",
+   "title": "PostgreSQL 18 docs: ANALYZE",
+   "url": "https://www.postgresql.org/docs/18/sql-analyze.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s13",
+   "title": "PostgreSQL 18 docs: 24.1 Routine Vacuuming",
+   "url": "https://www.postgresql.org/docs/18/routine-vacuuming.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s14",
+   "title": "PostgreSQL 18 docs: 19.10 Vacuuming (autovacuum settings)",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-vacuum.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s16",
+   "title": "PostgreSQL 18 docs: 15.1 How Parallel Query Works",
+   "url": "https://www.postgresql.org/docs/18/how-parallel-query-works.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s17",
+   "title": "PostgreSQL 18 docs: 5.12 Table Partitioning (Partition Pruning)",
+   "url": "https://www.postgresql.org/docs/18/ddl-partitioning.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s18",
+   "title": "PostgreSQL 18 docs: F.32 pg_stat_statements",
+   "url": "https://www.postgresql.org/docs/18/pgstatstatements.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s19",
+   "title": "PostgreSQL 18 docs: F.4 auto_explain",
+   "url": "https://www.postgresql.org/docs/18/auto-explain.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s20",
+   "title": "PostgreSQL 18 docs: 19.8 Error Reporting and Logging",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-logging.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s21",
+   "title": "PostgreSQL 18 docs: 51.1 The Path of a Query",
+   "url": "https://www.postgresql.org/docs/18/query-path.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s22",
+   "title": "PostgreSQL 18 docs: 51.5 Planner/Optimizer",
+   "url": "https://www.postgresql.org/docs/18/planner-optimizer.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s23",
+   "title": "PostgreSQL 18 docs: 51.6 Executor",
+   "url": "https://www.postgresql.org/docs/18/executor.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s24",
+   "title": "PostgreSQL 18 release notes",
+   "url": "https://www.postgresql.org/docs/18/release-18.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s25",
+   "title": "PostgreSQL 19 release notes (draft)",
+   "url": "https://www.postgresql.org/docs/19/release-19.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s26",
+   "title": "PostgreSQL 19 docs (draft): pg_plan_advice",
+   "url": "https://www.postgresql.org/docs/19/pgplanadvice.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s27",
+   "title": "PostgreSQL source: src/backend/utils/cache/plancache.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/utils/cache/plancache.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s28",
+   "title": "PostgreSQL source: src/backend/commands/analyze.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/commands/analyze.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s29",
+   "title": "PostgreSQL source: src/backend/nodes/tidbitmap.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/nodes/tidbitmap.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s30",
+   "title": "PostgreSQL source: src/backend/executor/nodeBitmapIndexscan.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/executor/nodeBitmapIndexscan.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s31",
+   "title": "PostgreSQL source: src/backend/executor/nodeHashjoin.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/executor/nodeHashjoin.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s32",
+   "title": "PostgreSQL source: src/backend/executor/nodeMemoize.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/executor/nodeMemoize.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s33",
+   "title": "PostgreSQL source: src/backend/executor/nodeAgg.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/executor/nodeAgg.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s34",
+   "title": "PostgreSQL source: src/backend/statistics/dependencies.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/statistics/dependencies.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s35",
+   "title": "Clerk: Postmortem of the February 19, 2026 system outage",
+   "url": "https://clerk.com/blog/2026-02-19-system-outage-postmortem",
+   "kind": "primary",
+   "publisher": "Clerk (first-party postmortem; used only for claims about its own incident)",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s36",
+   "title": "GitLab: Incident Review, GitLab.com slow and not loading some elements",
+   "url": "https://gitlab.com/gitlab-com/gl-infra/production/-/issues/20692",
+   "kind": "primary",
+   "publisher": "GitLab (first-party incident review; used only for claims about its own incident)",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s37",
+   "title": "PostgreSQL JDBC Driver docs: Server Prepared Statements",
+   "url": "https://jdbc.postgresql.org/documentation/server-prepare/",
+   "kind": "primary",
+   "publisher": "PostgreSQL JDBC Driver project",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s38",
+   "title": "PgBouncer docs: Configuration (max_prepared_statements)",
+   "url": "https://www.pgbouncer.org/config.html",
+   "kind": "primary",
+   "publisher": "PgBouncer project",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s39",
+   "title": "PgBouncer docs: FAQ (prepared statements in transaction mode)",
+   "url": "https://www.pgbouncer.org/faq.html",
+   "kind": "primary",
+   "publisher": "PgBouncer project",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s40",
+   "title": "PostgreSQL 18 docs: 19.9 Run-time Statistics",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-statistics.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s41",
+   "title": "PostgreSQL 18 docs: 15.2 When Can Parallel Query Be Used?",
+   "url": "https://www.postgresql.org/docs/18/when-can-parallel-query-be-used.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s42",
+   "title": "PostgreSQL 18 docs: CREATE TABLE (storage parameters)",
+   "url": "https://www.postgresql.org/docs/18/sql-createtable.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s43",
+   "title": "PostgreSQL source: src/backend/utils/sort/tuplesort.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/utils/sort/tuplesort.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s44",
+   "title": "PostgreSQL source: src/backend/commands/explain.c (REL_18_STABLE)",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/commands/explain.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s45",
+   "title": "PostgreSQL 18 docs: SET",
+   "url": "https://www.postgresql.org/docs/18/sql-set.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s46",
+   "title": "PostgreSQL 18 docs: 11.5 Combining Multiple Indexes",
+   "url": "https://www.postgresql.org/docs/18/indexes-bitmap-scans.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "The parser checks the query's syntax and builds a query tree.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "51.1 The Path of a Query: parser stage",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "51.1 The Path of a Query",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "51.1 The Path of a Query: parser stage",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "The rewriter applies rules stored in the system catalogs; views work this way, with the view replaced by a query on its base tables.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "51.1: rewrite system, views",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "51.1 The Path of a Query",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "51.1: rewrite system, views",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "The planner creates the possible paths to the same result, estimates the cost of each, and expands the cheapest into a full plan for the executor.",
+   "sources": [
+    "s21",
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "51.1 planner paragraph; 51.5 intro (paths, cheapest)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "51.1 planner paragraph; 51.5 intro (paths, cheapest)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "51.1 The Path of a Query",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "51.5 intro; 51.5.1 join strategies",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "51.1 planner paragraph; 51.5 intro (paths, cheapest)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "51.1 planner paragraph; 51.5 intro (paths, cheapest)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "The executor runs the plan as a demand-pull pipeline: each time a plan node is called, it delivers one more row or reports that it is done.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "51.6 Executor: demand-pull pipeline",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "51.6 Executor",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "51.6 Executor: demand-pull pipeline",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "Costs are in arbitrary units set by the planner's cost parameters; by tradition one unit is one sequential page fetch, so seq_page_cost is 1.0 and the other parameters are set relative to it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics: cost units paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics: cost units paragraph",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "The defaults are seq_page_cost 1.0, random_page_cost 4.0, cpu_tuple_cost 0.01, cpu_index_tuple_cost 0.005 and cpu_operator_cost 0.0025.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.2 Planner Cost Constants: each parameter's default",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.2 Planner Cost Constants: each parameter's default",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "A sequential scan's estimated cost is the pages read times seq_page_cost plus the rows scanned times cpu_tuple_cost, and each operator in a WHERE condition adds cpu_operator_cost for every row it checks.",
+   "sources": [
+    "s1",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1: seq scan cost formula, WHERE adds 10000*cpu_operator_cost; 19.7.2 cpu_operator_cost: each operator or function executed",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "14.1.1: seq scan cost formula, WHERE adds 10000*cpu_operator_cost; 19.7.2 cpu_operator_cost: each operator or function executed",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 seq scan and nested-loop cost text; 14.1.2 Sort method, Rows Removed by Index Recheck",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.2 cpu_operator_cost; 19.7.1 enable_memoize; 19.7.4 jit (if available)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1: seq scan cost formula, WHERE adds 10000*cpu_operator_cost; 19.7.2 cpu_operator_cost: each operator or function executed",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "14.1.1: seq scan cost formula, WHERE adds 10000*cpu_operator_cost; 19.7.2 cpu_operator_cost: each operator or function executed",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "An index scan fetches table rows in index order, which makes each fetch expensive, so the planner uses it mostly when very few rows match or when an ORDER BY matches the index order.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1: Index Scan example (unique1 = 42)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1: Index Scan example (unique1 = 42)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "A bitmap scan first collects the locations of matching rows from the index, sorts them into physical order, and then reads the table pages in that order.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1: Bitmap Heap Scan example (unique1 < 100)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1: Bitmap Heap Scan example (unique1 < 100)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "The first cost on an EXPLAIN line is the start-up cost spent before the node can output its first row, such as the time to sort; the second is the total cost if the node runs to completion.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1: estimated start-up cost / total cost",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1: estimated start-up cost / total cost",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "A node's cost includes the cost of all its children, and the top node's total cost is the number the planner tries to minimize.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1: upper-level node includes children; top line minimized",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1: upper-level node includes children; top line minimized",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "The docs say random storage reads normally cost much more than four times a sequential read, and the default of 4.0 is lower because most random reads, such as index reads, are assumed to hit cache.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.2 random_page_cost description",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.2 random_page_cost description",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "Lowering random_page_cost relative to seq_page_cost makes the planner prefer index scans, and setting the two equal makes sense if the database is entirely cached in RAM.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.2 random_page_cost description",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.2 random_page_cost description",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "Only the relative values of the cost parameters matter, and the docs warn that changing them on the basis of a few experiments is very risky.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.2 section intro",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.2 section intro",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The table's row and page counts come from reltuples and relpages in pg_class, which VACUUM, ANALYZE and a few DDL commands such as CREATE INDEX update.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics: reltuples/relpages",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics; 14.2.2 Extended Statistics; 14.2.2.2",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics: reltuples/relpages",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "The planner also looks up the table's current number of pages, which is cheap, and scales reltuples to match whenever that differs from relpages.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "69.1: planner fetches current number of pages, scales reltuples",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "69.1: relpages scaling; scalarltsel MCV + histogram; independence",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "69.1: planner fetches current number of pages, scales reltuples",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "Selectivity is estimated from the pg_statistic catalog, which ANALYZE fills, and the statistics are always approximate, even right after ANALYZE.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "14.2.1: selectivity, pg_statistic, always approximate",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics; 14.2.2 Extended Statistics; 14.2.2.2",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "14.2.1: selectivity, pg_statistic, always approximate",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "The pg_stats view shows the statistics per column: null_frac, n_distinct, most_common_vals with most_common_freqs, histogram_bounds, and correlation.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "53.29 pg_stats columns table",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Table 53.29 pg_stats Columns (correlation)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "53.29 pg_stats columns table",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "For col = constant, a value in the most-common-values list gets its stored frequency as the selectivity.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "69.1: equality, MCV frequency",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "69.1 Row Estimation Examples",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "69.1: equality, MCV frequency",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "For col = constant with a value not in the most-common-values list, the selectivity is an even share of what the list leaves over: one minus the listed frequencies and the null fraction, divided by the number of other distinct values.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "69.1: value not in MCV list formula (null fraction note)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "69.1 Row Estimation Examples",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "69.1: value not in MCV list formula (null fraction note)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "For a range such as col < constant, the planner checks the condition directly against the most common values and adds up their frequencies; for the remaining rows it uses the histogram, whose buckets hold equal numbers of rows, counting the whole buckets below the constant plus a straight-line share of the bucket the constant falls in.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "69.1: range example with histogram buckets; scalarltsel applies condition to MCV list and combines",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "69.1: relpages scaling; scalarltsel MCV + histogram; independence",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "69.1: range example with histogram buckets; scalarltsel applies condition to MCV list and combines",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "For several conditions, the planner normally assumes they are independent and multiplies their selectivities.",
+   "sources": [
+    "s5",
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "69.1: two conditions assumed independent, multiplied; 14.2.2: planner normally assumes independence",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "69.1: two conditions assumed independent, multiplied; 14.2.2: planner normally assumes independence",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "69.1: relpages scaling; scalarltsel MCV + histogram; independence",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.2: The planner normally assumes that multiple conditions are independent",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page with quoted support (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "69.1: two conditions assumed independent, multiplied; 14.2.2: planner normally assumes independence",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "69.1: two conditions assumed independent, multiplied; 14.2.2: planner normally assumes independence",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "A correlation near +1 or -1 makes an index scan on the column look cheaper than one near zero, because rows in value order sit close together on disk.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "53.29 pg_stats: correlation column",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Table 53.29 pg_stats Columns (correlation)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "53.29 pg_stats: correlation column",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "For large tables, ANALYZE reads a random sample rather than every row, so the statistics change slightly on each run, and in rare cases a plan changes after ANALYZE even though the data didn't.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "ANALYZE Notes: random sample, non-determinism",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Notes",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "ANALYZE Notes: random sample, non-determinism",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "ANALYZE aims for a sample of 300 rows times the largest statistics target it needs for the table.",
+   "sources": [
+    "s28"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s28",
+     "locator": "std_typanalyze minrows = 300 * attstattarget; do_analyze_rel targrows = max minrows",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s28",
+     "locator": "do_analyze_rel targrows; minrows = 300 * attstattarget",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s28",
+     "locator": "std_typanalyze minrows = 300 * attstattarget; do_analyze_rel targrows = max minrows",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "default_statistics_target is 100, and the target caps both the length of the most-common-values list and the number of histogram buckets.",
+   "sources": [
+    "s7",
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.4 default_statistics_target; ANALYZE Notes: target = max MCV entries and histogram bins",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "19.7.4 default_statistics_target; ANALYZE Notes: target = max MCV entries and histogram bins",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Notes",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.4 default_statistics_target; ANALYZE Notes: target = max MCV entries and histogram bins",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "19.7.4 default_statistics_target; ANALYZE Notes: target = max MCV entries and histogram bins",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "in a nested loop join, the right side is scanned once for every row of the left side, which can be a good strategy when the right side can use an index scan keyed by values from the current left row.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "51.5.1: nested loop join",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "51.5 intro; 51.5.1 join strategies",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "51.5.1: nested loop join",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "in a hash join, one side is loaded into a hash table on its join columns, then the other side is scanned and each row probes the table for matches.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "51.5.1: hash join",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "51.5 intro; 51.5.1 join strategies",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "51.5.1: hash join",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "in a merge join, both sides are sorted on the join key, by a sort step or by an index scan in that order, then read in parallel, so each side is scanned only once.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "51.5.1: merge join",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "51.5 intro; 51.5.1 join strategies",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "51.5.1: merge join",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "A nested loop's cost is set from the outer scan's cost plus one repetition of the inner scan for each outer row, plus a little CPU time for join processing.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1: nested-loop cost = outer + one inner repetition per outer row",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 seq scan and nested-loop cost text; 14.1.2 Sort method, Rows Removed by Index Recheck",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1: nested-loop cost = outer + one inner repetition per outer row",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "Memoize, on by default, caches the results of parameterized inner scans in a nested loop, so a repeated value whose results are still cached skips the inner scan; when the cache is full it evicts the least recently used entry rather than spilling to disk.",
+   "sources": [
+    "s7",
+    "s32"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize (default on); nodeMemoize.c header: LRU eviction, never spills",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s32",
+     "locator": "19.7.1 enable_memoize (default on); nodeMemoize.c header: LRU eviction, never spills",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.2 cpu_operator_cost; 19.7.1 enable_memoize; 19.7.4 jit (if available)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 2,
+     "source": "s32",
+     "locator": "header: cache lookups, LRU eviction",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize (default on); nodeMemoize.c header: LRU eviction, never spills",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s32",
+     "locator": "19.7.1 enable_memoize (default on); nodeMemoize.c header: LRU eviction, never spills",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "All joins in the executor take two inputs, and the number of possible join orders grows exponentially with the number of tables.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "14.3: all joins take two inputs; exponential growth",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "14.3 paragraphs 1-2",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "14.3: all joins take two inputs; exponential growth",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "From geqo_threshold FROM items on, 12 by default, the planner replaces its exhaustive search with a genetic search that takes less time but won't necessarily find the best plan.",
+   "sources": [
+    "s7",
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.3 geqo_threshold (default 12); 14.3 genetic search won't necessarily find best",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "19.7.3 geqo_threshold (default 12); 14.3 genetic search won't necessarily find best",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "14.3: switch to genetic probabilistic search; won't necessarily find the best plan",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.3 geqo_threshold (default 12); 14.3 genetic search won't necessarily find best",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "19.7.3 geqo_threshold (default 12); 14.3 genetic search won't necessarily find best",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "The planner merges a subquery into its parent only if the resulting FROM list has at most from_collapse_limit items, 8 by default, and join_collapse_limit, set the same by default, applies that rule to explicit JOINs other than FULL JOIN.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.4 from_collapse_limit (default 8), join_collapse_limit (set same as from_collapse_limit)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.4 from_collapse_limit (default 8), join_collapse_limit (set same as from_collapse_limit)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "Setting join_collapse_limit to 1 makes the planner join tables in the order written with explicit JOIN syntax.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.4 join_collapse_limit = 1",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.4 join_collapse_limit = 1",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "EXPLAIN ANALYZE executes the query and shows the true row counts and run time of each plan node next to the estimates.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2 EXPLAIN ANALYZE intro",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2 EXPLAIN ANALYZE intro",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "The thing usually most important to look for is whether the estimated row counts are reasonably close to the actual ones.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2: most important: estimated row counts close to reality",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2: most important: estimated row counts close to reality",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "When a node runs more than once, loops is the number of executions and the actual time and rows are per-execution averages, so multiply by loops for the totals.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2: loops, per-execution averages, multiply",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2: loops, per-execution averages, multiply",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "Rows Removed by Filter appears when a filter condition rejected at least one scanned row.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2: Rows Removed line appears when at least one scanned row rejected",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2: Rows Removed line appears when at least one scanned row rejected",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "BUFFERS counts shared blocks hit, read, dirtied and written; a hit means the block was already in cache, so no read was needed.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: BUFFERS",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Parameters: BUFFERS, TIMING, SETTINGS",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: BUFFERS",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "BUFFERS counts on an upper node include those of all its children.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: BUFFERS (upper-level node includes children)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Parameters: BUFFERS, TIMING, SETTINGS",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: BUFFERS (upper-level node includes children)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "PostgreSQL 18 added BUFFERS output to EXPLAIN ANALYZE automatically and prints actual row counts as fractions, such as rows=0.50, while estimated rows stay whole numbers.",
+   "sources": [
+    "s24",
+    "s44"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "release-18 EXPLAIN section: automatically include BUFFERS; fractional row counts; explain.c: actual rows=%.2f, estimated rows=%.0f",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s44",
+     "locator": "release-18 EXPLAIN section: automatically include BUFFERS; fractional row counts; explain.c: actual rows=%.2f, estimated rows=%.0f",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s44",
+     "locator": "explain.c lines 1799/1844 (rows formats), 1996 (Index Recheck), 3913-3917 (Heap Blocks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "E.6.3.2.3 EXPLAIN: fractional row counts",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "release-18 EXPLAIN section: automatically include BUFFERS; fractional row counts; explain.c: actual rows=%.2f, estimated rows=%.0f",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s44",
+     "locator": "release-18 EXPLAIN section: automatically include BUFFERS; fractional row counts; explain.c: actual rows=%.2f, estimated rows=%.0f",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "Because EXPLAIN ANALYZE runs the statement, an INSERT, UPDATE, DELETE or MERGE really changes data, so wrap it in BEGIN and ROLLBACK.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2: EXPLAIN ANALYZE side effects, BEGIN/ROLLBACK",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2: EXPLAIN ANALYZE side effects, BEGIN/ROLLBACK",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "Per-node timing reads the clock repeatedly and can slow a query significantly on some systems; TIMING OFF keeps the row counts without it.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: TIMING",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Parameters: BUFFERS, TIMING, SETTINGS",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: TIMING",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "A LIMIT can stop a child node early, so actual rows below the estimate there are not an estimation error.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.3 Caveats: LIMIT stops node early",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.3 Caveats: LIMIT stops node early",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "The SETTINGS option lists configuration parameters that affect planning and differ from their built-in defaults.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: SETTINGS",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Parameters: BUFFERS, TIMING, SETTINGS",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "EXPLAIN Parameters: SETTINGS",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "After a significant change in a table's data distribution, including a bulk load, running ANALYZE is strongly recommended, because with missing or obsolete statistics the planner can make poor choices.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "14.4.9 Run ANALYZE Afterwards",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "14.4.8 Run ANALYZE Afterwards",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "14.4.9 Run ANALYZE Afterwards",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "Autovacuum analyzes a table once the rows inserted, updated or deleted since the last ANALYZE exceed autovacuum_analyze_threshold plus autovacuum_analyze_scale_factor times the table's row count.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "24.1.6 The Autovacuum Daemon: analyze threshold formula",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "24.1.6 The Autovacuum Daemon: analyze threshold formula",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "autovacuum_analyze_threshold defaults to 50 rows and autovacuum_analyze_scale_factor to 0.1, that is ten percent of the table.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "19.10.1 autovacuum_analyze_threshold (50), autovacuum_analyze_scale_factor (0.1)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "19.10.1 autovacuum_analyze_threshold, autovacuum_analyze_scale_factor",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "19.10.1 autovacuum_analyze_threshold (50), autovacuum_analyze_scale_factor (0.1)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "The autovacuum daemon schedules ANALYZE strictly from the number of rows inserted or updated, without knowing whether the statistics changed, and the docs note that a timestamp column whose maximum keeps growing will probably need more frequent statistics updates than one whose distribution changes slowly.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "24.1.3 Updating Planner Statistics: daemon schedules ANALYZE by rows changed; timestamp example",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "24.1.3 Updating Planner Statistics (verbatim)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "24.1.3 Updating Planner Statistics: daemon schedules ANALYZE by rows changed; timestamp example",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "Autovacuum never runs ANALYZE on partitioned tables themselves, only on their partitions, so the parent's statistics need a manual ANALYZE when it is first populated and whenever its distribution changes much.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "24.1.3 / 24.1.6: partitioned tables not analyzed by autovacuum; manual ANALYZE",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "24.1.6 The Autovacuum Daemon",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "24.1.3 / 24.1.6: partitioned tables not analyzed by autovacuum; manual ANALYZE",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "ALTER TABLE ... ALTER COLUMN ... SET STATISTICS sets one column's target, which caps its most-common-values list and histogram buckets, and a target of zero turns statistics off for that column.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "ANALYZE Notes: per-column target, zero disables",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Notes",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "ANALYZE Notes: per-column target, zero disables",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "A higher limit might allow more accurate estimates, particularly for irregular distributions, at the price of more space in pg_statistic and slightly more time to compute estimates.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "14.2.1: raising limit, irregular distributions, space and time",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics; 14.2.2 Extended Statistics; 14.2.2.2",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "14.2.1: raising limit, irregular distributions, space and time",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "The planner normally assumes conditions on different columns are independent, and per-column statistics cannot capture cross-column correlation.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "14.2.2 Extended Statistics intro",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics; 14.2.2 Extended Statistics; 14.2.2.2",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "14.2.2 Extended Statistics intro",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "CREATE STATISTICS only records interest in a set of columns; ANALYZE, manual or automatic, collects the data.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "14.2.2: CREATE STATISTICS creates catalog entry; ANALYZE collects",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics; 14.2.2 Extended Statistics; 14.2.2.2",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "14.2.2: CREATE STATISTICS creates catalog entry; ANALYZE collects",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "functional dependencies are applied only to equality conditions comparing columns to constants and to IN lists of constants, and they assume the conditions are compatible, so a city paired with another city's zip code is estimated as if the pair were valid, although no rows match.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "14.2.2.1.1 Limitations of Functional Dependencies",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.2.1.1 Limitations of Functional Dependencies (verbatim)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim section text read via JavaScript in the built-in browser, after a WebFetch summary misjudged it"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "14.2.2.1.1 Limitations of Functional Dependencies",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "n-distinct statistics improve group-count estimates for GROUP BY on several columns, and the docs advise them only for column groups actually grouped on where misestimates cause bad plans.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "14.2.2.2 Multivariate N-Distinct Counts",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "14.2.1 Single-Column Statistics; 14.2.2 Extended Statistics; 14.2.2.2",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "14.2.2.2 Multivariate N-Distinct Counts",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "a multivariate most-common-values list stores actual value combinations, so it can decide which combinations are compatible, and it also handles range conditions, unlike functional dependencies.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "69.2.3 MCV Lists: stores actual values; range clauses",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "69.2.3: decide which combinations are compatible; wider range of clause types",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page with quoted support (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "69.2.3 MCV Lists: stores actual values; range clauses",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "autovacuum_analyze_scale_factor can be overridden for one table with a storage parameter of the same name.",
+   "sources": [
+    "s14",
+    "s42"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "19.10.1 overridden by storage parameters; CREATE TABLE autovacuum_analyze_scale_factor storage parameter",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s42",
+     "locator": "19.10.1 overridden by storage parameters; CREATE TABLE autovacuum_analyze_scale_factor storage parameter",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "19.10.1 autovacuum_analyze_threshold, autovacuum_analyze_scale_factor",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s42",
+     "locator": "Storage Parameters: autovacuum_analyze_scale_factor",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "19.10.1 overridden by storage parameters; CREATE TABLE autovacuum_analyze_scale_factor storage parameter",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s42",
+     "locator": "19.10.1 overridden by storage parameters; CREATE TABLE autovacuum_analyze_scale_factor storage parameter",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "work_mem is the base amount of memory one query operation such as a sort or hash table may use before writing to temporary disk files, and its default is 4MB.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "19.4.1 work_mem (default 4MB)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "19.4.1 work_mem, hash_mem_multiplier; 19.4.5 max_parallel_workers_per_gather",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "19.4.1 work_mem (default 4MB)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "Sorts serve ORDER BY, DISTINCT and merge joins; hash tables serve hash joins, hash-based aggregation, Memoize and hashed IN subqueries.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "19.4.1 work_mem: sort and hash users",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "19.4.1 work_mem, hash_mem_multiplier; 19.4.5 max_parallel_workers_per_gather",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "19.4.1 work_mem: sort and hash users",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "A hash table's limit is work_mem times hash_mem_multiplier, which defaults to 2.0.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "19.4.1 hash_mem_multiplier (default 2.0)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "19.4.1 work_mem, hash_mem_multiplier; 19.4.5 max_parallel_workers_per_gather",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "19.4.1 hash_mem_multiplier (default 2.0)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "A Sort node in EXPLAIN ANALYZE reports its sort method and the memory or disk it used; methods named external sort or external merge mean the sort spilled to disk.",
+   "sources": [
+    "s1",
+    "s43"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2 Sort node shows sort method in-memory or on-disk; tuplesort_method_name 'external merge'",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s43",
+     "locator": "14.1.2 Sort node shows sort method in-memory or on-disk; tuplesort_method_name 'external merge'",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 seq scan and nested-loop cost text; 14.1.2 Sort method, Rows Removed by Index Recheck",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 2,
+     "source": "s43",
+     "locator": "tuplesort_get_stats: TSS_SORTEDONTAPE external sort, TSS_FINALMERGE external merge, disk space type",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2 Sort node shows sort method in-memory or on-disk; tuplesort_method_name 'external merge'",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s43",
+     "locator": "14.1.2 Sort node shows sort method in-memory or on-disk; tuplesort_method_name 'external merge'",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "A Hash node reports its buckets, batches and peak memory, and more than one batch means disk space was used as well.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2 Hash node buckets, batches, memory; >1 batch uses disk",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2 Hash node buckets, batches, memory; >1 batch uses disk",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "When the inner side doesn't fit, a hash join runs in batches written to temporary files, and the executor doubles the batch count when the hash table grows too large, unless an earlier split moved all or none of a batch's rows, after which it stops growing the count.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "nodeHashjoin.c header: batches, doubling",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "header lines 26-56: doubling; growth disabled after a batch retained all or none",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "nodeHashjoin.c header: batches, doubling",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "Hash aggregation that exceeds its memory limit keeps updating the groups already in memory and writes rows for new groups to disk in partitions, to process in later batches.",
+   "sources": [
+    "s33"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s33",
+     "locator": "nodeAgg.c header: Spilling To Disk",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s33",
+     "locator": "header: Spilling To Disk",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines"
+    },
+    {
+     "pass": 3,
+     "source": "s33",
+     "locator": "nodeAgg.c header: Spilling To Disk",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "When the input is already sorted on a prefix of the sort keys, an Incremental Sort sorts in smaller batches, which returns rows sooner, helps LIMIT, and can lower memory use and spilling.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1: Incremental Sort paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1: Incremental Sort paragraph",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c68",
+   "text": "SET LOCAL lasts only until the current transaction ends, after which the session's setting applies again.",
+   "sources": [
+    "s45"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s45",
+     "locator": "SET Parameters: LOCAL",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s45",
+     "locator": "Description; Parameters: LOCAL",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s45",
+     "locator": "SET Parameters: LOCAL",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c69",
+   "text": "A parallel plan contains a Gather or Gather Merge node; the part below it runs in background worker processes, and the leader runs that part too while collecting the workers' rows.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "15.1 How Parallel Query Works: Gather, workers, leader",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "15.1 paragraphs on Gather and the leader",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "15.1 How Parallel Query Works: Gather, workers, leader",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c70",
+   "text": "max_parallel_workers_per_gather, 2 by default, caps the workers per Gather node, and work_mem applies to each worker separately, so a query with 4 workers may use up to 5 times the resources of a serial one.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "19.4.5 max_parallel_workers_per_gather (default 2; 4 workers up to 5 times)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "19.4.1 work_mem, hash_mem_multiplier; 19.4.5 max_parallel_workers_per_gather",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "19.4.5 max_parallel_workers_per_gather (default 2; 4 workers up to 5 times)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c71",
+   "text": "No parallel plan is made for a query that writes data or locks rows, apart from the SELECT inside commands such as CREATE TABLE AS, or for a cursor.",
+   "sources": [
+    "s41"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s41",
+     "locator": "15.2: writes/locks, CREATE TABLE AS exception, cursors",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s41",
+     "locator": "15.2 list: writes or locks rows; DECLARE CURSOR",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s41",
+     "locator": "15.2: writes/locks, CREATE TABLE AS exception, cursors",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c72",
+   "text": "Partition pruning drops partitions that cannot contain matching rows, using only the partition bounds, not indexes.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "5.12.4 Partition Pruning: partition bounds not indexes",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "5.12.4 Partition Pruning",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "5.12.4 Partition Pruning: partition bounds not indexes",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c73",
+   "text": "Partition pruning can also run during execution for values unknown at planning time, such as prepared-statement parameters; partitions pruned at executor start-up don't appear in EXPLAIN, and a Subplans Removed line counts them.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "5.12.4: execution-time pruning; Subplans Removed",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "5.12.4 Partition Pruning",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "5.12.4: execution-time pruning; Subplans Removed",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c74",
+   "text": "pg_stat_statements tracks planning and execution statistics of all SQL statements on the server; it must be loaded through shared_preload_libraries, which needs a restart, and its view is enabled per database with CREATE EXTENSION.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "F.32 intro: shared_preload_libraries, restart, CREATE EXTENSION",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "F.32 intro; F.32.1 view columns and entry combining; F.32.4 pg_stat_statements.max",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "F.32 intro: shared_preload_libraries, restart, CREATE EXTENSION",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c75",
+   "text": "Queries that are the same apart from literal constants are typically combined into one entry, with columns including calls, total_exec_time, mean_exec_time, rows, and shared and temp block counts.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "F.32: plannable queries combined; view columns",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "F.32 intro; F.32.1 view columns and entry combining; F.32.4 pg_stat_statements.max",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "F.32: plannable queries combined; view columns",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c76",
+   "text": "pg_stat_statements.max, 5000 by default, caps the statements tracked, and the least-executed ones are discarded beyond it.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "F.32.3 pg_stat_statements.max (5000)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "F.32 intro; F.32.1 view columns and entry combining; F.32.4 pg_stat_statements.max",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "F.32.3 pg_stat_statements.max (5000)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c77",
+   "text": "auto_explain logs the plans of statements that run at least as long as auto_explain.log_min_duration, which is -1, meaning off, by default.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "F.4 auto_explain.log_min_duration (-1 default)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "F.4.1 log_min_duration (250ms or longer)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page with quoted support (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "F.4 auto_explain.log_min_duration (-1 default)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c78",
+   "text": "With auto_explain.log_analyze on, per-node timing runs for every statement, logged or not, which can hurt performance badly; turning off auto_explain.log_timing reduces that cost.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "F.4 auto_explain.log_analyze overhead; log_timing",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "F.4.1 log_min_duration, log_analyze, log_buffers",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "F.4 auto_explain.log_analyze overhead; log_timing",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c79",
+   "text": "auto_explain.log_buffers adds buffer usage to the logged plan and has no effect unless auto_explain.log_analyze is on.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "F.4 auto_explain.log_buffers",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "F.4.1 log_min_duration, log_analyze, log_buffers",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "F.4 auto_explain.log_buffers",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c80",
+   "text": "log_min_duration_statement logs the duration of every statement that runs at least as long as its value; -1, the default, disables it, and 0 logs every statement.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "19.8.3 log_min_duration_statement",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "19.8.3 log_min_duration_statement; 19.8.4 log_temp_files",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "19.8.3 log_min_duration_statement",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c81",
+   "text": "track_io_timing adds I/O wait times to EXPLAIN BUFFERS output and pg_stat_statements, and it is off by default because reading the clock repeatedly may be costly on some platforms.",
+   "sources": [
+    "s40"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s40",
+     "locator": "19.9.? track_io_timing",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s40",
+     "locator": "19.9.? track_io_timing",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s40",
+     "locator": "19.9.? track_io_timing",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c82",
+   "text": "Clerk's postmortem of its February 2026 outage traced it to an automatic ANALYZE whose sample recorded a column as entirely NULL when 99.9996% of its values were NULL, so the planner expected no non-null rows where over 17,000 existed.",
+   "sources": [
+    "s35"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s35",
+     "locator": "Root cause section (null fraction sample, 17,000 rows)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s35",
+     "locator": "Root cause; Resolution; Remediations",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s35",
+     "locator": "Root cause section (null fraction sample, 17,000 rows)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c83",
+   "text": "Clerk's plan flip caused an outage of about 90 minutes, and running ANALYZE again by hand restored the earlier plan.",
+   "sources": [
+    "s35"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s35",
+     "locator": "Timeline / resolution (16:15-18:06 UTC, manual ANALYZE 17:27)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s35",
+     "locator": "Root cause; Resolution; Remediations",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s35",
+     "locator": "Timeline / resolution (16:15-18:06 UTC, manual ANALYZE 17:27)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c84",
+   "text": "Clerk's follow-ups included alerting on query plan flips and a higher statistics target.",
+   "sources": [
+    "s35"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s35",
+     "locator": "Remediations",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s35",
+     "locator": "Root cause; Resolution; Remediations",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s35",
+     "locator": "Remediations",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c85",
+   "text": "Many enable_* settings only discourage a node type rather than forbid it, and PostgreSQL 18's EXPLAIN marks a disabled node that was used anyway with Disabled: true.",
+   "sources": [
+    "s1",
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.1 enable flags only discourage; release 18: indicate disabled nodes",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "14.1.1 enable flags only discourage; release 18: indicate disabled nodes",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 EXPLAIN Basics; 14.1.2 EXPLAIN ANALYZE; 14.1.3 Caveats (exact phrase checks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "E.6.3.2.3 EXPLAIN",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.1 enable flags only discourage; release 18: indicate disabled nodes",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "14.1.1 enable flags only discourage; release 18: indicate disabled nodes",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c86",
+   "text": "In the docs' example, two columns that always hold the same value, with 100 distinct values each, are estimated at 1 row for a = 1 AND b = 1 when 100 rows match, and a dependencies statistic on the pair brings the estimate to 100.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "69.2.1 Functional Dependencies example",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "69.2.1 Functional Dependencies; 69.2.3 MCV Lists",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "69.2.1 Functional Dependencies example",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c87",
+   "text": "With a dependency of degree f, the planner combines the two selectivities as f times the smaller one plus (1 − f) times their product.",
+   "sources": [
+    "s34"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s34",
+     "locator": "clauselist_apply_dependencies comment: P(a,b) = f*Min(P(a),P(b)) + (1-f)*P(a)*P(b)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s34",
+     "locator": "clauselist_apply_dependencies comment",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines"
+    },
+    {
+     "pass": 3,
+     "source": "s34",
+     "locator": "clauselist_apply_dependencies comment: P(a,b) = f*Min(P(a),P(b)) + (1-f)*P(a)*P(b)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c88",
+   "text": "GitLab's review of two October 2025 incidents describes a query joining 16 tables whose nested loop joins repeatedly read the same buffer pages, using seconds of CPU per query while one user's automated pipeline sent about 4,000 requests a minute.",
+   "sources": [
+    "s36"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s36",
+     "locator": "Incident review summary: 16-table join, nested loops, CPU per query, 4,000 requests per minute",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s36",
+     "locator": "Root cause: a single user's automated CI pipeline, 4,000 requests per minute",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page with quoted support (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s36",
+     "locator": "Incident review summary: 16-table join, nested loops, CPU per query, 4,000 requests per minute",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c89",
+   "text": "GitLab's listed fixes include optimizing the query to reduce join complexity and caching member role data.",
+   "sources": [
+    "s36"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s36",
+     "locator": "Corrective actions",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s36",
+     "locator": "Root cause analysis; corrective actions",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s36",
+     "locator": "Corrective actions",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c90",
+   "text": "A prepared statement runs with either a custom plan, made for each execution using that call's parameter values, or a generic plan that is the same for every execution.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "PREPARE Notes: generic vs custom plan",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Description; Notes",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "PREPARE Notes: generic vs custom plan",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c91",
+   "text": "Prepared statements last only for the current database session.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "PREPARE Description: duration of session",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Description; Notes",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "PREPARE Description: duration of session",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c92",
+   "text": "For a prepared statement with parameters and plan_cache_mode set to auto, the default, the first five executions use custom plans, then a generic plan is created and used whenever its estimated cost is not much higher than the average custom-plan cost.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "PREPARE Notes: first five executions custom; average custom cost",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Notes: prepared statement that has parameters",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page with quoted support (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "PREPARE Notes: first five executions custom; average custom cost",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c93",
+   "text": "Each custom plan's cost includes a planning charge of 1000 × cpu_operator_cost × (number of relations + 1), which the generic plan doesn't pay, and the average is updated only when a custom plan is made.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "cached_plan_cost: 1000*cpu_operator_cost*(nrelations+1); GetCachedPlan accumulates total_custom_cost only for custom plans",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "cached_plan_cost 1000.0 * cpu_operator_cost * (nrelations + 1)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "cached_plan_cost: 1000*cpu_operator_cost*(nrelations+1); GetCachedPlan accumulates total_custom_cost only for custom plans",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c94",
+   "text": "EXPLAIN EXECUTE shows the plan a prepared statement uses: a generic plan contains parameter symbols such as $1, while a custom plan has the values substituted.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "PREPARE Notes: EXPLAIN EXECUTE, $n",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Description; Notes",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "PREPARE Notes: EXPLAIN EXECUTE, $n",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c95",
+   "text": "The statement is re-planned when objects it uses change definition or their planner statistics are updated.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "PREPARE Notes: re-analysis on DDL or statistics change",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Description; Notes",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "PREPARE Notes: re-analysis on DDL or statistics change",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c96",
+   "text": "plan_cache_mode also accepts force_custom_plan and force_generic_plan, and it is checked when a cached plan is executed, not when it is prepared.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.4 plan_cache_mode",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.4 plan_cache_mode",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c97",
+   "text": "PL/pgSQL functions generate prepared statements implicitly.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.4 plan_cache_mode: implicitly generated, e.g. PL/pgSQL",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.1 enable_memoize; 19.7.2 cost constants; 19.7.3 geqo_threshold; 19.7.4 default_statistics_target, collapse limits, plan_cache_mode, jit, jit_above_cost",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.4 plan_cache_mode: implicitly generated, e.g. PL/pgSQL",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c98",
+   "text": "The PostgreSQL JDBC driver switches to a named server-side prepared statement once a statement has run prepareThreshold times, 5 by default.",
+   "sources": [
+    "s37"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s37",
+     "locator": "Server Prepared Statements: prepareThreshold default 5, named statement",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s37",
+     "locator": "Server Prepared Statements",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s37",
+     "locator": "Server Prepared Statements: prepareThreshold default 5, named statement",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c99",
+   "text": "PgBouncer has tracked protocol-level named prepared statements in transaction pooling mode since version 1.21.0, when max_prepared_statements is non-zero.",
+   "sources": [
+    "s38",
+    "s39"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s38",
+     "locator": "config: max_prepared_statements; FAQ: since 1.21.0",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 1,
+     "source": "s39",
+     "locator": "config: max_prepared_statements; FAQ: since 1.21.0",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s38",
+     "locator": "max_prepared_statements",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s39",
+     "locator": "Transaction pooling: prepared statements (since 1.21.0)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s38",
+     "locator": "config: max_prepared_statements; FAQ: since 1.21.0",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s39",
+     "locator": "config: max_prepared_statements; FAQ: since 1.21.0",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c100",
+   "text": "A complex query may run several sorts and hashes at once, and several sessions may do so concurrently, so total memory use can be many times work_mem.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "19.4.1 work_mem: total memory many times work_mem",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "19.4.1 work_mem, hash_mem_multiplier; 19.4.5 max_parallel_workers_per_gather",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "19.4.1 work_mem: total memory many times work_mem",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c101",
+   "text": "The docs suggest raising hash_mem_multiplier where spilling is a regular occurrence, especially when raising work_mem alone causes memory pressure, which typically shows up as intermittent out-of-memory errors.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "19.4.1 hash_mem_multiplier advice",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "19.4.1 hash_mem_multiplier (especially when)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "19.4.1 hash_mem_multiplier advice",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c102",
+   "text": "A bitmap index scan builds its bitmap within work_mem.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "ExecBitmapIndexScan/MultiExecBitmapIndexScan: tbm_create(work_mem * 1024)",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "MultiExecBitmapIndexScan: tbm_create(work_mem * 1024)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "ExecBitmapIndexScan/MultiExecBitmapIndexScan: tbm_create(work_mem * 1024)",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c103",
+   "text": "When the bitmap needs more memory, some pages become lossy: only the fact that the page must be visited is kept, and every row on it is rechecked.",
+   "sources": [
+    "s29"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s29",
+     "locator": "tidbitmap.c header: lossy storage, recheck",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s29",
+     "locator": "file header (lossy storage, recheck); tbm_add_tuples: nentries > maxentries -> tbm_lossify",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines"
+    },
+    {
+     "pass": 3,
+     "source": "s29",
+     "locator": "tidbitmap.c header: lossy storage, recheck",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c104",
+   "text": "EXPLAIN ANALYZE shows this on a Heap Blocks line, which lists exact and lossy page counts when each is non-zero.",
+   "sources": [
+    "s44"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s44",
+     "locator": "show_tidbitmap_info: Heap Blocks exact= lossy=",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s44",
+     "locator": "explain.c lines 1799/1844 (rows formats), 1996 (Index Recheck), 3913-3917 (Heap Blocks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s44",
+     "locator": "show_tidbitmap_info: Heap Blocks exact= lossy=",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c105",
+   "text": "Rows that a lossy check returned and the recheck rejected are counted on a Rows Removed by Index Recheck line.",
+   "sources": [
+    "s1",
+    "s44"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "14.1.2: Rows Removed by Index Recheck (lossy index scans); explain.c: Rows Removed by Index Recheck for bitmap heap scans",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s44",
+     "locator": "14.1.2: Rows Removed by Index Recheck (lossy index scans); explain.c: Rows Removed by Index Recheck for bitmap heap scans",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "14.1.1 seq scan and nested-loop cost text; 14.1.2 Sort method, Rows Removed by Index Recheck",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 2,
+     "source": "s44",
+     "locator": "explain.c lines 1799/1844 (rows formats), 1996 (Index Recheck), 3913-3917 (Heap Blocks)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "14.1.2: Rows Removed by Index Recheck (lossy index scans); explain.c: Rows Removed by Index Recheck for bitmap heap scans",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s44",
+     "locator": "14.1.2: Rows Removed by Index Recheck (lossy index scans); explain.c: Rows Removed by Index Recheck for bitmap heap scans",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c106",
+   "text": "log_temp_files logs each temporary file's name and size when it is deleted, where 0 logs all of them and -1, the default, logs none.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "19.8.4 log_temp_files",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "19.8.3 log_min_duration_statement; 19.8.4 log_temp_files",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim parameter text read via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "19.8.4 log_temp_files",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c107",
+   "text": "The draft PostgreSQL 19 release notes add pg_plan_advice, a module to stabilize and control planner decisions, and pg_stash_advice, which applies advice per query ID.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "Overview highlights; Additional Modules: pg_plan_advice, pg_stash_advice",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "E.1.1 Overview (draft, as of 2026-09-14); E.1.2 Migration (JIT); E.1.3.1.1 Optimizer; E.1.3.3.3 EXPLAIN; E.1.3.10 Additional Modules",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "Overview highlights; Additional Modules: pg_plan_advice, pg_stash_advice",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c108",
+   "text": "The pg_plan_advice docs warn that overriding the planner can backfire when the data distribution changes, because advice can stop the planner from adapting.",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "pg_plan_advice intro: overriding judgment can backfire",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "pg_plan_advice intro / Getting Started (PG19 Beta 4 docs)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "pg_plan_advice intro: overriding judgment can backfire",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c109",
+   "text": "The draft PostgreSQL 19 notes also add an IO option to EXPLAIN ANALYZE for asynchronous I/O activity, Memoize cache and lookup estimates in EXPLAIN, and conversion of NOT IN to anti-joins when NULLs are not present.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "EXPLAIN section: IO option, Memoize estimates; Optimizer: NOT IN to ANTI JOIN",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "E.1.1 Overview (draft, as of 2026-09-14); E.1.2 Migration (JIT); E.1.3.1.1 Optimizer; E.1.3.3.3 EXPLAIN; E.1.3.10 Additional Modules",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "EXPLAIN section: IO option, Memoize estimates; Optimizer: NOT IN to ANTI JOIN",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c110",
+   "text": "PostgreSQL 18 enables JIT compilation by default, where the server is built with it, above a plan cost of 100000, and the draft PostgreSQL 19 notes turn JIT off by default because that cost-based activation proved unreliable.",
+   "sources": [
+    "s7",
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "19.7.4 jit (default on), jit_above_cost (100000); release-19 Migration: JIT disabled by default",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "19.7.4 jit (default on), jit_above_cost (100000); release-19 Migration: JIT disabled by default",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "19.7.2 cpu_operator_cost; 19.7.1 enable_memoize; 19.7.4 jit (if available)",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "E.1.2 Migration: JIT disabled by default",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "browser: verbatim page text, phrase checks via JavaScript in the built-in browser (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "19.7.4 jit (default on), jit_above_cost (100000); release-19 Migration: JIT disabled by default",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "19.7.4 jit (default on), jit_above_cost (100000); release-19 Migration: JIT disabled by default",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c111",
+   "text": "When DDL or a statistics change forces a re-plan, the recorded generic and custom costs are kept rather than reset.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "RevalidateCachedQuery comment: do not reset generic_cost or total_custom_cost",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim source text (git, raw.githubusercontent.com or WebFetch of the page)"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "cached_plan_cost (1000.0 * cpu_operator_cost * (nrelations + 1)); GetCachedPlan line ~1366; RevalidateCachedQuery comment line ~919",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh read of REL_18_STABLE source via raw.githubusercontent.com, grep of the exact lines"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "RevalidateCachedQuery comment: do not reset generic_cost or total_custom_cost",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c112",
+   "text": "in a bitmap scan, table rows are visited in physical order, so the index ordering is lost and an ORDER BY needs a separate sort",
+   "sources": [
+    "s46"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s46",
+     "locator": "11.5: table rows visited in physical order; ORDER BY needs separate sort",
+     "result": "supported",
+     "at": "2026-10-02T23:10",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s46",
+     "locator": "11.5: rows visited in physical order; ORDER BY needs separate sort",
+     "result": "supported",
+     "at": "2026-10-03T00:20",
+     "method": "fresh WebFetch of live page with quoted support (re-check of reworded sentence)"
+    },
+    {
+     "pass": 3,
+     "source": "s46",
+     "locator": "11.5: table rows visited in physical order; ORDER BY needs separate sort",
+     "result": "supported",
+     "at": "2026-10-04T14:50",
+     "method": "independent reviewer agent (strict mode, 3 reviewers in parallel): verbatim local REL_18_STABLE SGML text and source files, WebFetch with quotes for non-PostgreSQL pages; flagged wording fixed and re-checked in pass 2"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Lowering random_page_cost to about 1.1 is right for SSD storage.",
+   "reason": "only found in blogs and vendor tuning guides; the PostgreSQL docs discuss cache hit rates and magnetic disks, not SSDs, so the page uses 1.1 only as a toy-model value"
+  },
+  {
+   "text": "Datadog's 2013 case: rewriting ANY(ARRAY[...]) as ANY(VALUES ...) made a query 100 times faster.",
+   "reason": "first-party, but about PostgreSQL 9.0 and fixed in 9.3; too old to teach as current behaviour"
+  },
+  {
+   "text": "Before PostgreSQL 18, a per-loop average below one row is printed as rows=0.",
+   "reason": "seen in a PostgreSQL 16 test run only; no official source states it"
+  },
+  {
+   "text": "The planner scales reltuples only when the table has grown.",
+   "reason": "strict review: it scales whenever the current page count differs from relpages, including after shrinking"
+  },
+  {
+   "text": "PostgreSQL 18 prints every EXPLAIN row count as a fraction.",
+   "reason": "strict review: explain.c prints actual rows with two decimals but estimated rows as whole numbers; the page says so"
+  },
+  {
+   "text": "A sort method of external merge is the sign that a sort spilled.",
+   "reason": "strict review: external sort also means the sort used disk; the page names both"
+  },
+  {
+   "text": "A hash join always doubles its batch count when the hash table grows too large.",
+   "reason": "strict review: the executor stops growing the batch count after a split that moved all or none of a batch's rows; the page states the condition"
+  },
+  {
+   "text": "A multivariate MCV list can always tell when a pair of values never occurs.",
+   "reason": "strict review: it stores only the common combinations; the page now follows the docs' wording, deciding which combinations are compatible"
+  }
+ ]
+}

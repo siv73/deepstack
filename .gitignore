@@ -1,0 +1,15 @@
+# Generated: built and deployed by CI, never committed
+site/
+_render/
+# Local environments
+.venv/
+node_modules/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+# Never commit secrets
+.env
+.env.*
+*.pem
+*.key

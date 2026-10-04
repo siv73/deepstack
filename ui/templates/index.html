@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="teach-site v1">
+<title>{{SITE_NAME}}</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="canonical" href="{{CANONICAL}}">
+<meta name="author" content="{{AUTHOR}}">
+<meta name="robots" content="noai, noimageai">
+<link rel="icon" href="_ts/favicon.svg" type="image/svg+xml">
+<script src="_ts/theme.js"></script>
+<link rel="stylesheet" href="_ts/ts.css">
+</head>
+<body class="ts-index">
+<header class="ts-bar">
+  <div class="ts-bar-in">
+    <a class="ts-home" href="index.html"><span class="ts-home-mark" aria-hidden="true"></span><span class="ts-home-text">{{SITE_NAME}}</span></a>
+    <span class="ts-bar-title"></span>
+    <div class="ts-tools"></div>
+  </div>
+</header>
+<main class="ix-wrap">
+  <section class="ix-hero">
+    <h1>{{SITE_NAME}}</h1>
+    <p>{{COUNT_LINE}} Each topic runs the same route: why it exists, how it works, using it, when it breaks, and when to pick it.</p>
+  </section>
+  <div id="ix-continue"></div>
+  <div class="ix-controls">
+    <input class="ix-search" type="search" placeholder="Filter topics" aria-label="Filter topics">
+  </div>
+  <div id="ix-list"></div>
+  {{LICENSE_FOOT}}
+</main>
+<script type="application/json" id="ts-topics">{{TOPICS_JSON}}</script>
+<script src="_ts/ts.js"></script>
+</body>
+</html>

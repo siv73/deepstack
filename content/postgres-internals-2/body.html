@@ -1,0 +1,334 @@
+<section class="ts-part" id="why-mvcc" data-rung="1" data-min="4">
+<h2>How a 10-minute report and 2,000 payments a second share one table</h2>
+<p class="ts-problem">Finance runs a 10-minute month-end report over the <code>payments</code> table. During those 10 minutes, the app writes 2,000 payments a second to the same table. If the report locked the table, 1.2 million payments would queue behind it. If it didn't, it could add up half-written totals.</p>
+<p>PostgreSQL avoids both. <span class="ts-claim" data-claim="c1" data-src="s1">Each SQL statement sees a snapshot of the data as it was at some earlier moment, regardless of the current state of the underlying rows.</span> The approach is called <dfn data-def="Multiversion concurrency control: keeping several versions of a row so that each reader sees a consistent past state while writers keep changing the table.">MVCC</dfn>.</p>
+<p>Think of a shared document with version history. When you open it, you see it as of that moment. Others keep editing, and their edits become new versions. You keep reading your version until you reopen it. Nobody waits for anybody to finish reading.</p>
+<ol class="ts-steps">
+<li>Writers never overwrite a row. They add a new version (part 2).</li>
+<li>Each version is stamped with the transaction that created it and the one that replaced it (parts 2 and 3).</li>
+<li>Each reader carries a list of which transactions had finished when it started (part 4).</li>
+<li>A version is shown only if its stamps say it existed at the reader's moment (part 5).</li>
+</ol>
+<p><span class="ts-claim" data-claim="c2" data-src="s1">In MVCC, locks taken for reading don't conflict with locks taken for writing, so reading never blocks writing and writing never blocks reading.</span> <span class="ts-claim" data-claim="c40" data-src="s1">PostgreSQL keeps this guarantee even at the strictest isolation level, Serializable, through Serializable Snapshot Isolation (SSI).</span></p>
+<p>The price: old versions pile up and must be cleaned up later. That cost drives most of parts 8 to 10, and all of part 3 of this series.</p>
+<p class="ts-takeaway">PostgreSQL lets readers and writers run at the same time by keeping old row versions, so each reader sees one consistent moment.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c1 c2">
+<p class="q">The 10-minute report is halfway through when a payment of ₹5,000 commits. Does the report's total include it?</p>
+<ol>
+<li data-why="The report doesn't see rows committed after its snapshot was taken, even though they are in the table.">Yes, because the row is committed before the report finishes</li>
+<li>No: the report reads from its snapshot, taken before that payment committed</li>
+<li data-why="Readers never make writers wait under MVCC, so the payment isn't blocked.">The payment waits until the report finishes, then commits</li>
+</ol>
+<p class="ts-why">The report sees the table as of its snapshot. The payment commits normally; it becomes visible to statements that start later.</p>
+</div>
+<div class="ts-explain" data-points="Each statement reads a snapshot of an earlier moment|Writers add new versions instead of overwriting|Readers and writers don't block each other|Old versions must be cleaned up later">
+<p class="q">In your own words: how does PostgreSQL let a long report and heavy writes run at the same time, and what does it cost?</p>
+<div class="ts-model"><p>Writers don't overwrite rows; they add new versions. Each statement reads a snapshot of an earlier moment and only sees versions that existed then. So the report gets a consistent total and the writes don't wait for it. The cost is that old versions stay in the table until they are cleaned up, which uses disk and cleanup work.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="row-versions" data-rung="2" data-min="5">
+<h2>An UPDATE never changes a row: it adds one</h2>
+<p class="ts-bridge">Last part: readers see a past moment. Still unsolved: where does the past version physically live?</p>
+<p class="ts-problem">You run <code>UPDATE acct SET bal = 50 WHERE id = 1</code> on a one-row table. Afterwards the table's page holds two rows. Where did the second one come from?</p>
+<p><span class="ts-claim" data-claim="c3" data-src="s2">A row version is one state of a row, and each update of a row creates a new row version for the same logical row.</span> From part 1: every <dfn data-def="One stored state of a row. An UPDATE creates a new one; the old one stays until it is cleaned up. Part 1 called it a tuple.">row version</dfn> has a header. Two header fields do the work:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c4" data-src="s2">xmin is the ID of the transaction that inserted this row version.</span></li>
+<li><span class="ts-claim" data-claim="c5" data-src="s2">xmax is the ID of the transaction that deleted it, or zero; it can be nonzero in a visible version, usually because the deleting transaction hasn't committed yet or was rolled back.</span></li>
+<li>An UPDATE sets xmax on the old version and inserts a new version whose xmin is the updating transaction. <span class="ts-claim" data-claim="c8" data-src="s4">Each version's header has a t_ctid field: the ctid of this version or of a newer one.</span> So the old version points forward to the new one.</li>
+<li>A DELETE only sets xmax. Nothing is removed yet. <span class="ts-claim" data-claim="c6" data-src="s3">An UPDATE or DELETE does not immediately remove the old version: it must stay while other transactions might still see it, and VACUUM reclaims its space later.</span></li>
+</ol>
+<figure class="ts-svg" data-title="acct row 1, after UPDATE by transaction 927">
+<svg viewBox="0 0 700 220" role="img" aria-label="Old version with xmin 926; update by 927 sets its xmax to 927 and points it to a new version with xmin 927 and xmax 0">
+<g class="node" data-s="1"><rect x="40" y="50" width="250" height="80" rx="6"/><text x="165" y="80" text-anchor="middle">(0,1)  bal = 100</text><text class="sub" x="165" y="104" text-anchor="middle">xmin 926</text></g>
+<g class="node" data-s="1"><text class="sub" x="165" y="152" text-anchor="middle">before: xmax 0</text></g>
+<g class="node" data-s="2"><text class="sub" x="165" y="172" text-anchor="middle">after: xmax 927, t_ctid (0,2)</text></g>
+<g class="node" data-s="2"><rect x="410" y="50" width="250" height="80" rx="6"/><text x="535" y="80" text-anchor="middle">(0,2)  bal = 50</text><text class="sub" x="535" y="104" text-anchor="middle">xmin 927 · xmax 0</text></g>
+<g class="edge" data-s="2"><path d="M292 90 L 404 90"/><path class="arrowhead" d="M404 84 L 410 90 L 404 96 Z"/></g>
+<g class="node" data-s="3"><text class="sub" x="350" y="205" text-anchor="middle">Both versions stay on the page. Who sees which depends on the reader's snapshot.</text></g>
+</svg>
+<ol class="ts-captions">
+<li>Before the update: one version, inserted by transaction 926, not deleted (xmax 0).</li>
+<li>Transaction 927 updates it. The old version gets xmax 927 and points to the new version at (0,2). The new version has xmin 927.</li>
+<li>Nothing was overwritten. Part 4 shows how a reader picks between the two.</li>
+</ol>
+</figure>
+<p>These IDs are real: they came from running this exact UPDATE and reading the page with pageinspect (part 6). You can see the same fields yourself: <code>SELECT xmin, xmax, ctid, * FROM acct</code>. <span class="ts-claim" data-claim="c7" data-src="s2">A row's ctid changes when it is updated or moved by VACUUM FULL, so the docs say to identify rows by primary key, not ctid.</span></p>
+<p class="ts-takeaway">An UPDATE marks the old version with its transaction ID in xmax and writes a new version with that ID in xmin.</p>
+<div class="ts-predict" data-claims="c4 c5 c6">
+<p class="q">Transaction 930 runs <code>DELETE FROM acct WHERE id = 1</code> and commits. What is on the page right after the commit?</p>
+<div class="ts-reveal"><p>The deleted version is still there, with xmax set to 930. Earlier versions that nobody can see any more are also still there. Nothing is physically removed until cleanup (VACUUM) runs and finds no transaction that could still see them.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="transaction-ids" data-rung="2" data-min="5">
+<h2>Transaction IDs, and where "committed" is written down</h2>
+<p class="ts-bridge">Last part: versions are stamped with transaction IDs in xmin and xmax. Still unsolved: where do those IDs come from, and how does anyone know whether 927 committed?</p>
+<p class="ts-problem">Your app sends COMMIT, and the network drops before the reply arrives. Did the ₹12,000 transfer happen or not?</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c9" data-src="s5">A transaction gets a real transaction ID (xid) only when it first writes to the database; xids come from one global counter shared by every database in the cluster.</span></li>
+<li><span class="ts-claim" data-claim="c10" data-src="s5 s18">Every transaction also has a virtual transaction ID, and read-only transactions have a virtual ID but no real xid.</span> Reading costs no xid.</li>
+<li><span class="ts-claim" data-claim="c12" data-src="s5">When a top-level transaction with an xid commits, it is marked as committed in the pg_xact directory.</span> This is the <dfn data-def="pg_xact: the files where PostgreSQL records, per transaction ID, whether it committed or aborted. Often called the commit log (clog).">commit log</dfn>.</li>
+<li>A ROLLBACK marks the transaction as aborted. The versions it wrote stay in the table; they are simply never shown.</li>
+</ol>
+<p>That last point is why rollback is cheap: nothing is undone row by row. The aborted version (0,2) from part 2 sits on the page until cleanup, and its xmin, 927, is listed as aborted.</p>
+<p>Back to the dropped COMMIT. <span class="ts-claim" data-claim="c13" data-src="s6">pg_xact_status reports whether a recent transaction is in progress, committed or aborted, and the docs suggest it for checking whether a COMMIT went through after the connection dropped.</span> Record <code>pg_current_xact_id()</code> before committing, and ask after reconnecting.</p>
+<p><dfn data-def="A transaction ID: a number PostgreSQL gives a transaction when it first writes. Stored in row headers as xmin and xmax.">xid</dfn> numbers have a size limit. <span class="ts-claim" data-claim="c11" data-src="s5">The xid type is 32 bits wide and wraps around every 4 billion transactions; the 64-bit xid8 type adds an epoch and doesn't wrap.</span> Wraparound is part 3's topic.</p>
+<p class="ts-takeaway">Writers get an xid on first write, and pg_xact records whether each xid committed or aborted; rollback just marks it aborted.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c9 c10">
+<p class="q">A reporting service runs 50 million read-only queries a day. How many transaction IDs does it use up?</p>
+<ol>
+<li data-why="Each query is a transaction, but it only receives a real xid if it writes.">50 million, one per query</li>
+<li data-why="Snapshots describe other transactions' xids; taking one doesn't use an xid.">One per snapshot taken</li>
+<li>None: read-only transactions only get virtual IDs</li>
+</ol>
+<p class="ts-why">xids are assigned on first write. Pure reads use virtual transaction IDs, which don't draw from the global counter.</p>
+</div>
+</section>
+
+<section class="ts-part" id="snapshots" data-rung="2" data-min="6">
+<h2>A snapshot is a list of who had finished</h2>
+<p class="ts-bridge">Last part: pg_xact records who committed. Still unsolved: how does a reader ignore transactions that committed after it started?</p>
+<p class="ts-problem">A report starts while transactions 14 and 15 are still writing. Both commit a second later. The report must keep ignoring them for its whole run.</p>
+<p>The reader keeps a <dfn data-def="A record, taken at one moment, of which transaction IDs had finished. A reader uses it to decide which row versions it may see.">snapshot</dfn>. <span class="ts-claim" data-claim="c14" data-src="s6">A snapshot records xmin, the lowest transaction ID still active; xmax, one past the highest completed ID; and xip_list, the IDs in progress; its text form is xmin:xmax:xip_list.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c15" data-src="s6">IDs below xmin had finished; IDs at or above xmax had not finished and are invisible; IDs in between had finished unless they are in xip_list.</span></li>
+<li>"Finished" is not enough to be visible. The reader also checks pg_xact: finished and committed means visible, finished and aborted means never visible.</li>
+<li><span class="ts-claim" data-claim="c16" data-src="s6">pg_current_snapshot() returns the current snapshot, and only top-level transaction IDs appear in it.</span> The docs' example is <code>10:20:10,14,15</code>.</li>
+</ol>
+<p>When is the snapshot taken? That depends on the isolation level:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c17" data-src="s17">In Read Committed, the default level, a SELECT sees a snapshot as of the instant the query begins, so two SELECTs in one transaction can see different data.</span></li>
+<li><span class="ts-claim" data-claim="c18" data-src="s17">In Repeatable Read, every query in the transaction sees a snapshot as of the start of its first non-transaction-control statement.</span></li>
+<li><span class="ts-claim" data-claim="c19" data-src="s17">Either way, a query sees the effects of earlier updates made inside its own transaction, even before they commit.</span></li>
+</ol>
+<figure class="ts-seq" data-title="Two SELECTs in one Read Committed transaction">
+<script type="application/json">
+{"actors": [
+ {"id": "rep", "label": "Report", "sub": "Read Committed"},
+ {"id": "db", "label": "PostgreSQL"},
+ {"id": "pay", "label": "Payment txn", "sub": "xid 14"}],
+ "steps": [
+ {"from": "rep", "to": "db", "label": "SELECT sum(amount)", "note": "The first SELECT takes a snapshot. Transaction 14 is in xip_list, so its rows are invisible."},
+ {"from": "pay", "to": "db", "label": "COMMIT", "note": "Transaction 14 commits while the report's first SELECT is still running. That SELECT keeps ignoring it."},
+ {"from": "db", "to": "rep", "label": "total without 14", "dashed": true, "note": "The first result excludes transaction 14's rows."},
+ {"from": "rep", "to": "db", "label": "SELECT count(*)", "note": "A new statement takes a new snapshot. Now 14 is finished and committed, so its rows count. The two numbers disagree."}]}
+</script>
+</figure>
+<p class="ts-takeaway">A snapshot says which transaction IDs had finished; Read Committed takes a new one per statement, Repeatable Read keeps one for the whole transaction.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c15">
+<p class="q">A snapshot is <code>100:110:103,107</code>. Which of these transactions' committed rows can it see?</p>
+<ol>
+<li data-why="107 is in xip_list: it was still running when the snapshot was taken.">98, 103 and 105</li>
+<li>98 and 105</li>
+<li data-why="110 is at xmax, so it had not finished when the snapshot was taken.">98, 105 and 110</li>
+<li data-why="103 is in xip_list: it was still running.">98, 103, 105 and 107</li>
+</ol>
+<p class="ts-why">98 is below xmin: finished. 105 is between xmin and xmax and not in the list: finished. 103 and 107 were running; 110 is at xmax. Each finished one is visible only if pg_xact says committed.</p>
+</div>
+<div class="ts-explain" data-points="A snapshot is xmin, xmax and the in-progress list|Below xmin finished, at or above xmax not, in between finished unless listed|Visible also needs committed in pg_xact|Read Committed: new snapshot per statement; Repeatable Read: one per transaction">
+<p class="q">Explain how PostgreSQL decides whether a report sees a row written by another transaction.</p>
+<div class="ts-model"><p>Every row version carries xmin, the transaction that wrote it, and xmax, the one that deleted or replaced it. The report holds a snapshot: xmin, xmax and a list of transactions in progress. An ID counts as finished if it is below xmin, or below xmax and not in the list. The version is visible if its xmin finished and committed, and its xmax is zero or didn't finish-and-commit. Read Committed takes a fresh snapshot per statement; Repeatable Read keeps the first one.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="visibility-code" data-rung="3" data-min="6">
+<h2>The visibility rule in 30 lines of Python</h2>
+<p class="ts-bridge">Last part: snapshots and pg_xact. Still unsolved: can you apply the whole rule to a real case without guessing?</p>
+<p class="ts-problem">A teammate insists that a rolled-back UPDATE "must have left the row with the wrong xmax", because <code>SELECT xmax FROM acct</code> shows 927 on the visible row. Is the data corrupt?</p>
+<p>The model below applies the rule from parts 2 to 4. It leaves out details real PostgreSQL handles: command numbers inside one transaction, subtransactions, and xmax values set only by row locks (part 6 of the series). Its tests (test_visibility.py in the examples folder) replay the session that produced the IDs in part 2: while 927 runs, after its rollback, and after a commit.</p>
+<div class="ts-code" data-lang="python" data-title="visibility.py" data-file="visibility.py" data-verified="ran"></div>
+<p>The rollback test answers the teammate. The visible version has xmax 927, but 927 is aborted, so the deletion never counts. That matches the docs' warning from part 2: a nonzero xmax on a visible row usually means the deleter hasn't committed or rolled back.</p>
+<div class="ts-interview"><p><strong>"How does PostgreSQL know a row is visible to my query?"</strong> A strong answer names the three inputs: the version's xmin and xmax, the query's snapshot, and the commit status in pg_xact. It states the rule (inserter finished and committed, deleter absent or not finished-and-committed) and adds the own-transaction exception. Saying "it takes a lock" is the weak answer.</p></div>
+<p class="ts-takeaway">Visible means: the inserting transaction had finished and committed by your snapshot, and the deleting one hadn't, unless either is your own.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Transaction 927 commits. A Repeatable Read transaction whose snapshot was taken before the commit reads the row again. Which balance does it see, 100 or 50?</p>
+<div class="ts-reveal"><p>100. In its snapshot 927 had not finished, so the new version (xmin 927) is invisible and the old version's xmax 927 doesn't count as a delete. The last test in the file checks exactly this.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="inspect-live" data-rung="3" data-min="5">
+<h2>Looking at versions and snapshots on a live database</h2>
+<p class="ts-bridge">Last part: the rule in code. Still unsolved: how do you see these fields on a real server?</p>
+<p class="ts-problem">A table has 2 million live rows but 9 GB on disk. You suspect old versions. You want to see them, and find who is keeping them.</p>
+<p>Three views, from the rows up:</p>
+<ol class="ts-steps">
+<li>System columns on any table: <code>SELECT xmin, xmax, ctid, * FROM t</code>. These show only versions your snapshot can see.</li>
+<li><span class="ts-claim" data-claim="c20" data-src="s7">pageinspect's heap_page_items shows every line pointer on a heap page, whether or not the row versions are visible to an MVCC snapshot.</span> <span class="ts-claim" data-claim="c21" data-src="s7">All pageinspect functions may be used only by superusers.</span> Use it on a copy or in staging.</li>
+<li><span class="ts-claim" data-claim="c22" data-src="s8">pg_stat_activity shows each backend's top-level transaction ID in backend_xid and its xmin horizon in backend_xmin.</span> The <dfn data-def="The oldest transaction ID a session still needs to treat as possibly running. Row versions deleted after it can't be cleaned up yet.">xmin horizon</dfn> is how far back that session might still need to see.</li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Who is holding old versions?" data-verified="spec" data-claims="c22 c23">
+<pre><code>SELECT pid, usename, state,
+       now() - xact_start     AS open_for,
+       age(backend_xid)       AS xid_age,
+       age(backend_xmin)      AS xmin_age,
+       left(query, 60)        AS last_query
+FROM pg_stat_activity
+WHERE backend_xid IS NOT NULL OR backend_xmin IS NOT NULL
+ORDER BY greatest(age(backend_xid), age(backend_xmin)) DESC
+LIMIT 10;</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c23" data-src="s3">The docs tell you to find long-running open transactions by checking pg_stat_activity for rows where age(backend_xid) or age(backend_xmin) is large.</span> <code>age()</code> returns how many transactions ago that ID was.</p>
+<div class="ts-trap"><p>The usual culprit is not a slow query. It is a session in state <code>idle in transaction</code>: an app that ran BEGIN, did a read, then waited on an HTTP call or crashed without closing. It holds its snapshot, and every version deleted since then must be kept.</p></div>
+<p class="ts-takeaway">System columns show your visible versions, pageinspect shows all of them, and pg_stat_activity shows which session is holding old ones.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c20">
+<p class="q">You want to count dead versions on page 0 of <code>acct</code>, including ones no snapshot can see. Which tool shows them?</p>
+<ol>
+<li>pageinspect's heap_page_items, reading page 0 of acct with get_raw_page</li>
+<li data-why="System columns only appear on versions visible to your query's snapshot.">SELECT xmin, xmax, ctid FROM acct</li>
+<li data-why="pg_stat_activity is about sessions, not about rows on a page.">pg_stat_activity</li>
+</ol>
+<p class="ts-why">Only a raw page read shows every line pointer, visible or not. Normal queries apply the visibility rule first.</p>
+</div>
+</section>
+
+<section class="ts-part" id="production-settings" data-rung="3" data-min="5">
+<h2>Production settings that keep transactions short</h2>
+<p class="ts-bridge">Last part: finding sessions that hold old versions. Still unsolved: how do you stop them happening in the first place?</p>
+<p class="ts-problem">A payment service opens a transaction, reads the order, calls the bank API (P99 of 8 seconds, sometimes 5 minutes on outages), then writes. During an outage, bloat on the busiest table grows by 20 GB.</p>
+<p>The timeouts PostgreSQL gives you:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c24" data-src="s9">idle_in_transaction_session_timeout terminates a session that has been idle inside an open transaction for longer than the set time; 0, the default, disables it.</span></li>
+<li><span class="ts-claim" data-claim="c25" data-src="s9">An open transaction prevents vacuuming away recently-dead tuples that may be visible only to it, so a session that stays idle for long can contribute to table bloat.</span></li>
+<li><span class="ts-claim" data-claim="c26" data-src="s9">transaction_timeout terminates any session that spends longer than the set time in a transaction; it is 0 (off) by default, and the docs advise against setting it in postgresql.conf because it would affect all sessions.</span> Set it per role or per session instead.</li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Per-role limits for the payments app" data-verified="spec" data-claims="c24 c26">
+<pre><code>ALTER ROLE payments_app SET idle_in_transaction_session_timeout = '30s';
+ALTER ROLE payments_app SET transaction_timeout = '60s';</code></pre>
+</div>
+<p>The design fix matters more than the timeout: never hold a transaction open across a network call. Read, commit, call the bank, then open a new short transaction to write the result, using an idempotency key so a retry is safe.</p>
+<div class="ts-interview"><p><strong>"Why not wrap the whole request, including the external API call, in one transaction?"</strong> A strong answer: under MVCC an open transaction pins its snapshot, so cleanup stalls for the whole database while you wait on the network, and locks you took are held too. Keep transactions to database work only, and make the external step idempotent.</p></div>
+<p class="ts-takeaway">Never keep a transaction open across a network call, and set idle-in-transaction and transaction timeouts per application role.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c24 c25">
+<p class="q">Which setting would have ended the stuck payment sessions during the bank outage?</p>
+<ol>
+<li data-why="statement_timeout limits one running statement; these sessions were idle between statements.">statement_timeout = '5s'</li>
+<li data-why="The default of 0 disables the timeout, which is what allowed the problem.">Leaving idle_in_transaction_session_timeout at its default</li>
+<li>idle_in_transaction_session_timeout = '30s' for the app's role</li>
+</ol>
+<p class="ts-why">The sessions sat idle inside open transactions while waiting on the bank. That is exactly what idle_in_transaction_session_timeout ends.</p>
+</div>
+</section>
+
+<section class="ts-part" id="xmin-horizon" data-rung="4" data-min="6">
+<h2>One forgotten transaction slows every table</h2>
+<p class="ts-bridge">Last part: timeouts and short transactions. Still unsolved: what actually breaks when one session holds an old snapshot, and what else can hold one?</p>
+<p class="ts-problem">An analyst opens a Repeatable Read transaction in a SQL client on Friday and goes home. By Monday, the <code>orders</code> table is 3 times its size and queries that took 5 ms take 80 ms.</p>
+<p>What happens at 10 times the write rate: every UPDATE leaves a dead version. Cleanup can only remove versions that no snapshot anywhere can still see. One old snapshot sets that line for the whole database, so dead versions pile up in every busy table. Scans and index lookups wade through them, and the first thing users notice is latency on the most-updated tables.</p>
+<p>Things that hold the line back:</p>
+<ol class="ts-steps">
+<li>Long or idle-in-transaction sessions (part 6).</li>
+<li><span class="ts-claim" data-claim="c27" data-src="s10">hot_standby_feedback lets a standby tell the primary about queries running on it; this avoids query cancels on the standby but can cause bloat on the primary.</span> A 2-hour report on a replica then holds cleanup back on the primary.</li>
+<li><span class="ts-claim" data-claim="c28" data-src="s3">The docs' list of things to fix also names old prepared transactions and old replication slots, found through pg_prepared_xacts and pg_replication_slots.</span></li>
+</ol>
+<p>How to detect it: alert on the oldest <code>age(backend_xmin)</code> in pg_stat_activity, on replication slot and prepared transaction ages, and on dead-row counts per table. The fix is to end the holder; the cleanup that follows is part 3's topic.</p>
+<div class="ts-interview"><p><strong>"Reads never block writes. So why can a read-only report on a replica hurt the primary?"</strong> Strong answer: it blocks nothing directly, but with hot_standby_feedback on, its snapshot holds back cleanup on the primary, so dead versions pile up there. Trade-off: turn feedback off and the replica's long queries may be cancelled instead. Many teams send such reports to a separate replica with feedback off and a long delay allowance.</p></div>
+<p class="ts-takeaway">The oldest open snapshot anywhere, including replicas, slots and prepared transactions, decides what cleanup may remove everywhere.</p>
+<div class="ts-predict" data-claims="c25 c27">
+<p class="q">You kill the analyst's session on Monday. Predict what happens to table size and latency in the next hour.</p>
+<div class="ts-reveal"><p>Cleanup can now remove the dead versions, so latency recovers as autovacuum works through the tables. The files usually don't shrink: <span class="ts-claim" data-claim="c41" data-src="s3">standard VACUUM marks the space of dead versions as reusable but does not return it to the operating system, except when whole pages at the end of the table become free.</span> Part 3 covers what to do about it.</p></div>
+</div>
+<div class="ts-explain" data-points="Cleanup can only remove versions no snapshot can still see|One old snapshot holds that line for the whole database|Holders: idle transactions, replicas with feedback, prepared transactions, slots|Detect via backend_xmin age, slot and prepared-transaction ages">
+<p class="q">Explain to an on-call engineer why one idle session can make unrelated tables slow, and how to find it.</p>
+<div class="ts-model"><p>Every UPDATE and DELETE leaves an old version. Cleanup may only remove versions that no open snapshot could still need. A session idle in an old transaction keeps its snapshot, so dead versions pile up in every busy table and queries slow down. Standbys with hot_standby_feedback, old prepared transactions and stale replication slots do the same. Find the holder by the age of backend_xmin in pg_stat_activity and the ages in pg_prepared_xacts and pg_replication_slots, then end it.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="hint-bits" data-rung="4" data-min="5">
+<h2>Why a SELECT can write to disk</h2>
+<p class="ts-bridge">Last part: old snapshots hold back cleanup. Still unsolved: why does reading freshly loaded data sometimes cause heavy writes?</p>
+<p class="ts-problem">You bulk-load 50 million rows at night. The first morning report on them runs twice as slow as the second, and disk writes spike during a read-only query.</p>
+<p>Looking up pg_xact for every version on every read would be slow. So PostgreSQL caches the answer in the row itself:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c29" data-src="s11">Visibility checks set hint bits on a row version once they see that its inserting or deleting transaction has committed or aborted, and then mark the page as dirty.</span> A <dfn data-def="Flags in a row version's header that record 'the inserter committed' or 'the deleter aborted' and so on, so later readers can skip the pg_xact lookup.">hint bit</dfn> is that cached answer.</li>
+<li>The first reader after a bulk load sets hint bits on every row, dirtying every page. Those pages must be written back to disk.</li>
+<li><span class="ts-claim" data-claim="c30" data-src="s12">Hint bits set on the primary are not WAL-logged, so a standby writes them again itself and performs disk writes even when all its users only read.</span></li>
+<li><span class="ts-claim" data-claim="c31" data-src="s13">If data checksums are enabled, hint bit updates are always WAL-logged.</span> Then the first read after a load also generates WAL.</li>
+</ol>
+<div class="ts-trap"><p>A read-only replica is not write-free, and the first scan after a big load is not a fair benchmark. Measure the second run, and expect the first scan after a large load to pay this cost.</p></div>
+<p class="ts-takeaway">The first reader of new rows records their commit status in the rows, so a SELECT after a bulk load can write every page.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c29 c30">
+<p class="q">A replica serving only reads shows steady disk writes after the primary loads a big batch. Why?</p>
+<ol>
+<li data-why="A replica doesn't write rows of its own; it replays the primary's WAL.">Replication is writing duplicate rows</li>
+<li>Its reads set hint bits on the new rows, which aren't in the WAL, so it writes those pages itself</li>
+<li data-why="Snapshots live in memory; taking one causes no disk write.">Every query writes its snapshot to disk</li>
+</ol>
+<p class="ts-why">Hint bits set on the primary are not sent through the WAL, so the standby discovers commit status itself and dirties the pages.</p>
+</div>
+</section>
+
+<section class="ts-part" id="subtransactions" data-rung="4" data-min="6">
+<h2>SAVEPOINT: the MVCC feature that took down replicas</h2>
+<p class="ts-bridge">Last part: reads can write. Still unsolved: which innocent-looking feature has caused whole-cluster slowdowns?</p>
+<p class="ts-problem">An ORM wraps each "find or create" in a nested transaction. Each request opens 70 of them inside one outer transaction. Nothing fails, but the database slows sharply under load.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c32" data-src="s19">Subtransactions are started with SAVEPOINT, and also in other ways such as a PL/pgSQL EXCEPTION clause.</span> A <dfn data-def="A transaction inside a transaction that can roll back on its own, started by SAVEPOINT or an EXCEPTION block.">subtransaction</dfn> can roll back alone.</li>
+<li><span class="ts-claim" data-claim="c33" data-src="s19">A read-only subtransaction gets no ID, but once it writes, it and all its parents get transaction IDs.</span></li>
+<li><span class="ts-claim" data-claim="c34" data-src="s19">Up to 64 open subtransaction IDs are cached in shared memory per backend; beyond that, storage I/O rises significantly because of extra lookups in pg_subtrans.</span></li>
+</ol>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c35" data-src="s14">In a post from 29 September 2021, GitLab described stalls in which queries on its replicas waited on SubtransControlLock.</span> <span class="ts-claim" data-claim="c36" data-src="s14">They traced it to SAVEPOINTs run on the primary while a long-running transaction was open, and fixed it by removing SAVEPOINT use from the application.</span></p></div>
+<p>How you detect it: <span class="ts-claim" data-claim="c42" data-src="s8">waits on the subtransaction cache appear in pg_stat_activity as the wait events SubtransSLRU and SubtransBuffer.</span> Also count SAVEPOINT statements in your query logs. Check whether your ORM's nested-transaction helper issues SAVEPOINT.</p>
+<div class="ts-interview"><p><strong>"When would you avoid savepoints?"</strong> Strong answer: on hot paths and in loops, because each writing subtransaction takes an ID and more than 64 open per transaction means disk lookups. Replace "try insert, catch, retry" with <code>INSERT ... ON CONFLICT</code>, which needs no savepoint.</p></div>
+<p class="ts-takeaway">Subtransactions look free but cost IDs and, past 64 per transaction, extra pg_subtrans lookups; prefer ON CONFLICT on hot paths.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c33 c34">
+<p class="q">Which pattern risks going past the subtransaction cache?</p>
+<ol>
+<li>A loop that inserts 200 rows, each in its own SAVEPOINT that is kept open</li>
+<li data-why="Read-only subtransactions get no subtransaction ID, so they don't fill the cache.">200 SAVEPOINTs that only run SELECTs</li>
+<li data-why="A single INSERT ... ON CONFLICT uses no subtransaction at all.">200 rows inserted with one INSERT ... ON CONFLICT DO NOTHING</li>
+</ol>
+<p class="ts-why">Writing subtransactions get IDs, and more than 64 open in one backend spill to pg_subtrans lookups.</p>
+</div>
+</section>
+
+<section class="ts-part" id="mvcc-choices" data-rung="5" data-min="5">
+<h2>PostgreSQL's MVCC against the alternatives</h2>
+<p class="ts-bridge">Last part: subtransactions. Still unsolved: how does this design compare with other databases, and when does it hurt you?</p>
+<p class="ts-problem">An architect says MySQL handles your update-heavy <code>wallet_balances</code> table better "because it updates in place". Is that true, and what would you trade?</p>
+<p>InnoDB, MySQL's storage engine, also uses MVCC, with old versions in a different place. <span class="ts-claim" data-claim="c37" data-src="s15">InnoDB keeps old versions of changed rows in undo tablespaces, in a structure called a rollback segment.</span> <span class="ts-claim" data-claim="c38" data-src="s15">InnoDB updates records in its clustered index in place.</span> <span class="ts-claim" data-claim="c39" data-src="s15">Long-running transactions, even read-only ones, stop InnoDB discarding undo logs, which can grow until they fill the undo tablespace.</span></p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Design</th><th>Where old versions live</th><th>Pick it when</th><th>You give up</th></tr></thead>
+<tbody>
+<tr><td>PostgreSQL: new version in the table</td><td>In the table itself, cleaned by VACUUM</td><td>Mixed read/write workloads, long reads next to writes, cheap rollback</td><td>Dead versions in the table and indexes; cleanup must keep up</td></tr>
+<tr><td>InnoDB: update in place plus undo</td><td>Undo tablespaces, as above</td><td>Workloads dominated by small updates to the same rows, if you watch undo growth</td><td>Old snapshots read through undo; long transactions grow undo instead of the table</td></tr>
+<tr><td>Lock-based reads (no MVCC)</td><td>Nowhere: readers lock</td><td>Almost never for OLTP today</td><td>Readers and writers block each other</td></tr>
+</tbody>
+</table></div>
+<p>Notice the shared failure: in InnoDB long transactions grow undo logs, and in PostgreSQL they grow dead versions. Neither design forgives long transactions. The answer to the architect: "in place" moves the cost, it doesn't remove it. For a hot balance row in PostgreSQL, keep the row narrow and its indexes few, so updates stay cheap (part 3 covers how).</p>
+<div class="ts-interview"><p><strong>"What's the downside of PostgreSQL's MVCC?"</strong> Strong answer: every update writes a whole new version, possibly with new index entries; dead versions stay until VACUUM; one old snapshot holds cleanup back everywhere; and xids are 32-bit, so they need regular maintenance. Then say how you'd limit each: short transactions, narrow hot rows, autovacuum tuning, monitoring the xmin horizon.</p></div>
+<p class="ts-takeaway">Every MVCC design stores old versions somewhere; PostgreSQL keeps them in the table, so its costs are dead versions and cleanup.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c25 c39">
+<p class="q">A team moves to MySQL to "fix bloat" but keeps a 6-hour read-only export transaction on the primary. What happens?</p>
+<ol>
+<li data-why="Read-only transactions also stop InnoDB discarding undo logs.">Nothing: read-only transactions don't matter in InnoDB</li>
+<li data-why="The table isn't where InnoDB keeps old versions; they go to undo.">The InnoDB table itself fills with dead rows</li>
+<li>Undo logs grow for 6 hours, because old versions can't be discarded</li>
+</ol>
+<p class="ts-why">Both engines must keep versions an open snapshot might need. InnoDB keeps them in undo, so undo grows.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="7">
+<h2>Interview drill: MVCC questions at the senior bar</h2>
+<p class="ts-bridge">Last part: MVCC designs compared. Still unsolved: can you answer under pressure?</p>
+<p class="ts-problem">A fintech interviewer takes your wallet design and asks three MVCC questions. Commit to an answer before opening each reference.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. "Your balance report runs 20 queries. Finance says totals don't add up between the summary and the detail sections. Why, and how do you fix it?"</p>
+<div class="ts-reveal"><p>Under Read Committed each query takes its own snapshot, so payments committing between queries appear in later sections only. Run the report in one Repeatable Read transaction so all 20 queries share one snapshot. Trade-off: that transaction holds its snapshot for the report's duration, so run it on a replica or keep it short, and watch the xmin horizon.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. "Our checkout holds a transaction open while calling the payment gateway. What can go wrong under load, and what would you change?"</p>
+<div class="ts-reveal"><p>Each open transaction pins a snapshot and any locks it took. During a gateway slowdown, hundreds of them stay open, cleanup stalls across the database, dead versions pile up and connections run out. Split it: commit the order as pending, call the gateway outside any transaction with an idempotency key, then update the status in a new short transaction. Add idle-in-transaction and transaction timeouts per role. Trade-off: you now handle a pending state and reconciliation.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">3. "Reads never block writes in PostgreSQL. So how can a read-only replica hurt the primary?"</p>
+<div class="ts-reveal"><p>With hot_standby_feedback on, the replica reports its oldest snapshot to the primary, and the primary keeps dead versions that snapshot might need. A long report on the replica therefore causes bloat on the primary. Turning feedback off moves the pain: long replica queries may be cancelled. Choose per replica, and alert on the oldest xmin age.</p></div>
+</div>
+<div class="ts-note" data-label="Beyond senior"><p>Staff-level versions add setting organisation-wide limits on transaction length, and choosing which replicas get feedback across many services. This page stops at one service.</p></div>
+<p class="ts-takeaway">Senior MVCC answers tie each symptom to snapshots and old versions, then state what the fix costs.</p>
+<div class="ts-explain" data-points="Name the snapshot timing (per statement or per transaction)|Tie the failure to old versions held for an old snapshot|Give a detection signal (xmin age, dead rows)|State the fix's trade-off">
+<p class="q">Answer one of the three prompts out loud, in under two minutes, as you would in the interview.</p>
+<div class="ts-model"><p>A strong answer says when the snapshot is taken and what it can see, links the symptom to old versions being kept for an old snapshot, names the metric that shows it (age of backend_xmin, dead rows per table), and gives a fix with its cost: a Repeatable Read transaction pins a snapshot, splitting a transaction adds a pending state, turning off feedback risks replica query cancels.</p></div>
+</div>
+</section>

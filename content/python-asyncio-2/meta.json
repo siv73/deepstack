@@ -1,0 +1,17 @@
+{
+ "slug": "python-asyncio-2",
+ "title": "Python async (asyncio), Part 2: stopping, bounding and sharing",
+ "tldr": "How cancellation really works (and the uncancel bookkeeping behind timeouts and TaskGroup), shield, contextvars, bounded queues with backpressure, locks for races on one thread, graceful SIGTERM shutdown, crossing between threads and the loop, async generator cleanup, and how to debug and test all of it.",
+ "category": "Python",
+ "created": "2026-09-29",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "Python async, Part 1: the core and its traps", "slug": "python-asyncio-1"},
+  {"label": "Unix signals and how containers are stopped"}
+ ],
+ "related": [
+  {"label": "Python async, Part 1", "slug": "python-asyncio-1", "why": "event loop, TaskGroup, timeouts, blocking calls, lost tasks, gather"},
+  {"label": "Threads, processes and the GIL (incl. free-threaded Python)", "why": "the other side of the thread bridge in this page"},
+  {"label": "Transactional outbox and durable queues", "why": "what to use when in-process work must survive a restart"}
+ ]
+}

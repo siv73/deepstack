@@ -1,0 +1,18 @@
+{
+ "slug": "postgres-internals-3",
+ "title": "PostgreSQL internals, Part 3: VACUUM and bloat",
+ "tldr": "How PostgreSQL cleans up the row versions MVCC leaves behind: VACUUM's three phases, dead line pointers, the free space and visibility maps, HOT updates and on-access pruning, measuring the HOT ratio and choosing fillfactor, autovacuum's trigger formula and cost-based throttling, measuring table and index bloat with pgstattuple, VACUUM FULL against pg_repack and REINDEX CONCURRENTLY, freezing and transaction ID wraparound, two real wraparound outages, and a decision table plus interview drill.",
+ "category": "Databases",
+ "created": "2026-10-01",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "PostgreSQL internals, Part 1: how a row is stored on disk", "slug": "postgres-internals-1"},
+  {"label": "PostgreSQL internals, Part 2: MVCC and row versions", "slug": "postgres-internals-2"}
+ ],
+ "related": [
+  {"label": "PostgreSQL internals, Part 2", "slug": "postgres-internals-2", "why": "row versions, snapshots and the xmin horizon that decide what VACUUM may remove"},
+  {"label": "PostgreSQL internals, Part 4: indexes beyond B-tree", "slug": "postgres-internals-4", "why": "index-only scans, BRIN as a summarizing index, and index bloat by index type"},
+  {"label": "PostgreSQL internals, Part 5: query planning and EXPLAIN", "why": "ANALYZE statistics, the job of VACUUM this page left out, and Heap Fetches in plans"},
+  {"label": "PostgreSQL internals, Part 6: isolation levels and locking", "why": "lock modes such as ACCESS EXCLUSIVE and SHARE UPDATE EXCLUSIVE, and multixacts"}
+ ]
+}

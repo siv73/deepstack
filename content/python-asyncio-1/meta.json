@@ -1,0 +1,17 @@
+{
+ "slug": "python-asyncio-1",
+ "title": "Python async (asyncio), Part 1: the core and its traps",
+ "tldr": "What the event loop really does, how to get real concurrency with TaskGroup, how to cap, time-box and unblock it, and the six traps that break async services in production: forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts.",
+ "category": "Python",
+ "created": "2026-09-29",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "Python functions, exceptions and context managers (with)"},
+  {"label": "What a network call costs: latency vs CPU time"}
+ ],
+ "related": [
+  {"label": "Python async, Part 2: cancellation, queues and structure", "slug": "python-asyncio-2", "why": "shield, backpressure with Queue, async generator cleanup, locks, contextvars, eager tasks, testing, uvloop"},
+  {"label": "Threads, processes and the GIL (incl. free-threaded Python)", "why": "the other two concurrency models this page compares against"},
+  {"label": "FastAPI request lifecycle", "why": "where these traps show up in an API service"}
+ ]
+}

@@ -1,0 +1,358 @@
+<section class="ts-part" id="why-storage" data-rung="1" data-min="4">
+<h2>Why a backend engineer should care where a row lives</h2>
+<p class="ts-problem">Two teams create a <code>payments</code> table with the same six columns in a different order. At 120 million rows, one table is about 1.3 times the size of the other. A third team stores user profiles as one big JSON document, and a counter update on it fills the disk far faster than the row count suggests.</p>
+<p>None of this shows up in the SQL. It shows up in how PostgreSQL lays bytes on disk. Once you know the layout, table sizes, cache hit rates and slow updates stop being surprises you debug at 2 a.m.</p>
+<p>Think of a warehouse. Stock is kept in identical boxes. Each box has a packing list glued inside the lid, and goods are packed from the far end. Anything too big for a box goes to a separate overflow room, and the box keeps a slip saying where it went.</p>
+<ol class="ts-steps">
+<li><strong>The boxes:</strong> fixed-size pages, and how rows are placed in them (part 2).</li>
+<li><strong>What is in each item:</strong> the row header, the null bitmap and the padding between columns (part 3).</li>
+<li><strong>The overflow room:</strong> TOAST, where large values go (part 4).</li>
+<li><strong>Using it:</strong> measuring real sizes, ordering columns, tuning TOAST (parts 5 to 7).</li>
+<li><strong>Breaking it and choosing:</strong> what fails at 10 times the load, and how to design tables and answer interview questions (parts 8 to 12).</li>
+</ol>
+<p><span class="ts-claim" data-claim="c1" data-src="s17">PostgreSQL 18, first released on 25 September 2025, is the newest supported major version, and this page follows its documentation.</span> The storage layout it describes has been stable for many releases, so it also applies to the versions you run at work.</p>
+<p class="ts-takeaway">Table size, cache behaviour and update cost all follow from how PostgreSQL packs rows into fixed-size pages.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">A table grows 30% bigger than expected, but the row count and the data are identical to a sister table. Where would you look first?</p>
+<ol>
+<li data-why="Row count is the same, so the number of rows can't explain the difference.">A hidden batch job inserting extra rows</li>
+<li data-why="Compression mainly affects large values; identical data compresses identically.">The compression setting of the database</li>
+<li>How the bytes of each row are laid out, for example the order of the columns</li>
+</ol>
+<p class="ts-why">Same data and same row count means the difference is in how each row is packed. Column order is one of the causes; you will see exactly why in part 6.</p>
+</div>
+<div class="ts-explain" data-points="Rows are packed into fixed-size pages|Large values go to a separate overflow store|Layout decides table size, cache use and update cost">
+<p class="q">In your own words: why does the on-disk layout matter to someone who only writes SQL?</p>
+<div class="ts-model"><p>PostgreSQL stores every table as fixed-size pages, and rows are packed into those pages with headers and padding. Large values are moved to a separate overflow store. How much fits in a page decides how big the table is, how many rows the cache can hold, and how much work an update does. So two tables with the same data can behave very differently.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="page-layout" data-rung="2" data-min="5">
+<h2>A table is a stack of 8 kB boxes</h2>
+<p class="ts-bridge">Last part: layout decides size and speed. Still unsolved: what does one of those boxes look like inside?</p>
+<p class="ts-problem">Your <code>orders</code> table is 40 GB. When PostgreSQL reads "one row", how much does it actually read from disk into memory?</p>
+<p>It reads a whole box. <span class="ts-claim" data-claim="c2" data-src="s3">Every table and index is stored as an array of fixed-size pages, usually 8 kB.</span> A <dfn data-def="The fixed-size block (8 kB by default) that PostgreSQL reads and writes as one unit.">page</dfn> is the unit PostgreSQL reads, caches and writes. So one small row costs one 8 kB read, and the more rows fit in a page, the fewer pages a query touches.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c10" data-src="s3">Every page starts with a 24-byte header that holds, among other things, pd_lower and pd_upper: the offsets where free space starts and ends.</span></li>
+<li><span class="ts-claim" data-claim="c11" data-src="s3">After the header comes an array of item identifiers, 4 bytes each, holding the offset and length of each row.</span> Call each one a <dfn data-def="A 4-byte slot near the start of a page that says where one row sits in that page and how long it is. PostgreSQL calls it an item identifier (ItemIdData).">line pointer</dfn>: it is the packing list in the lid.</li>
+<li><span class="ts-claim" data-claim="c12" data-src="s3">New item identifiers are taken from the start of the free space, and new rows are placed at its end, so the two grow toward each other.</span></li>
+<li><span class="ts-claim" data-claim="c13" data-src="s3">Ordinary tables leave the special space at the end of the page empty; B-tree indexes use it for links to neighbouring pages.</span></li>
+</ol>
+<figure class="ts-svg" data-title="Inside one 8 kB table page">
+<svg viewBox="0 0 700 220" role="img" aria-label="A page: header, line pointers growing right, free space, rows growing left from the end">
+<g class="node" data-s="1"><rect x="20" y="90" width="70" height="60" rx="4"/><text x="55" y="118" text-anchor="middle">Header</text><text class="sub" x="55" y="136" text-anchor="middle">24 bytes</text></g>
+<g class="node" data-s="2"><rect x="92" y="90" width="34" height="60" rx="4"/><text x="109" y="125" text-anchor="middle">1</text><rect x="128" y="90" width="34" height="60" rx="4"/><text x="145" y="125" text-anchor="middle">2</text><rect x="164" y="90" width="34" height="60" rx="4"/><text x="181" y="125" text-anchor="middle">3</text><text class="sub" x="145" y="170" text-anchor="middle">line pointers, 4 B each</text></g>
+<g class="node" data-s="3"><rect x="566" y="90" width="114" height="60" rx="4"/><text x="623" y="125" text-anchor="middle">row 1</text><rect x="462" y="90" width="102" height="60" rx="4"/><text x="513" y="125" text-anchor="middle">row 2</text><rect x="368" y="90" width="92" height="60" rx="4"/><text x="414" y="125" text-anchor="middle">row 3</text><text class="sub" x="524" y="170" text-anchor="middle">rows, packed from the end</text></g>
+<g class="edge" data-s="3"><path d="M109 88 C 109 30, 623 30, 623 88"/><path d="M145 88 C 145 45, 513 45, 513 88"/><path d="M181 88 C 181 60, 414 60, 414 88"/></g>
+<g class="over" data-s="4"><rect x="202" y="96" width="162" height="48" rx="4"/><text x="283" y="118" text-anchor="middle">free space</text><text x="283" y="136" text-anchor="middle">pd_lower → pd_upper</text></g>
+<g class="node" data-s="5"><text class="sub" x="680" y="200" text-anchor="end">special space: empty in tables, used by indexes</text></g>
+</svg>
+<ol class="ts-captions">
+<li>Every page begins with a 24-byte header. Two of its fields, pd_lower and pd_upper, mark where the free space starts and ends.</li>
+<li>Line pointers follow the header. Each is 4 bytes and records where one row sits and how long it is.</li>
+<li>Rows are written from the end of the page backwards. Each line pointer points at its row.</li>
+<li>The free space is the gap in the middle. A new row shrinks it from both sides: 4 bytes on the left, the row's length on the right.</li>
+<li>Indexes keep extra data in a special space at the very end. Tables leave it empty.</li>
+</ol>
+</figure>
+<p>Why two ends? Line pointers have a fixed size and rows don't. Growing them toward each other lets a page hold many small rows or a few big ones without wasting a fixed split.</p>
+<p class="ts-takeaway">A page is a header, a list of 4-byte line pointers growing forward, and rows growing backward from the end, with free space in between.</p>
+<div class="ts-predict" data-claims="c10 c11 c12">
+<p class="q">A page has room left in the middle. You insert one more row of 60 bytes. Which way do pd_lower and pd_upper move, and by how much at least?</p>
+<div class="ts-reveal"><p>pd_lower moves forward by 4 bytes, because a new line pointer is added after the existing ones. pd_upper moves backward by at least 60 bytes, because the row is placed at the end of the free space. The free space shrinks from both sides. (Part 5 shows why the row's slot is usually a bit bigger than 60.)</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="row-layout" data-rung="2" data-min="6">
+<h2>What one row costs before your data even starts</h2>
+<p class="ts-bridge">Last part: rows sit at the end of a page, pointed at by line pointers. Still unsolved: what is inside a row, and how does anything point at it?</p>
+<p class="ts-problem">A table of three <code>boolean</code> flags stores 3 bytes of data per row. Yet each row uses 36 bytes of its page. Where do the other 33 go?</p>
+<p>PostgreSQL calls a stored row a <dfn data-def="One stored version of a row, with its header and column data. PostgreSQL's name for it is a heap tuple.">tuple</dfn>. Each one looks like this:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c18" data-src="s3">Every row starts with a fixed header of 23 bytes on most machines, then an optional null bitmap, then the column data.</span></li>
+<li><span class="ts-claim" data-claim="c19" data-src="s3">The header holds t_xmin and t_xmax, the IDs of the transactions that inserted and deleted this row version.</span> Part 2 of this series is built on these two fields.</li>
+<li><span class="ts-claim" data-claim="c20" data-src="s3">The null bitmap exists only if the row has at least one NULL, and has one bit per column.</span></li>
+<li><span class="ts-claim" data-claim="c21" data-src="s3">Column data begins at offset t_hoff, which is always a multiple of the platform's MAXALIGN distance.</span> <dfn data-def="The strictest alignment the platform needs. Row starts and t_hoff are rounded up to it.">MAXALIGN</dfn> was 8 on the 64-bit x86 server used to test this page, so data started at byte 24. Every byte count on this page assumes that; the tests in part 6 pin them.</li>
+</ol>
+<figure class="ts-svg" data-title="One row of (flag boolean, amount bigint)">
+<svg viewBox="0 0 700 170" role="img" aria-label="Row: 23-byte header, 1 spare byte, 1-byte boolean, 7 bytes padding, 8-byte bigint">
+<g class="node" data-s="1"><rect x="20" y="50" width="345" height="56" rx="4"/><text x="192" y="76" text-anchor="middle">header: 23 bytes</text><text class="sub" x="192" y="94" text-anchor="middle">t_xmin, t_xmax, t_ctid, flags, t_hoff</text></g>
+<g class="node" data-s="2"><rect x="367" y="50" width="15" height="56" rx="2"/><text class="sub" x="374" y="130" text-anchor="middle">1</text><text class="sub" x="374" y="146" text-anchor="middle">bitmap or spare</text></g>
+<g class="node" data-s="3"><rect x="384" y="50" width="15" height="56" rx="2"/><text class="sub" x="392" y="40" text-anchor="middle">flag</text><rect x="401" y="50" width="105" height="56" rx="2"/><text class="sub" x="453" y="82" text-anchor="middle">7 B padding</text></g>
+<g class="node" data-s="4"><rect x="508" y="50" width="120" height="56" rx="4"/><text x="568" y="82" text-anchor="middle">amount</text><text class="sub" x="568" y="130" text-anchor="middle">8 B, starts at 32</text></g>
+</svg>
+<ol class="ts-captions">
+<li>The fixed header takes the first 23 bytes. It carries the transaction IDs that make MVCC work, the row's own ctid, and t_hoff.</li>
+<li>Byte 23 holds the null bitmap if the row has a NULL. With up to 8 columns the bitmap is one byte, so it fits in the byte that padding to 24 would waste anyway.</li>
+<li>The boolean takes 1 byte at offset 24. The next column is a bigint, which must start on an 8-byte boundary, so 7 bytes of padding follow.</li>
+<li>The bigint starts at 32 and ends at 40. The row is 40 bytes, and only 9 of them are your data.</li>
+</ol>
+</figure>
+<p>How does an index find this row later? <span class="ts-claim" data-claim="c14" data-src="s3">A ctid, the pointer to a row, is a page number plus the index of an item identifier on that page.</span> A <dfn data-def="The physical address of a row version: (page number, line pointer number), e.g. (0,3).">ctid</dfn> such as (0,3) means page 0, line pointer 3. <span class="ts-claim" data-claim="c15" data-src="s3">An item identifier is never moved until it is freed, so it stays valid even when the row it points to is moved within the page to compact free space.</span></p>
+<p class="ts-takeaway">Every row pays a 23-byte header, rounded to 24, before its first column, and each column may add padding to reach its boundary.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c18 c20 c21">
+<p class="q">A row has 5 columns and one of them is NULL. How much extra space does the null bitmap cost compared with the same row with no NULLs?</p>
+<ol>
+<li data-why="The bitmap is one bit per column, not one byte per column.">5 bytes</li>
+<li>Nothing: 5 bits fit in 1 byte, and byte 23 was going to be padding before the data starts at 24</li>
+<li data-why="The bitmap is only there when a NULL exists, but it does not force a full extra 8-byte step for 5 columns.">8 bytes, because the data start moves to the next 8-byte boundary</li>
+</ol>
+<p class="ts-why">23 bytes of header plus 1 byte of bitmap is exactly 24, the same start as without a bitmap. From the 9th column on, the bitmap needs a second byte and the data start jumps to 32.</p>
+</div>
+</section>
+
+<section class="ts-part" id="toast" data-rung="2" data-min="6">
+<h2>Where a 50 kB value goes when the box is 8 kB</h2>
+<p class="ts-bridge">Last part: a row is a header, a bitmap and aligned columns. Still unsolved: what happens when one column is bigger than a page?</p>
+<p class="ts-problem">You store a 50 kB JSON document per customer. A page is 8 kB. Yet the insert works, and <code>SELECT id, status</code> on that table is still fast.</p>
+<p><span class="ts-claim" data-claim="c26" data-src="s2">PostgreSQL does not let a row span pages, so large values are compressed and/or split into multiple rows in a separate TOAST table.</span> <dfn data-def="The Oversized-Attribute Storage Technique: PostgreSQL compresses large variable-length values and/or moves them into a side table, leaving a small pointer in the row.">TOAST</dfn> is the overflow room from part 1. <span class="ts-claim" data-claim="c32" data-src="s2 s4">Only variable-length (varlena) types can be TOASTed, and any such value is limited to 1 GB.</span> A <dfn data-def="A variable-length value (text, bytea, jsonb, numeric...) stored with a length header in front.">varlena</dfn> is a value with a length header, like text or jsonb.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c27" data-src="s2">TOAST kicks in only when a row is wider than TOAST_TUPLE_THRESHOLD, normally 2 kB; it then compresses or moves values out until the row is under TOAST_TUPLE_TARGET, also normally 2 kB, or nothing more can be gained.</span></li>
+<li><span class="ts-claim" data-claim="c31" data-src="s2">With EXTENDED, compression is tried first, then out-of-line storage if the row is still too big.</span> EXTENDED is the usual setting (part 7).</li>
+<li><span class="ts-claim" data-claim="c28" data-src="s2">Out-of-line values are cut into chunks of about 2000 bytes, each stored as its own row in the TOAST table with chunk_id, chunk_seq and chunk_data.</span></li>
+<li><span class="ts-claim" data-claim="c29" data-src="s2 s4">For a value moved out of line, the main row keeps only an 18-byte TOAST pointer, whatever the size of the value.</span></li>
+</ol>
+<figure class="ts-graph" data-title="One 50 kB document, stored">
+<script type="application/json">
+{"nodes": [
+ {"id": "row", "label": "Main row", "sub": "id, status, 18 B pointer", "col": 0, "row": 0},
+ {"id": "cmp", "label": "Compress", "sub": "still too big", "col": 1, "row": 0, "step": 1},
+ {"id": "toast", "label": "TOAST table", "sub": "chunks of ~2000 B", "col": 2, "row": 0, "step": 2},
+ {"id": "client", "label": "Client", "sub": "asked for the doc", "col": 2, "row": 1, "step": 3}],
+ "edges": [
+ {"from": "row", "to": "cmp", "label": "row over 2 kB", "step": 1},
+ {"from": "cmp", "to": "toast", "label": "stored as chunks", "step": 2},
+ {"from": "toast", "to": "client", "label": "reassembled on output", "step": 3, "dashed": true}],
+ "captions": ["The row is over 2 kB, so the document is compressed first.", "It is still too big, so it is cut into chunks and stored in the TOAST table. The main row keeps an 18-byte pointer.", "The chunks are read and joined only when a query actually asks for the document."]}
+</script>
+</figure>
+<p>Small strings get a discount too. <span class="ts-claim" data-claim="c24" data-src="s10">Strings up to 126 bytes are stored with a 1-byte header; longer ones have a 4-byte header.</span> <span class="ts-claim" data-claim="c25" data-src="s2">Values with a 1-byte header are not aligned, while values with a 4-byte header are aligned on at least a 4-byte boundary.</span></p>
+<p class="ts-takeaway">Rows over about 2 kB get their big values compressed, then moved to a TOAST table as ~2000-byte chunks, leaving an 18-byte pointer behind.</p>
+<div class="ts-predict" data-claims="c27 c28 c29 c31">
+<p class="q">You insert two 3,000-byte text values: one is the letter "a" repeated, the other is random hex digits. Predict how each one is stored.</p>
+<div class="ts-reveal"><p>Both rows are over 2 kB, so TOAST runs. The repeated letters compress to a few dozen bytes, the row drops under 2 kB, and the value stays inline, compressed. The random hex compresses poorly, so it is moved out of line in two chunks, and the row keeps only the 18-byte pointer. Same length, very different storage.</p></div>
+</div>
+<div class="ts-explain" data-points="Pages are fixed at 8 kB and a row can't span pages|Each row carries a 23-byte header, a null bitmap if needed, and padding before aligned columns|Line pointers give each row a stable (page, item) address|Big values are compressed, then moved to a TOAST table leaving an 18-byte pointer">
+<p class="q">Explain how PostgreSQL stores a row with an id, a flag and a 20 kB text, from the page down to the bytes.</p>
+<div class="ts-model"><p>The row goes into an 8 kB page. A 4-byte line pointer is added after the page header and the row is written at the end of the free space. The row starts with a 23-byte header, then the columns, each padded to its alignment. The 20 kB text makes the row wider than 2 kB, so TOAST compresses it and, if it is still too big, splits it into ~2000-byte chunks in the TOAST table. The row keeps an 18-byte pointer. Indexes find the row by its ctid, the page number plus line pointer number.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="measure-it" data-rung="3" data-min="5">
+<h2>Measuring what a table really costs</h2>
+<p class="ts-bridge">Last part: big values move to TOAST. Still unsolved: how do you see any of this on a real database?</p>
+<p class="ts-problem">An alert says the <code>events</code> database grew 200 GB this month. The row count only grew 5%. You need to know which table, and whether the growth is rows, indexes or TOAST.</p>
+<p>First, where the bytes live. <span class="ts-claim" data-claim="c3" data-src="s1">Each table and index is stored in its own file, named after its filenode number from pg_class.relfilenode.</span> <span class="ts-claim" data-claim="c4" data-src="s1">When a table or index grows past 1 GB, it is split into 1 GB segment files named filenode, filenode.1, filenode.2 and so on.</span></p>
+<p><span class="ts-claim" data-claim="c5" data-src="s1">Besides the main fork, each table has a free space map (suffix _fsm) and a visibility map (suffix _vm); unlogged tables also have an initialization fork (_init).</span> A <dfn data-def="One of the separate files a table is made of: main (the rows), fsm (free space map), vm (visibility map), init (unlogged tables only).">fork</dfn> is one of these files. <span class="ts-claim" data-claim="c62" data-src="s19">The visibility map keeps two bits per heap page: all-visible and all-frozen.</span> <span class="ts-claim" data-claim="c8" data-src="s1">A table with columns that can hold large values has a TOAST table, linked from pg_class.reltoastrelid.</span></p>
+<p>The functions that add these up:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c36" data-src="s6">pg_relation_size returns the size of one fork (main by default; also fsm, vm or init).</span></li>
+<li><span class="ts-claim" data-claim="c37" data-src="s6">pg_table_size counts the table without indexes but with its TOAST table, free space map and visibility map; pg_total_relation_size adds the indexes.</span></li>
+<li><span class="ts-claim" data-claim="c35" data-src="s6">pg_column_size shows the bytes used to store a value, including any compression.</span> <span class="ts-claim" data-claim="c38" data-src="s6">pg_column_compression returns the compression method used for a value, or NULL if it isn't compressed.</span></li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Where did the 200 GB go?" data-verified="spec" data-claims="c36 c37">
+<pre><code>SELECT c.relname,
+       pg_size_pretty(pg_relation_size(c.oid))                 AS rows_main,
+       pg_size_pretty(pg_table_size(c.oid) - pg_relation_size(c.oid)) AS toast_fsm_vm,
+       pg_size_pretty(pg_total_relation_size(c.oid) - pg_table_size(c.oid)) AS indexes
+FROM pg_class c
+WHERE c.relkind = 'r'
+ORDER BY pg_total_relation_size(c.oid) DESC
+LIMIT 10;</code></pre>
+</div>
+<p>The middle column is mostly TOAST: the free space map and visibility map are tiny next to it. If that column grew, big values grew. If the first grew faster than the row count, rows got wider or pages hold dead versions (part 3 of the series).</p>
+<div class="ts-interview"><p><strong>"A table doubled in size but the row count didn't. How do you investigate?"</strong> A strong answer splits the size first: main fork, TOAST and indexes, using the functions above. Then it samples <code>pg_column_size</code> on the widest columns, checks for dead row versions, and only then proposes a fix. Guessing "add an index" or "vacuum it" before measuring is the weak answer.</p></div>
+<p class="ts-takeaway">Split every size question into main fork, TOAST and indexes before you guess at a cause.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c36 c37">
+<p class="q">pg_table_size('events') grew by 150 GB, but pg_relation_size('events') grew by only 2 GB. What grew?</p>
+<ol>
+<li>Mostly the TOAST table: large values, not rows</li>
+<li data-why="pg_table_size excludes indexes, so index growth can't show up in it.">The indexes on events</li>
+<li data-why="pg_relation_size is the main fork, where the rows themselves live, and it barely moved.">The number of rows</li>
+</ol>
+<p class="ts-why">pg_table_size is main fork plus TOAST plus the two small maps. The main fork barely grew, and the maps are tiny, so the growth is in TOAST.</p>
+</div>
+</section>
+
+<section class="ts-part" id="column-order" data-rung="3" data-min="6">
+<h2>Column order: free space savings with one migration</h2>
+<p class="ts-bridge">Last part: how to measure a table. Still unsolved: how do you make rows smaller without dropping data?</p>
+<p class="ts-problem">The <code>payments</code> table from part 1 has columns (paid boolean, user_id bigint, refunded boolean, amount_paise bigint, gift boolean, created_at timestamptz). It will hold 120 million rows.</p>
+<p>The cause is <dfn data-def="Unused bytes PostgreSQL inserts before a value so that it starts at an address that is a multiple of its type's alignment.">alignment padding</dfn>. <span class="ts-claim" data-claim="c22" data-src="s5">Each type has an alignment: c needs none, s is 2 bytes and i is 4 bytes on most machines, and d is 8 bytes on many machines; padding is inserted before a value so it starts on its boundary.</span> <span class="ts-claim" data-claim="c23" data-src="s11 s12 s13">bigint and timestamptz take 8 bytes, integer and date take 4, smallint takes 2 and boolean takes 1.</span></p>
+<p>Each boolean followed by a bigint wastes 7 bytes. Put the 8-byte columns first and the booleans last, and the padding disappears. The estimator below applies the rules from parts 2 to 4; its tests pin every number on this page.</p>
+<div class="ts-code" data-lang="python" data-title="row_cost.py" data-file="row_cost.py" data-verified="ran"></div>
+<p>Results: the original order is a 72-byte row and 107 rows per page. The packed order is 51 bytes and 136 rows per page. The packed table needs about a fifth fewer pages. <span class="ts-claim" data-claim="c40" data-src="s14">When PostgreSQL adds a row to a page, it reserves the row's length rounded up to MAXALIGN.</span> That is why the estimator rounds 51 up to 56 before adding the 4-byte line pointer.</p>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c42" data-src="s16">GitLab's development guidelines require new tables to order columns by size, largest first, with variable-length types at the end.</span> <span class="ts-claim" data-claim="c43" data-src="s16">Their example: reordering the events table cut the fixed part of each row from 48 to 40 bytes, which they estimate saves at least 610 MB across 80 million rows.</span></p></div>
+<div class="ts-interview"><p><strong>"Would you reorder columns on an existing 2 TB table?"</strong> Changing the order of an existing table means creating a new table in the new order and copying the data into it. A strong answer weighs a one-off rewrite of 2 TB against a saving of maybe 10 to 25%, and usually says: bake the rule into new-table reviews, and reorder existing tables only when you are rewriting them anyway (a partition migration, a big schema change).</p></div>
+<p class="ts-takeaway">Order columns by alignment, 8-byte types first and variable-length types last, and the padding goes away.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c22 c23">
+<p class="q">Which order wastes the least space for (a smallint, b bigint, c integer, d boolean)?</p>
+<ol>
+<li data-why="The smallint first forces 6 bytes of padding before the 8-byte bigint.">a, b, c, d</li>
+<li data-why="The boolean first forces 7 bytes of padding before the bigint.">d, b, c, a</li>
+<li>b, c, a, d</li>
+<li data-why="Putting the 1-byte boolean between the integer and smallint forces a padding byte before the smallint.">b, c, d, a</li>
+</ol>
+<p class="ts-why">bigint at 24 to 32, integer to 36, smallint to 38, boolean to 39: no padding at all. Descending alignment always packs tightest.</p>
+</div>
+<div class="ts-explain" data-points="Each type must start on its alignment boundary|Small columns before large ones create padding|Largest alignment first, variable-length last, removes it|Measure with pg_column_size and the size functions">
+<p class="q">A teammate asks why the order of columns in CREATE TABLE changes the table size. Explain it, and say how you would prove it on a real database.</p>
+<div class="ts-model"><p>Each fixed-size type must start at a multiple of its alignment: 8 bytes for bigint and timestamptz, 4 for integer. If a 1-byte boolean sits in front of a bigint, PostgreSQL pads 7 bytes so the bigint starts on an 8-byte boundary. Putting the widest-aligned columns first and variable-length ones last removes most padding. To prove it, create both orders, load the same rows, and compare pg_column_size of a row and pg_relation_size of each table.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="toast-settings" data-rung="3" data-min="5">
+<h2>The TOAST settings worth knowing in production</h2>
+<p class="ts-bridge">Last part: column order removes padding. Still unsolved: what can you tune for the large values?</p>
+<p class="ts-problem">A document service stores 30 kB JSON blobs and reads a slice of a 5 MB log text column. CPU is high on compression, and slice reads are slow.</p>
+<p><span class="ts-claim" data-claim="c30" data-src="s2">The four storage strategies are PLAIN (no compression, no out-of-line), EXTENDED (both; the default for most TOAST-able types), EXTERNAL (out-of-line, not compressed) and MAIN (compressed, out-of-line only as a last resort).</span> <span class="ts-claim" data-claim="c61" data-src="s2">EXTERNAL makes substring operations on large text and bytea columns faster, at the cost of more storage, because only the needed part of an uncompressed out-of-line value is fetched.</span></p>
+<p><span class="ts-claim" data-claim="c46" data-src="s9 s7">The supported compression methods are pglz and lz4; lz4 is available only if PostgreSQL was built with --with-lz4.</span> <span class="ts-claim" data-claim="c47" data-src="s7">In PostgreSQL 18, default_toast_compression defaults to pglz.</span></p>
+<div class="ts-code" data-lang="sql" data-title="Per-column settings" data-verified="spec" data-claims="c30 c46 c44 c45">
+<pre><code>-- slices of a huge log column: skip compression
+ALTER TABLE jobs ALTER COLUMN log SET STORAGE EXTERNAL;
+-- faster compression for JSON blobs
+ALTER TABLE docs ALTER COLUMN body SET COMPRESSION lz4;
+-- check what existing values actually use
+SELECT pg_column_compression(body), count(*) FROM docs GROUP BY 1;</code></pre>
+</div>
+<div class="ts-trap"><p>Neither command touches existing data. <span class="ts-claim" data-claim="c44" data-src="s9">ALTER TABLE ... SET STORAGE doesn't change existing rows; it only sets the strategy for future updates.</span> <span class="ts-claim" data-claim="c45" data-src="s9">SET COMPRESSION doesn't rewrite the table, so existing values may stay compressed with the old method.</span> Teams switch to lz4, see no change in CPU, and conclude lz4 doesn't help. Check with pg_column_compression first.</p></div>
+<div class="ts-note" data-label="What changes next"><p><span class="ts-claim" data-claim="c48" data-src="s21 s17">PostgreSQL 19, not yet released at the time of writing, changes the default TOAST compression method from pglz to lz4.</span> Code that relies on pglz being the default should set it explicitly.</p></div>
+<p><span class="ts-claim" data-claim="c49" data-src="s8">toast_tuple_target defaults to 2040 bytes on 8 kB pages, can be set between 128 and 8160 bytes, applies only to new rows, and cannot be set on TOAST tables.</span> <span class="ts-claim" data-claim="c51" data-src="s8">The docs note that the default is often close to optimal and that changing it can hurt in some cases.</span> Leave it alone unless you measured a reason.</p>
+<div class="ts-interview"><p><strong>"Your service reads the first 1 kB of 5 MB text values. What would you change?"</strong> Strong answer: EXTERNAL storage on that column, because slices of uncompressed out-of-line values fetch only the needed chunks; accept the extra disk; note that it applies to new writes only, so plan a backfill. Better still, question whether the 5 MB value belongs in PostgreSQL at all (part 11).</p></div>
+<p class="ts-takeaway">Choose storage and compression per column, and remember both settings only affect values written afterwards.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c45">
+<p class="q">You ran SET COMPRESSION lz4 on a 500 GB table yesterday. pg_column_compression shows 99% pglz today. What happened?</p>
+<ol>
+<li data-why="lz4 support is a build-time option, but the command would fail outright if lz4 were missing.">lz4 isn't compiled in, so PostgreSQL silently fell back</li>
+<li>Nothing is wrong: the setting only applies to values written after it; existing values keep pglz</li>
+<li data-why="There is no background job that recompresses a table after SET COMPRESSION.">The background recompression job hasn't reached those rows yet</li>
+</ol>
+<p class="ts-why">SET COMPRESSION doesn't rewrite the table. Only new or changed values use lz4. A full rewrite, or a dump and restore, converts the rest.</p>
+</div>
+</section>
+
+<section class="ts-part" id="breaks-at-10x" data-rung="4" data-min="6">
+<h2>What breaks first at 10 times the data</h2>
+<p class="ts-bridge">Last part: per-column TOAST settings. Still unsolved: what goes wrong as the table grows 10 times?</p>
+<p class="ts-problem">The <code>payments</code> table goes from 120 million to 1.2 billion rows. The server's cache stays at 80 GB. P99 latency on "recent payments for a user" triples.</p>
+<p>First to break is the cache. Rows per page fixes how many rows 80 GB of cache can hold. At 107 rows per page, 1.2 billion rows need about 11.2 million pages, or 92 GB. At 136 rows per page they need about 8.8 million pages, or 72 GB. The padded table falls out of cache first, and queries start reading from disk. Wider rows mean the same failure arrives sooner.</p>
+<p>Next are the hard limits:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c52" data-src="s4">A single relation can hold at most 32 TB with the default 8 kB block size.</span> Partition long before that.</li>
+<li><span class="ts-claim" data-claim="c53" data-src="s4">A table can have at most 1,600 columns, and fewer in practice because a row must fit on one 8 kB page: 1,600 integer columns fit, 1,600 bigint columns don't.</span></li>
+<li><span class="ts-claim" data-claim="c41" data-src="s15">The source defines the most rows a heap page can hold, MaxHeapTuplesPerPage, as the space after the page header divided by the smallest aligned row header plus one line pointer.</span> With 8 kB pages that is 8168 ÷ 28 = 291 rows, however narrow they are.</li>
+</ol>
+<p>How you see it coming: track <code>pg_relation_size</code> and <code>pg_table_size</code> per table daily, divide by row count, and alert when bytes per row move. Then compare the table's hot part with the cache size.</p>
+<div class="ts-interview"><p><strong>"What happens to this table at 10 times the rows?"</strong> A senior answer does the arithmetic: bytes per row, rows per page, pages versus cache. It names the first thing to break (the working set falls out of cache), the signal (cache hit ratio and disk reads rising), and the fix (narrower rows, splitting cold columns, partitioning by time).</p></div>
+<p class="ts-takeaway">At 10 times the rows, the first failure is usually the working set outgrowing the cache, and wider rows make it come sooner.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">You add a 200-byte <code>metadata</code> text column to the 72-byte payments row. Predict what happens to rows per page and to the cache-fit problem.</p>
+<div class="ts-reveal"><p>The row grows to 276 bytes, which is still under the 2 kB TOAST threshold, so it all stays inline. Rows per page drop from 107 to 28. The same cache now holds under a third of the rows it did. Moving rarely-read columns out of the hot table is the fix (part 11).</p></div>
+</div>
+<div class="ts-explain" data-points="Rows per page sets how many rows the cache holds|First failure: working set exceeds cache, disk reads rise|Hard limits: 32 TB per relation, 1,600 columns, 291 rows per page|Detect by tracking bytes per row and cache hit ratio">
+<p class="q">Explain to an interviewer how row width turns into latency at 10 times the data, and how you'd catch it before users do.</p>
+<div class="ts-model"><p>PostgreSQL caches whole 8 kB pages. Bytes per row decides rows per page, and so how many rows fit in the cache. When the frequently-read part of a table outgrows the cache, queries go to disk and latency jumps. Wider or padded rows get there sooner. I would track size per table and bytes per row over time, watch the cache hit ratio, and fix with narrower rows, a hot/cold split, or time partitioning. Hard limits such as 32 TB per relation come much later.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="toast-traps" data-rung="4" data-min="5">
+<h2>How TOAST quietly multiplies your writes</h2>
+<p class="ts-bridge">Last part: row width decides when the cache runs out. Still unsolved: what goes wrong with the large values themselves?</p>
+<p class="ts-problem">A <code>profiles</code> table keeps a 30 kB JSONB document per user and stores a <code>last_seen</code> timestamp inside it. It is updated on every login, 2 million times a day. The TOAST table grows by tens of GB a day.</p>
+<p>The rule that saves you: <span class="ts-claim" data-claim="c34" data-src="s2">An UPDATE that doesn't change any out-of-line values incurs no TOAST cost.</span> The rule that bites: <span class="ts-claim" data-claim="c57" data-src="s22">When a changed value is TOASTed again, PostgreSQL normally picks a new unused OID for it and writes its chunks as new rows.</span> TOAST stores whole values, not edits. Change one key and all 30 kB is written again.</p>
+<ol class="ts-steps">
+<li>User logs in; <code>jsonb_set(doc, '{last_seen}', ...)</code> produces a new 30 kB value.</li>
+<li>It is compressed and chunked into the TOAST table under a new chunk_id.</li>
+<li>The previous version's chunks are no longer used; how that space is cleaned up is part 3 of this series. Meanwhile, 2 million logins a day means tens of GB of new TOAST writes a day.</li>
+</ol>
+<div class="ts-trap"><p>The fix is design, not tuning: move the fast-changing field into its own column (<code>last_seen timestamptz</code>). Updating a plain column leaves the TOASTed document untouched, so it costs one small new row version instead of 30 kB.</p></div>
+<p>A second limit hides in TOAST. <span class="ts-claim" data-claim="c55" data-src="s4">Each table can hold at most 2^32 out-of-line values because each is identified by a 32-bit OID; as the OID space fills up, finding a free one gets slow, slowing INSERT and UPDATE.</span> <span class="ts-claim" data-claim="c56" data-src="s4">The docs suggest partitioning as a workaround and say this usually matters only for tables with many terabytes of data.</span> Each partition has its own TOAST table, so each gets its own OID space.</p>
+<p>How you detect both: TOAST size growing much faster than row count (part 5's query), and write-ahead log volume rising with no rise in rows.</p>
+<div class="ts-interview"><p><strong>"Why not store the whole user profile as one JSONB column?"</strong> A strong answer: fine for data read and written as a whole; bad for fields updated independently and often, because each update rewrites the whole TOASTed value. Keep hot fields and anything you filter or join on as real columns; keep the rarely-changed rest in JSONB.</p></div>
+<p class="ts-takeaway">Changing any part of a TOASTed value rewrites all of it, so keep frequently updated fields out of big documents.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c34 c57">
+<p class="q">The profiles table has (id, login_count int, doc jsonb 30 kB). Which update writes new TOAST chunks?</p>
+<ol>
+<li>UPDATE profiles SET doc = jsonb_set(doc, '{theme}', '"dark"')</li>
+<li data-why="Unchanged out-of-line values are kept as they are; only the small row is rewritten.">UPDATE profiles SET login_count = login_count + 1</li>
+<li data-why="Reading a TOASTed value fetches its chunks but writes nothing.">SELECT doc FROM profiles WHERE id = 7</li>
+</ol>
+<p class="ts-why">Changing any key produces a new document value, which is TOASTed again under a new chunk_id. Updating another column keeps the existing pointer.</p>
+</div>
+</section>
+
+<section class="ts-part" id="everyday-traps" data-rung="4" data-min="5">
+<h2>Three storage assumptions that break real code</h2>
+<p class="ts-bridge">Last part: big-document updates rewrite the whole value. Still unsolved: which everyday assumptions about storage are wrong?</p>
+<p class="ts-problem">A deduplication script uses <code>ctid</code> as a row id across two queries a minute apart and deletes the wrong 40 rows.</p>
+<ol class="ts-steps">
+<li><strong>ctid is not an id.</strong> <span class="ts-claim" data-claim="c16" data-src="s20">An UPDATE adds a new version of the row to the table rather than changing it in place.</span> <span class="ts-claim" data-claim="c17" data-src="s3">Each row version's header has a t_ctid field: the ctid of this version or of a newer one.</span> The new version has a new ctid, and vacuum can reuse the old line pointer for another row. Use ctid only within one statement; use the primary key everywhere else.</li>
+<li><strong>SELECT * is not free.</strong> <span class="ts-claim" data-claim="c33" data-src="s2">Wide TOASTed values are only fetched, if selected at all, when the result is sent to the client; so the main table stays small and more rows fit in the buffer cache.</span> Selecting a TOASTed column you don't use makes PostgreSQL read and decompress every chunk for every row.</li>
+<li><strong>The file name is not the table OID.</strong> <span class="ts-claim" data-claim="c6" data-src="s1">TRUNCATE, REINDEX, CLUSTER and some forms of ALTER TABLE can change the filenode while keeping the table's OID.</span> <span class="ts-claim" data-claim="c7" data-src="s1">pg_relation_filepath() shows the path of a relation's first main-fork segment, relative to the data directory.</span> Use it instead of assuming.</li>
+</ol>
+<p>One more: <span class="ts-claim" data-claim="c54" data-src="s4">Dropped columns still count toward the 1,600-column limit, and their slots still take space in the null bitmap.</span> A table that adds and drops columns for years can hit the column limit with 200 visible columns.</p>
+<div class="ts-trap"><p>An ORM that loads whole rows by default turns point 2 into a production problem: a list page showing 50 titles pulls 50 full documents. Select the columns you render.</p></div>
+<p class="ts-takeaway">ctid changes on update, unused TOASTed columns still cost reads, and file names don't follow table OIDs.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c16 c17">
+<p class="q">A job reads rows by ctid, sleeps, then deletes by those ctids. Meanwhile other sessions update some of those rows. What can happen?</p>
+<ol>
+<li data-why="Line pointers are stable while the row version exists, but an update creates a new version elsewhere.">Nothing: ctids never change for a row</li>
+<li data-why="Deleting by a stale ctid doesn't always error; the slot can hold a different row later.">The delete fails with an error for every updated row</li>
+<li>Updated rows are missed, and a reused slot can point at a different row</li>
+</ol>
+<p class="ts-why">Each update writes a new row version with a new ctid. The old ctid points at a dead version, which vacuum can remove, freeing the slot for an unrelated row.</p>
+</div>
+</section>
+
+<section class="ts-part" id="choosing-layout" data-rung="5" data-min="5">
+<h2>Choosing a table layout for wide or changing data</h2>
+<p class="ts-bridge">Last part: storage assumptions that break code. Still unsolved: how do you design the table in the first place?</p>
+<p class="ts-problem">You are designing a <code>merchants</code> table: 12 fixed fields read on every payment, 40 rarely-read KYC fields, a 20 kB settings document, and a <code>last_payout_at</code> updated every hour for each of 5 million merchants.</p>
+<p>One more mechanism helps you decide. <span class="ts-claim" data-claim="c59" data-src="s20">An UPDATE can skip creating new index entries (a heap-only tuple, HOT) only if it changes no indexed columns and the new version fits on the same page.</span> <span class="ts-claim" data-claim="c50" data-src="s8">fillfactor is a percentage between 10 and 100, 100 by default; lower values leave room on each page so an UPDATE can put the new row version on the same page.</span> <span class="ts-claim" data-claim="c60" data-src="s20">The pg_stat_all_tables view lets you monitor how often updates are HOT and how often they are not.</span> Narrow rows make HOT updates more likely, because more new versions fit in the space left on each page.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Layout</th><th>Pick it when</th><th>You give up</th></tr></thead>
+<tbody>
+<tr><td>Plain columns, ordered by alignment</td><td>Fields are known, filtered on, or updated on their own</td><td>Schema changes for each new field</td></tr>
+<tr><td>One JSONB document column</td><td>Data is read and written as a whole and changes rarely</td><td>Cheap partial updates: any change rewrites the TOASTed value</td></tr>
+<tr><td>Hot/cold split: narrow hot table plus a 1:1 cold table</td><td>A few fields are read or updated constantly, many are rarely read</td><td>A join when you need both halves</td></tr>
+<tr><td>Hot columns plus JSONB for the long tail</td><td>A core set of known fields plus varied, rarely-updated extras</td><td>Types and constraints on the extras</td></tr>
+<tr><td>Values over a few MB in object storage, key in PostgreSQL</td><td>Files, logs, blobs you read whole</td><td>Transactions across the file and the row</td></tr>
+</tbody>
+</table></div>
+<p>For the merchants table: a narrow hot table with the 12 fields and <code>last_payout_at</code>, ordered by alignment; a 1:1 cold table with KYC fields and the settings document. The hourly update touches a small row, doesn't rewrite 20 kB, and has a good chance of being HOT.</p>
+<div class="ts-interview"><p><strong>"When is a JSONB column the wrong choice?"</strong> When a field inside it is updated often, when you filter or join on it, or when you need constraints on it. Say the cost: every update of the document writes the whole value again.</p></div>
+<p class="ts-takeaway">Keep hot, frequently updated fields in narrow, aligned rows, and push large or rarely-read data to a cold table, a document column, or object storage.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c34 c57 c59">
+<p class="q">An <code>orders</code> table has a 15 kB <code>line_items</code> JSONB and a <code>status</code> updated 6 times per order. Which change cuts write volume the most?</p>
+<ol>
+<li data-why="lz4 changes the speed of compression, not the fact that the document is rewritten when it changes.">Switch line_items to lz4 compression</li>
+<li>Keep status as its own column and never write it inside line_items</li>
+<li data-why="A lower fillfactor helps new versions stay on the page; it doesn't stop a changed 15 kB value being rewritten.">Set fillfactor to 70 on orders</li>
+</ol>
+<p class="ts-why">If status lives in its own column, its 6 updates leave the TOASTed line_items untouched. If status is inside the JSON, each update rewrites 15 kB.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="7">
+<h2>Interview drill: storage questions at the senior bar</h2>
+<p class="ts-bridge">Last part: choosing a layout. Still unsolved: can you defend these choices under questioning?</p>
+<p class="ts-problem">In a design round at a payments company, the interviewer stops you on the data model and asks three storage questions in a row. Commit to an answer before opening each reference.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. "You store a 5 kB risk-score explanation JSON on every payment row. Reads are mostly lists of recent payments. What do you expect, and would you change it?"</p>
+<div class="ts-reveal"><p>At 5 kB the row is over the 2 kB threshold, so the document is compressed and, if still large, moved to TOAST. The main rows stay narrow, so list queries that don't select it are fine. The risks are ORMs selecting it anyway, and any update to the explanation rewriting it whole. I would keep it only if it is written once; if it is recomputed often, it goes to a separate table keyed by payment id. Trade-off: one extra lookup when someone opens the details view.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. "Your ledger table will hit 5 billion rows in two years. What would you do with its column layout now, and why?"</p>
+<div class="ts-reveal"><p>Order the fixed columns by alignment, 8-byte first, variable-length last, and keep rarely-read fields out of the hot table. Estimate bytes per row and rows per page, then pages times 8 kB, and compare the recent working set with memory. Partition by time so old data leaves the hot set and each partition has its own TOAST OID space. Trade-off: cross-partition queries and extra operational work for partition management.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">3. "Disk use doubled in a month, but the row count grew 10%. Walk me through the investigation."</p>
+<div class="ts-reveal"><p>Split each large table into main fork, TOAST and indexes. If TOAST grew, look for big documents being updated often. If the main fork grew faster than rows, check for wider rows or dead row versions not being cleaned up. If indexes grew, check for new or bloated indexes. Fix the cause, then reclaim space. Trade-off: reclaiming space usually needs a table rewrite with locks or an online tool, so it is scheduled, not done in panic.</p></div>
+</div>
+<div class="ts-note" data-label="Beyond senior"><p>Staff-level versions of these questions add rolling a column-order or hot/cold split migration across many teams' tables, and setting organisation-wide schema review rules. This page stops at the single-service level.</p></div>
+<p class="ts-takeaway">Senior storage answers do the arithmetic, name the first failure and its signal, and state what the fix costs.</p>
+<div class="ts-explain" data-points="Estimate bytes per row and rows per page before choosing|Keep hot, frequently updated fields narrow and out of big documents|Name the first failure at scale and how you'd detect it|State the trade-off of the fix">
+<p class="q">Pick one of the three prompts and answer it out loud as you would in the interview, in under two minutes.</p>
+<div class="ts-model"><p>A strong answer starts from the numbers: bytes per row, rows per page, pages against memory. It says which fields are hot and keeps them in narrow, aligned rows, with large or rarely-read data in TOAST, a side table or object storage. It names what breaks first as data grows, how you would see it in metrics, and what the fix costs in joins, migrations or locking.</p></div>
+</div>
+</section>

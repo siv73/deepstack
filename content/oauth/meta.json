@@ -1,0 +1,33 @@
+{
+ "slug": "oauth",
+ "title": "OAuth 2.0",
+ "tldr": "How an app gets limited, cancellable access to your data on another service without ever seeing your password, and how to build, break and choose it like a senior engineer.",
+ "category": "Security",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {
+   "label": "HTTP requests, headers and redirects"
+  },
+  {
+   "label": "Hashing and public-key signatures, at a high level"
+  }
+ ],
+ "related": [
+  {
+   "label": "JSON Web Tokens (JWT)",
+   "slug": "jwt",
+   "why": "what is inside the tokens and how signatures work"
+  },
+  {
+   "label": "OpenID Connect",
+   "slug": "openid-connect",
+   "why": "sign-in built on top of OAuth"
+  },
+  {
+   "label": "API gateway authentication patterns",
+   "slug": "api-gateway-auth",
+   "why": "where token checks live in a microservice system"
+  }
+ ],
+ "created": "2026-09-27"
+}

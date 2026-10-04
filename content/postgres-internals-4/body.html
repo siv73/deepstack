@@ -1,0 +1,459 @@
+<section class="ts-part" id="why-indexes" data-rung="1" data-min="4">
+<h2>Why "just add an index" is only half an answer</h2>
+<p class="ts-problem">A <code>payments</code> table holds 200 million rows. The merchant dashboard runs <code>WHERE merchant_id = 42 AND status = 'pending' ORDER BY created_at DESC LIMIT 50</code> and takes several seconds, because it reads the whole table. Someone adds an index and it returns almost instantly. Six months later the table has 11 indexes and every payment insert is slower.</p>
+<p>Think of the index at the back of a textbook. It is a sorted list of terms, each with page numbers. You find the term fast, then turn to those pages. The index is printed separately from the chapters, and every edit to the book means updating it too.</p>
+<ol class="ts-steps">
+<li>The term list maps to the indexed column values. The page numbers map to ctids, the row addresses from part 1 of this series. <span class="ts-claim" data-claim="c1" data-src="s8">All PostgreSQL indexes are secondary indexes: each is stored separately from the table's main data area, which PostgreSQL calls the heap.</span></li>
+<li>An index pays for itself three ways: finding a few rows without reading the table, handing rows back already sorted, and enforcing uniqueness. <span class="ts-claim" data-claim="c2" data-src="s4">With ORDER BY plus LIMIT n, an index that matches the sort order can return the first n rows directly, while a sort would have to process all the data.</span></li>
+<li>The price: <span class="ts-claim" data-claim="c3" data-src="s1">PostgreSQL keeps every index synchronized with the table, which adds overhead to data changes; indexes can also prevent heap-only tuple (HOT) updates, so indexes that are seldom or never used should be removed.</span></li>
+<li><span class="ts-claim" data-claim="c4" data-src="s2">PostgreSQL ships B-tree, Hash, GiST, SP-GiST, GIN and BRIN index types, plus the bloom extension, and CREATE INDEX builds a B-tree unless USING names another type.</span></li>
+</ol>
+<p>Each index type answers a different question shape. "Equal to, or between these values?" is a B-tree question. "Which documents contain this key?" is an inverted-index question. "Which bookings overlap this hour?" and "which part of a 5-terabyte log could hold yesterday?" are different again. This page goes through how the standard B-tree works on disk, the ways to shape an index, the other five types, and what breaks when you have too many.</p>
+<p class="ts-takeaway">An index is a separate structure of column values pointing at row addresses; every query it speeds up is paid for by every write to the table.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c1 c3">
+<p class="q">The payments table goes from 3 indexes to 11. Reads that use the new indexes got faster. What happened to a plain <code>INSERT INTO payments</code>?</p>
+<ol>
+<li data-why="Indexes are separate structures; the row itself is written to the heap exactly as before, and the indexes are written in addition.">Nothing: indexes only matter for reads</li>
+<li>It now writes the row plus an entry in each of the 11 indexes</li>
+<li data-why="An insert writes to every index on the table, not only to indexes some query will use.">It writes only to the indexes whose columns are used in WHERE clauses</li>
+</ol>
+<p class="ts-why">Every index is a separate structure that PostgreSQL keeps in step with the table, so each new row needs one new entry per index.</p>
+</div>
+</section>
+
+<section class="ts-part" id="btree-on-disk" data-rung="2" data-min="6">
+<h2>What a B-tree looks like on disk</h2>
+<p class="ts-bridge">Last part: an index is a separate structure pointing at row addresses. Still unsolved: what is inside the standard one, and how does a lookup walk it?</p>
+<p class="ts-problem">An index on <code>payments(merchant_id)</code> covers 200 million rows. Finding merchant 42 reads only a handful of pages. Which pages, and why so few?</p>
+<p>A B-tree is a library's catalogue cabinet: a sign on the wall says which cabinet, the cabinet's drawers are labelled with ranges, and the cards inside point at shelf locations.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c5" data-src="s11">A B-tree index uses standard pages: one metapage at a fixed position at the start, then internal pages and leaf pages, and typically over 99 percent of the pages are leaves.</span> The <dfn data-def="Page zero of a B-tree index: it records where the root page is.">metapage</dfn> is the sign on the wall. <span class="ts-claim" data-claim="c6" data-src="s12">The metapage records the location of the root page, and each backend caches a copy so it doesn't read the metapage on every search.</span></li>
+<li><span class="ts-claim" data-claim="c7" data-src="s11">Internal pages hold entries pointing to the next level down; leaf pages hold entries pointing to table rows, and each level can be walked as a doubly-linked list of pages.</span> A <dfn data-def="A page on the lowest level of a B-tree. Its entries hold key values and the ctid of a table row.">leaf page</dfn> is the drawer of cards.</li>
+<li><span class="ts-claim" data-claim="c8" data-src="s4">B-tree entries are kept in ascending order with nulls last, and the table row's TID breaks ties between equal keys.</span> TID is the general name for the ctid from part 1.</li>
+<li><span class="ts-claim" data-claim="c9" data-src="s11">When a leaf page can't fit a new entry, it splits: some entries move to a new page and the parent gets a pointer to it, which can split the parent in turn; when the root splits, the tree gains a level.</span></li>
+</ol>
+<figure class="ts-svg" data-title="Looking up merchant 42 in a B-tree">
+<svg viewBox="0 0 700 300" role="img" aria-label="The metapage points at the root. The root points at two leaf pages linked side by side. Leaf entries hold a key and a ctid that points into a heap page.">
+<g class="node" data-s="1"><rect x="20" y="20" width="130" height="44" rx="6"/><text x="85" y="40" text-anchor="middle">metapage</text><text class="sub" x="85" y="56" text-anchor="middle">page 0: root is 3</text></g>
+<g class="edge" data-s="1"><path d="M152 42 L 262 42"/><path class="arrowhead" d="M256 36 L 262 42 L 256 48 Z"/></g>
+<g class="node" data-s="1"><rect x="264" y="20" width="190" height="44" rx="6"/><text x="359" y="40" text-anchor="middle">root, page 3</text><text class="sub" x="359" y="56" text-anchor="middle">&lt; 40 → page 1 | ≥ 40 → page 2</text></g>
+<g class="edge" data-s="2"><path d="M330 66 C 300 100, 200 100, 170 128"/><path class="arrowhead" d="M172 120 L 170 128 L 177 124 Z"/><path d="M390 66 C 420 100, 500 100, 530 128"/><path class="arrowhead" d="M523 124 L 530 128 L 528 120 Z"/></g>
+<g class="node" data-s="2"><rect x="40" y="130" width="250" height="56" rx="6"/><text x="165" y="152" text-anchor="middle">leaf, page 1</text><text class="sub" x="165" y="172" text-anchor="middle">(17,(88,2)) (39,(5,1))</text></g>
+<g class="node" data-s="2"><rect x="410" y="130" width="250" height="56" rx="6"/><text x="535" y="152" text-anchor="middle">leaf, page 2</text><text class="sub" x="535" y="172" text-anchor="middle">(42,(7,3)) (42,(91,1)) (57,(2,4))</text></g>
+<g class="edge" data-s="3"><path d="M480 188 C 470 230, 360 230, 330 254"/><path class="arrowhead" d="M332 246 L 330 254 L 337 250 Z"/><path d="M540 188 C 545 225, 560 230, 570 254"/><path class="arrowhead" d="M565 248 L 570 254 L 572 246 Z"/></g>
+<g class="node" data-s="3"><rect x="250" y="256" width="150" height="34" rx="4"/><text class="sub" x="325" y="278" text-anchor="middle">heap page 7, item 3</text><rect x="500" y="256" width="150" height="34" rx="4"/><text class="sub" x="575" y="278" text-anchor="middle">heap page 91, item 1</text></g>
+<g class="edge" data-s="4"><path d="M292 158 L 408 158"/><path class="arrowhead" d="M402 152 L 408 158 L 402 164 Z"/><path d="M408 166 L 292 166"/><path class="arrowhead" d="M298 160 L 292 166 L 298 172 Z"/></g>
+<g class="node" data-s="4"><text class="sub" x="350" y="122" text-anchor="middle">sibling links</text></g>
+</svg>
+<ol class="ts-captions">
+<li>The metapage says where the root is. The root holds key boundaries and pointers one level down.</li>
+<li>The search for 42 follows the "≥ 40" pointer to leaf page 2. A real index of this size has one or two more internal levels; the walk is the same.</li>
+<li>Each leaf entry is a key plus a ctid. Both rows for merchant 42 are found, and their ctids point at two different heap pages.</li>
+<li>Leaves are linked to their neighbours, so a range scan such as merchant 42 to 57 walks sideways instead of going back to the root.</li>
+</ol>
+</figure>
+<p>Repeated keys used to cost one full entry each. <span class="ts-claim" data-claim="c10" data-src="s11">With deduplication, a group of entries with the same key is stored as the key once followed by a sorted array of TIDs, and it is on by default.</span> <span class="ts-claim" data-claim="c11" data-src="s30">Deduplication arrived in PostgreSQL 13; an index carried over by pg_upgrade needs a REINDEX to use it.</span> <span class="ts-claim" data-claim="c12" data-src="s11">Deduplication is never used for indexes with INCLUDE columns, nor for numeric, jsonb, float4 or float8 keys.</span></p>
+<p class="ts-takeaway">A lookup reads the cached root location, walks internal pages down to one leaf, and follows each matching entry's ctid to a heap page.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the pages a lookup of <code>merchant_id = 42</code> touches in order.</p>
+<ol><li>The root location, from the backend's cached copy of the metapage</li><li>The root page</li><li>Any internal pages on the way down</li><li>The leaf page holding the entries for 42</li><li>The heap pages named by those entries' ctids</li></ol>
+<p class="ts-why">The tree is walked top-down to a single leaf; only then are the rows themselves fetched from the heap, one heap page per distinct ctid page.</p>
+</div>
+<div class="ts-quiz" data-answer="c" data-claims="c10 c12">
+<p class="q">After an upgrade from PostgreSQL 12 by dump and restore, a B-tree on <code>payments(status)</code> (4 distinct values, 200 million rows) shrinks a lot. A B-tree on <code>payments(amount numeric)</code> does not. Why?</p>
+<ol>
+<li data-why="Deduplication works on any B-tree with repeated keys, not only on unique ones; amount has plenty of repeats.">Deduplication only applies to unique indexes</li>
+<li data-why="Both were rebuilt by the restore, so both had the chance to deduplicate.">The amount index wasn't rebuilt</li>
+<li>Repeated status values are stored once with a list of TIDs, but deduplication is never used for numeric keys</li>
+</ol>
+<p class="ts-why">Deduplication stores a repeated key once per group, followed by a list of TIDs, which shrinks an index with 4 distinct values a lot. numeric keys are excluded, so the amount index keeps one full entry per row.</p>
+</div>
+</section>
+
+<section class="ts-part" id="ctid-pointers" data-rung="2" data-min="5">
+<h2>Why entries point at row addresses, and what an UPDATE costs</h2>
+<p class="ts-bridge">Last part: leaf entries hold a key and a ctid. Still unsolved: what happens to every index when a row changes?</p>
+<p class="ts-problem">Payments move from <code>pending</code> to <code>captured</code> 3,000 times a second. <code>status</code> is indexed, and the table has 9 indexes.</p>
+<p>Pointing at a physical address makes a read one hop: entry, then heap page. <span class="ts-claim" data-claim="c13" data-src="s8">In an ordinary index scan every row needs a fetch from the index and from the heap, and the matching rows can be anywhere in the heap, so that part is mostly random reads.</span></p>
+<p>The cost is on writes. Part 2 of this series showed that an UPDATE writes a new row version, usually at a new ctid. Part 3 showed the escape hatch: <span class="ts-claim" data-claim="c14" data-src="s39">an update can be HOT only when it changes no column used by the table's indexes (summarizing indexes such as BRIN don't count) and the new version fits on the same page.</span> Otherwise:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c15" data-src="s11">An UPDATE that can't use HOT needs a new entry in every index on the table, including indexes whose columns didn't change.</span></li>
+<li>The old entries stay until cleaned up. <span class="ts-claim" data-claim="c16" data-src="s11">B-trees remove such obsolete version entries in bottom-up deletion passes, triggered when a leaf page is about to split from version churn in an index the UPDATEs don't logically modify; before PostgreSQL 14 only simpler, opportunistic deletion existed.</span></li>
+<li>So for the problem above: every status change is non-HOT, and each one writes a row version plus 9 index entries, about 30,000 writes a second.</li>
+</ol>
+<p>Other databases chose differently. <span class="ts-claim" data-claim="c17" data-src="s34">In MySQL's InnoDB, rows live inside the primary key index, and each secondary index record stores the primary key columns, which a lookup then uses to search the primary key index.</span> That means two tree walks per secondary lookup, but a row moving on disk doesn't change any secondary entry.</p>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c18" data-src="s35">Uber's 2016 engineering post on leaving PostgreSQL (its analysis mainly based on PostgreSQL 9.2) described an update to one indexed column of a row with three indexes needing at least four physical writes: the new row version plus one entry per index.</span> The fix inside PostgreSQL is fewer indexes and HOT-friendly updates, not a different database for every case.</p></div>
+<p class="ts-takeaway">Pointing at ctids makes index reads one hop, but any update that can't be HOT writes a new entry into every index on the table.</p>
+<div class="ts-predict" data-claims="c14 c15">
+<p class="q">The team drops the index on <code>status</code>. No other index uses status in any way: not as a column, not in an expression, not in a partial-index WHERE clause. Predict what happens to the 3,000 status updates a second.</p>
+<div class="ts-reveal"><p>They can now be HOT, as long as the new version fits on the same page. A HOT update writes the new row version and no B-tree entries (only BRIN summaries, if any, still update), so about 27,000 index writes a second disappear. If pages are full, updates still go non-HOT; that is part 3's fillfactor lesson.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="index-only-scans" data-rung="2" data-min="6">
+<h2>Index-only scans: when the table is skipped, and when it isn't</h2>
+<p class="ts-bridge">Last part: entries point at ctids, so most index reads also visit the heap. Still unsolved: can a query skip the heap entirely?</p>
+<p class="ts-problem"><code>SELECT created_at FROM payments WHERE merchant_id = 42</code> uses an index on <code>(merchant_id, created_at)</code>. The plan says Index Only Scan, yet it reads 9,800 heap pages for 10,000 rows.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c19" data-src="s8">An <dfn data-def="A scan that returns column values straight from index entries, visiting the heap only when it can't tell whether a row is visible.">index-only scan</dfn> is possible only when the index type supports it and the query uses only columns stored in the index.</span> <span class="ts-claim" data-claim="c20" data-src="s8">B-tree always supports it, GiST and SP-GiST do for some operator classes, and GIN can't, because its entries usually hold only part of each value.</span></li>
+<li><span class="ts-claim" data-claim="c21" data-src="s8">Index entries carry no visibility information, so for each entry the scan checks the heap page's all-visible bit in the visibility map, and visits the heap only when that bit is not set.</span></li>
+<li><span class="ts-claim" data-claim="c22" data-src="s8">The visibility map is four orders of magnitude smaller than the heap and usually stays cached, so an index-only scan pays off only when a large share of the table's pages are marked all-visible.</span></li>
+<li><span class="ts-claim" data-claim="c23" data-src="s27">EXPLAIN ANALYZE shows the heap visits of an Index Only Scan node on a Heap Fetches line.</span> Part 3 explained who sets the all-visible bit: VACUUM.</li>
+</ol>
+<p>The problem's table is busy: recent pages change all day, so their bits are clear and the scan visits them. More frequent vacuuming of that table, not a new index, is the fix.</p>
+<p>To make more queries index-only, add the columns they return. <span class="ts-claim" data-claim="c24" data-src="s8">INCLUDE adds payload columns that can't be searched on but are stored in the index, so a query needing them can still run as an index-only scan.</span> That is a <dfn data-def="An index built to hold every column a frequent query needs, usually through INCLUDE, so the query can skip the heap.">covering index</dfn>.</p>
+<div class="ts-code" data-lang="sql" data-title="A covering index for the dashboard" data-verified="spec" data-claims="c24 c25">
+<pre><code>CREATE INDEX payments_merchant_created
+  ON payments (merchant_id, created_at)
+  INCLUDE (amount, status);</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c25" data-src="s15">INCLUDE columns sit only in leaf entries, not in the upper levels used to walk the tree, and only B-tree, GiST and SP-GiST support INCLUDE.</span> <span class="ts-claim" data-claim="c26" data-src="s8">Payload columns make the index bigger and potentially slower to search, and an entry that exceeds the index type's maximum size makes the insert fail, so add wide columns sparingly.</span></p>
+<p class="ts-takeaway">An index-only scan skips the heap only for pages the visibility map marks all-visible; on recently changed pages it is an ordinary index scan.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c21 c22 c27">
+<p class="q">An append-only <code>events</code> table: an Index Only Scan on yesterday's rows shows Heap Fetches close to the row count. What helps most?</p>
+<ol>
+<li>Getting VACUUM to visit the new pages sooner, so their all-visible bits get set</li>
+<li data-why="The query already reads only indexed columns; INCLUDE adds columns, it doesn't make pages all-visible.">Adding the selected columns with INCLUDE</li>
+<li data-why="A covering B-tree is exactly what allows index-only scans; switching type would remove the option.">Switching to a GIN index</li>
+</ol>
+<p class="ts-why">The heap visits come from pages whose all-visible bit isn't set yet. <span class="ts-claim" data-claim="c27" data-src="s40 s29">On PostgreSQL 18, visibility map bits are set only by VACUUM or COPY ... FREEZE, and cleared by any change to the page.</span> Making autovacuum reach the table sooner is the fix.</p>
+</div>
+<div class="ts-explain" data-points="Entries hold key plus ctid, so most index reads also visit the heap|A non-HOT update adds an entry to every index|Index-only scans skip the heap only on all-visible pages|Visibility lives in the heap and visibility map, not in index entries">
+<p class="q">Explain to a teammate why adding an index can make reads faster and writes slower, and why an "Index Only Scan" can still read the table.</p>
+<div class="ts-model"><p>A B-tree entry holds the key and the row's ctid, so a lookup walks a few index pages and then reads the heap page the ctid names. Because entries point at physical addresses, any update that can't be HOT gives the row a new ctid and needs a new entry in every index. Index entries carry no visibility information, so an index-only scan checks the visibility map for each heap page and still reads pages that aren't marked all-visible.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="multicolumn" data-rung="3" data-min="6">
+<h2>Column order in a multicolumn index</h2>
+<p class="ts-bridge">Last part: an index-only scan needs every column in the index. Still unsolved: once an index has several columns, which queries can use it?</p>
+<p class="ts-problem">An index on <code>payments(merchant_id, status)</code>. <code>WHERE merchant_id = 2</code> is fast. <code>WHERE status = 'pending'</code> across all 50,000 merchants is not.</p>
+<p>A phone book is sorted by surname, then first name. Finding every "Sharma" is one slice of the book. Finding every "Priya" means reading every page, because Priyas sit inside every surname.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c28" data-src="s3">Only B-tree, GiST, GIN and BRIN support multicolumn indexes, with up to 32 columns including INCLUDE columns.</span></li>
+<li><span class="ts-claim" data-claim="c29" data-src="s3">In a multicolumn B-tree, equality conditions on the leading columns, plus a range condition on the first column without an equality condition, limit how much of the index is scanned; conditions on later columns are checked inside the index, saving heap visits, but may not shrink the scan.</span> This is the <dfn data-def="A multicolumn B-tree is searched efficiently only through its first column, or its first few columns, as a prefix.">leftmost-prefix rule</dfn>.</li>
+<li><span class="ts-claim" data-claim="c30" data-src="s3">Skip scan lets a B-tree on (x, y) serve WHERE y = 7700 by repeating the search for each value of x; the planner usually chooses it only when x has few distinct values, because with many the whole index must be read, and in most cases a sequential scan is then preferred.</span> <span class="ts-claim" data-claim="c31" data-src="s28">Skip scan for B-tree indexes is new in PostgreSQL 18.</span></li>
+<li><span class="ts-claim" data-claim="c32" data-src="s27">EXPLAIN ANALYZE prints an Index Searches line on index scan nodes with the total number of index searches, which is how skip scan shows up in a plan.</span></li>
+</ol>
+<figure class="ts-svg" data-title="Entries of an index on (merchant_id, status)">
+<svg viewBox="0 0 700 262" role="img" aria-label="Twelve index entries sorted by merchant then status. Merchant 2's entries form one slice. Pending entries are spread across all three merchants. Skip scan jumps to each merchant's pending entry.">
+<g class="node"><rect x="14" y="70" width="52" height="50" rx="4"/><text x="40" y="90" text-anchor="middle">1</text><text class="sub" x="40" y="108" text-anchor="middle">capt</text><rect x="70" y="70" width="52" height="50" rx="4"/><text x="96" y="90" text-anchor="middle">1</text><text class="sub" x="96" y="108" text-anchor="middle">fail</text><rect x="126" y="70" width="52" height="50" rx="4"/><text x="152" y="90" text-anchor="middle">1</text><text class="sub" x="152" y="108" text-anchor="middle">pend</text><rect x="182" y="70" width="52" height="50" rx="4"/><text x="208" y="90" text-anchor="middle">1</text><text class="sub" x="208" y="108" text-anchor="middle">refd</text><rect x="238" y="70" width="52" height="50" rx="4"/><text x="264" y="90" text-anchor="middle">2</text><text class="sub" x="264" y="108" text-anchor="middle">capt</text><rect x="294" y="70" width="52" height="50" rx="4"/><text x="320" y="90" text-anchor="middle">2</text><text class="sub" x="320" y="108" text-anchor="middle">fail</text><rect x="350" y="70" width="52" height="50" rx="4"/><text x="376" y="90" text-anchor="middle">2</text><text class="sub" x="376" y="108" text-anchor="middle">pend</text><rect x="406" y="70" width="52" height="50" rx="4"/><text x="432" y="90" text-anchor="middle">2</text><text class="sub" x="432" y="108" text-anchor="middle">refd</text><rect x="462" y="70" width="52" height="50" rx="4"/><text x="488" y="90" text-anchor="middle">3</text><text class="sub" x="488" y="108" text-anchor="middle">capt</text><rect x="518" y="70" width="52" height="50" rx="4"/><text x="544" y="90" text-anchor="middle">3</text><text class="sub" x="544" y="108" text-anchor="middle">fail</text><rect x="574" y="70" width="52" height="50" rx="4"/><text x="600" y="90" text-anchor="middle">3</text><text class="sub" x="600" y="108" text-anchor="middle">pend</text><rect x="630" y="70" width="52" height="50" rx="4"/><text x="656" y="90" text-anchor="middle">3</text><text class="sub" x="656" y="108" text-anchor="middle">refd</text></g>
+<g class="edge" data-s="1"><path d="M238 62 L 238 54 L 458 54 L 458 62"/></g>
+<g class="node" data-s="1"><text class="sub" x="348" y="40" text-anchor="middle">merchant_id = 2: one slice</text></g>
+<g class="edge" data-s="2"><path d="M352 130 L 400 130"/></g>
+<g class="node" data-s="2"><text class="sub" x="376" y="150" text-anchor="middle">+ status = 'pending': one entry</text></g>
+<g class="edge" data-s="3"><path d="M152 162 L 152 178"/><path d="M376 162 L 376 178"/><path d="M600 162 L 600 178"/></g>
+<g class="node" data-s="3"><text class="sub" x="376" y="198" text-anchor="middle">status = 'pending' alone: one entry inside every merchant's block</text></g>
+<g class="edge" data-s="4"><path d="M152 214 C 220 238, 300 238, 370 216"/><path class="arrowhead" d="M362 214 L 370 216 L 365 223 Z"/><path d="M376 214 C 444 238, 524 238, 594 216"/><path class="arrowhead" d="M586 214 L 594 216 L 589 223 Z"/></g>
+<g class="node" data-s="4"><text class="sub" x="680" y="252" text-anchor="end">skip scan: one search per merchant</text></g>
+</svg>
+<ol class="ts-captions">
+<li>Entries are sorted by merchant first. A condition on merchant_id finds one contiguous slice.</li>
+<li>Adding the second column narrows the slice further, still contiguous.</li>
+<li>A condition on status alone matches entries spread through every merchant's block. There is no single slice to read.</li>
+<li>Skip scan searches once per distinct merchant. With 3 merchants that is cheap; with 50,000 it is not.</li>
+</ol>
+</figure>
+<p>The model below sorts entries the same way. Its tests show the slice sizes and the cost of skip scan with many leading values.</p>
+<div class="ts-code" data-lang="python" data-title="leftmost.py" data-file="leftmost.py" data-verified="ran"></div>
+<p>Rule of thumb: equality columns first, then the one range or sort column. <span class="ts-claim" data-claim="c33" data-src="s3">The docs warn that indexes with more than three columns are unlikely to help unless the table's usage is extremely stylized.</span> <span class="ts-claim" data-claim="c34" data-src="s38">PostgreSQL can also combine separate indexes by building an in-memory bitmap of matching rows from each and ANDing or ORing them, though this loses index order, so an ORDER BY then needs a sort.</span></p>
+<div class="ts-interview"><p><strong>"Design the index for <code>WHERE merchant_id = ? AND created_at &gt; ? ORDER BY created_at DESC LIMIT 50</code>."</strong> A strong answer puts the equality column first and the range-and-sort column second: <code>(merchant_id, created_at)</code>. It explains that the range then narrows one slice, the order comes free, and LIMIT stops after 50 entries. It also says why <code>(created_at, merchant_id)</code> is worse: the range on the first column makes the scan read every merchant's rows in that window.</p></div>
+<p class="ts-takeaway">A multicolumn B-tree is a sort by its first column, then the next; conditions narrow the scan only from the left, and skip scan helps only when the skipped column has few values.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c29">
+<p class="q">Index on <code>(merchant_id, created_at, status)</code>. Query: <code>merchant_id = 42 AND status = 'failed' AND created_at &gt; now() - interval '7 days'</code>. Which conditions limit the part of the index that is scanned?</p>
+<ol>
+<li data-why="Order in the WHERE clause doesn't matter; the index's column order does.">All three, because they are all in the WHERE clause</li>
+<li>merchant_id and created_at; status is checked on the entries read and doesn't necessarily narrow the scan</li>
+<li data-why="created_at is the first column without an equality condition, so its range does narrow the scan.">Only merchant_id</li>
+</ol>
+<p class="ts-why">Equality on the leading column, then a range on the first column without equality, bound the scan. status comes after the range column, so it filters entries inside that slice; with nearly unique created_at values, skip scan can't use it to jump ahead either.</p>
+</div>
+</section>
+
+<section class="ts-part" id="index-shapes" data-rung="3" data-min="6">
+<h2>Partial, expression and unique indexes</h2>
+<p class="ts-bridge">Last part: column order decides which queries an index serves. Still unsolved: what if you only care about some rows, or about a computed value?</p>
+<p class="ts-problem">Workers poll <code>status = 'pending'</code>, which is 1 in 200 of the 200 million payments. A full index on <code>status</code> holds 200 million entries to find 1 million. Login looks up <code>lower(email)</code>, and a plain index on <code>email</code> can't help.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c35" data-src="s7">A <dfn data-def="An index with a WHERE clause: it holds entries only for rows that satisfy that predicate.">partial index</dfn> holds entries only for rows that satisfy its WHERE predicate, which makes it smaller and means many updates don't need to touch it.</span></li>
+<li><span class="ts-claim" data-claim="c36" data-src="s7">The planner uses a partial index only if it can prove, at planning time, that the query's WHERE condition implies the index predicate; beyond simple inequalities, the predicate must match part of the query's WHERE condition exactly.</span> <span class="ts-claim" data-claim="c37" data-src="s7">Because the match happens at planning time, a parameterized clause doesn't work with a partial index: x &lt; $1 can't imply x &lt; 2 for every value of the parameter.</span></li>
+<li><span class="ts-claim" data-claim="c38" data-src="s6">An <dfn data-def="An index on a computed value such as lower(email), used by queries that write the same expression.">expression index</dfn> such as one on lower(email) serves queries that write the same expression; the expression is computed at each insert and non-HOT update, not during the search.</span> <span class="ts-claim" data-claim="c39" data-src="s15">Functions used in an index expression or partial-index predicate must be marked immutable.</span></li>
+<li><span class="ts-claim" data-claim="c40" data-src="s5">Only B-tree indexes can be unique; by default nulls count as distinct, so a unique column can hold many nulls, and NULLS NOT DISTINCT makes them equal.</span> <span class="ts-claim" data-claim="c41" data-src="s31">NULLS NOT DISTINCT arrived in PostgreSQL 15.</span></li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Four shapes for a payments system" data-verified="spec" data-claims="c35 c38 c40 c42 c43">
+<pre><code>-- only the rows workers poll
+CREATE INDEX payments_pending ON payments (created_at)
+  WHERE status = 'pending';
+-- case-insensitive lookup that also rejects duplicates
+CREATE UNIQUE INDEX merchants_email_lower ON merchants (lower(email));
+-- at most one open refund per payment
+CREATE UNIQUE INDEX refunds_one_open ON refunds (payment_id)
+  WHERE state = 'open';
+-- one row per (merchant, external_ref), even when external_ref is NULL
+CREATE UNIQUE INDEX payments_ext_ref ON payments (merchant_id, external_ref)
+  NULLS NOT DISTINCT;</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c42" data-src="s6">A unique expression index can enforce rules a plain unique constraint can't, such as rejecting values that differ only in case.</span> <span class="ts-claim" data-claim="c43" data-src="s7">A unique partial index enforces uniqueness only among the rows that satisfy its predicate.</span> <span class="ts-claim" data-claim="c44" data-src="s5">A primary key or unique constraint already creates a unique index, so a manual index on the same columns only duplicates it.</span></p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c45" data-src="s15">A new expression index has no statistics until ANALYZE runs on the table, by hand or by autovacuum.</span> Until then the planner guesses how selective <code>lower(email)</code> is, so run ANALYZE right after creating one.</p></div>
+<div class="ts-note" data-label="Don't"><p><span class="ts-claim" data-claim="c46" data-src="s7">Many partial indexes split by a category value are not a substitute for partitioning; one index with the category column first is almost always better, because the planner must test each partial index separately.</span></p></div>
+<p class="ts-takeaway">A partial index shrinks the index to the rows you query, an expression index stores a computed value, and both are used only when the query repeats the predicate or expression in a form the planner can match.</p>
+<div class="ts-predict" data-claims="c36 c37">
+<p class="q">The app runs <code>SELECT ... WHERE status = $1 AND created_at &lt; now() - interval '5 minutes'</code> as a prepared statement, with <code>$1 = 'pending'</code>. After a few runs the driver switches to a generic plan. Does it keep using <code>payments_pending</code>?</p>
+<div class="ts-reveal"><p>Not with the generic plan. Partial-index matching happens at planning time, and a plan built for any value of $1 can't prove <code>status = 'pending'</code>. It falls back to another index or a sequential scan. Write the literal <code>status = 'pending'</code> into the query text for this one.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="gin-and-opclasses" data-rung="3" data-min="6">
+<h2>GIN and operator classes: searching inside values</h2>
+<p class="ts-bridge">Last part: partial and expression indexes. Still unsolved: a B-tree compares whole values, so how do you find rows by something inside a value?</p>
+<p class="ts-problem">Each payment carries a <code>metadata jsonb</code> document from one of 40 integrations. Support staff search for <code>{"order_ref": "A-991"}</code> inside it, and the query reads all 200 million rows.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c47" data-src="s13">A GIN index stores each key once with a list of the rows that contain it, and one row can appear under many keys, which suits arrays, jsonb documents and text search.</span> GIN means generalized inverted index.</li>
+<li>Which keys it extracts, and which operators it serves, is decided by an <dfn data-def="The set of operators and comparison rules an index uses for one column. Each type has a default; you can name another in CREATE INDEX.">operator class</dfn>. <span class="ts-claim" data-claim="c48" data-src="s9">An operator class identifies the operators an index can use for a column, and the default class for the column's type is usually enough.</span></li>
+<li><span class="ts-claim" data-claim="c49" data-src="s24">jsonb has two GIN operator classes: the default jsonb_ops supports the key-exists operators ?, ?| and ?&amp; as well as @&gt;, @? and @@, while jsonb_path_ops supports only @&gt;, @? and @@.</span></li>
+<li><span class="ts-claim" data-claim="c50" data-src="s24">A jsonb_path_ops index is usually much smaller than a jsonb_ops index on the same data and searches more precisely, because each of its entries is a hash of a value together with the keys leading to it.</span></li>
+<li><span class="ts-claim" data-claim="c51" data-src="s25">GIN is the preferred index type for full-text search; GiST also works there but is lossy, so false matches have to be rechecked against the table rows.</span></li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Three ways to index jsonb and text" data-verified="spec" data-claims="c49 c52 c53 c67">
+<pre><code>-- containment searches anywhere in the document
+CREATE INDEX payments_meta ON payments USING GIN (metadata jsonb_path_ops);
+SELECT id FROM payments WHERE metadata @&gt; '{"order_ref": "A-991"}';
+-- only one key is ever searched: index just that key
+CREATE INDEX payments_order_ref ON payments ((metadata -&gt;&gt; 'order_ref'));
+-- prefix search on a text column when the database locale isn't C
+CREATE INDEX merchants_name_prefix ON merchants (name text_pattern_ops);
+SELECT id FROM merchants WHERE name LIKE 'Raz%';</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c52" data-src="s24">An expression index on the part of the document you search is likely smaller and faster than a GIN index on the whole column, but serves only queries on that part.</span> The second index above is a plain B-tree on one extracted value: <span class="ts-claim" data-claim="c67" data-src="s43">the -&gt;&gt; operator extracts one field of a JSON object as text.</span> That is the cheapest option when one key carries most searches.</p>
+<p><span class="ts-claim" data-claim="c53" data-src="s9">text_pattern_ops compares strings character by character instead of by the locale's collation rules, so a B-tree with it can serve LIKE 'abc%' when the database doesn't use the C locale; ordinary &lt;, &lt;=, &gt; and &gt;= comparisons then need a second index with the default class.</span> <span class="ts-claim" data-claim="c54" data-src="s2">A B-tree serves LIKE only when the pattern is a constant anchored at the start, such as LIKE 'foo%', never LIKE '%bar'.</span></p>
+<div class="ts-interview"><p><strong>"Support wants to search any field in a payment's JSON metadata. What index?"</strong> A strong answer first asks which operators the queries use. Containment only: jsonb_path_ops. Key-exists with <code>?</code>: jsonb_ops. One or two hot keys: B-tree expression indexes. Then it names GIN's write cost.</p></div>
+<p class="ts-takeaway">GIN indexes the pieces inside a value, and the operator class decides which pieces and which operators; pick the class from the operators your queries actually use.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c49">
+<p class="q">The table has <code>GIN (metadata jsonb_path_ops)</code>. Which query can't use it?</p>
+<ol>
+<li data-why="@&gt; (containment) is exactly what jsonb_path_ops supports.">metadata @&gt; '{"gateway": "upi"}'</li>
+<li data-why="jsonb_path_ops supports the jsonpath operators @? and @@.">metadata @? '$.items[*] ? (@.sku == "X1")'</li>
+<li>metadata ? 'refund_id'</li>
+</ol>
+<p class="ts-why">The key-exists operator <code>?</code> is supported only by the default jsonb_ops class. jsonb_path_ops hashes values with their key paths, so it can't answer "does this key exist".</p>
+</div>
+</section>
+
+<section class="ts-part" id="gist-brin-hash" data-rung="3" data-min="6">
+<h2>Overlaps, huge logs and pure equality: GiST, SP-GiST, BRIN and Hash</h2>
+<p class="ts-bridge">Last part: GIN for values with many pieces. Still unsolved: values that overlap rather than equal, tables too big for any tree, and lookups that only ever ask "equal?".</p>
+<p class="ts-problem">A booking service must never double-book a room. An event log grows by 2 billion rows a month and is queried by time. A token table is only ever looked up by exact match.</p>
+<ol class="ts-steps">
+<li><strong>GiST.</strong> <span class="ts-claim" data-claim="c55" data-src="s37">GiST is a balanced, tree-structured framework in which B-trees, R-trees and many other indexing schemes can be implemented.</span> <span class="ts-claim" data-claim="c56" data-src="s21">GiST and SP-GiST indexes on range columns speed up operators such as &amp;&amp; (overlaps), @&gt; and &lt;@.</span> <span class="ts-claim" data-claim="c57" data-src="s21">With the btree_gist extension, EXCLUDE USING GIST (room WITH =, during WITH &amp;&amp;) rejects a booking whose time range overlaps another booking for the same room.</span> <span class="ts-claim" data-claim="c58" data-src="s22 s28">PostgreSQL 18 adds PRIMARY KEY and UNIQUE constraints with WITHOUT OVERLAPS, which are enforced like such a GiST exclusion constraint.</span></li>
+<li><strong>SP-GiST.</strong> <span class="ts-claim" data-claim="c59" data-src="s23">SP-GiST supports non-balanced trees that repeatedly split the search space into parts that need not be of equal size, such as quad-trees, k-d trees and radix trees; its built-in text_ops class also supports the ^@ starts-with operator.</span></li>
+<li><strong>BRIN.</strong> <span class="ts-claim" data-claim="c60" data-src="s18">A BRIN index stores a summary, such as the minimum and maximum value, for each block range of physically adjacent table pages, so it suits columns whose values follow the table's physical order.</span> <span class="ts-claim" data-claim="c61" data-src="s15">The pages_per_range storage parameter sets the size of a block range, 128 pages unless you change it.</span> <span class="ts-claim" data-claim="c62" data-src="s18">BRIN is lossy: every row in a matching range is returned and rechecked, but the index is so small that reading it adds little to a scan.</span></li>
+<li><strong>Hash.</strong> <span class="ts-claim" data-claim="c63" data-src="s20">A hash index stores only a 4-byte hash of each value and may be much smaller than a B-tree on long values such as URLs; it supports only the = operator, on a single column, without uniqueness.</span></li>
+</ol>
+<p>The BRIN model below shows why physical order is everything. On an append-only log one hour falls in one range out of 100; shuffle the same rows and every range matches.</p>
+<div class="ts-code" data-lang="python" data-title="brin_model.py" data-file="brin_model.py" data-verified="ran"></div>
+<p><span class="ts-claim" data-claim="c64" data-src="s18">Smaller block ranges make a BRIN index bigger but its summaries more precise, so more pages can be skipped.</span> <span class="ts-claim" data-claim="c65" data-src="s20">Hash indexes suit unique or nearly unique data: many rows in one hash bucket create overflow pages that every lookup in that bucket must read.</span></p>
+<div class="ts-legacy"><p><span class="ts-claim" data-claim="c66" data-src="s32">PostgreSQL 10 added write-ahead logging to hash indexes, making them crash-safe and replicated, and removed the old warning against using them.</span> Advice to avoid them predates that. They are safe now; they are still equality-only.</p></div>
+<p class="ts-takeaway">GiST answers overlap and nearness questions and powers exclusion constraints, BRIN trades precision for a tiny index on physically ordered data, and Hash is a smaller equality-only index.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c60 c62">
+<p class="q">A 5-terabyte <code>events</code> table is append-only and queried by <code>created_at</code> ranges. A B-tree on <code>created_at</code> would be about 150 gigabytes. Why does BRIN fit, and when would it stop fitting?</p>
+<ol>
+<li>Rows arrive in time order, so each block range covers a narrow time window; it stops fitting if rows land out of time order, for example from backfills or updates moving rows</li>
+<li data-why="BRIN works with ranges too; that is exactly the minmax summary's job.">BRIN fits because queries are equality checks; it stops fitting for range queries</li>
+<li data-why="BRIN is lossy by design and is still used on huge tables; lossiness costs a recheck, not correctness.">BRIN fits only until the table is too big, because it is lossy</li>
+</ol>
+<p class="ts-why">BRIN's min and max per range are narrow only when values follow physical order. Out-of-order rows widen every range's min-to-max span until most ranges match every query.</p>
+</div>
+<div class="ts-explain" data-points="Leftmost prefix: equality columns first, then one range column|Partial and expression indexes match only when the query repeats the predicate or expression|GIN indexes pieces inside a value; the operator class sets which operators work|BRIN needs physical order; Hash is equality-only">
+<p class="q">You are reviewing a migration that adds six indexes. Explain the questions you'd ask about each one before approving it.</p>
+<div class="ts-model"><p>For a multicolumn B-tree: are equality columns first and the range or sort column last, and is there already an index with the same leading columns? For partial and expression indexes: do the queries repeat the same predicate or expression, as literals rather than parameters? For GIN: which operators do the queries use, so the right operator class is chosen? For BRIN: does the column follow the table's physical order? For Hash: is it really equality-only on nearly unique values?</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="building-safely" data-rung="4" data-min="6">
+<h2>Adding an index to a live table without an outage</h2>
+<p class="ts-bridge">Last part: what each index type answers. Still unsolved: creating or rebuilding one on a table that takes writes all day.</p>
+<p class="ts-problem">Building an index on the 200-million-row <code>payments</code> table takes most of an hour, and a plain <code>CREATE INDEX</code> makes every payment insert wait that long.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c68" data-src="s15">A plain CREATE INDEX blocks inserts, updates and deletes on the table until the build finishes, but not reads.</span> <span class="ts-claim" data-claim="c69" data-src="s17">A plain CREATE INDEX takes a SHARE lock, while CREATE INDEX CONCURRENTLY and REINDEX CONCURRENTLY take SHARE UPDATE EXCLUSIVE, which doesn't conflict with the ROW EXCLUSIVE lock that writes take.</span></li>
+<li><span class="ts-claim" data-claim="c70" data-src="s15">CREATE INDEX CONCURRENTLY scans the table twice and waits for existing transactions that could modify or use the index, so it does more work and takes significantly longer.</span> <span class="ts-claim" data-claim="c71" data-src="s15">CREATE INDEX CONCURRENTLY can't run inside a transaction block, and only one concurrent index build can run on a table at a time.</span></li>
+<li><span class="ts-claim" data-claim="c72" data-src="s15">If it fails, for example on a deadlock or a uniqueness violation, it leaves an INVALID index that queries ignore but that still consumes update overhead; drop it and try again, or rebuild it with REINDEX INDEX CONCURRENTLY.</span></li>
+<li><span class="ts-claim" data-claim="c73" data-src="s16">Plain REINDEX blocks writes and also takes an ACCESS EXCLUSIVE lock on the index, which blocks nearly every query on the table, because the planner tries to lock every index of the table.</span> <span class="ts-claim" data-claim="c74" data-src="s16">REINDEX CONCURRENTLY builds a replacement with a _ccnew suffix and swaps it in; after a failure, drop an invalid _ccnew index and retry, or drop an invalid _ccold index because the rebuild itself succeeded.</span></li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Build, then check it is valid" data-verified="spec" data-claims="c71 c72 c75">
+<pre><code>-- outside any transaction block
+CREATE INDEX CONCURRENTLY payments_merchant_created
+  ON payments (merchant_id, created_at);
+-- any index a failed concurrent build left behind
+SELECT indexrelid::regclass FROM pg_index WHERE NOT indisvalid;</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c75" data-src="s16">pg_index.indisvalid marks whether an index is valid for queries; a concurrent rebuild flips it to true for the new index and false for the old one.</span> <span class="ts-claim" data-claim="c76" data-src="s15">For a unique index built concurrently, the constraint is enforced against other transactions from the start of the second scan, and an index left invalid by a failure in that scan keeps enforcing it.</span></p>
+<p><span class="ts-claim" data-claim="c79" data-src="s15">CREATE INDEX CONCURRENTLY doesn't support partitioned tables: build each partition's index concurrently, then create the parent index non-concurrently, which is then only a metadata change.</span></p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c80" data-src="s33">In PostgreSQL 14 before 14.4, CREATE INDEX CONCURRENTLY and REINDEX CONCURRENTLY could silently leave out index entries, so queries missed rows; the fix was to upgrade, then rebuild affected indexes, and pg_amcheck --heapallindexed detects the damage in B-trees.</span></p></div>
+<div class="ts-interview"><p><strong>"Add an index to a 2-terabyte table with no downtime."</strong> A strong answer uses CREATE INDEX CONCURRENTLY, ends long transactions first because the build waits for them, watches progress (<span class="ts-claim" data-claim="c85" data-src="s15">each backend running CREATE INDEX reports its progress in the pg_stat_progress_create_index view</span>), and checks <code>indisvalid</code> afterwards.</p></div>
+<p class="ts-takeaway">Use CONCURRENTLY on live tables, end long transactions first, and check for INVALID indexes afterwards.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c72 c76">
+<p class="q"><code>CREATE UNIQUE INDEX CONCURRENTLY</code> on <code>payments(gateway_ref)</code> fails halfway with a duplicate key error. The deploy moves on. What is the state an hour later?</p>
+<ol>
+<li data-why="A failed concurrent build doesn't roll back cleanly; it leaves the index behind.">No index exists; the failure rolled it back</li>
+<li>An INVALID index remains: no query uses it, and depending on which phase failed, writes may still maintain it and it may still reject duplicates</li>
+<li data-why="Queries ignore an INVALID index because it might be incomplete.">The index works for queries but isn't enforced</li>
+</ol>
+<p class="ts-why">The failed build leaves an INVALID index behind. The docs say it still consumes update overhead, and if it failed in the second scan it keeps enforcing uniqueness. Find it with indisvalid and drop it.</p>
+</div>
+</section>
+
+<section class="ts-part" id="write-amplification" data-rung="4" data-min="6">
+<h2>Too many indexes at ten times the write rate</h2>
+<p class="ts-bridge">Last part: building indexes safely. Still unsolved: what does each index cost once it exists, and how do you find the ones not worth it?</p>
+<p class="ts-problem">A sale brings 10 times the usual traffic: 30,000 payment status changes a second on a table with 11 indexes. Commit latency triples, WAL volume and replica lag climb, and nothing in the queries changed.</p>
+<ol class="ts-steps">
+<li>Each non-HOT update writes a row version plus one entry per index: 12 writes per status change, about 360,000 a second. Every index multiplies the write rate.</li>
+<li>HOT is the escape, but more columns block it than people expect. <span class="ts-claim" data-claim="c81" data-src="s42">For non-summarizing indexes, columns used in an index's expressions, in a partial index's WHERE clause, or as INCLUDE columns also count as indexed for HOT, so changing them makes an update non-HOT.</span> The covering index with <code>INCLUDE (amount, status)</code> from earlier, or a partial index <code>WHERE status = 'pending'</code>, makes every status change non-HOT.</li>
+<li>Find the indexes that don't pay. <span class="ts-claim" data-claim="c82" data-src="s26">The pg_stat_user_indexes view has one row per index, with relname, indexrelname, idx_scan (the number of index scans started) and last_idx_scan (the time of the last scan).</span></li>
+<li>Read the counters with care. <span class="ts-claim" data-claim="c83" data-src="s26">Statistics counters survive a clean shutdown, but all of them are reset after an unclean shutdown, a crash, a start from a base backup, or point-in-time recovery.</span> <span class="ts-claim" data-claim="c84" data-src="s26">Cumulative statistics are collected in shared memory, and a physical replica keeps its own copy of them across clean restarts.</span> So a primary's idx_scan of 0 says nothing about reads served by replicas.</li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Which indexes on payments are used?" data-verified="spec" data-claims="c82">
+<pre><code>SELECT indexrelname, idx_scan, last_idx_scan
+FROM pg_stat_user_indexes
+WHERE relname = 'payments'
+ORDER BY idx_scan;</code></pre>
+</div>
+<p>The audit below turns those rows into verdicts: never-scanned indexes, and indexes whose columns are the leading columns of a wider one. It skips unique indexes, which enforce rules even with zero scans.</p>
+<div class="ts-code" data-lang="python" data-title="index_audit.py" data-file="index_audit.py" data-verified="ran"></div>
+<p>Indexes also bloat. Part 3 showed how to measure a B-tree with pgstatindex and rebuild it with REINDEX CONCURRENTLY; the next part covers the types that bloat or slow down differently.</p>
+<div class="ts-interview"><p><strong>"Write throughput dropped after we added a few indexes. How do you investigate?"</strong> A strong answer checks the HOT ratio first (part 3's n_tup_hot_upd), then which new index columns the hot UPDATEs change, including INCLUDE and partial-index predicate columns. It lists unused and prefix-duplicate indexes from pg_stat_user_indexes, confirms on every replica and over a full business cycle, and drops them concurrently: <span class="ts-claim" data-claim="c86" data-src="s44">a normal DROP INDEX takes an ACCESS EXCLUSIVE lock on the table, while DROP INDEX CONCURRENTLY waits for conflicting transactions instead of locking out reads and writes.</span></p></div>
+<p class="ts-takeaway">Every index multiplies writes for any update that can't be HOT; find the ones nobody scans on any server, and keep hot-updated columns out of indexes, INCLUDE lists and predicates.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c83 c84">
+<p class="q">Last week the primary crashed and was restarted. Today <code>payments_old_report</code> shows idx_scan = 0 on the primary. What do you do?</p>
+<ol>
+<li data-why="The crash reset every counter, so 0 means only 'not used since the crash', and replicas aren't counted.">Drop it now: zero scans means unused</li>
+<li data-why="Counters do mean something; you just need enough time since the reset, and every server checked.">Never trust idx_scan; keep every index</li>
+<li>Wait until counters cover a full business cycle, check the replicas' own counters too, then drop it if still unused</li>
+</ol>
+<p class="ts-why">A crash resets all counters, and each server counts only its own scans. A monthly report on a replica would be invisible on the primary.</p>
+</div>
+</section>
+
+<section class="ts-part" id="gin-pending-list" data-rung="4" data-min="6">
+<h2>GIN's pending list, and the upkeep each index type needs</h2>
+<p class="ts-bridge">Last part: the write cost every index adds. Still unsolved: GIN, Hash and BRIN each fail in their own way. What does each need?</p>
+<p class="ts-problem">Most updates to a table with a GIN index finish in a few milliseconds. Every few minutes one unlucky UPDATE takes several seconds and holds its row locks the whole time.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c87" data-src="s13">Inserting one row can add many GIN entries, so GIN's fast update technique puts new entries in an unsorted pending list and moves them into the main index in bulk later.</span> That list is the <dfn data-def="GIN's holding area for new entries, unsorted, flushed into the main index in bulk.">pending list</dfn>.</li>
+<li><span class="ts-claim" data-claim="c88" data-src="s13">The pending list is flushed when the table is vacuumed or autoanalyzed, when gin_clean_pending_list is called, or when the list grows past gin_pending_list_limit; that last case happens inside the statement that crossed the limit, which makes that statement much slower than the rest.</span></li>
+<li><span class="ts-claim" data-claim="c89" data-src="s13">Searches must scan the pending list too, so a large list slows them significantly.</span> <span class="ts-claim" data-claim="c90" data-src="s14">gin_pending_list_limit is 4 megabytes unless changed, and each GIN index can override it as a storage parameter.</span></li>
+<li>Fixes, from the docs: <span class="ts-claim" data-claim="c91" data-src="s13">if steady response time matters more than update speed, turn fastupdate off; otherwise avoid foreground flushes by raising the limit or making autovacuum more aggressive, knowing a foreground flush will then take even longer.</span> <span class="ts-claim" data-claim="c92" data-src="s15">Turning fastupdate off with ALTER INDEX doesn't flush entries already pending, so run VACUUM or gin_clean_pending_list afterwards.</span></li>
+</ol>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c93" data-src="s36">GitLab's issue 336930 investigated multi-second merge request updates and pointed to pending-list cleanup of a trigram GIN index on the description column; manual cleanups in that investigation took between 465 and 3,155 milliseconds.</span></p></div>
+<p>Two other types have their own upkeep:</p>
+<ul>
+<li><strong>Hash.</strong> <span class="ts-claim" data-claim="c94" data-src="s20">A hash index never shrinks on its own: emptied overflow pages are reused but not returned to the operating system, the number of buckets never goes down, and only rebuilding it, for example with REINDEX, makes it smaller.</span></li>
+<li><strong>BRIN.</strong> <span class="ts-claim" data-claim="c95" data-src="s18">New block ranges at the end of the table stay unsummarized until VACUUM runs, autosummarize (off unless enabled) queues them, or brin_summarize_new_values is called.</span> <span class="ts-claim" data-claim="c96" data-src="s19">A BRIN scan returns every page of an unsummarized range, as if it matched.</span> On a busy log, the newest data, usually the most queried, is the part BRIN can't skip until summarization catches up.</li>
+</ul>
+<div class="ts-code" data-lang="sql" data-title="Settings for the two cases" data-verified="spec" data-claims="c90 c91 c92 c95 c97">
+<pre><code>-- steady latency over insert speed for the trigram index
+ALTER INDEX merge_requests_description_trgm SET (fastupdate = off);
+SELECT gin_clean_pending_list('merge_requests_description_trgm');
+-- summarize each full block range soon after it fills
+CREATE INDEX events_created_brin ON events USING brin (created_at)
+  WITH (pages_per_range = 64, autosummarize = on);</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c97" data-src="s15">autosummarize queues a summarization run for the previous block range whenever an insert is detected on the next one.</span></p>
+<p class="ts-takeaway">GIN's fast updates trade a steady write cost for occasional big flushes inside unlucky statements; Hash never shrinks without REINDEX, and BRIN can't skip ranges it hasn't summarized.</p>
+<div class="ts-predict" data-claims="c88 c91">
+<p class="q">You raise gin_pending_list_limit on that GIN index from 4 to 64 megabytes and change nothing else. Predict p50 and p99.9 UPDATE latency a week later.</p>
+<div class="ts-reveal"><p>p50 stays about the same and foreground flushes become rarer, so fewer statements are hit. But a flush can now move up to 16 times as much data, so the statements that do hit one get even slower: the extreme tail and the maximum get worse, even if p99.9 happens to improve. The steady fix is fastupdate off, or more aggressive autovacuum on that table so flushes happen in the background.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="planner-ignores" data-rung="4" data-min="6">
+<h2>The index the planner won't use</h2>
+<p class="ts-bridge">Last part: upkeep each index type needs. Still unsolved: the index exists, it's valid, and EXPLAIN still shows a sequential scan. Why?</p>
+<p class="ts-problem">An engineer adds an index for a slow query, deploys, and sees no change. The index has idx_scan = 0 a day later.</p>
+<p>Go through the reasons in this order. The first group means the query can't use the index; the second means the planner thinks it shouldn't.</p>
+<ol class="ts-steps">
+<li><strong>The query doesn't match the index.</strong> No condition on the leading column; <code>LIKE '%bar'</code>; an expression written differently from the indexed one; a partial-index predicate passed as a parameter; <code>?</code> against jsonb_path_ops; a locale that needs text_pattern_ops. <span class="ts-claim" data-claim="c98" data-src="s41">An index supports one collation per column, so a comparison with a different COLLATE can't use it.</span> And an INVALID index is never used.</li>
+<li><strong>The query reads too much.</strong> <span class="ts-claim" data-claim="c99" data-src="s7">A query for a value that covers more than a few percent of the table won't use an index anyway.</span> <span class="ts-claim" data-claim="c100" data-src="s4">For a query that reads a large fraction of the table, an explicit sort after a sequential read is likely faster than using an index, because it reads sequentially.</span></li>
+<li><strong>The statistics are wrong or missing.</strong> <span class="ts-claim" data-claim="c101" data-src="s10">Without ANALYZE, the planner uses default estimates that are almost certainly inaccurate, so examining index usage before running ANALYZE is a lost cause.</span></li>
+<li><strong>The test data is too small.</strong> <span class="ts-claim" data-claim="c102" data-src="s10">Very small test tables mislead: 100 rows probably fit in one page, and no plan beats reading one page sequentially.</span></li>
+</ol>
+<p>To tell the groups apart: <span class="ts-claim" data-claim="c103" data-src="s10">turn off enable_seqscan in a session to force another plan; if the index still isn't used, there is probably a more basic reason, such as the query condition not matching the index; if it is used, either the planner was right or its cost estimates are off, so time the query with and without the index, for example with EXPLAIN ANALYZE.</span></p>
+<div class="ts-code" data-lang="sql" data-title="Is it the query or the estimate?" data-verified="spec" data-claims="c103 c101">
+<pre><code>ANALYZE payments;
+SET enable_seqscan = off;   -- this session only, for diagnosis
+EXPLAIN ANALYZE SELECT id FROM payments WHERE merchant_id = 42;
+RESET enable_seqscan;</code></pre>
+</div>
+<div class="ts-trap"><p>Never leave <code>enable_seqscan = off</code> in a role or server setting to "fix" a plan. It hides the real cause, and it pushes every other query toward index plans, including the ones that read half the table.</p></div>
+<div class="ts-interview"><p><strong>"The planner ignores my index. What do you check?"</strong> A strong answer separates "can't" from "won't": first whether the query's form matches the index (leading column, expression, operator class, collation, partial predicate, validity), then selectivity and statistics with ANALYZE and an enable_seqscan test. It doesn't jump to hints or disabling scans in production.</p></div>
+<p class="ts-takeaway">If forcing the index doesn't use it, the query's form doesn't match; if forcing works, compare real timings, because the planner may be right.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c38 c53 c54">
+<p class="q">Which of these queries can't use a B-tree index on <code>lower(email)</code>, even with enable_seqscan off?</p>
+<ol>
+<li data-why="This repeats the indexed expression exactly, so the index matches.">WHERE lower(email) = 'a@b.com'</li>
+<li>WHERE email = 'A@b.com'</li>
+<li data-why="An anchored prefix on the indexed expression can use a B-tree, given C locale or a pattern operator class.">WHERE lower(email) LIKE 'a%' in a database using the C locale</li>
+</ol>
+<p class="ts-why">An expression index is used only by queries that write the same expression. A condition on plain <code>email</code> needs its own index.</p>
+</div>
+<div class="ts-explain" data-points="Every non-HOT update writes every index; INCLUDE and predicate columns block HOT too|Unused-index checks need old enough counters and every replica|GIN pending-list flushes land inside unlucky statements|Can't vs won't: form mismatch versus cost estimate">
+<p class="q">A payments service doubles its traffic and p99 write latency jumps. Explain the index-related causes you'd look for and how you'd confirm each one.</p>
+<div class="ts-model"><p>First, write amplification: each non-HOT update writes every index, so check the HOT ratio and whether hot-updated columns appear in any index, INCLUDE list or partial-index predicate. Second, unused or duplicate indexes, confirmed with pg_stat_user_indexes over a full cycle and on every replica before dropping them concurrently. Third, GIN pending-list flushes inside unlucky statements, fixed with fastupdate off or tuned autovacuum. Finally, any INVALID index left from a failed concurrent build, which costs writes and serves no reads.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="choosing-index-type" data-rung="5" data-min="5">
+<h2>Choosing the index type</h2>
+<p class="ts-bridge">Last part: why a valid index can still go unused. Still unsolved: given a query shape, which of the six types should you reach for?</p>
+<p class="ts-problem">Six types, dozens of operator classes, and every index costs writes. You need a short rule that picks the right one in a design review.</p>
+<p>Start from the question the query asks, then check the cost column. B-tree is the answer unless the question is one it can't express.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Type</th><th>Questions it answers</th><th>Pick it when</th><th>Watch out for</th></tr></thead>
+<tbody>
+<tr><td>B-tree</td><td><span class="ts-claim" data-claim="c104" data-src="s2">=, &lt;, &lt;=, &gt;=, &gt;, BETWEEN, IN, IS NULL, and LIKE with a constant anchored prefix (a non-C locale needs a pattern operator class)</span></td><td>The default: lookups, ranges, ORDER BY with LIMIT, uniqueness, multicolumn keys</td><td><span class="ts-claim" data-claim="c105" data-src="s11">An entry can't exceed about one-third of a page</span></td></tr>
+<tr><td>Hash</td><td><span class="ts-claim" data-claim="c106" data-src="s20">Equality only, on one column, for any data type</span></td><td>Long values compared only for equality, such as URLs or tokens, that are nearly unique</td><td><span class="ts-claim" data-claim="c107" data-src="s20">Bucket splits happen in the foreground, so it may not suit tables whose row count grows fast</span></td></tr>
+<tr><td>GIN</td><td><span class="ts-claim" data-claim="c108" data-src="s2 s24 s25">Containment and overlap on arrays, containment and key-exists on jsonb, and word matching in full-text documents</span></td><td>Each row holds many searchable pieces</td><td><span class="ts-claim" data-claim="c109" data-src="s8">No index-only scans, since entries hold only part of each value</span>; pending-list flushes</td></tr>
+<tr><td>GiST</td><td><span class="ts-claim" data-claim="c110" data-src="s2 s21">Overlap and containment on ranges and geometry, plus nearest-neighbour ordering, depending on the operator class</span></td><td>Bookings, time ranges, geography, exclusion constraints</td><td><span class="ts-claim" data-claim="c111" data-src="s3">A multicolumn GiST is relatively ineffective if its first column has only a few distinct values</span></td></tr>
+<tr><td>SP-GiST</td><td><span class="ts-claim" data-claim="c112" data-src="s23">Points, ranges, inet and text, including starts-with searches, through unbalanced partitioned trees</span></td><td>Data that splits naturally into unequal regions, such as points or prefixes</td><td><span class="ts-claim" data-claim="c113" data-src="s3">Single column only: multicolumn indexes are B-tree, GiST, GIN and BRIN</span></td></tr>
+<tr><td>BRIN</td><td><span class="ts-claim" data-claim="c114" data-src="s18">Range and equality checks through per-block-range summaries such as min and max</span></td><td>Huge, append-mostly tables where the column follows insert order, such as event time</td><td><span class="ts-claim" data-claim="c115" data-src="s18">Lossy: every row in a matching range is rechecked</span>; useless if rows are out of order</td></tr>
+</tbody>
+</table></div>
+<p>Two more decisions sit on top of the type: the shape (partial, expression, INCLUDE, unique) and whether the index earns its write cost at all. A query run once a day by a batch job rarely does.</p>
+<div class="ts-note" data-label="PostgreSQL 19 (beta)"><p><span class="ts-claim" data-claim="c116" data-src="s29">The draft PostgreSQL 19 release notes list table scans that can mark pages all-visible, which only VACUUM and COPY ... FREEZE could do before, and parallel autovacuum workers for a table's indexes.</span> The first should mean fewer Heap Fetches for index-only scans on tables that are read soon after they are written. This page follows PostgreSQL 18.</p></div>
+<div class="ts-note" data-label="Beyond senior"><p>Setting index standards across many teams, such as review checklists for migrations or automated unused-index reports across a fleet, is staff-level work. This page stops at choosing and defending indexes for one service.</p></div>
+<p class="ts-takeaway">Start with B-tree; switch type only when the query asks a question B-tree can't answer, such as "contains", "overlaps", or "which block range" on a huge ordered table.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c56 c57 c110">
+<p class="q">A meeting-room service must reject overlapping bookings for the same room, enforced by the database. Which index type backs that rule?</p>
+<ol>
+<li data-why="A unique B-tree rejects equal values, not overlapping ranges.">A unique B-tree on (room, start_time)</li>
+<li data-why="GIN answers containment on pieces of a value; exclusion on overlapping ranges uses GiST.">GIN on the booking's time range</li>
+<li>GiST, through an exclusion constraint with room WITH = and the time range WITH &amp;&amp;</li>
+</ol>
+<p class="ts-why">Overlap is a GiST question. An exclusion constraint on (room WITH =, during WITH &amp;&amp;), with btree_gist for the room column, rejects any second booking that overlaps the first.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="8">
+<h2>Interview drill: index design at the senior bar</h2>
+<p class="ts-bridge">Last part: a table for choosing the type. Still unsolved: defending a full design under questioning, with the trade-offs said out loud.</p>
+<p class="ts-problem">Three prompts that come up in product-company rounds. For each, commit to an answer before opening the reference.</p>
+<p>For every prompt, say these four things: the query shapes you're serving, the index for each, what each costs on writes, and what you'd watch in production.</p>
+<div class="ts-predict" data-claims="c29 c35 c81 c2">
+<p class="q"><strong>1. Payments.</strong> 200 million rows, 3,000 inserts and 6,000 status changes a second. Queries: (a) a merchant's payments in a date range, newest first, 50 per page; (b) workers fetch the oldest 100 <code>pending</code> payments; (c) ops counts <code>failed</code> payments in the last hour across all merchants. Design the indexes.</p>
+<div class="ts-reveal"><p>(a) <code>(merchant_id, created_at)</code>: equality first, range and sort second, LIMIT stops early. (b) <code>(created_at) WHERE status = 'pending'</code>: tiny, already in the right order. (c) <code>(created_at) WHERE status = 'failed'</code>, small because failures are rare; skip it if ops runs the count rarely and a slow query is acceptable. No index on status alone: 4 values, mostly useless. The trade-off to say out loud: both partial indexes reference status in their predicate, so every status change is a non-HOT update that inserts into every index whose predicate the new row satisfies, including (a). That is accepted because the alternative is scanning, and it is the reason to keep the total count of indexes low. <code>INCLUDE (status)</code> on (a) would add no HOT cost here, since status already blocks HOT, but it makes (a) bigger; add it only if the dashboard must be index-only.</p></div>
+</div>
+<div class="ts-predict" data-claims="c49 c50 c52 c88">
+<p class="q"><strong>2. Searchable JSON.</strong> An orders table stores a <code>details jsonb</code> from many partners. Support searches by any of 30 fields; finance searches by <code>details -&gt;&gt; 'invoice_no'</code> thousands of times a minute. Writes are 2,000 a second.</p>
+<div class="ts-reveal"><p>Finance's hot key gets its own B-tree expression index on <code>(details -&gt;&gt; 'invoice_no')</code>: small, fast, cheap to maintain. Support's ad-hoc containment searches get one GIN index with jsonb_path_ops, which is smaller and more precise than jsonb_ops, accepting that key-exists queries with <code>?</code> won't use it. The trade-off: GIN adds many entries per row, so at 2,000 writes a second watch for pending-list flushes in p99 latency and decide between fastupdate off and aggressive autovacuum on that table.</p></div>
+</div>
+<div class="ts-predict" data-claims="c60 c61 c62 c95 c96 c79">
+<p class="q"><strong>3. A 5-terabyte event log.</strong> Append-only, 2 billion rows a month, partitioned by month. Queries filter by a time window and sometimes by <code>tenant_id</code>. A B-tree on <code>created_at</code> per partition would be hundreds of gigabytes.</p>
+<div class="ts-reveal"><p>BRIN on <code>created_at</code> in each partition: rows arrive in time order, so ranges are narrow and the index is tiny; enable autosummarize so the newest ranges are summarized soon after filling. Partition pruning skips old months entirely. For the occasional tenant filter, a B-tree on <code>(tenant_id, created_at)</code> only in recent partitions, if those queries are frequent enough to pay for it. The trade-off: BRIN gives up precision and depends on physical order, so backfills or out-of-order loads must be sorted by time first. A new BRIN index is built concurrently on each partition, then created on the parent, which is then only a metadata change.</p></div>
+</div>
+<div class="ts-interview"><p><strong>"Why not just index every column the API filters on?"</strong> A strong answer quantifies the write cost: every non-HOT update writes every index, and any index on a frequently updated column blocks HOT for those updates. It names the read gains it would give up by dropping indexes, and settles on the few composite or partial indexes that cover the real query shapes.</p></div>
+<p class="ts-takeaway">A senior index design names each query shape, the index that serves it, the write cost it adds, and the signal that would show it was wrong.</p>
+<div class="ts-explain" data-points="Composite index: equality first, then range or sort|Partial indexes for small hot subsets, with literal predicates|BRIN for huge time-ordered data, GIN with the right operator class for documents|Every index and every indexed, included or predicate column costs writes and HOT">
+<p class="q">Pick one of the three prompts and give your full answer as you would in an interview, including what you'd give up.</p>
+<div class="ts-model"><p>For payments: a composite index on (merchant_id, created_at) for the dashboard, and partial indexes on created_at for pending and failed rows, written with literal predicates so the planner can match them. I'd skip an index on status alone. Status changes become non-HOT because the partial predicates reference status, so I keep the index count low and watch the HOT ratio, WAL rate and replica lag. If the failed-count query is rare, I'd drop its index and accept a slower scan.</p></div>
+</div>
+</section>

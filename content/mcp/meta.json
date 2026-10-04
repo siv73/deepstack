@@ -1,0 +1,19 @@
+{
+ "slug": "mcp",
+ "title": "Model Context Protocol (MCP)",
+ "tldr": "How AI apps connect to tools and data through one open protocol, how the stateless 2026-07-28 version works on the wire, how to build, secure and scale a server, and whether anything is set to replace it.",
+ "category": "APIs",
+ "level": "senior backend engineer (product company)",
+ "created": "2026-09-27",
+ "prereqs": [
+  {"label": "HTTP requests, headers and JSON"},
+  {"label": "OAuth 2.0 code flow and access tokens", "slug": "oauth"},
+  {"label": "What an LLM tool call (function calling) is"}
+ ],
+ "related": [
+  {"label": "OAuth 2.0", "slug": "oauth", "why": "the auth flow remote MCP servers use"},
+  {"label": "Agent2Agent protocol (A2A)", "slug": "a2a", "why": "the agent-to-agent layer next to MCP"},
+  {"label": "Server-Sent Events and streaming HTTP", "slug": "sse", "why": "how Streamable HTTP delivers progress"},
+  {"label": "Prompt injection defences for agents", "slug": "prompt-injection", "why": "the security problem MCP can't solve at the protocol level"}
+ ]
+}

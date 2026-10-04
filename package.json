@@ -1,0 +1,20 @@
+{
+  "name": "deepstack",
+  "private": true,
+  "description": "UI tooling for deepstack: lint, format, HTML validation, accessibility.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "biome check ui",
+    "format": "biome check --write ui",
+    "validate:html": "html-validate \"site/**/*.html\"",
+    "check": "npm run lint && npm run validate:html"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "axe-core": "4.13.0",
+    "html-validate": "11.16.0"
+  }
+}

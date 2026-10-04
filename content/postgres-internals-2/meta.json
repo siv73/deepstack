@@ -1,0 +1,16 @@
+{
+ "slug": "postgres-internals-2",
+ "title": "PostgreSQL internals, Part 2: MVCC and row versions",
+ "tldr": "How PostgreSQL lets readers and writers run together: every UPDATE writes a new row version stamped with xmin and xmax, transaction IDs and the pg_xact commit log, snapshots (xmin:xmax:xip_list) and the visibility rule, Read Committed vs Repeatable Read snapshot timing. Then inspecting versions live, timeouts that keep transactions short, how one old snapshot bloats every table, hint bits that make reads write, the subtransaction cache limit, and how PostgreSQL's MVCC compares with InnoDB's.",
+ "category": "Databases",
+ "created": "2026-10-01",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "PostgreSQL internals, Part 1: how a row is stored on disk", "slug": "postgres-internals-1"}
+ ],
+ "related": [
+  {"label": "PostgreSQL internals, Part 1", "slug": "postgres-internals-1", "why": "pages, row headers and ctid, which this part builds on"},
+  {"label": "PostgreSQL internals, Part 3: VACUUM and bloat", "why": "how dead versions are cleaned up, HOT updates, xid wraparound"},
+  {"label": "PostgreSQL internals, Part 6: isolation levels and locking", "why": "row locks, xmax set by locks, Serializable and retries"}
+ ]
+}

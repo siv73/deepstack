@@ -1,0 +1,393 @@
+<section class="ts-part" id="why-async" data-rung="1" data-min="4">
+<h2>Why one thread can wait on 1,000 network calls</h2>
+<p class="ts-problem">Your pricing service calls 3 downstream APIs per request, 100 ms each. Called one after another, each request takes 300 ms, and the CPU sits idle for nearly all of it. At 500 requests per second, a thread-per-request design needs about 150 threads just to wait.</p>
+<p>Think of a waiter in a restaurant. A bad waiter takes one order, walks to the kitchen and stands there until the dish is ready. A good waiter hands the order in, serves other tables, and comes back when the kitchen rings the bell. One waiter, many tables, because most of the job is waiting.</p>
+<ol class="ts-steps">
+<li>Your code starts a network call and says "I'll wait here" at a marked point.</li>
+<li>Instead of blocking the thread, it steps aside so other code can run.</li>
+<li>When the reply arrives, your code picks up exactly where it left off.</li>
+</ol>
+<p>Running many waits at the same time on one thread, by switching between them at marked points, is <dfn data-def="Several jobs in progress at the same time, taking turns. Not the same as running at the same instant on several CPU cores (parallelism).">concurrency</dfn>. It is not <dfn data-def="Several jobs running at the same instant on different CPU cores.">parallelism</dfn>: only one piece of Python code runs at any instant. The win comes from overlapping the waiting, not from doing more work per second.</p>
+<p>Python's tool for this is asyncio. <span class="ts-claim" data-claim="c1" data-src="s13">The Python docs describe asyncio as a library for writing concurrent code with the async/await syntax.</span> <span class="ts-claim" data-claim="c2" data-src="s13">The docs call asyncio often a perfect fit for IO-bound and high-level structured network code.</span></p>
+<p>That last word matters. If your 300 ms is spent calculating, not waiting, a single waiter can't help: there is no idle time to overlap. <span class="ts-claim" data-claim="c52" data-src="s1">This page follows the Python 3.14 documentation.</span></p>
+<p class="ts-takeaway">asyncio lets one thread overlap many waits; it speeds up waiting, not computing.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">Which workload gains the most from asyncio?</p>
+<ol>
+<li data-why="Resizing is CPU work. There is no waiting to overlap, so one thread still does it one image at a time.">Resizing 10,000 images on one machine</li>
+<li data-why="One slow query is one wait. Concurrency helps when there are many waits to overlap, not one.">A single slow SQL query that takes 4 seconds</li>
+<li>A gateway that calls 5 internal services per request, each taking 80 ms</li>
+</ol>
+<p class="ts-why">Five 80 ms waits per request, across many requests, are exactly the idle time one thread can overlap.</p>
+</div>
+<div class="ts-explain" data-points="Most time in network code is spent waiting, not computing|asyncio overlaps those waits on one thread by switching at marked points|It is concurrency, not parallelism: one piece of Python code runs at a time|CPU-heavy work gets no benefit">
+<p class="q">In your own words: what problem does asyncio solve, and what problem does it not solve?</p>
+<div class="ts-model"><p>Network-heavy code spends most of its time waiting for replies. asyncio lets one thread start many waits and switch between them at marked points, so the waits overlap instead of adding up. Only one piece of Python code runs at any moment, so this is concurrency, not parallelism. If the time goes into computing instead of waiting, there is nothing to overlap and asyncio does not help.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="calling-runs-nothing" data-rung="2" data-min="4">
+<h2>Why calling an async function runs nothing</h2>
+<p class="ts-bridge">Last part: asyncio overlaps waits at marked points. Still unsolved: what do those marked points look like in code?</p>
+<p class="ts-problem">A checkout handler "sends" a receipt email. Tests pass, no exception is raised, and zero receipts go out for 2 days.</p>
+<p>A function written with <code>async def</code> is a <dfn data-def="A function defined with async def. Calling it does not run its body; it returns a coroutine object.">coroutine function</dfn>. Calling it is like writing an order ticket: nothing is cooked until the ticket reaches the kitchen.</p>
+<ol class="ts-steps">
+<li><code>send_receipt(outbox, 42)</code> builds a <dfn data-def="The paused, not-yet-started body of an async def function, created by calling it. It runs only when awaited or wrapped in a task.">coroutine object</dfn> and returns it. The body has not run.</li>
+<li><code>await send_receipt(outbox, 42)</code> runs the body and gives you its return value.</li>
+<li><code>await</code> is the marked point from Part 1: the only place your code may step aside while it waits.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c5" data-src="s1 s4">Calling a coroutine function does not schedule it to run; it only returns a coroutine object.</span> That is the receipt bug below: the coroutine is created and thrown away.</p>
+<div class="ts-code" data-lang="python" data-title="not_awaited.py" data-file="not_awaited.py" data-verified="ran"></div>
+<p>Python does leave a clue. <span class="ts-claim" data-claim="c6" data-src="s2">If a coroutine is never awaited or scheduled as a task, asyncio emits a RuntimeWarning saying it was never awaited.</span> It is a warning, not an error, so it scrolls past in logs. In CI, turn it into a failure with <code>-W error::RuntimeWarning</code>; a type checker such as mypy also flags an unused coroutine.</p>
+<div class="ts-legacy">
+<p>Old code marks coroutines with a decorator and <code>yield from</code>. <span class="ts-claim" data-claim="c49" data-src="s8">The @asyncio.coroutine decorator for generator-based coroutines was removed in Python 3.11; use async def instead.</span></p>
+</div>
+<p class="ts-takeaway">Calling an async function only builds a coroutine object; nothing runs until it is awaited or made into a task.</p>
+<div class="ts-predict" data-claims="c5 c6">
+<p class="q">A handler calls <code>audit_log.write(event)</code>, where <code>write</code> is <code>async def</code>, with no <code>await</code>. What ends up in the audit log, and what do you see?</p>
+<div class="ts-reveal"><p>Nothing is written. The call built a coroutine object and dropped it. The only sign is a RuntimeWarning that the coroutine was never awaited, printed once it is cleaned up.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="event-loop" data-rung="2" data-min="5">
+<h2>The event loop: one thread taking turns</h2>
+<p class="ts-bridge">Last part: <code>await</code> is where code may step aside. Still unsolved: step aside to whom?</p>
+<p class="ts-problem">Two requests hit your service at once. Each needs one 50 ms database query. With one thread, how do both finish in about 50 ms instead of 100 ms?</p>
+<p>The <dfn data-def="The scheduler at the core of asyncio: one thread that keeps a to-do list, runs one job until it pauses at an await, then runs the next ready job.">event loop</dfn> is the waiter from Part 1. It holds a to-do list and runs one job at a time. A job it runs is a <dfn data-def="A coroutine wrapped so the event loop can schedule it, pause it at await points and resume it later. Created with asyncio.create_task or TaskGroup.create_task.">task</dfn>: a coroutine the loop can pause and resume.</p>
+<ol class="ts-steps">
+<li>The loop picks a ready task and runs it.</li>
+<li>The task starts a query and awaits the reply. It pauses and control returns to the loop.</li>
+<li>The loop runs the next ready task.</li>
+<li>When a reply arrives, the waiting task goes back on the ready list and resumes where it paused.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c3" data-src="s2">An event loop runs in one thread and executes all its callbacks and tasks in that thread.</span> <span class="ts-claim" data-claim="c4" data-src="s2">While a task is running in the event loop, no other task can run in the same thread.</span> The waiter comparison stops working here: a real waiter can be interrupted, but the loop cannot take control back. A task gives it up only at an <code>await</code> that actually pauses.</p>
+<figure class="ts-seq" data-title="Two requests sharing one thread">
+<script type="application/json">
+{"actors": [
+ {"id": "loop", "label": "Event loop", "sub": "one thread"},
+ {"id": "a", "label": "Task A", "sub": "request 1"},
+ {"id": "b", "label": "Task B", "sub": "request 2"},
+ {"id": "db", "label": "Database", "sub": "50 ms per query"}],
+ "steps": [
+ {"from": "loop", "to": "a", "label": "run A", "note": "The loop picks Task A from its ready list and runs it."},
+ {"from": "a", "to": "db", "label": "send query 1", "note": "A sends its query. The reply will take 50 ms."},
+ {"from": "a", "to": "loop", "label": "await: pause, hand back control", "dashed": true, "note": "A reaches await. It pauses and control returns to the loop. No thread is blocked."},
+ {"from": "loop", "to": "b", "label": "run B", "note": "The loop runs the next ready task, B."},
+ {"from": "b", "to": "db", "label": "send query 2", "note": "B sends its query. Both queries are now in flight at the same time."},
+ {"from": "b", "to": "loop", "label": "await: pause, hand back control", "dashed": true, "note": "B pauses too. The loop has nothing ready, so it sleeps until the network wakes it."},
+ {"from": "db", "to": "loop", "label": "reply 1 arrives", "dashed": true, "note": "A reply arrives. The loop marks A ready again."},
+ {"from": "loop", "to": "a", "label": "resume A after its await", "note": "A continues from the line after its await. B resumes the same way when reply 2 arrives. Total: about 50 ms, not 100 ms."}]}
+</script>
+</figure>
+<p>One subtle rule decides whether an <code>await</code> really pauses. <span class="ts-claim" data-claim="c7" data-src="s4">Awaiting a task hands control back to the event loop; awaiting a coroutine does not, by itself.</span> <code>await some_coroutine()</code> runs it inline, like a normal function call. Control changes hands only when something inside it truly waits.</p>
+<div class="ts-code" data-lang="python" data-title="await_order.py" data-file="await_order.py" data-verified="ran"></div>
+<p>With <code>wrap_in_task=False</code> the log is <code>a, a, a, b</code>: B waits until A's loop is done. With <code>True</code> it is <code>b, a, a, a</code>, because each <code>await</code> on a task gives the loop a turn.</p>
+<p class="ts-takeaway">The loop runs one task at a time and only switches when a task pauses at an await that really waits.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put one task's life in order.</p>
+<ol>
+<li>The loop picks the task from its ready list and runs it</li>
+<li>The task starts a network call and awaits the reply</li>
+<li>The task pauses and control returns to the loop</li>
+<li>The loop runs other ready tasks</li>
+<li>The reply arrives and the task resumes after its await</li>
+</ol>
+<p class="ts-why">A task only gives up the thread at an await that waits; it only comes back when what it waited for is done.</p>
+</div>
+</section>
+
+<section class="ts-part" id="real-concurrency" data-rung="2" data-min="4">
+<h2>Why two awaits in a row still take the sum</h2>
+<p class="ts-bridge">Last part: the loop switches tasks at real waits. Still unsolved: how do you get more than one task in the first place?</p>
+<p class="ts-problem">A new engineer converts a handler to <code>async def</code> and awaits its 1 s and 2 s calls one after the other. Latency stays at 3 s. "Async didn't help."</p>
+<p>It didn't, because there was only one task. Each <code>await</code> finished before the next line started. To overlap, each wait must be its own task, created before you wait on any of them.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c9" data-src="s1">asyncio.create_task() wraps a coroutine in a Task and schedules it to run soon.</span></li>
+<li>Create all the tasks first. Each starts running at the next await that pauses.</li>
+<li>Then wait for all of them. Total time is the slowest one, not the sum.</li>
+</ol>
+<p>The modern way to do steps 1 and 3 together is a <dfn data-def="asyncio.TaskGroup: an async with block that owns the tasks created in it and waits for all of them before the block exits.">TaskGroup</dfn>. <span class="ts-claim" data-claim="c10" data-src="s1">asyncio.TaskGroup was added in Python 3.11.</span> <span class="ts-claim" data-claim="c11" data-src="s1">Its async with block waits for every task in the group to finish.</span></p>
+<div class="ts-code" data-lang="python" data-title="sequential.py" data-file="sequential.py" data-verified="ran"></div>
+<p>The tests time both: <code>one_by_one([0.1, 0.2])</code> takes about 0.3 s, <code>together([0.1, 0.2])</code> about 0.2 s.</p>
+<p>Something has to start the loop. <span class="ts-claim" data-claim="c46" data-src="s3">asyncio.run() creates the loop, runs the coroutine, finalizes async generators, closes the default executor and closes the loop.</span> <span class="ts-claim" data-claim="c45" data-src="s3">The docs say asyncio.run() should be the program's main entry point and ideally be called only once.</span> <span class="ts-claim" data-claim="c44" data-src="s3">asyncio.run() cannot be called while another event loop is running in the same thread.</span> So calling it from inside any <code>async def</code>, such as an async FastAPI endpoint, raises RuntimeError; the tests check this. Await the coroutine instead.</p>
+<div class="ts-legacy">
+<p>Older code starts with <code>loop = asyncio.get_event_loop()</code> and <code>loop.run_until_complete(main())</code>. <span class="ts-claim" data-claim="c47" data-src="s6 s11">Since Python 3.14, asyncio.get_event_loop() raises RuntimeError when there is no current event loop.</span> <span class="ts-claim" data-claim="c48" data-src="s11">The Python 3.14 What's New says most get_event_loop() patterns can be replaced with asyncio.run().</span> Inside a coroutine, use <code>asyncio.get_running_loop()</code>.</p>
+</div>
+<p class="ts-takeaway">Concurrency comes from several tasks existing at once, all started by one asyncio.run() at the top; sequential awaits in one task add up.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c9 c7">
+<p class="q">A handler does <code>user = await get_user()</code> (100 ms) then <code>orders = await get_orders()</code> (150 ms). Neither needs the other's result. What is the smallest change that makes it about 150 ms?</p>
+<ol>
+<li data-why="Awaiting a bare coroutine runs it inline. Reordering changes nothing; the waits still add up to 250 ms.">Swap the order so the slower call starts first</li>
+<li>Start both as tasks (a TaskGroup), then read both results after the block</li>
+<li data-why="to_thread is for blocking sync code. These are already async; a thread adds cost without creating overlap by itself.">Wrap each call in asyncio.to_thread</li>
+</ol>
+<p class="ts-why">Two tasks created before either is awaited both have a query in flight at once, so the total is the slower one, about 150 ms.</p>
+</div>
+<div class="ts-explain" data-points="Calling an async function builds a coroutine object; await runs it|The event loop runs one task at a time and switches only at an await that really waits|Awaiting a coroutine directly runs it inline; only separate tasks overlap|Create all tasks first (TaskGroup), then wait: total time is the slowest, not the sum">
+<p class="q">Explain to a teammate why converting a handler to async def did not make it faster, and what would.</p>
+<div class="ts-model"><p>async def only changes what calling the function returns: a coroutine object that runs when awaited. The event loop runs one task at a time and switches only when a task pauses at a real wait. Awaiting two coroutines one after another keeps them in one task, so the waits still add up. To overlap them, create each as its own task first, for example in a TaskGroup, and then wait for all of them; the total becomes the slowest call.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="taskgroup-fan-out" data-rung="3" data-min="6">
+<h2>Calling 500 APIs at once without taking anything down</h2>
+<p class="ts-bridge">Last part: several tasks in a TaskGroup overlap their waits. Still unsolved: what if there are 500 of them, and one fails?</p>
+<p class="ts-problem">A nightly job enriches 500 merchant records from a partner API that allows 20 requests at a time. Fire all 500 at once and you get HTTP 429s, a pool of 500 open sockets, and one bad record that should stop the batch.</p>
+<ol class="ts-steps">
+<li>A <dfn data-def="asyncio.Semaphore: a counter of free slots. Entering takes a slot, leaving returns it; when none are free, the task waits.">semaphore</dfn> caps how many requests are in flight. <span class="ts-claim" data-claim="c14" data-src="s10">An asyncio.Semaphore keeps a counter; acquire() waits while the counter is zero, until another task calls release().</span></li>
+<li><span class="ts-claim" data-claim="c15" data-src="s10">The preferred way to use a Semaphore is an async with statement.</span> The slot is returned even if the request raises.</li>
+<li>A TaskGroup owns all 500 tasks. <span class="ts-claim" data-claim="c12" data-src="s1">The first time a task in the group fails with an exception other than CancelledError, the group cancels the remaining tasks.</span></li>
+<li><span class="ts-claim" data-claim="c13" data-src="s1">After all tasks finish, the failures are combined into an ExceptionGroup (or BaseExceptionGroup) and raised.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="fan_out.py" data-file="fan_out.py" data-verified="ran"></div>
+<p>What the tests prove: with <code>limit=10</code>, at most 10 requests are ever in flight; 50 calls of 50 ms take about 0.25 s (5 waves); results come back in input order; and when one call fails, the in-flight ones are cancelled and none completes.</p>
+<p>Catch the group with <code>except*</code>. <span class="ts-claim" data-claim="c53" data-src="s14">An except* clause matches by type against the exceptions inside the group; the unmatched ones propagate on in a new group.</span> So <code>except* ConnectionError as eg:</code> handles every connection failure and lets a <code>KeyError</code> bug keep going up.</p>
+<p>Production defaults: pick <code>limit</code> from the downstream's documented quota or connection pool size, not from your own CPU count. Share one HTTP client and its connection pool across all tasks; a new client per task defeats the cap.</p>
+<div class="ts-interview">
+<p><strong>"You need to call a partner API for 2 million rows. How do you do it with asyncio?"</strong> A strong answer does not create 2 million tasks at once. It caps in-flight work (a semaphore, or a fixed number of worker tasks reading from a queue, which Part 2 covers), sets a timeout per call, decides upfront whether one failure should stop the batch (TaskGroup) or be recorded and skipped, and makes each write idempotent so a retry is safe.</p>
+</div>
+<p class="ts-takeaway">TaskGroup for fan-out, a semaphore for the cap, and one shared client: the batch runs at the downstream's pace and fails as a unit.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c12 c13">
+<p class="q">In <code>fetch_all</code>, request #7 raises <code>ConnectionError</code> while 9 others are in flight and 40 are waiting on the semaphore. What does the caller get?</p>
+<ol>
+<li>An ExceptionGroup containing the ConnectionError, after the other tasks are cancelled</li>
+<li data-why="That is gather() with return_exceptions=True. A TaskGroup does not return partial results.">A list with 49 results and one exception in position 7</li>
+<li data-why="A TaskGroup does not raise the bare exception; it wraps failures in an ExceptionGroup.">A plain ConnectionError, while the other 49 keep running</li>
+</ol>
+<p class="ts-why">The first non-cancellation failure makes the group cancel the rest; once everything has stopped, the failures are raised together as an ExceptionGroup.</p>
+</div>
+</section>
+
+<section class="ts-part" id="timeouts" data-rung="3" data-min="5">
+<h2>Putting a deadline on anything you await</h2>
+<p class="ts-bridge">Last part: a TaskGroup with a cap. Still unsolved: a partner that accepts the connection and then never answers holds a slot forever.</p>
+<p class="ts-problem">Your recommendations call normally takes 40 ms. One day it hangs. With no deadline, every request waits on it, the semaphore fills, and your p99 goes from 120 ms to 30 s.</p>
+<ol class="ts-steps">
+<li>Wrap the await in <code>async with asyncio.timeout(seconds)</code>. <span class="ts-claim" data-claim="c18" data-src="s1">asyncio.timeout() was added in Python 3.11, and timeout contexts can be safely nested.</span></li>
+<li><span class="ts-claim" data-claim="c16" data-src="s1">asyncio.timeout() cancels the current task when the delay runs out and turns the resulting CancelledError into a TimeoutError.</span></li>
+<li><span class="ts-claim" data-claim="c17" data-src="s1">That TimeoutError can only be caught outside the async with block.</span></li>
+</ol>
+<p>Inside the block, a timeout arrives as a <dfn data-def="The exception asyncio raises inside a task at its current await when the task is cancelled. It must be allowed to propagate.">cancellation</dfn>, the same mechanism a TaskGroup uses to stop siblings. The block's exit converts it. A <code>try/except TimeoutError</code> written inside the block catches nothing; the tests confirm it.</p>
+<div class="ts-code" data-lang="python" data-title="budgets.py" data-file="budgets.py" data-verified="ran"></div>
+<p>Use two layers. A per-call budget, as above, protects you from one slow dependency. A batch deadline, as in <code>fan_out.py</code>, bounds the whole job. Because the contexts nest, the inner budget and outer deadline both apply, and whichever is shorter wins.</p>
+<p>You will also meet <code>asyncio.wait_for(aw, timeout)</code>. <span class="ts-claim" data-claim="c19" data-src="s1">asyncio.wait_for() cancels the awaitable on timeout and waits until it is actually cancelled, so the total wait can exceed the timeout.</span> If the cancelled code runs slow cleanup, your "2 second" call can take longer. <code>asyncio.timeout()</code> behaves the same way: a test with a 50 ms timeout around code whose cleanup takes 200 ms returns after about 250 ms.</p>
+<div class="ts-legacy">
+<p>Older code catches <code>asyncio.TimeoutError</code>. <span class="ts-claim" data-claim="c20" data-src="s1">Since Python 3.11, wait_for() raises the built-in TimeoutError instead of asyncio.TimeoutError.</span> <span class="ts-claim" data-claim="c56" data-src="s16">asyncio.TimeoutError is now a deprecated alias of the built-in TimeoutError.</span> Old handlers still work; catch the built-in <code>TimeoutError</code> in new code.</p>
+</div>
+<p class="ts-takeaway">Every await on something outside your process gets a deadline, and the TimeoutError is caught outside the timeout block.</p>
+<div class="ts-predict" data-claims="c16 c17">
+<p class="q">You write <code>async with asyncio.timeout(1): try: await call() except TimeoutError: return fallback</code>. The call hangs. What happens?</p>
+<div class="ts-reveal"><p>The fallback never runs. Inside the block the timeout shows up as a CancelledError, which <code>except TimeoutError</code> does not match. The block's exit then turns it into a TimeoutError that escapes to your caller. Move the <code>try</code> outside the <code>async with</code>.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="sync-code-in-async" data-rung="3" data-min="6">
+<h2>Using a library that has no async version</h2>
+<p class="ts-bridge">Last part: deadlines on every await. Still unsolved: some calls can't be awaited at all, like a sync-only SDK.</p>
+<p class="ts-problem">Your async service must call a vendor SDK that uses <code>requests</code> internally. Each call blocks for 200 ms. Five calls per request, and the whole service stalls for 1 s each time.</p>
+<ol class="ts-steps">
+<li>Move the sync call off the loop's thread. <span class="ts-claim" data-claim="c22" data-src="s1">asyncio.to_thread() runs a sync function in a separate thread and returns a coroutine you await for the result.</span></li>
+<li><span class="ts-claim" data-claim="c24" data-src="s12">to_thread() passes the call to the loop's default executor.</span> <span class="ts-claim" data-claim="c25" data-src="s6">Unless you set another, the default executor is a ThreadPoolExecutor created on first use.</span></li>
+<li>For CPU-heavy work, threads mostly don't help. <span class="ts-claim" data-claim="c23" data-src="s1">Because of the GIL, to_thread() usually helps only IO-bound functions, unless the extension module releases the GIL or the Python implementation has none.</span> <span class="ts-claim" data-claim="c27" data-src="s6">For CPU-bound work, the docs say a process pool is in general preferable.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="sync_sdk.py" data-file="sync_sdk.py" data-verified="ran"></div>
+<p>Five 200 ms calls take about 200 ms in total.</p>
+<div class="ts-trap">
+<p>That default pool is small and shared. <span class="ts-claim" data-claim="c26" data-src="s5">Since Python 3.13, a ThreadPoolExecutor with no max_workers uses at most min(32, (os.process_cpu_count() or 1) + 4) threads.</span> Where <code>os.process_cpu_count()</code> returns 4, that is 8 threads for every <code>to_thread</code> call in the process. At 100 concurrent requests each making one 200 ms SDK call, 92 wait in the pool's queue, and latency climbs while CPU looks idle. Fix: give heavy sync dependencies their own sized <code>ThreadPoolExecutor</code> and call <code>loop.run_in_executor(pool, fn)</code>, and put that queue wait under a timeout too.</p>
+<p>A timeout around <code>to_thread</code> stops your wait, not the thread. <span class="ts-claim" data-claim="c55" data-src="s5">A concurrent.futures call that is already running cannot be cancelled; cancel() returns False.</span> The tests show a timed-out <code>to_thread</code> call still finishing its write 150 ms after the caller gave up, so sync work behind a timeout must be safe to complete late.</p>
+</div>
+<div class="ts-case">
+<p>FastAPI builds this choice into its routing. <span class="ts-claim" data-claim="c28" data-src="s9">FastAPI runs endpoints declared with plain def in an external thread pool that is then awaited.</span> <span class="ts-claim" data-claim="c29" data-src="s9">FastAPI's docs say to declare an endpoint with plain def when it uses a third-party library that does not support await.</span> The trap is the mix: an <code>async def</code> endpoint that calls a sync library blocks the loop for every request.</p>
+</div>
+<div class="ts-interview">
+<p><strong>"Your async service has to call a sync-only SDK. What are your options?"</strong> A strong answer lists them in order: an async client if one exists; <code>to_thread</code> or a dedicated, sized thread pool for IO-bound sync calls; a process pool for CPU-bound work; moving the work to a background worker if it is slow. It names each one's cost.</p>
+</div>
+<p class="ts-takeaway">Sync IO goes to a thread pool you have sized, and CPU work goes to processes; a timeout stops your wait, not the thread.</p>
+<div class="ts-explain" data-points="Create tasks (TaskGroup) to overlap waits and cap them with a semaphore|Put a deadline on every external await; catch TimeoutError outside the block|Sync IO calls go to a thread pool; the default one is small and shared|CPU-bound work goes to a process pool, not threads">
+<p class="q">You are writing a new async endpoint that fans out to 30 services, one of which only has a sync SDK. Walk through how you'd write it.</p>
+<div class="ts-model"><p>I create one task per service in a TaskGroup so the calls overlap, with a semaphore if the downstreams have a concurrency limit. Each call gets its own asyncio.timeout budget, and the TaskGroup sits under an overall deadline; I catch TimeoutError outside the timeout blocks. The sync SDK call goes through to_thread, or a dedicated sized thread pool if it is called heavily, because the default pool is small and shared by the whole process. Nothing CPU-heavy runs on the loop; that would go to a process pool.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="blocking-the-loop" data-rung="4" data-min="6">
+<h2>The one slow line that freezes every request</h2>
+<p class="ts-bridge">Last part: sync calls go to threads. Still unsolved: how do you find the one you missed?</p>
+<p class="ts-problem">An async API serves 2,000 requests per second at 15 ms p50. After a release, p99 jumps to 900 ms on every endpoint, including <code>/health</code>, while CPU sits at 20%. The diff added one call to a sync PDF library in one endpoint.</p>
+<p>This is the first thing that breaks at 10× load. <span class="ts-claim" data-claim="c21" data-src="s2">The docs' own example: a CPU-heavy function that takes 1 second delays every other task and all IO by 1 second.</span> A blocking IO call does the same. While one task runs without awaiting, the loop can't answer health checks, read sockets or fire timeouts. Even your <code>asyncio.timeout</code> can't fire until the blocking call returns.</p>
+<div class="ts-code" data-lang="python" data-title="blocking.py" data-file="blocking.py" data-verified="ran"></div>
+<p>The heartbeat should tick every 10 ms. Next to <code>handler_blocking</code>, its worst delay is over 250 ms. Next to <code>handler_fixed</code>, it stays under 100 ms.</p>
+<p><strong>Common hidden blockers:</strong> <code>requests</code>, sync database drivers, <code>time.sleep</code>, reading big files, <code>json.loads</code> on a 50 MB body, bcrypt, and logging handlers. <span class="ts-claim" data-claim="c32" data-src="s2">The docs warn that network logging can block the event loop and suggest a separate thread for log handling.</span></p>
+<p><strong>How you detect it:</strong></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c30" data-src="s2">Debug mode can be turned on with PYTHONASYNCIODEBUG=1, Python Development Mode, asyncio.run(..., debug=True) or loop.set_debug().</span></li>
+<li><span class="ts-claim" data-claim="c31" data-src="s2">In debug mode, callbacks that take longer than 100 ms are logged, and loop.slow_callback_duration sets that threshold in seconds.</span> The test above finds an "Executing ... took 0.300 seconds" warning in the asyncio logger.</li>
+<li>In production, measure lag directly: a task that sleeps 100 ms in a loop and exports how late it woke up as a metric. Alert on its p99, for example above 50 ms.</li>
+</ol>
+<p><strong>The fix:</strong> an async library, <code>to_thread</code> or a sized pool for sync IO, a process pool for CPU work. For a long pure-Python loop you must keep on the loop, <span class="ts-claim" data-claim="c50" data-src="s1">asyncio.sleep() always suspends the current task, and sleep(0) is an optimized way to let other tasks run.</span> Calling it every few thousand iterations lets other tasks in.</p>
+<div class="ts-interview">
+<p><strong>"Latency is up on every endpoint of an async service, but CPU is low. What do you check?"</strong> A strong answer suspects a blocked loop first, because a problem on every endpoint points at the shared thread. It checks event-loop lag, turns on debug mode in staging to get the slow-callback log with the task name, and looks at the default thread pool's queue. It knows low CPU fits both a blocking IO call and an exhausted pool.</p>
+</div>
+<p class="ts-takeaway">One blocking call stalls every task on the loop; measure loop lag so you see it before users do.</p>
+<div class="ts-predict" data-claims="c21 c4">
+<p class="q">An endpoint has <code>async with asyncio.timeout(0.5):</code> around a sync <code>requests.get()</code> that hangs for 30 s. When does the timeout fire?</p>
+<div class="ts-reveal"><p>Not at 0.5 s. The timeout is a timer the loop runs, and the loop can't run anything until <code>requests.get()</code> returns 30 s later. If the block then exits without another await, no TimeoutError is raised at all; a test in <code>test_failures.py</code> shows exactly that. Every other request on that loop also waited 30 s.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="lost-tasks" data-rung="4" data-min="5">
+<h2>Background tasks that vanish or fail silently</h2>
+<p class="ts-bridge">Last part: a blocked loop stalls everything. Still unsolved: work that was started and then quietly lost.</p>
+<p class="ts-problem">After each payment, a handler fires <code>asyncio.create_task(update_ledger(p))</code> and returns. About 1 in 10,000 ledger updates never happens. Nothing in the error logs.</p>
+<p>Two separate problems cause this.</p>
+<ol class="ts-steps">
+<li><strong>The task can be collected.</strong> <span class="ts-claim" data-claim="c33" data-src="s1">The event loop keeps only weak references to tasks, so a task nothing else references can be garbage collected before it is done.</span></li>
+<li><strong>Its error goes nowhere.</strong> <span class="ts-claim" data-claim="c35" data-src="s1 s2">If nothing awaits a task or reads its result, its exception is never retrieved; asyncio logs "Task exception was never retrieved" when it is garbage collected.</span> That line arrives late, under the asyncio logger, often filtered out.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c34" data-src="s1">The docs' fix for fire-and-forget: keep each task in a set and remove it with add_done_callback when it finishes.</span> The version below also reads the exception in the callback, which counts as retrieving it, and logs it with the task's name right away.</p>
+<div class="ts-code" data-lang="python" data-title="background.py" data-file="background.py" data-verified="ran"></div>
+<div class="ts-trap">
+<p>Even with a strong reference, an in-process background task dies with the process. A deploy or an out-of-memory kill drops whatever is in the set. Anything that must happen, such as a ledger write, belongs in a durable queue or an outbox table, not in <code>create_task</code>. Use <code>spawn</code> for work you can afford to lose, like cache warming, and on shutdown, wait for or cancel what is in <code>_running</code>.</p>
+</div>
+<p>If the work belongs to a request or a job, prefer a TaskGroup: it holds the references, waits, and raises the errors for you.</p>
+<p class="ts-takeaway">A bare create_task can be collected and its failure goes unseen; keep a reference, log failures in a done callback, and use a durable queue for work that must happen.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c33 c35">
+<p class="q">Which change fixes both the vanishing task and the silent failure?</p>
+<ol>
+<li data-why="The local variable goes away when the handler returns, so the task is again referenced only weakly, and nobody reads its exception.">Assign the task to a local variable: <code>t = asyncio.create_task(...)</code></li>
+<li data-why="A try/except inside the coroutine helps with errors, but nothing stops the task itself from being collected.">Wrap the body of update_ledger in try/except and log</li>
+<li>Keep it in a module-level set and use a done callback that removes it and logs any exception</li>
+</ol>
+<p class="ts-why">The set holds a strong reference until the task finishes; the callback drops it and reads the exception, so failures show up immediately with the task's name.</p>
+</div>
+</section>
+
+<section class="ts-part" id="gather-leaks" data-rung="4" data-min="5">
+<h2>Why gather() keeps running after it fails</h2>
+<p class="ts-bridge">Last part: tasks with no owner get lost. Still unsolved: the older fan-out tool that half-owns its tasks.</p>
+<p class="ts-problem">A checkout calls <code>asyncio.gather(charge_card(), reserve_stock())</code>. The card charge fails and the handler returns an error. 100 ms later, the stock reservation completes anyway, for an order that doesn't exist.</p>
+<p>You will see <code>gather()</code> in most existing code. <span class="ts-claim" data-claim="c36" data-src="s1">gather() runs its awaitables concurrently and returns results in the order they were passed.</span> <span class="ts-claim" data-claim="c51" data-src="s1">If any argument to gather() is a coroutine, gather() schedules it as a Task automatically.</span> Its failure rules are the problem:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c37" data-src="s1">With the default return_exceptions=False, the first exception goes straight to the caller, and the other awaitables are not cancelled; they keep running.</span></li>
+<li><span class="ts-claim" data-claim="c38" data-src="s1">With return_exceptions=True, exceptions are returned in the result list like normal results.</span> You must check each item.</li>
+<li><span class="ts-claim" data-claim="c39" data-src="s1">If gather() itself is cancelled, all its unfinished awaitables are cancelled too.</span></li>
+</ol>
+<figure class="ts-seq" data-title="The same failure: gather() vs TaskGroup">
+<script type="application/json">
+{"actors": [
+ {"id": "h", "label": "Checkout handler"},
+ {"id": "c", "label": "charge_card", "sub": "task"},
+ {"id": "r", "label": "reserve_stock", "sub": "task"}],
+ "steps": [
+ {"from": "h", "to": "c", "label": "start", "note": "Both calls start as tasks."},
+ {"from": "h", "to": "r", "label": "start", "note": "Both are now in flight."},
+ {"from": "c", "to": "h", "label": "raises ValueError", "dashed": true, "note": "The card charge fails after 10 ms."},
+ {"over": ["h", "r"], "label": "gather(): error to handler, reserve keeps going", "note": "With gather(), the handler gets the error and returns. reserve_stock is not cancelled and writes its row 90 ms later."},
+ {"from": "h", "to": "r", "label": "TaskGroup: cancel", "dashed": true, "note": "With a TaskGroup, the failure makes the group cancel reserve_stock at its next await. The row is never written, then the error is raised as an ExceptionGroup."}]}
+</script>
+</figure>
+<div class="ts-code" data-lang="python" data-title="gather_leak.py" data-file="gather_leak.py" data-verified="ran"></div>
+<p><span class="ts-claim" data-claim="c40" data-src="s1">The docs say TaskGroup gives stronger safety guarantees than gather(): when a task fails, TaskGroup cancels the rest and gather() does not.</span> Keep <code>gather(..., return_exceptions=True)</code> for one case: you want every result, successes and failures, and no failure should stop the others.</p>
+<p class="ts-takeaway">gather() stops waiting on the first error but leaves the other tasks running; TaskGroup cancels them.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c37 c38 c40">
+<p class="q">You send a notification through 3 channels (email, SMS, push). A failure on one should not stop the others, and you need to know which failed. Which fits?</p>
+<ol>
+<li data-why="A TaskGroup cancels the other channels as soon as one fails, the opposite of what you want here.">A TaskGroup, catching the ExceptionGroup</li>
+<li>gather(..., return_exceptions=True), then check each result</li>
+<li data-why="With the default, the first failure is raised to you and you lose the results of the other two, which keep running unobserved.">gather() with the default settings, in a try/except</li>
+</ol>
+<p class="ts-why">Independent side effects where every outcome matters is the one job gather(return_exceptions=True) does well.</p>
+</div>
+</section>
+
+<section class="ts-part" id="swallowed-cancel" data-rung="4" data-min="6">
+<h2>How one broad except breaks every timeout</h2>
+<p class="ts-bridge">Last part: TaskGroup stops siblings by cancelling them. Still unsolved: what if the sibling refuses?</p>
+<p class="ts-problem">A queue poller has <code>except BaseException: log and retry</code> so it "never crashes". Its 5 s timeout never fires, deploys hang for the full grace period, and a TaskGroup around it waits forever.</p>
+<p>Timeouts and TaskGroup both stop work the same way: they cancel the task, which raises CancelledError at its current await. <span class="ts-claim" data-claim="c43" data-src="s1">TaskGroup and asyncio.timeout() are built on cancellation and can misbehave if a coroutine swallows CancelledError.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c41" data-src="s7 s1">Since Python 3.8, asyncio.CancelledError inherits from BaseException, not Exception.</span> So <code>except Exception</code> lets it pass. That is safe.</li>
+<li><code>except BaseException</code>, a bare <code>except:</code>, or <code>except asyncio.CancelledError</code> without re-raising all swallow it.</li>
+<li><span class="ts-claim" data-claim="c42" data-src="s1">The docs recommend try/finally for cleanup, and if you catch CancelledError, re-raising it once cleanup is done.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="swallow.py" data-file="swallow.py" data-verified="ran"></div>
+<p>Under a 50 ms timeout, <code>swallowing_worker(6, errors)</code> runs all 6 rounds, about 300 ms, and raises no TimeoutError at all: the block exits as if it succeeded. <code>good_worker</code> logs "closed connection" and the TimeoutError arrives on time.</p>
+<p><strong>Detecting it:</strong> grep for <code>except BaseException</code>, bare <code>except:</code> and <code>except asyncio.CancelledError</code> without a <code>raise</code>; <span class="ts-claim" data-claim="c54" data-src="s15">Ruff's rule BLE001 (blind-except) flags except BaseException and except Exception clauses, unless they re-raise or log the exception with exc_info.</span> At runtime, the symptom is shutdowns that hit the kill timeout and timeouts that never show in metrics.</p>
+<div class="ts-interview">
+<p><strong>"How does cancellation work in asyncio, and what can break it?"</strong> A strong answer: cancel() raises CancelledError at the task's next await; it is a BaseException so normal handlers skip it; timeouts and TaskGroup depend on it arriving; swallowing it silently breaks both; cleanup goes in finally; and a cancel can't interrupt sync code that never awaits. Shielding and uncancel() are Part 2.</p>
+</div>
+<p class="ts-takeaway">Never swallow CancelledError: clean up in finally and let it propagate, or timeouts and TaskGroups stop working.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c41 c43">
+<p class="q">Which handler inside a worker loop is safe under asyncio.timeout?</p>
+<ol>
+<li><code>except Exception: log.exception("poll failed")</code></li>
+<li data-why="A bare except catches BaseException, including CancelledError, so the timeout's cancel is swallowed.">A bare <code>except: log.exception("poll failed")</code></li>
+<li data-why="Catching CancelledError without re-raising swallows the cancel; the loop continues and the timeout never raises."><code>except asyncio.CancelledError: log.info("cancelled")</code> then continue the loop</li>
+</ol>
+<p class="ts-why">CancelledError is a BaseException, so except Exception lets it through and the timeout works.</p>
+</div>
+<div class="ts-explain" data-points="A blocking call stalls every task, and even timeouts can't fire until it returns|A bare create_task can be collected and its error goes unseen; keep a reference and log in a done callback|gather() leaves other tasks running after a failure; TaskGroup cancels them|Swallowing CancelledError breaks timeouts and TaskGroup; cleanup goes in finally">
+<p class="q">Name the four production failures from this rung and one detection signal for each.</p>
+<div class="ts-model"><p>A blocking call on the loop stalls every request, including health checks; loop-lag metrics and debug mode's slow-callback log find it. A fire-and-forget task can be collected or fail with no visible error; late "Task exception was never retrieved" logs are the sign, and a done callback that logs fixes it. gather() raises the first error but leaves siblings running, so side effects happen after the request failed; TaskGroup fixes it. A handler that swallows CancelledError makes timeouts never raise and shutdowns hang; a lint rule for blind excepts and shutdown timeouts in metrics reveal it.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="pick-async" data-rung="5" data-min="5">
+<h2>When asyncio is the right tool, and when it isn't</h2>
+<p class="ts-bridge">Last part: the four ways async services break. Still unsolved: when is all that worth it?</p>
+<p class="ts-problem">Your team is starting three services: an API gateway fanning out to 8 backends, a nightly job that parses 2 GB of CSV, and an admin CRUD app with 20 users. Someone proposes "async everywhere".</p>
+<p>The deciding question from Part 1 still applies: where does the time go? Waiting on the network, computing, or neither?</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Option</th><th>Pick it when</th><th>What it costs you</th></tr></thead>
+<tbody>
+<tr><td>Plain sync code</td><td>Low concurrency, simple request/response, a team new to async</td><td>One thread per in-flight request if load grows</td></tr>
+<tr><td>asyncio</td><td><span class="ts-claim" data-claim="c2" data-src="s13">The docs call asyncio often a perfect fit for IO-bound and high-level structured network code.</span> Many concurrent waits: gateways, fan-out, websockets, crawlers</td><td>Every library on the path must be async or pushed to a thread; one blocking call hurts every request; all the traps on this page</td></tr>
+<tr><td>Threads (ThreadPoolExecutor)</td><td>Blocking IO with sync libraries, moderate concurrency</td><td><span class="ts-claim" data-claim="c23" data-src="s1">Because of the GIL, to_thread() usually helps only IO-bound functions, unless the extension module releases the GIL or the Python implementation has none.</span> Memory per thread; shared-state bugs</td></tr>
+<tr><td>Processes (ProcessPoolExecutor, more workers)</td><td><span class="ts-claim" data-claim="c27" data-src="s6">For CPU-bound work, the docs say a process pool is in general preferable.</span></td><td>Arguments and results are pickled; start-up time; memory per process</td></tr>
+</tbody>
+</table></div>
+<p>Most real services mix them: an async web tier, a thread pool for the one sync SDK, and CPU-heavy work sent to a process pool or a separate worker service. Decision rules:</p>
+<ol class="ts-steps">
+<li>Mostly waiting and many at once → asyncio.</li>
+<li>Mostly waiting but your key libraries are sync-only → threads, or sync code with more workers.</li>
+<li>Mostly computing → processes. asyncio adds nothing.</li>
+<li>Low concurrency → the simplest code wins. Async has a real cost in bugs.</li>
+</ol>
+<p>For the three services: the gateway is async; the CSV job is processes; the admin app is plain sync code.</p>
+<div class="ts-interview">
+<p><strong>"Would you write this service with asyncio?"</strong> A strong answer does not say yes by default. It estimates concurrent waits (requests per second × latency per request), checks whether the database driver, HTTP client and SDKs have async versions, names the operational cost (loop-lag monitoring, a team that knows the traps), and states what it gives up either way.</p>
+</div>
+<p class="ts-takeaway">Choose by where the time goes: asyncio for many concurrent waits, threads for sync IO, processes for CPU, plain code when load is low.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c23 c27">
+<p class="q">A service resizes uploaded images with pure-Python code (400 ms of CPU each) at 50 per second, on a standard CPython build. Which change raises throughput?</p>
+<ol>
+<li data-why="asyncio overlaps waiting. Resizing is computing; one thread still does one resize at a time.">Rewrite the handler with async def</li>
+<li data-why="Pure-Python CPU work in threads is limited by the GIL, so only one thread computes at a time.">Move the resize to asyncio.to_thread</li>
+<li>Run the resize in a process pool (or more worker processes)</li>
+</ol>
+<p class="ts-why">50 × 400 ms is 20 CPU-seconds per second: you need about 20 cores of work, which means processes.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="7">
+<h2>Interview drill: three asyncio design prompts</h2>
+<p class="ts-bridge">Last part: when to pick asyncio. Still unsolved: defending it out loud, with the trade-offs.</p>
+<p class="ts-problem">You get 10 minutes per prompt. For each, commit to your answer before opening the reference.</p>
+<p>A good answer to each prompt names the concurrency model, where the limits sit, what happens when one piece fails, and what you give up.</p>
+<div class="ts-predict" data-claims="c12 c14 c16 c26">
+<p class="q"><strong>Prompt 1.</strong> A product page needs data from 6 services (price, stock, reviews, offers, delivery ETA, recommendations). p99 budget: 250 ms. Reviews and recommendations are optional. Design the handler.</p>
+<div class="ts-reveal"><p>Required calls (price, stock, offers, ETA) run as tasks in one TaskGroup under an overall timeout of about 200 ms: if one fails, the page can't render, so cancelling the rest is right. Optional calls each get their own short budget and a fallback (empty reviews), so they can never fail the page. Every downstream has a semaphore sized to its quota. Any sync SDK goes to a sized thread pool, not the small default one. Trade-off: the page sometimes renders without optional sections, in exchange for a hard latency ceiling.</p></div>
+</div>
+<div class="ts-predict" data-claims="c33 c35">
+<p class="q"><strong>Prompt 2.</strong> After an order is placed, the service must send a confirmation email and update a search index. Today it uses <code>asyncio.create_task</code> and returns 201. Emails sometimes go missing. What's wrong and what do you change?</p>
+<div class="ts-reveal"><p>Two issues. The bare tasks can be garbage collected and their exceptions are never retrieved, so failures are invisible. And even with a reference held and a done callback that logs, the work dies with the process on a deploy. Email is a must-happen side effect, so write an outbox row in the same transaction as the order and have a worker send it with retries. The index update can stay in-process with a logged fire-and-forget. Trade-off: an outbox and a worker to run, in exchange for at-least-once delivery.</p></div>
+</div>
+<div class="ts-predict" data-claims="c21 c30 c31 c41 c43 c55">
+<p class="q"><strong>Prompt 3.</strong> An async service's shutdowns take the full 30 s grace period and in-flight requests sometimes hang past their timeouts. p99 on all endpoints spikes every few minutes. How do you investigate?</p>
+<div class="ts-reveal"><p>Two suspects share one symptom: something is not giving control back. For the spikes, measure event-loop lag and run a staging instance in debug mode to log slow callbacks with task names; look for sync IO, large JSON parsing or logging handlers on the loop. For the hangs, search for handlers that swallow CancelledError (bare except, except BaseException, except CancelledError without raise); those make timeouts and shutdown cancellation silently fail. Also check the thread pools: sync calls already running in threads cannot be cancelled, so a stuck one holds up shutdown. Fix: move blocking work off the loop with its own timeouts, re-raise cancellations, clean up in finally.</p></div>
+</div>
+<p class="ts-takeaway">Every async design answer names the cap, the deadline, what happens on failure, and what blocks the loop.</p>
+<div class="ts-explain" data-points="Choose asyncio when the time is spent waiting on many concurrent calls|TaskGroup for work that fails together, per-call budgets with fallbacks for optional work|Must-happen side effects go to a durable queue, not create_task|Blocking calls and swallowed cancellation are the first things to check when an async service misbehaves">
+<p class="q">You are asked "Why did you use asyncio here and not threads?" Give a 4-sentence answer for the product-page handler in Prompt 1.</p>
+<div class="ts-model"><p>The handler spends almost all its time waiting on 6 network calls, which is the case asyncio is built for: one thread overlaps all the waits. A TaskGroup under a deadline gives me cancellation of required calls when one fails, and per-call budgets let optional calls degrade instead of failing the page. Threads would work at low load, but each in-flight call holds a thread, and a call already running in a thread can't be cancelled. The cost is that every library on the path must be async or pushed to a sized pool, and we monitor loop lag to catch blocking calls.</p></div>
+</div>
+</section>

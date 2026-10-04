@@ -1,0 +1,4344 @@
+{
+ "verified": "2026-10-02",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "PostgreSQL 18 docs: 11.1 Indexes, Introduction",
+   "url": "https://www.postgresql.org/docs/18/indexes-intro.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s2",
+   "title": "PostgreSQL 18 docs: 11.2 Index Types",
+   "url": "https://www.postgresql.org/docs/18/indexes-types.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s3",
+   "title": "PostgreSQL 18 docs: 11.3 Multicolumn Indexes",
+   "url": "https://www.postgresql.org/docs/18/indexes-multicolumn.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s4",
+   "title": "PostgreSQL 18 docs: 11.4 Indexes and ORDER BY",
+   "url": "https://www.postgresql.org/docs/18/indexes-ordering.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s5",
+   "title": "PostgreSQL 18 docs: 11.6 Unique Indexes",
+   "url": "https://www.postgresql.org/docs/18/indexes-unique.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s6",
+   "title": "PostgreSQL 18 docs: 11.7 Indexes on Expressions",
+   "url": "https://www.postgresql.org/docs/18/indexes-expressional.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s7",
+   "title": "PostgreSQL 18 docs: 11.8 Partial Indexes",
+   "url": "https://www.postgresql.org/docs/18/indexes-partial.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s8",
+   "title": "PostgreSQL 18 docs: 11.9 Index-Only Scans and Covering Indexes",
+   "url": "https://www.postgresql.org/docs/18/indexes-index-only-scans.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s9",
+   "title": "PostgreSQL 18 docs: 11.10 Operator Classes and Operator Families",
+   "url": "https://www.postgresql.org/docs/18/indexes-opclass.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s10",
+   "title": "PostgreSQL 18 docs: 11.12 Examining Index Usage",
+   "url": "https://www.postgresql.org/docs/18/indexes-examine.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s11",
+   "title": "PostgreSQL 18 docs: B-Tree Indexes (introduction and implementation)",
+   "url": "https://www.postgresql.org/docs/18/btree.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s12",
+   "title": "PostgreSQL 18 source: nbtree README",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/nbtree/README",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s13",
+   "title": "PostgreSQL 18 docs: GIN Indexes",
+   "url": "https://www.postgresql.org/docs/18/gin.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s14",
+   "title": "PostgreSQL 18 docs: 19.11 Client Connection Defaults (gin_pending_list_limit)",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-client.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s15",
+   "title": "PostgreSQL 18 docs: CREATE INDEX",
+   "url": "https://www.postgresql.org/docs/18/sql-createindex.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s16",
+   "title": "PostgreSQL 18 docs: REINDEX",
+   "url": "https://www.postgresql.org/docs/18/sql-reindex.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s17",
+   "title": "PostgreSQL 18 docs: 13.3 Explicit Locking",
+   "url": "https://www.postgresql.org/docs/18/explicit-locking.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s18",
+   "title": "PostgreSQL 18 docs: BRIN Indexes",
+   "url": "https://www.postgresql.org/docs/18/brin.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s19",
+   "title": "PostgreSQL 18 source: BRIN README",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/brin/README",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s20",
+   "title": "PostgreSQL 18 docs: Hash Indexes",
+   "url": "https://www.postgresql.org/docs/18/hash-index.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s21",
+   "title": "PostgreSQL 18 docs: 8.17 Range Types (indexing and constraints)",
+   "url": "https://www.postgresql.org/docs/18/rangetypes.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s22",
+   "title": "PostgreSQL 18 docs: CREATE TABLE (UNIQUE ... WITHOUT OVERLAPS)",
+   "url": "https://www.postgresql.org/docs/18/sql-createtable.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s23",
+   "title": "PostgreSQL 18 docs: SP-GiST Indexes",
+   "url": "https://www.postgresql.org/docs/18/spgist.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s24",
+   "title": "PostgreSQL 18 docs: 8.14 JSON Types (jsonb Indexing)",
+   "url": "https://www.postgresql.org/docs/18/datatype-json.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s25",
+   "title": "PostgreSQL 18 docs: 12.9 Preferred Index Types for Text Search",
+   "url": "https://www.postgresql.org/docs/18/textsearch-indexes.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s26",
+   "title": "PostgreSQL 18 docs: 27.2 The Cumulative Statistics System",
+   "url": "https://www.postgresql.org/docs/18/monitoring-stats.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s27",
+   "title": "PostgreSQL 18 docs: 14.1 Using EXPLAIN",
+   "url": "https://www.postgresql.org/docs/18/using-explain.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s28",
+   "title": "PostgreSQL 18 release notes",
+   "url": "https://www.postgresql.org/docs/18/release-18.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s29",
+   "title": "PostgreSQL 19 release notes (draft, unreleased version)",
+   "url": "https://www.postgresql.org/docs/19/release-19.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s30",
+   "title": "PostgreSQL 13.0 release notes",
+   "url": "https://www.postgresql.org/docs/release/13.0/",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s31",
+   "title": "PostgreSQL 15.0 release notes",
+   "url": "https://www.postgresql.org/docs/release/15.0/",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s32",
+   "title": "PostgreSQL 10.0 release notes",
+   "url": "https://www.postgresql.org/docs/release/10.0/",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s33",
+   "title": "PostgreSQL 14.4 release announcement",
+   "url": "https://www.postgresql.org/about/news/postgresql-144-released-2470/",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s34",
+   "title": "MySQL 8.4 Reference Manual: Clustered and Secondary Indexes",
+   "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html",
+   "kind": "primary",
+   "publisher": "Oracle (MySQL documentation)",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s35",
+   "title": "Uber Engineering: Why Uber Engineering Switched from Postgres to MySQL",
+   "url": "https://www.uber.com/blog/postgres-to-mysql-migration/",
+   "kind": "primary",
+   "publisher": "Uber (first-party engineering post; used only for claims about its own system)",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s36",
+   "title": "GitLab issue 336930: Updating merge request has issue with slow Gin Index updates",
+   "url": "https://gitlab.com/gitlab-org/gitlab/-/issues/336930",
+   "kind": "primary",
+   "publisher": "GitLab (first-party issue; used only for claims about its own investigation)",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s37",
+   "title": "PostgreSQL 18 docs: GiST Indexes",
+   "url": "https://www.postgresql.org/docs/18/gist.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s38",
+   "title": "PostgreSQL 18 docs: 11.5 Combining Multiple Indexes",
+   "url": "https://www.postgresql.org/docs/18/indexes-bitmap-scans.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s39",
+   "title": "PostgreSQL 18 docs: 66.7 Heap-Only Tuples (HOT)",
+   "url": "https://www.postgresql.org/docs/18/storage-hot.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s40",
+   "title": "PostgreSQL 18 docs: 66.4 Visibility Map",
+   "url": "https://www.postgresql.org/docs/18/storage-vm.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s41",
+   "title": "PostgreSQL 18 docs: 11.11 Indexes and Collations",
+   "url": "https://www.postgresql.org/docs/18/indexes-collations.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s42",
+   "title": "PostgreSQL 18 source: relcache.c, which lists the index columns that block HOT",
+   "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/utils/cache/relcache.c",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s43",
+   "title": "PostgreSQL 18 docs: 9.16 JSON Functions and Operators",
+   "url": "https://www.postgresql.org/docs/18/functions-json.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  },
+  {
+   "id": "s44",
+   "title": "PostgreSQL 18 docs: DROP INDEX",
+   "url": "https://www.postgresql.org/docs/18/sql-dropindex.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-02"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "All PostgreSQL indexes are secondary indexes: each is stored separately from the table's main data area, which PostgreSQL calls the heap.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "first paragraph (all indexes are secondary; heap)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "paragraph 1",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "first paragraph (all indexes are secondary; heap)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "With ORDER BY plus LIMIT n, an index that matches the sort order can return the first n rows directly, while a sort would have to process all the data.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "paragraph on ORDER BY with LIMIT n",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "paragraph 2",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "paragraph on ORDER BY with LIMIT n",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "PostgreSQL keeps every index synchronized with the table, which adds overhead to data changes; indexes can also prevent heap-only tuple (HOT) updates, so indexes that are seldom or never used should be removed.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "last paragraph of 11.1",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "11.1 final paragraph (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "last paragraph of 11.1",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "PostgreSQL ships B-tree, Hash, GiST, SP-GiST, GIN and BRIN index types, plus the bloom extension, and CREATE INDEX builds a B-tree unless USING names another type.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "11.2 opening paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "11.2 opening paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "11.2 opening paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "A B-tree index uses standard pages: one metapage at a fixed position at the start, then internal pages and leaf pages, and typically over 99 percent of the pages are leaves.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "The metapage records the location of the root page, and each backend caches a copy so it doesn't read the metapage on every search.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "'Other Things That Are Handy to Know' (page zero metapage, rd_amcache)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "'Other Things That Are Handy to Know' (page zero metapage, cached in rd_amcache)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh read: raw file from raw.githubusercontent.com (REL_18_STABLE), WebFetch returned 503"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "'Other Things That Are Handy to Know' (page zero metapage, rd_amcache)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "Internal pages hold entries pointing to the next level down; leaf pages hold entries pointing to table rows, and each level can be walked as a doubly-linked list of pages.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "B-tree entries are kept in ascending order with nulls last, and the table row's TID breaks ties between equal keys.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "paragraph on default ordering (TID tiebreaker)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "paragraph 3",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "paragraph on default ordering (TID tiebreaker)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "When a leaf page can't fit a new entry, it splits: some entries move to a new page and the parent gets a pointer to it, which can split the parent in turn; when the root splits, the tree gains a level.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure, second paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.4.1 B-Tree Structure, second paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "With deduplication, a group of entries with the same key is stored as the key once followed by a sorted array of TIDs, and it is on by default.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.4.3 Deduplication",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.4.3 Deduplication",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.4.3 Deduplication",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Deduplication arrived in PostgreSQL 13; an index carried over by pg_upgrade needs a REINDEX to use it.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "E.x.3.1.2 Indexes",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "WebFetch of live page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "Indexes",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "E.x.3.1.2 Indexes",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "Deduplication is never used for indexes with INCLUDE columns, nor for numeric, jsonb, float4 or float8 keys.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.4.3 Deduplication (restrictions list) and INCLUDE note",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.4.3 Deduplication restrictions",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.4.3 Deduplication (restrictions list) and INCLUDE note",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "In an ordinary index scan every row needs a fetch from the index and from the heap, and the matching rows can be anywhere in the heap, so that part is mostly random reads.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "first paragraph (random heap access)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "paragraph 1",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "first paragraph (random heap access)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "an update can be HOT only when it changes no column used by the table's indexes (summarizing indexes such as BRIN don't count) and the new version fits on the same page.",
+   "sources": [
+    "s39"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s39",
+     "locator": "conditions list",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s39",
+     "locator": "66.7 conditions list",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s39",
+     "locator": "conditions list",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "An UPDATE that can't use HOT needs a new entry in every index on the table, including indexes whose columns didn't change.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.4.2 Bottom-up Index Deletion, first paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.4.2 Bottom-up Index Deletion",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.4.2 Bottom-up Index Deletion, first paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "B-trees remove such obsolete version entries in bottom-up deletion passes, triggered when a leaf page is about to split from version churn in an index the UPDATEs don't logically modify; before PostgreSQL 14 only simpler, opportunistic deletion existed.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.4.2 Bottom-up Index Deletion (prior to PostgreSQL 14)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.4.2 Bottom-up Index Deletion (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.4.2 Bottom-up Index Deletion (prior to PostgreSQL 14)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "In MySQL's InnoDB, rows live inside the primary key index, and each secondary index record stores the primary key columns, which a lookup then uses to search the primary key index.",
+   "sources": [
+    "s34"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s34",
+     "locator": "Clustered and Secondary Indexes: How Secondary Indexes Relate to the Clustered Index",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "WebFetch of live page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s34",
+     "locator": "How Secondary Indexes Relate to the Clustered Index",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s34",
+     "locator": "Clustered and Secondary Indexes: How Secondary Indexes Relate to the Clustered Index",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "Uber's 2016 engineering post on leaving PostgreSQL (its analysis mainly based on PostgreSQL 9.2) described an update to one indexed column of a row with three indexes needing at least four physical writes: the new row version plus one entry per index.",
+   "sources": [
+    "s35"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s35",
+     "locator": "section on write amplification (al-Khwarizmi example); Postgres 9.2 mention",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "WebFetch of live page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s35",
+     "locator": "post dated July 26, 2016; 'primarily based on ... Postgres 9.2'; 'at least four physical updates' (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s35",
+     "locator": "section on write amplification (al-Khwarizmi example); Postgres 9.2 mention",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "An index-only scan is possible only when the index type supports it and the query uses only columns stored in the index.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "restrictions list",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "restrictions list",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "restrictions list",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "B-tree always supports it, GiST and SP-GiST do for some operator classes, and GIN can't, because its entries usually hold only part of each value.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "restriction 1",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "restriction 1",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "restriction 1",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Index entries carry no visibility information, so for each entry the scan checks the heap page's all-visible bit in the visibility map, and visits the heap only when that bit is not set.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "paragraph on MVCC visibility and the visibility map bit",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "paragraph on visibility map",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "paragraph on MVCC visibility and the visibility map bit",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "The visibility map is four orders of magnitude smaller than the heap and usually stays cached, so an index-only scan pays off only when a large share of the table's pages are marked all-visible.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "same paragraph and the following summary",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "paragraph on visibility map and summary",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "same paragraph and the following summary",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "EXPLAIN ANALYZE shows the heap visits of an Index Only Scan node on a Heap Fetches line.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "14.1.2 EXPLAIN ANALYZE, skip scan example output (Heap Fetches)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "14.1.2 EXPLAIN ANALYZE, skip scan example output",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "14.1.2 EXPLAIN ANALYZE, skip scan example output (Heap Fetches)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "INCLUDE adds payload columns that can't be searched on but are stored in the index, so a query needing them can still run as an index-only scan.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "INCLUDE paragraph (covering index)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "INCLUDE paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "INCLUDE paragraph (covering index)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "INCLUDE columns sit only in leaf entries, not in the upper levels used to walk the tree, and only B-tree, GiST and SP-GiST support INCLUDE.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Parameters: INCLUDE",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Parameters: INCLUDE",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Parameters: INCLUDE",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "Payload columns make the index bigger and potentially slower to search, and an entry that exceeds the index type's maximum size makes the insert fail, so add wide columns sparingly.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "paragraph after the INCLUDE example (be conservative)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "paragraph on payload columns (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "paragraph after the INCLUDE example (be conservative)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "On PostgreSQL 18, visibility map bits are set only by VACUUM or COPY ... FREEZE, and cleared by any change to the page.",
+   "sources": [
+    "s40",
+    "s29"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s40",
+     "locator": "66.4 last paragraph; release-19 General Performance (previously only VACUUM and COPY ... FREEZE)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s29",
+     "locator": "66.4 last paragraph; release-19 General Performance (previously only VACUUM and COPY ... FREEZE)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_19_STABLE doc/src/sgml/release-19.sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s40",
+     "locator": "66.4 last paragraph (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s29",
+     "locator": "General Performance: previously only VACUUM and COPY ... FREEZE",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s40",
+     "locator": "66.4 last paragraph; release-19 General Performance (previously only VACUUM and COPY ... FREEZE)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "Only B-tree, GiST, GIN and BRIN support multicolumn indexes, with up to 32 columns including INCLUDE columns.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "second paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "paragraph 2",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "second paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "In a multicolumn B-tree, equality conditions on the leading columns, plus a range condition on the first column without an equality condition, limit how much of the index is scanned; conditions on later columns are checked inside the index, saving heap visits, but may not shrink the scan.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "third paragraph (exact rule)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "paragraph 3",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "third paragraph (exact rule)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "Skip scan lets a B-tree on (x, y) serve WHERE y = 7700 by repeating the search for each value of x; the planner usually chooses it only when x has few distinct values, because with many the whole index must be read, and in most cases a sequential scan is then preferred.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "third and fourth paragraphs (skip scan, WHERE y = 7700)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "skip scan paragraph (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "third and fourth paragraphs (skip scan, WHERE y = 7700)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "Skip scan for B-tree indexes is new in PostgreSQL 18.",
+   "sources": [
+    "s28"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s28",
+     "locator": "E.x.3.1.1.2 Indexes (Allow skip scans of btree indexes)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s28",
+     "locator": "E.x Overview; Indexes: Allow skip scans of btree indexes",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s28",
+     "locator": "E.x.3.1.1.2 Indexes (Allow skip scans of btree indexes)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "EXPLAIN ANALYZE prints an Index Searches line on index scan nodes with the total number of index searches, which is how skip scan shows up in a plan.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "14.1.2 EXPLAIN ANALYZE, Index Searches paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "14.1.2 EXPLAIN ANALYZE, Index Searches paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "14.1.2 EXPLAIN ANALYZE, Index Searches paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "The docs warn that indexes with more than three columns are unlikely to help unless the table's usage is extremely stylized.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "last paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "final paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "last paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "PostgreSQL can also combine separate indexes by building an in-memory bitmap of matching rows from each and ANDing or ORing them, though this loses index order, so an ORDER BY then needs a sort.",
+   "sources": [
+    "s38"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s38",
+     "locator": "second and third paragraphs",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s38",
+     "locator": "11.5 paragraphs 2-3",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s38",
+     "locator": "second and third paragraphs",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "A partial index holds entries only for rows that satisfy its WHERE predicate, which makes it smaller and means many updates don't need to touch it.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "first two paragraphs",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "opening paragraphs",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "first two paragraphs",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "The planner uses a partial index only if it can prove, at planning time, that the query's WHERE condition implies the index predicate; beyond simple inequalities, the predicate must match part of the query's WHERE condition exactly.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "paragraph on predicate matching",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "paragraph on predicate implication",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "paragraph on predicate matching",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "Because the match happens at planning time, a parameterized clause doesn't work with a partial index: x < $1 can't imply x < 2 for every value of the parameter.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "same paragraph (parameterized clauses)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "same paragraph, parameterized clauses",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "same paragraph (parameterized clauses)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "An expression index such as one on lower(email) serves queries that write the same expression; the expression is computed at each insert and non-HOT update, not during the search.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "paragraph on maintenance cost",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "paragraph on maintenance cost",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "paragraph on maintenance cost",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "Functions used in an index expression or partial-index predicate must be marked immutable.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Description (immutable functions)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Description",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Description (immutable functions)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "Only B-tree indexes can be unique; by default nulls count as distinct, so a unique column can hold many nulls, and NULLS NOT DISTINCT makes them equal.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "11.6 body",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "11.6 body",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "11.6 body",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "NULLS NOT DISTINCT arrived in PostgreSQL 15.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "E.x.3.1.2 Indexes (NULLS NOT DISTINCT)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "WebFetch of live page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Indexes",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "E.x.3.1.2 Indexes (NULLS NOT DISTINCT)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "A unique expression index can enforce rules a plain unique constraint can't, such as rejecting values that differ only in case.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "paragraph on UNIQUE expression index",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "paragraph after lower(col1) example",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "paragraph on UNIQUE expression index",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "A unique partial index enforces uniqueness only among the rows that satisfy its predicate.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "third use: partial unique index example",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Example 11.3 Setting up a Partial Unique Index",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "third use: partial unique index example",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "A primary key or unique constraint already creates a unique index, so a manual index on the same columns only duplicates it.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "last two paragraphs",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "11.6 body and note",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "last two paragraphs",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "A new expression index has no statistics until ANALYZE runs on the table, by hand or by autovacuum.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Notes (new expression indexes need ANALYZE)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Notes",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Notes (new expression indexes need ANALYZE)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "Many partial indexes split by a category value are not a substitute for partitioning; one index with the category column first is almost always better, because the planner must test each partial index separately.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "example 'Do Not Use Partial Indexes as a Substitute for Partitioning'",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Example 11.4 Do Not Use Partial Indexes as a Substitute for Partitioning",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "example 'Do Not Use Partial Indexes as a Substitute for Partitioning'",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "A GIN index stores each key once with a list of the rows that contain it, and one row can appear under many keys, which suits arrays, jsonb documents and text search.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "64.4.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "65.4.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "64.4.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "An operator class identifies the operators an index can use for a column, and the default class for the column's type is usually enough.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "first paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "first paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "first paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "jsonb has two GIN operator classes: the default jsonb_ops supports the key-exists operators ?, ?| and ?& as well as @>, @? and @@, while jsonb_path_ops supports only @>, @? and @@.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing, first paragraphs",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing, first paragraphs",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "A jsonb_path_ops index is usually much smaller than a jsonb_ops index on the same data and searches more precisely, because each of its entries is a hash of a value together with the keys leading to it.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing (jsonb_path_ops advantages and technical difference)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing (jsonb_path_ops advantages and technical difference)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "GIN is the preferred index type for full-text search; GiST also works there but is lossy, so false matches have to be rechecked against the table rows.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "12.9 (GIN preferred; GiST lossy)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "12.9",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "12.9 (GIN preferred; GiST lossy)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "An expression index on the part of the document you search is likely smaller and faster than a GIN index on the whole column, but serves only queries on that part.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing (expression index vs simple index)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing (expression index vs simple index)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "text_pattern_ops compares strings character by character instead of by the locale's collation rules, so a B-tree with it can serve LIKE 'abc%' when the database doesn't use the C locale; ordinary <, <=, > and >= comparisons then need a second index with the default class.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "list of built-in non-default operator classes (text_pattern_ops)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "built-in pattern_ops classes paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "list of built-in non-default operator classes (text_pattern_ops)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "A B-tree serves LIKE only when the pattern is a constant anchored at the start, such as LIKE 'foo%', never LIKE '%bar'.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "11.2.1 B-Tree",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "11.2.1 B-Tree",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "11.2.1 B-Tree",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "GiST is a balanced, tree-structured framework in which B-trees, R-trees and many other indexing schemes can be implemented.",
+   "sources": [
+    "s37"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s37",
+     "locator": "65.2.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s37",
+     "locator": "65.2.1 Introduction (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s37",
+     "locator": "65.2.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "GiST and SP-GiST indexes on range columns speed up operators such as && (overlaps), @> and <@.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "8.17.10 Indexing",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "8.17.9 Indexing",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "8.17.10 Indexing",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "With the btree_gist extension, EXCLUDE USING GIST (room WITH =, during WITH &&) rejects a booking whose time range overlaps another booking for the same room.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "8.17.11 Constraints on Ranges (btree_gist room example)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "8.17.10 Constraints on Ranges",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "8.17.11 Constraints on Ranges (btree_gist room example)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "PostgreSQL 18 adds PRIMARY KEY and UNIQUE constraints with WITHOUT OVERLAPS, which are enforced like such a GiST exclusion constraint.",
+   "sources": [
+    "s22",
+    "s28"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "UNIQUE ... WITHOUT OVERLAPS; E.x Constraints",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s28",
+     "locator": "UNIQUE ... WITHOUT OVERLAPS; E.x Constraints",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "UNIQUE / PRIMARY KEY ... WITHOUT OVERLAPS",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s28",
+     "locator": "E.x Constraints",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "UNIQUE ... WITHOUT OVERLAPS; E.x Constraints",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "SP-GiST supports non-balanced trees that repeatedly split the search space into parts that need not be of equal size, such as quad-trees, k-d trees and radix trees; its built-in text_ops class also supports the ^@ starts-with operator.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "65.3.1 Introduction and built-in operator classes table (text_ops ^@)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "65.3.1 Introduction; Table 65.2 (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "65.3.1 Introduction and built-in operator classes table (text_ops ^@)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "A BRIN index stores a summary, such as the minimum and maximum value, for each block range of physically adjacent table pages, so it suits columns whose values follow the table's physical order.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "64.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "65.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "64.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "The pages_per_range storage parameter sets the size of a block range, 128 pages unless you change it.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Index Storage Parameters: pages_per_range",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Index Storage Parameters: pages_per_range",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Index Storage Parameters: pages_per_range",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "BRIN is lossy: every row in a matching range is returned and rechecked, but the index is so small that reading it adds little to a scan.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "64.5.1 Introduction (lossy, small index)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "65.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "64.5.1 Introduction (lossy, small index)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "A hash index stores only a 4-byte hash of each value and may be much smaller than a B-tree on long values such as URLs; it supports only the = operator, on a single column, without uniqueness.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Overview, first paragraphs",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Overview (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Overview, first paragraphs",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "Smaller block ranges make a BRIN index bigger but its summaries more precise, so more pages can be skipped.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "64.5.1 Introduction, last paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "65.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "64.5.1 Introduction, last paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "Hash indexes suit unique or nearly unique data: many rows in one hash bucket create overflow pages that every lookup in that bucket must read.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Overview (overflow pages, best for unique data)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "65.6.1 Overview paragraphs 4-5",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Overview (overflow pages, best for unique data)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "PostgreSQL 10 added write-ahead logging to hash indexes, making them crash-safe and replicated, and removed the old warning against using them.",
+   "sources": [
+    "s32"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s32",
+     "locator": "E.x.3.1.2 Indexes (write-ahead logging for hash indexes)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "WebFetch of live page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s32",
+     "locator": "E.24.3.1.2 Indexes",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s32",
+     "locator": "E.x.3.1.2 Indexes (write-ahead logging for hash indexes)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "the ->> operator extracts one field of a JSON object as text.",
+   "sources": [
+    "s43"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s43",
+     "locator": "Table 9.47 json and jsonb operators (->> text)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s43",
+     "locator": "Table 9.47 json and jsonb operators",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s43",
+     "locator": "Table 9.47 json and jsonb operators (->> text)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c68",
+   "text": "A plain CREATE INDEX blocks inserts, updates and deletes on the table until the build finishes, but not reads.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, first paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, paragraph 1",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, first paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c69",
+   "text": "A plain CREATE INDEX takes a SHARE lock, while CREATE INDEX CONCURRENTLY and REINDEX CONCURRENTLY take SHARE UPDATE EXCLUSIVE, which doesn't conflict with the ROW EXCLUSIVE lock that writes take.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "13.3.1 Table-Level Locks (SHARE, SHARE UPDATE EXCLUSIVE, ROW EXCLUSIVE)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "13.3.1 lock modes SHARE, SHARE UPDATE EXCLUSIVE, ROW EXCLUSIVE; Table 13.2",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "13.3.1 Table-Level Locks (SHARE, SHARE UPDATE EXCLUSIVE, ROW EXCLUSIVE)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c70",
+   "text": "CREATE INDEX CONCURRENTLY scans the table twice and waits for existing transactions that could modify or use the index, so it does more work and takes significantly longer.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, second paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, paragraph 2",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, second paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c71",
+   "text": "CREATE INDEX CONCURRENTLY can't run inside a transaction block, and only one concurrent index build can run on a table at a time.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, last paragraphs",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, later paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, last paragraphs",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c72",
+   "text": "If it fails, for example on a deadlock or a uniqueness violation, it leaves an INVALID index that queries ignore but that still consumes update overhead; drop it and try again, or rebuild it with REINDEX INDEX CONCURRENTLY.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (failure leaves invalid index)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (failure leaves invalid index)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c73",
+   "text": "Plain REINDEX blocks writes and also takes an ACCESS EXCLUSIVE lock on the index, which blocks nearly every query on the table, because the planner tries to lock every index of the table.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Notes (locking considerations)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Notes",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Notes (locking considerations)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c74",
+   "text": "REINDEX CONCURRENTLY builds a replacement with a _ccnew suffix and swaps it in; after a failure, drop an invalid _ccnew index and retry, or drop an invalid _ccold index because the rebuild itself succeeded.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Rebuilding Indexes Concurrently (_ccnew/_ccold)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Rebuilding Indexes Concurrently",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Rebuilding Indexes Concurrently (_ccnew/_ccold)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c75",
+   "text": "pg_index.indisvalid marks whether an index is valid for queries; a concurrent rebuild flips it to true for the new index and false for the old one.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Rebuilding Indexes Concurrently, step list (indisvalid)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Rebuilding Indexes Concurrently, step 4",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Rebuilding Indexes Concurrently, step list (indisvalid)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c76",
+   "text": "For a unique index built concurrently, the constraint is enforced against other transactions from the start of the second scan, and an index left invalid by a failure in that scan keeps enforcing it.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (unique index caveat)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (unique caveat)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (unique index caveat)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c79",
+   "text": "CREATE INDEX CONCURRENTLY doesn't support partitioned tables: build each partition's index concurrently, then create the parent index non-concurrently, which is then only a metadata change.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (partitioned tables)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently, partitioned tables (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Building Indexes Concurrently (partitioned tables)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c80",
+   "text": "In PostgreSQL 14 before 14.4, CREATE INDEX CONCURRENTLY and REINDEX CONCURRENTLY could silently leave out index entries, so queries missed rows; the fix was to upgrade, then rebuild affected indexes, and pg_amcheck --heapallindexed detects the damage in B-trees.",
+   "sources": [
+    "s33"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s33",
+     "locator": "announcement body (CIC/RIC issue in 14)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "WebFetch of live page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s33",
+     "locator": "announcement body",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s33",
+     "locator": "announcement body (CIC/RIC issue in 14)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c81",
+   "text": "For non-summarizing indexes, columns used in an index's expressions, in a partial index's WHERE clause, or as INCLUDE columns also count as indexed for HOT, so changing them makes an update non-HOT.",
+   "sources": [
+    "s42"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s42",
+     "locator": "RelationGetIndexAttrBitmap: non-key columns, expressions and predicate attributes added to HOT-blocking set",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s42",
+     "locator": "RelationGetIndexAttrBitmap: amsummarizing → summarizedattrs, else hotblockingattrs; INCLUDE, expression and predicate columns added (re-read raw file after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh read: raw file from raw.githubusercontent.com (REL_18_STABLE)"
+    },
+    {
+     "pass": 3,
+     "source": "s42",
+     "locator": "RelationGetIndexAttrBitmap: non-key columns, expressions and predicate attributes added to HOT-blocking set",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c82",
+   "text": "The pg_stat_user_indexes view has one row per index, with relname, indexrelname, idx_scan (the number of index scans started) and last_idx_scan (the time of the last scan).",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "27.2.2 pg_stat_all_indexes view",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "27.2.20 pg_stat_all_indexes (browser: verbatim section text, after WebFetch returned NOT IN CONTENT)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "browser: verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "27.2.2 pg_stat_all_indexes view",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c83",
+   "text": "Statistics counters survive a clean shutdown, but all of them are reset after an unclean shutdown, a crash, a start from a base backup, or point-in-time recovery.",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "27.2.1 Statistics Collection Configuration (unclean shutdown resets)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "27.2.1",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "27.2.1 Statistics Collection Configuration (unclean shutdown resets)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c84",
+   "text": "Cumulative statistics are collected in shared memory, and a physical replica keeps its own copy of them across clean restarts.",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "27.2.1 (collected in shared memory)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "27.2.1 (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "browser: verbatim phrase check on live page"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "27.2.1 (collected in shared memory)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c85",
+   "text": "each backend running CREATE INDEX reports its progress in the pg_stat_progress_create_index view",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Notes (pg_stat_progress_create_index)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Notes (progress reporting)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Notes (pg_stat_progress_create_index)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c86",
+   "text": "a normal DROP INDEX takes an ACCESS EXCLUSIVE lock on the table, while DROP INDEX CONCURRENTLY waits for conflicting transactions instead of locking out reads and writes.",
+   "sources": [
+    "s44"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s44",
+     "locator": "Parameters: CONCURRENTLY",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s44",
+     "locator": "Parameters: CONCURRENTLY",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s44",
+     "locator": "Parameters: CONCURRENTLY",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c87",
+   "text": "Inserting one row can add many GIN entries, so GIN's fast update technique puts new entries in an unsorted pending list and moves them into the main index in bulk later.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "64.4.4.1 GIN Fast Update Technique",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "65.4.4.1 GIN Fast Update Technique",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "64.4.4.1 GIN Fast Update Technique",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c88",
+   "text": "The pending list is flushed when the table is vacuumed or autoanalyzed, when gin_clean_pending_list is called, or when the list grows past gin_pending_list_limit; that last case happens inside the statement that crossed the limit, which makes that statement much slower than the rest.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "64.4.4.1 GIN Fast Update Technique",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "65.4.4.1 GIN Fast Update Technique",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "64.4.4.1 GIN Fast Update Technique",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c89",
+   "text": "Searches must scan the pending list too, so a large list slows them significantly.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "64.4.4.1 GIN Fast Update Technique (disadvantage)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "65.4.4.1 GIN Fast Update Technique",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "64.4.4.1 GIN Fast Update Technique (disadvantage)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c90",
+   "text": "gin_pending_list_limit is 4 megabytes unless changed, and each GIN index can override it as a storage parameter.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "gin_pending_list_limit",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "gin_pending_list_limit",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "gin_pending_list_limit",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c91",
+   "text": "if steady response time matters more than update speed, turn fastupdate off; otherwise avoid foreground flushes by raising the limit or making autovacuum more aggressive, knowing a foreground flush will then take even longer.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "64.4.5 GIN Tips and Tricks; 64.4.4.1",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "65.4.4.1 and 65.4.5 GIN Tips and Tricks",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "64.4.5 GIN Tips and Tricks; 64.4.4.1",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c92",
+   "text": "Turning fastupdate off with ALTER INDEX doesn't flush entries already pending, so run VACUUM or gin_clean_pending_list afterwards.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Index Storage Parameters: fastupdate note",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Index Storage Parameters: fastupdate",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Index Storage Parameters: fastupdate note",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c93",
+   "text": "GitLab's issue 336930 investigated multi-second merge request updates and pointed to pending-list cleanup of a trigram GIN index on the description column; manual cleanups in that investigation took between 465 and 3,155 milliseconds.",
+   "sources": [
+    "s36"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s36",
+     "locator": "issue description and investigation comments",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "WebFetch of live page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s36",
+     "locator": "investigation comments (gin_clean_pending_list timings)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s36",
+     "locator": "issue description and investigation comments",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c94",
+   "text": "A hash index never shrinks on its own: emptied overflow pages are reused but not returned to the operating system, the number of buckets never goes down, and only rebuilding it, for example with REINDEX, makes it smaller.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Overview (no provision to shrink)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Overview (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Overview (no provision to shrink)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c95",
+   "text": "New block ranges at the end of the table stay unsummarized until VACUUM runs, autosummarize (off unless enabled) queues them, or brin_summarize_new_values is called.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "64.5.1.1 Index Maintenance",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "65.5.1.1 Index Maintenance",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "64.5.1.1 Index Maintenance",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c96",
+   "text": "A BRIN scan returns every page of an unsummarized range, as if it matched.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "Scanning: unsummarized ranges returned in TID bitmap",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim source file from postgres/postgres git (REL_18_STABLE)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "BRIN scans: unsummarized ranges returned in TID bitmap",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "Scanning: unsummarized ranges returned in TID bitmap",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c97",
+   "text": "autosummarize queues a summarization run for the previous block range whenever an insert is detected on the next one.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Index Storage Parameters: autosummarize",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Index Storage Parameters: autosummarize",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Index Storage Parameters: autosummarize",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c98",
+   "text": "An index supports one collation per column, so a comparison with a different COLLATE can't use it.",
+   "sources": [
+    "s41"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s41",
+     "locator": "11.11 Indexes and Collations",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s41",
+     "locator": "11.11 first paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s41",
+     "locator": "11.11 Indexes and Collations",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c99",
+   "text": "A query for a value that covers more than a few percent of the table won't use an index anyway.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "first reason for partial indexes (common values)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "paragraph on avoiding indexing common values",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "first reason for partial indexes (common values)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c100",
+   "text": "For a query that reads a large fraction of the table, an explicit sort after a sequential read is likely faster than using an index, because it reads sequentially.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "second paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "paragraph 2",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "second paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c101",
+   "text": "Without ANALYZE, the planner uses default estimates that are almost certainly inaccurate, so examining index usage before running ANALYZE is a lost cause.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "tip: always run ANALYZE first",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "tip: Always run ANALYZE first",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "tip: always run ANALYZE first",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c102",
+   "text": "Very small test tables mislead: 100 rows probably fit in one page, and no plan beats reading one page sequentially.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "tip: very small test data sets",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "tip: Use real data for experimentation",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "tip: very small test data sets",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c103",
+   "text": "turn off enable_seqscan in a session to force another plan; if the index still isn't used, there is probably a more basic reason, such as the query condition not matching the index; if it is used, either the planner was right or its cost estimates are off, so time the query with and without the index, for example with EXPLAIN ANALYZE.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "tip: enable_seqscan, EXPLAIN ANALYZE",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "tips on forcing index usage and timing with EXPLAIN ANALYZE",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "tip: enable_seqscan, EXPLAIN ANALYZE",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c104",
+   "text": "=, <, <=, >=, >, BETWEEN, IN, IS NULL, and LIKE with a constant anchored prefix (a non-C locale needs a pattern operator class)",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "11.2.1 B-Tree",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "11.2.1 B-Tree (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "11.2.1 B-Tree",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c105",
+   "text": "An entry can't exceed about one-third of a page",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "65.1.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "65.1.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "65.1.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c106",
+   "text": "Equality only, on one column, for any data type",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "65.6.1 Overview",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c107",
+   "text": "Bucket splits happen in the foreground, so it may not suit tables whose row count grows fast",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Overview (expansion in the foreground)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "65.6.1 Overview paragraph 7",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Overview (expansion in the foreground)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c108",
+   "text": "Containment and overlap on arrays, containment and key-exists on jsonb, and word matching in full-text documents",
+   "sources": [
+    "s2",
+    "s24",
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "11.2.5 GIN; 8.14.4 jsonb Indexing; 12.9",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "11.2.5 GIN; 8.14.4 jsonb Indexing; 12.9",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "11.2.5 GIN; 8.14.4 jsonb Indexing; 12.9",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "11.2.5 GIN (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "8.14.4 jsonb Indexing",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "12.9 (re-checked after rewording)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "11.2.5 GIN; 8.14.4 jsonb Indexing; 12.9",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c109",
+   "text": "No index-only scans, since entries hold only part of each value",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "restriction 1 (GIN cannot support index-only scans)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "restriction 1 (GIN)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "restriction 1 (GIN cannot support index-only scans)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c110",
+   "text": "Overlap and containment on ranges and geometry, plus nearest-neighbour ordering, depending on the operator class",
+   "sources": [
+    "s2",
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "11.2.3 GiST; 8.17.10 Indexing",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "11.2.3 GiST; 8.17.10 Indexing",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "11.2.3 GiST",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "8.17.9 Indexing",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "11.2.3 GiST; 8.17.10 Indexing",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c111",
+   "text": "A multicolumn GiST is relatively ineffective if its first column has only a few distinct values",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "multicolumn GiST paragraph",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "multicolumn GiST paragraph",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "multicolumn GiST paragraph",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c112",
+   "text": "Points, ranges, inet and text, including starts-with searches, through unbalanced partitioned trees",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "64.3.1 Introduction; built-in operator classes table",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Table 65.2 built-in SP-GiST operator classes",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "64.3.1 Introduction; built-in operator classes table",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c113",
+   "text": "Single column only: multicolumn indexes are B-tree, GiST, GIN and BRIN",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "second paragraph (only B-tree, GiST, GIN and BRIN support multicolumn)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "paragraph 2: 'only the B-tree, GiST, GIN, and BRIN index types support multiple-key-column indexes' (WebFetch said SP-GiST not named; resolved by reading the exact sentence: 'only' excludes SP-GiST)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "second paragraph (only B-tree, GiST, GIN and BRIN support multicolumn)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c114",
+   "text": "Range and equality checks through per-block-range summaries such as min and max",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "64.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "65.5.1 Introduction; 65.5.2",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "64.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c115",
+   "text": "Lossy: every row in a matching range is rechecked",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "64.5.1 Introduction (lossy)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "65.5.1 Introduction",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "64.5.1 Introduction (lossy)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  },
+  {
+   "id": "c116",
+   "text": "The draft PostgreSQL 19 release notes list table scans that can mark pages all-visible, which only VACUUM and COPY ... FREEZE could do before, and parallel autovacuum workers for a table's indexes.",
+   "sources": [
+    "s29"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s29",
+     "locator": "General Performance (table scans mark pages all-visible; parallel autovacuum)",
+     "result": "supported",
+     "at": "2026-10-02T22:30",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_19_STABLE doc/src/sgml/release-19.sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s29",
+     "locator": "Overview; General Performance (release date 2026-??-??, as of 2026-09-14)",
+     "result": "supported",
+     "at": "2026-10-02T23:40",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s29",
+     "locator": "General Performance (table scans mark pages all-visible; parallel autovacuum)",
+     "result": "supported",
+     "at": "2026-10-03T00:30",
+     "method": "independent reviewer agent (strict mode), fresh reads"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Parallel B-tree, GIN and BRIN builds, with parallel GIN new in PostgreSQL 18.",
+   "reason": "verified, but dropped to keep the production-builds part short"
+  },
+  {
+   "text": "Only VACUUM sets visibility map bits.",
+   "reason": "strict review: COPY ... FREEZE also sets them before PostgreSQL 19, per the PG19 release notes; the page states both"
+  },
+  {
+   "text": "A failed CREATE INDEX CONCURRENTLY always leaves an index that writes keep maintaining.",
+   "reason": "strict review: whether writes maintain it depends on which phase failed; the page follows the docs' 'still consumes update overhead' and hedges the quiz"
+  },
+  {
+   "text": "Each server counts only its own index scans in idx_scan.",
+   "reason": "the docs say statistics live in shared memory and a replica keeps its own copy, but don't state this directly; the page states the documented part and draws the conclusion as reasoning"
+  },
+  {
+   "text": "Adding INCLUDE (status) to the dashboard index costs extra HOT updates.",
+   "reason": "strict review: status already blocks HOT through the partial-index predicates in that design; the drill now says it only adds size"
+  }
+ ]
+}

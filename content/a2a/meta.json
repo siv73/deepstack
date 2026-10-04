@@ -1,0 +1,20 @@
+{
+ "slug": "a2a",
+ "title": "Agent2Agent protocol (A2A)",
+ "tldr": "How one AI agent hands a whole job to another agent it doesn't run: the Agent Card, the Task lifecycle, JSON-RPC on the wire, streaming and webhooks, auth, what breaks at scale, and where the official SDK drifts from the v1.0 spec.",
+ "category": "APIs",
+ "level": "senior backend engineer (product company)",
+ "created": "2026-09-27",
+ "prereqs": [
+  {"label": "Model Context Protocol (MCP)", "slug": "mcp"},
+  {"label": "OAuth 2.0 access tokens and scopes", "slug": "oauth"},
+  {"label": "HTTP, JSON-RPC 2.0 and Server-Sent Events"}
+ ],
+ "related": [
+  {"label": "Model Context Protocol (MCP)", "slug": "mcp", "why": "the agent-to-tool layer each A2A agent uses inside"},
+  {"label": "OAuth 2.0", "slug": "oauth", "why": "how agents get the tokens their Agent Cards ask for"},
+  {"label": "Webhooks and at-least-once delivery", "slug": "webhooks", "why": "how push notifications must be received safely"},
+  {"label": "Server-Sent Events and streaming HTTP", "slug": "sse", "why": "how SendStreamingMessage delivers task updates"},
+  {"label": "Prompt injection defences for agents", "slug": "prompt-injection", "why": "a remote agent's output is untrusted input"}
+ ]
+}

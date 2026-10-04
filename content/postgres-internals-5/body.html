@@ -1,0 +1,517 @@
+<section class="ts-part" id="why-planner" data-rung="1" data-min="4">
+<h2>One query, many ways to run it</h2>
+<p class="ts-problem">A merchant dashboard query was fast last quarter. Today it is two hundred times slower. Nobody changed the code, the index from Part 4 is still there, and the server is not busy.</p>
+<p>Think of a maps app. You ask for one destination; it knows many routes, and it picks one from its traffic estimates. When the estimates are wrong, it sends you down a jammed road, and you still arrive at the same place.</p>
+<p>A database works the same way. Your SQL says which rows you want, not how to fetch them. The destination is the query's result. Each route is a <dfn data-def="A tree of steps (scans, joins, sorts) that produces the query's result. Many plans give the same rows at very different speeds.">plan</dfn>. The traffic estimate is how many rows each step will produce. Travel time is the plan's estimated cost.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c1" data-src="s21">The parser checks the query's syntax and builds a query tree.</span></li>
+<li><span class="ts-claim" data-claim="c2" data-src="s21">The rewriter applies rules stored in the system catalogs; views work this way, with the view replaced by a query on its base tables.</span></li>
+<li><span class="ts-claim" data-claim="c3" data-src="s21 s22">The planner creates the possible paths to the same result, estimates the cost of each, and expands the cheapest into a full plan for the executor.</span> This chooser is the <dfn data-def="The part of PostgreSQL that turns a query tree into a plan by estimating the cost of each possible way to run it and keeping the cheapest.">planner</dfn>.</li>
+<li><span class="ts-claim" data-claim="c4" data-src="s23">The executor runs the plan as a demand-pull pipeline: each time a plan node is called, it delivers one more row or reports that it is done.</span></li>
+</ol>
+<figure class="ts-graph" data-title="The path of one query">
+<script type="application/json">
+{"nodes": [
+  {"id": "sql", "label": "Your SQL", "sub": "what, not how", "col": 0, "row": 1, "step": 1},
+  {"id": "parser", "label": "Parser", "sub": "syntax, query tree", "col": 0, "row": 0, "step": 1},
+  {"id": "rewriter", "label": "Rewriter", "sub": "rules, views", "col": 1, "row": 0, "step": 2},
+  {"id": "planner", "label": "Planner", "sub": "paths and costs", "col": 2, "row": 0, "step": 3},
+  {"id": "stats", "label": "Statistics", "sub": "from ANALYZE", "col": 2, "row": 1, "step": 3},
+  {"id": "executor", "label": "Executor", "sub": "runs the plan", "col": 3, "row": 0, "step": 4},
+  {"id": "rows", "label": "Rows", "sub": "to the client", "col": 3, "row": 1, "step": 4}],
+ "edges": [
+  {"from": "sql", "to": "parser", "label": "query text", "step": 1},
+  {"from": "parser", "to": "rewriter", "label": "query tree", "step": 2},
+  {"from": "rewriter", "to": "planner", "label": "rewritten tree", "step": 3},
+  {"from": "stats", "to": "planner", "label": "row estimates", "step": 3, "dashed": true},
+  {"from": "planner", "to": "executor", "label": "cheapest plan", "step": 4},
+  {"from": "executor", "to": "rows", "label": "one row at a time", "step": 4, "dashed": true}],
+ "captions": [
+  "The parser checks the text and turns it into a query tree.",
+  "The rewriter expands views and applies rules. The tree still says what, not how.",
+  "The planner lists ways to run the query and prices each one using statistics gathered earlier by ANALYZE.",
+  "The executor runs the cheapest plan. Rows are pulled up through the plan one at a time."]}
+</script>
+</figure>
+<p>The important word in step 3 is <em>estimates</em>. The planner does not run the candidates to see which is fastest. It prices them from numbers it gathered earlier. When the data grows or those numbers go stale, a different plan can start to look cheapest, and the same SQL suddenly runs a different way. Engineers call that a plan flip.</p>
+<p>This page teaches you to see which plan ran, why the planner picked it, and how to give it better numbers. Part 4 covered which indexes exist; this part covers how the planner decides whether to use them.</p>
+<p class="ts-takeaway">The planner picks the plan that looks cheapest from its estimates, so the plan can change while the SQL stays the same.</p>
+<div class="ts-order" data-claims="c1 c2 c3 c4">
+<p class="q">Put the stages a query passes through in order.</p>
+<ol><li>Parser builds a query tree</li><li>Rewriter expands views</li><li>Planner prices paths and keeps the cheapest</li><li>Executor pulls rows through the plan</li></ol>
+<p class="ts-why">Syntax first, then rules and views, then the cost-based choice, then execution. Only the planner looks at statistics.</p>
+</div>
+<div class="ts-quiz" data-answer="c" data-claims="c3">
+<p class="q">Last week a query used an index. Today, with no code or index change, it reads the whole table. Which stage made the new choice?</p>
+<ol>
+<li data-why="The parser only checks syntax and builds a tree; the same text gives the same tree.">The parser</li>
+<li data-why="The executor runs whatever plan it is handed; it doesn't choose between scans.">The executor</li>
+<li>The planner, because its cost estimates changed</li>
+</ol>
+<p class="ts-why">Choosing between paths by estimated cost is the planner's job. Same SQL plus different estimates can mean a different plan.</p>
+</div>
+<div class="ts-explain" data-points="SQL says what rows, not how to fetch them|The planner prices several possible plans and keeps the cheapest|Prices come from estimates, so changed data or statistics can change the plan">
+<p class="q">In your own words: why can the same SQL run fast one week and slowly the next, with no code change?</p>
+<div class="ts-model"><p>SQL only describes the result. The planner chooses how to produce it by listing possible plans, estimating each one's cost from statistics, and keeping the cheapest. When the table grows or the statistics change, the estimates change, and a different plan can win. The new plan can be much slower in reality if the estimates behind it are wrong.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="cost-model" data-rung="2" data-min="6">
+<h2>How the planner prices a plan</h2>
+<p class="ts-bridge">Last part: the planner keeps the cheapest of several plans. Still unsolved: cheapest in what unit, and why does the winner change?</p>
+<p class="ts-problem">A million payments sit on about sixteen thousand pages. One merchant's rows can come from reading every page in order or from jumping through an index. Which is cheaper depends on how many rows match.</p>
+<p>Think of shopping. For three items you walk straight to their aisles. For half the store, walking every aisle once in order beats zig-zagging.</p>
+<p><span class="ts-claim" data-claim="c5" data-src="s1">Costs are in arbitrary units set by the planner's cost parameters; by tradition one unit is one sequential page fetch, so seq_page_cost is 1.0 and the other parameters are set relative to it.</span> <span class="ts-claim" data-claim="c6" data-src="s7">The defaults are seq_page_cost 1.0, random_page_cost 4.0, cpu_tuple_cost 0.01, cpu_index_tuple_cost 0.005 and cpu_operator_cost 0.0025.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c7" data-src="s1 s7">A sequential scan's estimated cost is the pages read times seq_page_cost plus the rows scanned times cpu_tuple_cost, and each operator in a WHERE condition adds cpu_operator_cost for every row it checks.</span></li>
+<li><span class="ts-claim" data-claim="c8" data-src="s1">An index scan fetches table rows in index order, which makes each fetch expensive, so the planner uses it mostly when very few rows match or when an ORDER BY matches the index order.</span></li>
+<li><span class="ts-claim" data-claim="c9" data-src="s1">A bitmap scan first collects the locations of matching rows from the index, sorts them into physical order, and then reads the table pages in that order.</span></li>
+</ol>
+<p><span class="ts-claim" data-claim="c10" data-src="s1">The first cost on an EXPLAIN line is the start-up cost spent before the node can output its first row, such as the time to sort; the second is the total cost if the node runs to completion.</span> <span class="ts-claim" data-claim="c11" data-src="s1">A node's cost includes the cost of all its children, and the top node's total cost is the number the planner tries to minimize.</span></p>
+<div class="ts-code" data-lang="sql" data-title="The arithmetic behind one line" data-verified="spec" data-claims="c6 c7">
+<pre><code>EXPLAIN SELECT * FROM payments;
+-- Seq Scan on payments  (cost=0.00..26394.00 rows=1000000 width=95)
+--   16394 pages x seq_page_cost 1.0       = 16394
+-- + 1000000 rows x cpu_tuple_cost 0.01    = 10000
+--                                total    = 26394</code></pre>
+</div>
+<figure class="ts-svg" data-title="Where an index scan stops paying (toy model)">
+<svg viewBox="0 0 720 312" role="img" aria-label="Cost against the share of rows that match. The sequential scan is a flat line. The index scan line rises steeply and crosses it at under one percent of rows. With a lower random_page_cost it rises more slowly and crosses at about two and a half percent.">
+<g class="edge"><path d="M70 30 L 70 250 L 680 250"/><text x="70" y="266" text-anchor="middle">0</text><text x="222" y="266" text-anchor="middle">1%</text><text x="375" y="266" text-anchor="middle">2%</text><text x="528" y="266" text-anchor="middle">3%</text><text x="680" y="266" text-anchor="middle">4%</text><text x="375" y="304" text-anchor="middle">share of the table's rows that match</text><text x="24" y="140" text-anchor="middle" transform="rotate(-90 24 140)">estimated cost</text></g>
+<g class="edge" data-s="1"><path d="M70 144 L 680 144"/><text x="676" y="136" text-anchor="end">sequential scan: flat</text></g>
+<g class="edge" data-s="2"><path d="M70 250 L 298 30"/><text x="306" y="42">index scan, random_page_cost 4</text><path d="M180 144 L 180 250"/><circle cx="180" cy="144" r="5" class="arrowhead"/><text x="180" y="284" text-anchor="middle">crossover: under 1%</text></g>
+<g class="edge" data-s="3"><path d="M70 250 L 680 87"/><text x="676" y="78" text-anchor="end">index scan, random_page_cost 1.1</text><path d="M465 144 L 465 250"/><circle cx="465" cy="144" r="5" class="arrowhead"/><text x="465" y="284" text-anchor="middle">crossover: about 2.6%</text></g>
+</svg>
+<ol class="ts-captions">
+<li>A sequential scan reads every page whatever matches, so its cost is a flat line.</li>
+<li>In this toy model every matching row costs one random page. The line crosses the sequential scan before one row in a hundred.</li>
+<li>Make random pages cheaper and the index line rises more slowly. The crossover moves several times further right.</li>
+</ol>
+</figure>
+<p>The model below is a toy: every matching row sits on a different, uncached page. The real planner also counts caching and physical order, but the shape holds: a flat line, a steep line, and a crossover that moves with the constants.</p>
+<div class="ts-code" data-lang="python" data-title="costs.py" data-file="costs.py" data-verified="ran"></div>
+<p><span class="ts-claim" data-claim="c12" data-src="s7">The docs say random storage reads normally cost much more than four times a sequential read, and the default of 4.0 is lower because most random reads, such as index reads, are assumed to hit cache.</span> <span class="ts-claim" data-claim="c13" data-src="s7">Lowering random_page_cost relative to seq_page_cost makes the planner prefer index scans, and setting the two equal makes sense if the database is entirely cached in RAM.</span> <span class="ts-claim" data-claim="c14" data-src="s7">Only the relative values of the cost parameters matter, and the docs warn that changing them on the basis of a few experiments is very risky.</span></p>
+<p class="ts-takeaway">Costs are in page-fetch units: a sequential scan's cost barely depends on how many rows match, an index scan's grows with every row, so the row estimate decides which wins.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c13 c14">
+<p class="q">The team lowers random_page_cost from 4.0 to 1.1 on a server whose data fits in memory. What changes?</p>
+<ol>
+<li data-why="Cost settings change only the planner's arithmetic; no page is read faster.">Index reads get faster</li>
+<li>Some queries that used sequential scans now pick index or bitmap scans</li>
+<li data-why="Only relative values matter, but this change alters the ratio between random and sequential pages, so plans can change.">Nothing, because only relative values matter</li>
+</ol>
+<p class="ts-why">Lowering random_page_cost relative to seq_page_cost makes index scans look cheaper, so the crossover moves and more queries choose them. Measure the queries that flip before and after.</p>
+</div>
+</section>
+
+<section class="ts-part" id="row-estimates" data-rung="2" data-min="6">
+<h2>Where row estimates come from</h2>
+<p class="ts-bridge">Last part: the row estimate decides which scan wins. Still unsolved: how does the planner know how many rows match without reading them?</p>
+<p class="ts-problem"><code>WHERE status = 'failed'</code> on a million payments. Is that fifty rows or a hundred thousand? The answer picks the plan, and the planner must guess before reading anything.</p>
+<p><span class="ts-claim" data-claim="c15" data-src="s2">The table's row and page counts come from reltuples and relpages in pg_class, which VACUUM, ANALYZE and a few DDL commands such as CREATE INDEX update.</span> <span class="ts-claim" data-claim="c16" data-src="s5">The planner also looks up the table's current number of pages, which is cheap, and scales reltuples to match whenever that differs from relpages.</span></p>
+<p>Next it needs each condition's <dfn data-def="The fraction of a table's rows that a condition keeps. Rows estimate = table rows x selectivity.">selectivity</dfn>. <span class="ts-claim" data-claim="c17" data-src="s2">Selectivity is estimated from the pg_statistic catalog, which ANALYZE fills, and the statistics are always approximate, even right after ANALYZE.</span> <span class="ts-claim" data-claim="c18" data-src="s11">The pg_stats view shows the statistics per column: null_frac, n_distinct, most_common_vals with most_common_freqs, histogram_bounds, and correlation.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c19" data-src="s5">For col = constant, a value in the most-common-values list gets its stored frequency as the selectivity.</span></li>
+<li><span class="ts-claim" data-claim="c20" data-src="s5">For col = constant with a value not in the most-common-values list, the selectivity is an even share of what the list leaves over: one minus the listed frequencies and the null fraction, divided by the number of other distinct values.</span></li>
+<li><span class="ts-claim" data-claim="c21" data-src="s5">For a range such as col &lt; constant, the planner checks the condition directly against the most common values and adds up their frequencies; for the remaining rows it uses the histogram, whose buckets hold equal numbers of rows, counting the whole buckets below the constant plus a straight-line share of the bucket the constant falls in.</span></li>
+<li><span class="ts-claim" data-claim="c22" data-src="s5 s2">For several conditions, the planner normally assumes they are independent and multiplies their selectivities.</span></li>
+<li><span class="ts-claim" data-claim="c23" data-src="s11">A correlation near +1 or -1 makes an index scan on the column look cheaper than one near zero, because rows in value order sit close together on disk.</span></li>
+</ol>
+<p>The model below reproduces the worked examples in the PostgreSQL docs, and its tests check the same numbers the docs print.</p>
+<div class="ts-code" data-lang="python" data-title="estimates.py" data-file="estimates.py" data-verified="ran"></div>
+<p><span class="ts-claim" data-claim="c24" data-src="s12">For large tables, ANALYZE reads a random sample rather than every row, so the statistics change slightly on each run, and in rare cases a plan changes after ANALYZE even though the data didn't.</span> <span class="ts-claim" data-claim="c25" data-src="s28">ANALYZE aims for a sample of 300 rows times the largest statistics target it needs for the table.</span> <span class="ts-claim" data-claim="c26" data-src="s7 s12">default_statistics_target is 100, and the target caps both the length of the most-common-values list and the number of histogram buckets.</span> With every target at 100, that is thirty thousand sampled rows, whether the table holds a million rows or a billion.</p>
+<p class="ts-takeaway">Every row estimate is arithmetic over a sample: frequencies for common values, an even share for the rest, histogram buckets for ranges, and multiplication across conditions.</p>
+<div class="ts-predict" data-claims="c20">
+<p class="q">payments has a million rows. merchant_id has 5,000 distinct values and no nulls. Its most-common-values list holds 100 merchants whose frequencies add up to 0.30. Merchant 42 is not on the list. Commit to an estimate for <code>WHERE merchant_id = 42</code>.</p>
+<div class="ts-reveal"><p>(1 − 0.30) ÷ (5,000 − 100) ≈ 0.000143, times a million rows ≈ 143 rows. Every merchant outside the list gets the same estimate, whether it really has 3 rows or 30,000.</p></div>
+</div>
+<div class="ts-quiz" data-answer="a" data-claims="c19 c21">
+<p class="q">Which statistic does the planner use for <code>status = 'failed'</code> when status has only five values?</p>
+<ol>
+<li>The most-common-values list and its frequencies</li>
+<li data-why="The histogram serves range conditions and excludes the common values.">The histogram bounds</li>
+<li data-why="Correlation is about physical order, which affects index scan cost, not how many rows match.">The correlation</li>
+</ol>
+<p class="ts-why">With five values, all of them fit in the list, so the estimate is the stored frequency of 'failed'.</p>
+</div>
+</section>
+
+<section class="ts-part" id="join-methods" data-rung="2" data-min="6">
+<h2>Three ways to join, and who picks the order</h2>
+<p class="ts-bridge">Last part: estimates for one table. Still unsolved: what a wrong estimate does to a join.</p>
+<p class="ts-problem">Joining 50 payments to merchants and joining 5 million need different methods. Pick the one for 50 when the truth is 5 million, and the query crawls.</p>
+<p>Seating wedding guests: look up five guests one by one; for five hundred, bucket the chart by surname first; if both lists are alphabetical, walk them together.</p>
+<ol class="ts-steps">
+<li><dfn data-def="A join that runs its inner input once for every row of its outer input.">Nested loop</dfn>: <span class="ts-claim" data-claim="c27" data-src="s22">in a nested loop join, the right side is scanned once for every row of the left side, which can be a good strategy when the right side can use an index scan keyed by values from the current left row.</span></li>
+<li><dfn data-def="A join that loads one input into an in-memory hash table on the join key, then scans the other input and looks each row up.">Hash join</dfn>: <span class="ts-claim" data-claim="c28" data-src="s22">in a hash join, one side is loaded into a hash table on its join columns, then the other side is scanned and each row probes the table for matches.</span></li>
+<li><dfn data-def="A join that reads two inputs sorted on the join key side by side.">Merge join</dfn>: <span class="ts-claim" data-claim="c29" data-src="s22">in a merge join, both sides are sorted on the join key, by a sort step or by an index scan in that order, then read in parallel, so each side is scanned only once.</span></li>
+</ol>
+<figure class="ts-svg" data-title="Three join methods">
+<svg viewBox="0 0 720 230" role="img" aria-label="Three panels. Nested loop: an outer set of payments drives one index lookup per row into merchants. Hash join: merchants are loaded into a hash table once and payments probe it in one pass. Merge join: both inputs sorted by merchant are read side by side.">
+<g class="node" data-s="1"><text x="120" y="22" text-anchor="middle">Nested loop</text><rect x="20" y="36" width="200" height="46" rx="6"/><text x="120" y="56" text-anchor="middle">outer: payments</text><text class="sub" x="120" y="73" text-anchor="middle">50 rows</text><rect x="20" y="160" width="200" height="46" rx="6"/><text x="120" y="180" text-anchor="middle">inner: merchants</text><text class="sub" x="120" y="197" text-anchor="middle">index lookup</text></g>
+<g class="edge" data-s="1"><path d="M80 84 L 80 156"/><path class="arrowhead" d="M74 150 L 80 158 L 86 150 Z"/><path d="M120 84 L 120 156"/><path class="arrowhead" d="M114 150 L 120 158 L 126 150 Z"/><path d="M160 84 L 160 156"/><path class="arrowhead" d="M154 150 L 160 158 L 166 150 Z"/><rect class="lblbg" x="34" y="110" width="172" height="20"/><text x="120" y="125" text-anchor="middle">one lookup per outer row</text></g>
+<g class="node" data-s="2"><text x="360" y="22" text-anchor="middle">Hash join</text><rect x="260" y="36" width="200" height="46" rx="6"/><text x="360" y="56" text-anchor="middle">build: merchants</text><text class="sub" x="360" y="73" text-anchor="middle">hash table, built once</text><rect x="260" y="160" width="200" height="46" rx="6"/><text x="360" y="180" text-anchor="middle">probe: payments</text><text class="sub" x="360" y="197" text-anchor="middle">one pass</text></g>
+<g class="edge" data-s="2"><path d="M360 158 L 360 86"/><path class="arrowhead" d="M354 92 L 360 84 L 366 92 Z"/><rect class="lblbg" x="290" y="110" width="140" height="20"/><text x="360" y="125" text-anchor="middle">look up each row</text></g>
+<g class="node" data-s="3"><text x="600" y="22" text-anchor="middle">Merge join</text><rect x="500" y="36" width="200" height="46" rx="6"/><text x="600" y="56" text-anchor="middle">payments</text><text class="sub" x="600" y="73" text-anchor="middle">sorted by merchant</text><rect x="500" y="160" width="200" height="46" rx="6"/><text x="600" y="180" text-anchor="middle">merchants</text><text class="sub" x="600" y="197" text-anchor="middle">sorted by id</text></g>
+<g class="edge" data-s="3"><path d="M560 84 L 560 156"/><path d="M640 158 L 640 86"/><rect class="lblbg" x="525" y="110" width="150" height="20"/><text x="600" y="125" text-anchor="middle">walk both in step</text></g>
+</svg>
+<ol class="ts-captions">
+<li>Nested loop: each outer row triggers one inner lookup. Cheap for a few outer rows, ruinous for millions.</li>
+<li>Hash join: build a hash table from one side once, then stream the other side through it.</li>
+<li>Merge join: two sorted inputs are read side by side, each exactly once.</li>
+</ol>
+</figure>
+<p><span class="ts-claim" data-claim="c30" data-src="s1">A nested loop's cost is set from the outer scan's cost plus one repetition of the inner scan for each outer row, plus a little CPU time for join processing.</span> So an outer estimate that is a hundred times too low makes the inner work a hundred times larger than the planner priced. <span class="ts-claim" data-claim="c31" data-src="s7 s32">Memoize, on by default, caches the results of parameterized inner scans in a nested loop, so a repeated value whose results are still cached skips the inner scan; when the cache is full it evicts the least recently used entry rather than spilling to disk.</span></p>
+<p><span class="ts-claim" data-claim="c32" data-src="s3">All joins in the executor take two inputs, and the number of possible join orders grows exponentially with the number of tables.</span> <span class="ts-claim" data-claim="c33" data-src="s7 s3">From geqo_threshold FROM items on, 12 by default, the planner replaces its exhaustive search with a genetic search that takes less time but won't necessarily find the best plan.</span> <span class="ts-claim" data-claim="c34" data-src="s7">The planner merges a subquery into its parent only if the resulting FROM list has at most from_collapse_limit items, 8 by default, and join_collapse_limit, set the same by default, applies that rule to explicit JOINs other than FULL JOIN.</span> <span class="ts-claim" data-claim="c35" data-src="s7">Setting join_collapse_limit to 1 makes the planner join tables in the order written with explicit JOIN syntax.</span></p>
+<p>Where the comparison stops: the planner never sees the guests, only estimated counts.</p>
+<p class="ts-takeaway">Nested loops win for a few outer rows with an index on the inner side, hash joins for large unsorted inputs, merge joins for inputs already in key order, and a bad outer estimate picks the wrong one.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c27 c28 c30">
+<p class="q">The planner expects 50 outer rows and picks a nested loop with an index lookup on the inner side. The outer side really returns 500,000 rows and the inner table is small. Which join would correct estimates most likely have chosen?</p>
+<ol>
+<li data-why="The method is fine for 50 rows; the cost scales with outer rows, so 500,000 lookups is the problem, not the fix.">The same nested loop</li>
+<li>A hash join, building the small inner table once</li>
+<li data-why="A merge join needs both inputs sorted; nothing here says either is, so it would add two sorts.">A merge join, because both sides are large</li>
+</ol>
+<p class="ts-why">With 500,000 outer rows, loading the small inner table into a hash table once beats half a million index lookups.</p>
+</div>
+<div class="ts-explain" data-points="The planner prices plans from row estimates, not from running them|Selectivity comes from sampled statistics: MCV frequencies, histogram buckets, and multiplication across conditions|A low estimate on the outer side of a join can pick a nested loop that runs the inner side far more often than planned">
+<p class="q">Explain to a teammate how one wrong row estimate can turn a fast join into a slow one.</p>
+<div class="ts-model"><p>The planner picks plans by estimated cost, and the main input is how many rows each step returns. Those estimates come from sampled statistics and assume conditions are independent. If it believes the outer side returns 50 rows, a nested loop with an index lookup per row looks cheapest. If the outer side really returns 500,000 rows, the inner lookup runs 500,000 times, and a hash join would have been far cheaper.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="reading-explain" data-rung="3" data-min="6">
+<h2>Reading EXPLAIN ANALYZE without fooling yourself</h2>
+<p class="ts-bridge">Last part: a wrong outer estimate picks the wrong join. Still unsolved: how to see the estimates, and the truth, for a real query.</p>
+<p class="ts-problem">An endpoint joins payments filtered by city and state to orders. It is slow, and EXPLAIN alone looks reasonable.</p>
+<p><span class="ts-claim" data-claim="c36" data-src="s1">EXPLAIN ANALYZE executes the query and shows the true row counts and run time of each plan node next to the estimates.</span> <span class="ts-claim" data-claim="c37" data-src="s1">The thing usually most important to look for is whether the estimated row counts are reasonably close to the actual ones.</span></p>
+<div class="ts-code" data-lang="sql" data-title="A plan to read (PostgreSQL 18 format)" data-verified="spec" data-claims="c36 c38 c40 c41 c42">
+<pre><code>Nested Loop  (cost=0.42..33426.20 rows=128 width=12)
+             (actual time=0.021..85.331 rows=2500.00 loops=1)
+  Buffers: shared hit=27991 read=5903
+  -&gt;  Seq Scan on payments p  (cost=0.00..31394.00 rows=255 width=8)
+                             (actual time=0.014..76.228 rows=5000.00 loops=1)
+        Filter: ((city = 'c7') AND (state = 's0'))
+        Rows Removed by Filter: 995000
+  -&gt;  Index Scan using orders_pkey on orders o  (cost=0.42..7.97 rows=1 width=12)
+                             (actual time=0.002..0.002 rows=0.50 loops=5000)
+        Index Cond: (id = p.id)
+        Index Searches: 5000
+Planning Time: 0.371 ms
+Execution Time: 85.511 ms</code></pre>
+</div>
+<ol class="ts-steps">
+<li>Read bottom-up and find the first node where estimate and actual part ways. Here: 255 expected, 5,000 got. Everything above inherits that error.</li>
+<li><span class="ts-claim" data-claim="c38" data-src="s1">When a node runs more than once, loops is the number of executions and the actual time and rows are per-execution averages, so multiply by loops for the totals.</span> The inner index scan ran 5,000 times.</li>
+<li><span class="ts-claim" data-claim="c39" data-src="s1">Rows Removed by Filter appears when a filter condition rejected at least one scanned row.</span> Here the scan read a million rows to keep five thousand.</li>
+<li><span class="ts-claim" data-claim="c40" data-src="s10">BUFFERS counts shared blocks hit, read, dirtied and written; a hit means the block was already in cache, so no read was needed.</span> <span class="ts-claim" data-claim="c41" data-src="s10">BUFFERS counts on an upper node include those of all its children.</span></li>
+<li><span class="ts-claim" data-claim="c42" data-src="s24 s44">PostgreSQL 18 added BUFFERS output to EXPLAIN ANALYZE automatically and prints actual row counts as fractions, such as rows=0.50, while estimated rows stay whole numbers.</span> That keeps loops arithmetic honest.</li>
+</ol>
+<p>Three traps. <span class="ts-claim" data-claim="c43" data-src="s1">Because EXPLAIN ANALYZE runs the statement, an INSERT, UPDATE, DELETE or MERGE really changes data, so wrap it in BEGIN and ROLLBACK.</span> <span class="ts-claim" data-claim="c44" data-src="s10">Per-node timing reads the clock repeatedly and can slow a query significantly on some systems; TIMING OFF keeps the row counts without it.</span> <span class="ts-claim" data-claim="c45" data-src="s1">A LIMIT can stop a child node early, so actual rows below the estimate there are not an estimation error.</span></p>
+<div class="ts-code" data-lang="sql" data-title="Measuring a write safely" data-verified="spec" data-claims="c43 c46">
+<pre><code>BEGIN;
+EXPLAIN (ANALYZE, BUFFERS, SETTINGS)
+  UPDATE payments SET status = 'failed' WHERE merchant_id = 42;
+ROLLBACK;</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c46" data-src="s10">The SETTINGS option lists configuration parameters that affect planning and differ from their built-in defaults.</span> The script below automates the first step: it multiplies by loops and flags estimates off by ten times or more, plus the spills you'll meet later.</p>
+<div class="ts-code" data-lang="python" data-title="plan_lint.py" data-file="plan_lint.py" data-verified="ran"></div>
+<div class="ts-interview"><p>"This query is fast in staging and slow in production. How do you investigate?" A strong answer gets the production plan, not the staging one, with EXPLAIN (ANALYZE, BUFFERS, SETTINGS) on a replica or inside a rolled-back transaction. It compares row estimates with actuals node by node, then checks why they differ: data volume and skew, statistics freshness, and settings that SETTINGS reveals. It notes that a toy staging table can't predict the production plan.</p></div>
+<p class="ts-takeaway">Find the lowest node where estimated and actual rows diverge, multiply per-loop numbers by loops, and treat everything above that node as a consequence.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c38">
+<p class="q">A node shows <code>(actual time=0.010..0.012 rows=3.00 loops=20000)</code>. How many rows did it return in total?</p>
+<ol>
+<li data-why="Actual rows are per loop when loops is above one.">3</li>
+<li data-why="Time is per loop too, but the question is about rows.">About 0.012 ms worth</li>
+<li>60,000</li>
+</ol>
+<p class="ts-why">Rows and time are per-execution averages. Multiply by loops: 3 × 20,000 = 60,000 rows.</p>
+</div>
+</section>
+
+<section class="ts-part" id="fixing-estimates" data-rung="3" data-min="6">
+<h2>Giving the planner better numbers</h2>
+<p class="ts-bridge">Last part: find where estimated and actual rows part ways. Still unsolved: what to change.</p>
+<p class="ts-problem">A nightly job loads two million rows into events. Dashboards that read the new rows pick nested loops and time out until morning.</p>
+<p><span class="ts-claim" data-claim="c47" data-src="s4">After a significant change in a table's data distribution, including a bulk load, running ANALYZE is strongly recommended, because with missing or obsolete statistics the planner can make poor choices.</span> <span class="ts-claim" data-claim="c48" data-src="s13">Autovacuum analyzes a table once the rows inserted, updated or deleted since the last ANALYZE exceed autovacuum_analyze_threshold plus autovacuum_analyze_scale_factor times the table's row count.</span> <span class="ts-claim" data-claim="c49" data-src="s14">autovacuum_analyze_threshold defaults to 50 rows and autovacuum_analyze_scale_factor to 0.1, that is ten percent of the table.</span></p>
+<p><span class="ts-claim" data-claim="c51" data-src="s13">Autovacuum never runs ANALYZE on partitioned tables themselves, only on their partitions, so the parent's statistics need a manual ANALYZE when it is first populated and whenever its distribution changes much.</span></p>
+<p><span class="ts-claim" data-claim="c52" data-src="s12">ALTER TABLE ... ALTER COLUMN ... SET STATISTICS sets one column's target, which caps its most-common-values list and histogram buckets, and a target of zero turns statistics off for that column.</span> <span class="ts-claim" data-claim="c53" data-src="s2">A higher limit might allow more accurate estimates, particularly for irregular distributions, at the price of more space in pg_statistic and slightly more time to compute estimates.</span></p>
+<p><span class="ts-claim" data-claim="c54" data-src="s2">The planner normally assumes conditions on different columns are independent, and per-column statistics cannot capture cross-column correlation.</span> <span class="ts-claim" data-claim="c55" data-src="s2">CREATE STATISTICS only records interest in a set of columns; ANALYZE, manual or automatic, collects the data.</span> A statistics object made this way is called <dfn data-def="Statistics across a group of columns (dependencies, ndistinct or mcv), created with CREATE STATISTICS and filled by ANALYZE.">extended statistics</dfn>.</p>
+<ol class="ts-steps">
+<li><code>dependencies</code>: <span class="ts-claim" data-claim="c56" data-src="s2">functional dependencies are applied only to equality conditions comparing columns to constants and to IN lists of constants, and they assume the conditions are compatible, so a city paired with another city's zip code is estimated as if the pair were valid, although no rows match.</span></li>
+<li><code>ndistinct</code>: <span class="ts-claim" data-claim="c57" data-src="s2">n-distinct statistics improve group-count estimates for GROUP BY on several columns, and the docs advise them only for column groups actually grouped on where misestimates cause bad plans.</span></li>
+<li><code>mcv</code>: <span class="ts-claim" data-claim="c58" data-src="s6">a multivariate most-common-values list stores actual value combinations, so it can decide which combinations are compatible, and it also handles range conditions, unlike functional dependencies.</span></li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="The three levers, in the order to try them" data-verified="spec" data-claims="c47 c52 c55 c58 c59">
+<pre><code>-- 1. Fresh statistics right after the load, in the same job
+ANALYZE events;
+
+-- 2. A skewed column gets a longer list and finer histogram
+ALTER TABLE payments ALTER COLUMN merchant_id SET STATISTICS 1000;
+
+-- 3. Columns that move together
+CREATE STATISTICS payments_city_state (dependencies, mcv)
+  ON city, state FROM payments;
+ANALYZE payments;
+
+-- A big, busy table: auto-analyze after 1% changes instead of 10%
+ALTER TABLE events SET (autovacuum_analyze_scale_factor = 0.01);</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c59" data-src="s14 s42">autovacuum_analyze_scale_factor can be overridden for one table with a storage parameter of the same name.</span> Then check the estimate moved.</p>
+<div class="ts-interview"><p>"The planner estimates one row and gets fifty thousand. Walk me through it." A strong answer checks freshness first (did a load outrun autovacuum?), then conditions on related columns (extended statistics), then skew (a higher target), confirming each step against the actual count. It doesn't reach for hints or global settings first.</p></div>
+<p class="ts-takeaway">Fix estimates in order: fresh statistics, then a higher target for skewed columns, then extended statistics for columns that move together.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c57">
+<p class="q"><code>GROUP BY city, state</code> is estimated at 20,000 groups but returns 500, and the planner picks a sort-based plan sized for 20,000. Which statistics kind targets this?</p>
+<ol>
+<li data-why="Dependencies help equality conditions in WHERE, not group counts.">dependencies</li>
+<li data-why="A higher target improves single-column lists and histograms; it can't see that cities sit inside states.">A higher SET STATISTICS on city</li>
+<li>ndistinct on (city, state)</li>
+</ol>
+<p class="ts-why">The planner multiplies per-column distinct counts for a multi-column GROUP BY. ndistinct statistics record the real number of combinations.</p>
+</div>
+</section>
+
+<section class="ts-part" id="sorts-hashes-parallel" data-rung="3" data-min="6">
+<h2>Sorts, hashes and parallel workers: where memory goes</h2>
+<p class="ts-bridge">Last part: better estimates. Still unsolved: a right plan that runs out of memory.</p>
+<p class="ts-problem">A report sorts half a million rows. One setting decides whether it sorts in memory or spills to temporary files.</p>
+<p><span class="ts-claim" data-claim="c60" data-src="s8">work_mem is the base amount of memory one query operation such as a sort or hash table may use before writing to temporary disk files, and its default is 4MB.</span> <span class="ts-claim" data-claim="c61" data-src="s8">Sorts serve ORDER BY, DISTINCT and merge joins; hash tables serve hash joins, hash-based aggregation, Memoize and hashed IN subqueries.</span> <span class="ts-claim" data-claim="c62" data-src="s8">A hash table's limit is work_mem times hash_mem_multiplier, which defaults to 2.0.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c63" data-src="s1 s43">A Sort node in EXPLAIN ANALYZE reports its sort method and the memory or disk it used; methods named external sort or external merge mean the sort spilled to disk.</span></li>
+<li><span class="ts-claim" data-claim="c64" data-src="s1">A Hash node reports its buckets, batches and peak memory, and more than one batch means disk space was used as well.</span> <span class="ts-claim" data-claim="c65" data-src="s31">When the inner side doesn't fit, a hash join runs in batches written to temporary files, and the executor doubles the batch count when the hash table grows too large, unless an earlier split moved all or none of a batch's rows, after which it stops growing the count.</span></li>
+<li><span class="ts-claim" data-claim="c66" data-src="s33">Hash aggregation that exceeds its memory limit keeps updating the groups already in memory and writes rows for new groups to disk in partitions, to process in later batches.</span></li>
+<li><span class="ts-claim" data-claim="c67" data-src="s1">When the input is already sorted on a prefix of the sort keys, an Incremental Sort sorts in smaller batches, which returns rows sooner, helps LIMIT, and can lower memory use and spilling.</span></li>
+</ol>
+<div class="ts-code" data-lang="sql" data-title="Give one report more memory, not the whole server" data-verified="spec" data-claims="c60 c68">
+<pre><code>BEGIN;
+SET LOCAL work_mem = '256MB';
+SELECT merchant_id, sum(amount)
+FROM payments
+GROUP BY merchant_id
+ORDER BY 2 DESC;
+COMMIT;</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c68" data-src="s45">SET LOCAL lasts only until the current transaction ends, after which the session's setting applies again.</span></p>
+<p><span class="ts-claim" data-claim="c69" data-src="s16">A parallel plan contains a Gather or Gather Merge node; the part below it runs in background worker processes, and the leader runs that part too while collecting the workers' rows.</span> <span class="ts-claim" data-claim="c70" data-src="s8">max_parallel_workers_per_gather, 2 by default, caps the workers per Gather node, and work_mem applies to each worker separately, so a query with 4 workers may use up to 5 times the resources of a serial one.</span> <span class="ts-claim" data-claim="c71" data-src="s41">No parallel plan is made for a query that writes data or locks rows, apart from the SELECT inside commands such as CREATE TABLE AS, or for a cursor.</span></p>
+<p><span class="ts-claim" data-claim="c72" data-src="s17">Partition pruning drops partitions that cannot contain matching rows, using only the partition bounds, not indexes.</span> <span class="ts-claim" data-claim="c73" data-src="s17">Partition pruning can also run during execution for values unknown at planning time, such as prepared-statement parameters; partitions pruned at executor start-up don't appear in EXPLAIN, and a Subplans Removed line counts them.</span></p>
+<p class="ts-takeaway">work_mem is a per-operation, per-process limit: a sort or hash that outgrows it spills to disk, and every parallel worker gets its own.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c64 c65">
+<p class="q">A Hash node shows <code>Batches: 16</code> and the query is slower than expected. What does that tell you?</p>
+<ol>
+<li data-why="Buckets are slots inside the in-memory hash table; batches are the disk splits.">The hash table had 16 buckets</li>
+<li>The inner side didn't fit in hash memory, so the join ran in batches through temporary files</li>
+<li data-why="Batches are not parallel workers; Workers Launched reports those.">16 parallel workers built the hash</li>
+</ol>
+<p class="ts-why">More than one batch means the hash outgrew work_mem × hash_mem_multiplier and spilled. Either the inner side is bigger than estimated or the memory limit is too small for it.</p>
+</div>
+</section>
+
+<section class="ts-part" id="production-tooling" data-rung="3" data-min="5">
+<h2>Finding the slow queries in production</h2>
+<p class="ts-bridge">Last part: memory and parallelism. Still unsolved: in production you don't know which query to EXPLAIN.</p>
+<p class="ts-problem">p99 latency doubled after a deploy. The service runs thousands of distinct queries. You need the few that matter, and their real plans, without guessing.</p>
+<p><span class="ts-claim" data-claim="c74" data-src="s18">pg_stat_statements tracks planning and execution statistics of all SQL statements on the server; it must be loaded through shared_preload_libraries, which needs a restart, and its view is enabled per database with CREATE EXTENSION.</span> <span class="ts-claim" data-claim="c75" data-src="s18">Queries that are the same apart from literal constants are typically combined into one entry, with columns including calls, total_exec_time, mean_exec_time, rows, and shared and temp block counts.</span> <span class="ts-claim" data-claim="c76" data-src="s18">pg_stat_statements.max, 5000 by default, caps the statements tracked, and the least-executed ones are discarded beyond it.</span></p>
+<div class="ts-code" data-lang="sql" data-title="The ten statements that cost the most in total" data-verified="spec" data-claims="c75">
+<pre><code>SELECT queryid,
+       calls,
+       round(total_exec_time)              AS total_ms,
+       round(mean_exec_time::numeric, 1)   AS mean_ms,
+       temp_blks_written,
+       left(query, 60)                     AS query
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC
+LIMIT 10;</code></pre>
+</div>
+<p>Sort by total time to find where the server's time goes; sort by mean time to find individually slow statements; sort by temp blocks written to find spills. Then capture the plan. <span class="ts-claim" data-claim="c77" data-src="s19">auto_explain logs the plans of statements that run at least as long as auto_explain.log_min_duration, which is -1, meaning off, by default.</span> <span class="ts-claim" data-claim="c78" data-src="s19">With auto_explain.log_analyze on, per-node timing runs for every statement, logged or not, which can hurt performance badly; turning off auto_explain.log_timing reduces that cost.</span></p>
+<div class="ts-code" data-lang="ini" data-title="postgresql.conf: plans of slow statements, with row counts" data-verified="spec" data-claims="c74 c77 c78 c79">
+<pre><code>shared_preload_libraries = 'pg_stat_statements,auto_explain'
+auto_explain.log_min_duration = '500ms'
+auto_explain.log_analyze = on
+auto_explain.log_timing = off
+auto_explain.log_buffers = on</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c79" data-src="s19">auto_explain.log_buffers adds buffer usage to the logged plan and has no effect unless auto_explain.log_analyze is on.</span> <span class="ts-claim" data-claim="c80" data-src="s20">log_min_duration_statement logs the duration of every statement that runs at least as long as its value; -1, the default, disables it, and 0 logs every statement.</span> <span class="ts-claim" data-claim="c81" data-src="s40">track_io_timing adds I/O wait times to EXPLAIN BUFFERS output and pg_stat_statements, and it is off by default because reading the clock repeatedly may be costly on some platforms.</span></p>
+<p class="ts-takeaway">pg_stat_statements tells you which statements cost the most; auto_explain tells you which plan they ran when they were slow.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c75">
+<p class="q">Statement A: 2 million calls, mean 3 ms. Statement B: 40 calls, mean 20 s. The database CPU is saturated. Which do you look at first?</p>
+<ol>
+<li>A: about 6,000 seconds of total time against B's 800</li>
+<li data-why="B is the slowest single statement, but it accounts for less of the server's total time.">B, because 20 s is far worse</li>
+<li data-why="Calls alone ignore how long each takes; total time combines both.">Whichever has more calls, always</li>
+</ol>
+<p class="ts-why">total_exec_time = calls × mean. A costs 2,000,000 × 3 ms ≈ 6,000 s; B costs 40 × 20 s = 800 s. B still deserves a look for its users, but A is where the load is.</p>
+</div>
+<div class="ts-explain" data-points="Find candidates with pg_stat_statements sorted by total time, mean time or temp blocks|Capture the real plan with auto_explain or EXPLAIN (ANALYZE, BUFFERS)|Find the lowest node where estimated and actual rows diverge, multiplying by loops|Fix the estimate first: ANALYZE, statistics targets, extended statistics">
+<p class="q">A teammate asks how you'd find and diagnose the query behind a latency jump. Explain your process end to end.</p>
+<div class="ts-model"><p>I'd rank statements in pg_stat_statements by total time, then by mean time and temp blocks written, and compare with a snapshot from before the jump. For the top suspects I'd get the real plan, from auto_explain logs or EXPLAIN (ANALYZE, BUFFERS) on a replica. In the plan I'd find the lowest node where estimated and actual rows differ by ten times or more, remembering to multiply by loops. Then I'd fix the estimate with ANALYZE, a higher statistics target or extended statistics, and only after that look at memory, indexes or cost settings.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="plan-flips" data-rung="4" data-min="6">
+<h2>The plan that flips at ten times the data</h2>
+<p class="ts-bridge">Last part: tools that find slow statements. Now the failures they find, starting with plans that change by themselves.</p>
+<p class="ts-problem">A merchant's dashboard uses an index scan. The merchant grows tenfold in a quarter. One morning the same query reads the whole table, and its latency jumps.</p>
+<p>Go back to the crossover chart. The planner switches plans when the estimate crosses the line. That is often correct: once a merchant owns a few percent of the table, a sequential scan really is cheaper than thousands of random page reads. A flip is a bug only when the estimate behind it is wrong, or when the cost constants misdescribe your hardware.</p>
+<p>So when a plan changes, ask three questions. Did the real row count cross the crossover? Did the estimate move without the data moving? Did the constants or settings change? The first is healthy. The second and third are incidents.</p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c82" data-src="s35">Clerk's postmortem of its February 2026 outage traced it to an automatic ANALYZE whose sample recorded a column as entirely NULL when 99.9996% of its values were NULL, so the planner expected no non-null rows where over 17,000 existed.</span> <span class="ts-claim" data-claim="c83" data-src="s35">Clerk's plan flip caused an outage of about 90 minutes, and running ANALYZE again by hand restored the earlier plan.</span> <span class="ts-claim" data-claim="c84" data-src="s35">Clerk's follow-ups included alerting on query plan flips and a higher statistics target.</span></p></div>
+<p>The Clerk case shows the sampling risk from the estimates part: a rare value can be missing from the sample entirely, and one autoanalyze can move the estimate with no change in data. The fix that holds is more detail for that column, not a hint that freezes one plan.</p>
+<p><span class="ts-claim" data-claim="c50" data-src="s13">The autovacuum daemon schedules ANALYZE strictly from the number of rows inserted or updated, without knowing whether the statistics changed, and the docs note that a timestamp column whose maximum keeps growing will probably need more frequent statistics updates than one whose distribution changes slowly.</span> How you'd detect a flip: a single queryid's mean time jumps in pg_stat_statements while its call count stays flat; auto_explain shows a new node type at the bottom of the plan; and the jump lines up with an autoanalyze or a bulk load rather than a deploy.</p>
+<p><span class="ts-claim" data-claim="c85" data-src="s1 s24">Many enable_* settings only discourage a node type rather than forbid it, and PostgreSQL 18's EXPLAIN marks a disabled node that was used anyway with Disabled: true.</span> Use them in a session to compare plans, as Part 4 did, never as a server-wide fix.</p>
+<p class="ts-takeaway">A plan flip is healthy when the real row count crossed the crossover, and an incident when the estimate or the constants moved instead; the cure for the second is better statistics.</p>
+<div class="ts-predict" data-claims="c7 c8">
+<p class="q">In the toy model, the crossover is under one row in a hundred. A merchant grows from a tenth of a percent of the table to three percent. Predict the plan, and whether the change is a bug.</p>
+<div class="ts-reveal"><p>The index scan's cost grows with every matching row while the sequential scan stays flat, so past the crossover the planner should switch to a bitmap or sequential scan. That flip is correct if the estimate matches reality. Check estimated against actual rows before calling it a regression; if they agree, the fix is a better index (Part 4) or accepting the scan, not forcing the old plan.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="correlated-columns" data-rung="4" data-min="5">
+<h2>Correlated columns: the hundredfold underestimate</h2>
+<p class="ts-bridge">Last part: flips caused by stale or unlucky statistics. Still unsolved: estimates that are wrong even with perfectly fresh statistics.</p>
+<p class="ts-problem">An endpoint filters payments by city and state. The planner expects 255 rows, gets 5,000, and drives a nested loop that runs its inner scan 5,000 times.</p>
+<p>A city implies its state. The planner doesn't know that. It multiplies the city's selectivity by the state's, as if every city were equally likely in every state, and the product is far too small.</p>
+<p><span class="ts-claim" data-claim="c86" data-src="s6">In the docs' example, two columns that always hold the same value, with 100 distinct values each, are estimated at 1 row for a = 1 AND b = 1 when 100 rows match, and a dependencies statistic on the pair brings the estimate to 100.</span> <span class="ts-claim" data-claim="c87" data-src="s34">With a dependency of degree f, the planner combines the two selectivities as f times the smaller one plus (1 − f) times their product.</span> The model's <code>dependent_and_sel</code> implements that, and its tests reproduce the docs' numbers.</p>
+<p>The damage multiplies upward. The low estimate sits on the outer side of a join, so the nested loop looks cheap. At 5,000 real rows the inner index scan runs 5,000 times, which is what plan_lint flagged in the EXPLAIN part.</p>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c88" data-src="s36">GitLab's review of two October 2025 incidents describes a query joining 16 tables whose nested loop joins repeatedly read the same buffer pages, using seconds of CPU per query while one user's automated pipeline sent about 4,000 requests a minute.</span> <span class="ts-claim" data-claim="c89" data-src="s36">GitLab's listed fixes include optimizing the query to reduce join complexity and caching member role data.</span></p></div>
+<p>Detection: estimated rows far below actual on a scan with two or more conditions on related columns. Fix: <code>CREATE STATISTICS (dependencies, mcv)</code> on the pair, ANALYZE, and confirm the estimate moved. Use mcv when conditions are ranges or when impossible pairs appear in queries.</p>
+<p class="ts-takeaway">Conditions on related columns get multiplied as if independent, which can underestimate by orders of magnitude; extended statistics are the fix, and the damage shows up in the join above.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c56 c58">
+<p class="q">Columns a and b move together. The slow query uses <code>a &lt;= 49 AND b &gt; 49</code>, which matches no rows, yet the planner expects many. Which extended statistics kind fixes it?</p>
+<ol>
+<li data-why="Functional dependencies are applied only to equality conditions and IN lists of constants, not ranges.">dependencies</li>
+<li>mcv, because it stores real value combinations and handles ranges</li>
+<li data-why="ndistinct improves group counts for GROUP BY, not WHERE selectivity.">ndistinct</li>
+</ol>
+<p class="ts-why">A multivariate MCV list stores actual combinations, so it can see that no pair satisfies both ranges.</p>
+</div>
+</section>
+
+<section class="ts-part" id="generic-plan-trap" data-rung="4" data-min="6">
+<h2>The sixth execution: when a cached plan goes wrong</h2>
+<p class="ts-bridge">Last part: estimates wrong from the start. Still unsolved: fast in psql, slow from the app.</p>
+<p class="ts-problem">An endpoint turns slow for one huge merchant soon after each deploy. The same query in psql is fast.</p>
+<p>The app's driver prepares the statement and reuses it. <span class="ts-claim" data-claim="c90" data-src="s9">A prepared statement runs with either a custom plan, made for each execution using that call's parameter values, or a generic plan that is the same for every execution.</span> <span class="ts-claim" data-claim="c91" data-src="s9">Prepared statements last only for the current database session.</span></p>
+<figure class="ts-seq" data-title="How a prepared statement settles on one plan">
+<script type="application/json">
+{"actors": [
+  {"id": "app", "label": "App", "sub": "driver or ORM"},
+  {"id": "cache", "label": "Plan cache", "sub": "one session"},
+  {"id": "planner", "label": "Planner"}],
+ "steps": [
+  {"from": "app", "to": "cache", "label": "EXECUTE q(7), calls 1 to 5", "note": "The first five executions always get custom plans, each made for the value passed."},
+  {"from": "cache", "to": "planner", "label": "plan for this value", "note": "Each custom plan's estimated cost is recorded, plus a charge for the planning work."},
+  {"from": "cache", "to": "planner", "label": "call 6: build a generic plan", "note": "A generic plan is built without the values, priced for a typical one."},
+  {"from": "planner", "to": "cache", "label": "generic cost not above custom average", "dashed": true, "note": "If the generic plan's cost isn't higher than the average custom cost, it wins and later calls skip planning."},
+  {"from": "app", "to": "cache", "label": "EXECUTE q(1): the huge merchant", "note": "The generic plan, sized for an average merchant, now runs for the merchant who owns most rows."}]}
+</script>
+</figure>
+<p><span class="ts-claim" data-claim="c92" data-src="s9">For a prepared statement with parameters and plan_cache_mode set to auto, the default, the first five executions use custom plans, then a generic plan is created and used whenever its estimated cost is not much higher than the average custom-plan cost.</span> <span class="ts-claim" data-claim="c93" data-src="s27">Each custom plan's cost includes a planning charge of 1000 × cpu_operator_cost × (number of relations + 1), which the generic plan doesn't pay, and the average is updated only when a custom plan is made.</span> So once the generic plan wins, the average stops moving. <span class="ts-claim" data-claim="c111" data-src="s27">When DDL or a statistics change forces a re-plan, the recorded generic and custom costs are kept rather than reset.</span> So even after an ANALYZE, the old average decides.</p>
+<p>The generic plan is priced for a typical value, so it can look cheap yet be disastrous for the value that owns most rows. psql with literals always gets a custom plan.</p>
+<div class="ts-code" data-lang="python" data-title="plan_cache.py" data-file="plan_cache.py" data-verified="ran"></div>
+<p><span class="ts-claim" data-claim="c94" data-src="s9">EXPLAIN EXECUTE shows the plan a prepared statement uses: a generic plan contains parameter symbols such as $1, while a custom plan has the values substituted.</span> <span class="ts-claim" data-claim="c95" data-src="s9">The statement is re-planned when objects it uses change definition or their planner statistics are updated.</span> <span class="ts-claim" data-claim="c96" data-src="s7">plan_cache_mode also accepts force_custom_plan and force_generic_plan, and it is checked when a cached plan is executed, not when it is prepared.</span></p>
+<p><span class="ts-claim" data-claim="c97" data-src="s7">PL/pgSQL functions generate prepared statements implicitly.</span> <span class="ts-claim" data-claim="c98" data-src="s37">The PostgreSQL JDBC driver switches to a named server-side prepared statement once a statement has run prepareThreshold times, 5 by default.</span> Transaction poolers matter because a prepared statement lives in one session. <span class="ts-claim" data-claim="c99" data-src="s38 s39">PgBouncer has tracked protocol-level named prepared statements in transaction pooling mode since version 1.21.0, when max_prepared_statements is non-zero.</span></p>
+<div class="ts-code" data-lang="sql" data-title="See it, then fix it for one code path" data-verified="spec" data-claims="c94 c96 c68">
+<pre><code>PREPARE q(int) AS
+  SELECT count(*), sum(amount) FROM orders WHERE merchant_id = $1;
+-- run it six times, then:
+EXPLAIN EXECUTE q(1);   -- "merchant_id = $1" means generic
+
+BEGIN;
+SET LOCAL plan_cache_mode = force_custom_plan;
+EXECUTE q(1);           -- planned for merchant 1
+COMMIT;</code></pre>
+</div>
+<div class="ts-interview"><p>"A query is fast in psql and slow from the service. Same SQL, same database." A strong answer suspects the generic-plan switch, confirms it with EXPLAIN EXECUTE showing $1, and picks a fix by trade-off: force_custom_plan for that path (planning on every call), separate queries for the hot tenant, or statistics that make the generic estimate honest.</p></div>
+<p class="ts-takeaway">After five custom plans, a prepared statement can switch to one generic plan priced for a typical value; skewed values make that plan wrong, and the average that decided it stops changing.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c92 c93">
+<p class="q">The first five calls of a prepared statement happen to be for small merchants. Each custom plan costs about 80. The generic plan's cost is 690. What happens on later calls?</p>
+<ol>
+<li>Custom plans continue, because 690 is far above the average custom cost</li>
+<li data-why="The switch is not automatic after five calls; the generic plan must look no more expensive than the custom average.">The generic plan is always used from call six onward</li>
+<li data-why="force_generic_plan is a setting you choose; auto compares costs.">The statement fails over to force_generic_plan</li>
+</ol>
+<p class="ts-why">Under auto, the generic plan wins only if its estimated cost is not much higher than the average custom-plan cost. 690 against roughly 80 plus the planning charge keeps custom plans. The trap appears when one expensive custom plan inflates that average.</p>
+</div>
+<div class="ts-explain" data-points="First five executions use custom plans for their values|Then a generic plan wins if its estimated cost isn't higher than the custom average|The generic plan is priced for a typical value, so a skewed value gets the wrong plan|Confirm with EXPLAIN EXECUTE ($1 in the plan); fix with force_custom_plan for that path or better statistics">
+<p class="q">Explain why a prepared query can be fast in psql and slow in the app, and how you'd prove it.</p>
+<div class="ts-model"><p>The app's driver prepares the statement and executes it repeatedly. PostgreSQL plans the first five executions with their actual values, then builds one generic plan without values and uses it if its estimated cost is no worse than the average of the custom ones. That generic plan is sized for a typical value, so for a skewed value, like a merchant owning most rows, it can be badly wrong. psql runs the query with literals, so it always gets a custom plan. EXPLAIN EXECUTE showing $1 in the plan proves it; forcing custom plans for that code path, or fixing statistics, removes it.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="memory-blowups" data-rung="4" data-min="5">
+<h2>work_mem at ten times the connections</h2>
+<p class="ts-bridge">Last part: one cached plan for every value. Still unsolved: the memory settings that fix one query and endanger the whole server.</p>
+<p class="ts-problem">A report spills its hash join to disk. Someone raises work_mem sixty-four times over, for the whole server. During the next traffic spike the database is killed for running out of memory.</p>
+<p><span class="ts-claim" data-claim="c100" data-src="s8">A complex query may run several sorts and hashes at once, and several sessions may do so concurrently, so total memory use can be many times work_mem.</span> Parallel workers multiply it again. The model below shows how fast that grows.</p>
+<div class="ts-code" data-lang="python" data-title="memory_budget.py" data-file="memory_budget.py" data-verified="ran"></div>
+<p>Two hundred connections, one sort and two hashes each, two workers per query: the worst case is hundreds of gigabytes from one innocent-looking setting. Real queries rarely hit every limit at once, which is why the failure waits for a traffic spike.</p>
+<p>The safer levers. <span class="ts-claim" data-claim="c101" data-src="s8">The docs suggest raising hash_mem_multiplier where spilling is a regular occurrence, especially when raising work_mem alone causes memory pressure, which typically shows up as intermittent out-of-memory errors.</span> Raise work_mem per role or per transaction for the reports that need it, and cap concurrent queries with a connection pooler.</p>
+<p>Spills also hide in bitmap scans. <span class="ts-claim" data-claim="c102" data-src="s30">A bitmap index scan builds its bitmap within work_mem.</span> <span class="ts-claim" data-claim="c103" data-src="s29">When the bitmap needs more memory, some pages become lossy: only the fact that the page must be visited is kept, and every row on it is rechecked.</span> <span class="ts-claim" data-claim="c104" data-src="s44">EXPLAIN ANALYZE shows this on a Heap Blocks line, which lists exact and lossy page counts when each is non-zero.</span> <span class="ts-claim" data-claim="c105" data-src="s1 s44">Rows that a lossy check returned and the recheck rejected are counted on a Rows Removed by Index Recheck line.</span></p>
+<p>How you'd detect each one before users do. <span class="ts-claim" data-claim="c106" data-src="s20">log_temp_files logs each temporary file's name and size when it is deleted, where 0 logs all of them and -1, the default, logs none.</span> In pg_stat_statements, a rising temp_blks_written on one statement points at a spill. In plans, look for external merge sorts, hash batches above one and lossy heap blocks.</p>
+<p class="ts-takeaway">work_mem is multiplied by operations, workers and connections; raise it narrowly for the queries that spill, and watch temp files to find them.</p>
+<div class="ts-predict" data-claims="c60 c62 c70">
+<p class="q">work_mem is 64MB with the stock hash_mem_multiplier. A query runs one sort and one hash join with two parallel workers. Predict its worst-case memory, then multiply by 50 concurrent copies.</p>
+<div class="ts-reveal"><p>Per process: 64 for the sort plus 64 × 2 for the hash = 192 MB. Three processes (leader plus two workers) = 576 MB. Fifty copies ≈ 28.8 GB. Whether that is safe depends on the server's RAM and everything else running, which is why a global raise is the wrong first move.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="choosing-plans" data-rung="5" data-min="6">
+<h2>Choosing among scans and joins, and a playbook for "it got slow"</h2>
+<p class="ts-bridge">Last part: memory multiplies. Now the whole page as decisions you can defend.</p>
+<p class="ts-problem">In a design review you'll be asked why a plan is right, not only how to read it. You need a short rule per node type and a fixed order for investigating a slow query.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Plan node</th><th>Wins when</th><th>Breaks when</th></tr></thead>
+<tbody>
+<tr><td>Seq Scan</td><td>A large share of the table matches, or the table is tiny</td><td>Few rows match because the right index is missing or unusable</td></tr>
+<tr><td>Index Scan</td><td>Very few rows match, or ORDER BY ... LIMIT follows the index order</td><td>The estimate is too low and thousands of random fetches follow</td></tr>
+<tr><td>Bitmap Heap Scan</td><td>A middle share of rows, or several indexes combined with AND or OR</td><td>The bitmap outgrows work_mem and goes lossy; <span class="ts-claim" data-claim="c112" data-src="s46">in a bitmap scan, table rows are visited in physical order, so the index ordering is lost and an ORDER BY needs a separate sort</span></td></tr>
+<tr><td>Index Only Scan</td><td>Every needed column is in the index and pages are all-visible</td><td>Heap Fetches climb on recently changed pages (Part 4)</td></tr>
+<tr><td>Nested Loop</td><td>Few outer rows and an index on the inner join key</td><td>The outer estimate is far too low</td></tr>
+<tr><td>Hash Join</td><td>Large, unsorted inputs joined on equality</td><td>The hashed side outgrows hash memory and runs in batches</td></tr>
+<tr><td>Merge Join</td><td>Both inputs already sorted on the key, or needed sorted anyway</td><td>Sorting large unsorted inputs first costs more than hashing</td></tr>
+</tbody>
+</table></div>
+<p>The playbook, in order. Each step is cheaper and safer than the next.</p>
+<ol class="ts-steps">
+<li>Find it: pg_stat_statements by total time, then mean time and temp blocks.</li>
+<li>Get the real plan: auto_explain, or EXPLAIN (ANALYZE, BUFFERS, SETTINGS) with real parameter values; EXPLAIN EXECUTE if the app prepares statements.</li>
+<li>Find the lowest node where estimate and actual differ by ten times or more, after multiplying by loops.</li>
+<li>Fix the estimate: ANALYZE, a higher target, extended statistics. Then spills: work_mem for that query. Then indexes (Part 4).</li>
+<li>Only then cost constants, measured across the whole workload. Never a global enable_* switch.</li>
+</ol>
+<div class="ts-note" data-label="Coming in PostgreSQL 19 (draft)"><p><span class="ts-claim" data-claim="c107" data-src="s25">The draft PostgreSQL 19 release notes add pg_plan_advice, a module to stabilize and control planner decisions, and pg_stash_advice, which applies advice per query ID.</span> <span class="ts-claim" data-claim="c108" data-src="s26">The pg_plan_advice docs warn that overriding the planner can backfire when the data distribution changes, because advice can stop the planner from adapting.</span> <span class="ts-claim" data-claim="c109" data-src="s25">The draft PostgreSQL 19 notes also add an IO option to EXPLAIN ANALYZE for asynchronous I/O activity, Memoize cache and lookup estimates in EXPLAIN, and conversion of NOT IN to anti-joins when NULLs are not present.</span> <span class="ts-claim" data-claim="c110" data-src="s7 s25">PostgreSQL 18 enables JIT compilation by default, where the server is built with it, above a plan cost of 100000, and the draft PostgreSQL 19 notes turn JIT off by default because that cost-based activation proved unreliable.</span> This page follows PostgreSQL 18.</p></div>
+<div class="ts-note" data-label="Beyond senior"><p>Fleet-wide plan stability, such as a regression gate that compares plans of the top statements before every release, or org-wide rules for cost settings across hundreds of databases, is staff-level work. This page stops at diagnosing and defending plans for one service.</p></div>
+<p class="ts-takeaway">Read plans bottom-up, fix the first wrong estimate before anything else, and change memory, indexes and cost constants only in that order.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">A plan's lowest Seq Scan estimates 200 rows and returns 180,000; above it a Hash node shows Batches: 32. What do you fix first?</p>
+<ol>
+<li data-why="The spill is a symptom: the hash was sized for 200 rows. Raising memory treats the effect.">Raise work_mem so the hash fits</li>
+<li data-why="Cost constants describe hardware; they don't fix a thousandfold row error.">Lower random_page_cost</li>
+<li>The scan's row estimate, with ANALYZE or extended statistics</li>
+</ol>
+<p class="ts-why">The playbook fixes the lowest bad estimate first. With a correct estimate the planner may pick a different join or size the hash properly, and the spill may disappear.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="8">
+<h2>Interview drill: query plans at the senior bar</h2>
+<p class="ts-bridge">Last part: a table and a playbook. Still unsolved: defending a diagnosis under questioning, with the trade-offs said out loud.</p>
+<p class="ts-problem">Three prompts that come up in product-company rounds. For each, commit to an answer before opening the reference.</p>
+<p>For every prompt, say these four things: what evidence you'd collect, the first wrong number you'd look for, the fix, and what that fix costs.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. Slow merchant dashboard. <code>SELECT ... FROM payments p JOIN refunds r ON r.payment_id = p.id WHERE p.merchant_id = $1 AND p.created_at &gt; now() - interval '30 days'</code>. The plan: Nested Loop, outer Bitmap Heap Scan on payments estimated 40 rows, actual 120,000; inner Index Scan on refunds with loops=120000. Fast for most merchants, slow for the top ten. Diagnose and fix.</p>
+<div class="ts-reveal"><p>The lowest wrong number is the outer estimate: 40 against 120,000. It drove a nested loop with 120,000 inner lookups. Because only big merchants are slow, suspect skew plus a prepared statement: run EXPLAIN EXECUTE and look for $1. If it's generic, the plan is priced for an average merchant. Fixes, with costs: force_custom_plan for this endpoint (planning on every call, small for a two-table join); together with that, a higher statistics target on merchant_id so the top merchants are in the most-common-values list (slightly slower ANALYZE and planning); on its own it doesn't help a generic plan, which ignores the value; keep the index on (merchant_id, created_at) from Part 4. With a right estimate, the planner can choose a hash join for the big merchants and keep the nested loop for the small ones.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. Fast in staging, slow in production. The same query takes 40 ms in staging and 6 s in production. Staging has a copy of the schema with a tenth of the data, restored last month. What do you compare, and in what order?</p>
+<div class="ts-reveal"><p>Get both real plans with EXPLAIN (ANALYZE, BUFFERS, SETTINGS), production on a replica. Compare node by node: where do the plans first differ, and where do estimate and actual first diverge in production? Then the likely causes: ten times the data crossed a crossover, so a different plan is expected; staging statistics describe old data; different settings (work_mem, random_page_cost, parallel workers) appear in SETTINGS; production buffers show reads where staging shows hits because its data fits in cache. The trade-off to state: you can't make staging predictive without production-like volume and statistics, so the durable fix is checking plans of top statements against production-sized data before release.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">3. A monthly finance report scans a 2 TB events table, partitioned by month, grouping by merchant and currency. It runs for hours and fills the temp disk. Design the fix.</p>
+<div class="ts-reveal"><p>First make sure partition pruning keeps it to one month: the WHERE clause must constrain the partition key directly, and EXPLAIN should show only that month's partitions. Then the aggregation: check estimated against actual group counts; merchant and currency are correlated, so ndistinct statistics on the pair can fix the group estimate. Run it with SET LOCAL work_mem sized for this one transaction so the hash aggregate stays in memory, and let parallel workers split the scan, remembering each gets its own work_mem. ANALYZE the parent table by hand, since autovacuum doesn't. The trade-off: more memory for one session, accepted because it runs once a month, at a quiet hour, from a role that ordinary traffic doesn't use. If it still spills, pre-aggregate daily into a summary table.</p></div>
+</div>
+<div class="ts-interview"><p>"Would you pin this plan with a hint?" A strong answer prefers better statistics, because a pinned plan stays fixed while the data keeps changing. It mentions the session-level enable_* switches only for diagnosis, and the draft PostgreSQL 19 plan-advice module as a future, explicitly risky option for stabilizing a known-good plan.</p></div>
+<p class="ts-takeaway">A senior plan diagnosis names the evidence, the first wrong estimate, the fix, and what the fix costs in planning time, memory or flexibility.</p>
+<div class="ts-explain" data-points="Collect real plans from production with ANALYZE and BUFFERS|Find the first node where estimated and actual rows diverge|Fix the estimate before memory, indexes or cost constants|State what the fix costs: planning time, memory or plan flexibility">
+<p class="q">Pick one of the three prompts and give your full answer as you would in an interview, including what you'd give up.</p>
+<div class="ts-model"><p>For the dashboard: the plan's outer scan expects 40 rows and gets 120,000, so a nested loop runs 120,000 lookups. Only big merchants are slow, so I'd check for a generic plan with EXPLAIN EXECUTE. If $1 appears, I'd force custom plans for that endpoint and accept planning on every call. I'd also raise the statistics target on merchant_id so the biggest merchants get exact frequencies, which costs a little ANALYZE and planning time. Then I'd confirm the estimate matches and the planner switches to a hash join for those merchants.</p></div>
+</div>
+</section>

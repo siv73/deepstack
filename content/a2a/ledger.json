@@ -1,0 +1,3730 @@
+{
+ "verified": "2026-09-27",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "A2A Protocol Specification v1.0.1 (docs/specification.md at tag v1.0.1)",
+   "url": "https://github.com/a2aproject/A2A/blob/v1.0.1/docs/specification.md",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s2",
+   "title": "a2a.proto v1.0.1: the normative data model",
+   "url": "https://github.com/a2aproject/A2A/blob/v1.0.1/specification/a2a.proto",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s3",
+   "title": "A2A and MCP: Detailed Comparison",
+   "url": "https://a2a-protocol.org/latest/topics/a2a-and-mcp/",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s4",
+   "title": "What is A2A?",
+   "url": "https://a2a-protocol.org/latest/topics/what-is-a2a/",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s5",
+   "title": "Life of a Task",
+   "url": "https://a2a-protocol.org/latest/topics/life-of-a-task/",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s6",
+   "title": "What's New in A2A Protocol v1.0",
+   "url": "https://github.com/a2aproject/A2A/blob/v1.0.1/docs/whats-new-v1.md",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s7",
+   "title": "A2A CHANGELOG",
+   "url": "https://github.com/a2aproject/A2A/blob/main/CHANGELOG.md",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s8",
+   "title": "A2A protocol roadmap",
+   "url": "https://a2a-protocol.org/latest/roadmap/",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s9",
+   "title": "Announcing the Agent2Agent Protocol (A2A)",
+   "url": "https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/",
+   "kind": "primary",
+   "publisher": "Google",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s10",
+   "title": "Linux Foundation Launches the Agent2Agent Protocol Project",
+   "url": "https://www.linuxfoundation.org/press/linux-foundation-launches-the-agent2agent-protocol-project-to-enable-secure-intelligent-communication-between-ai-agents",
+   "kind": "primary",
+   "publisher": "Linux Foundation",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s11",
+   "title": "A2A Protocol Surpasses 150 Organizations, Lands in Major Cloud Platforms",
+   "url": "https://www.linuxfoundation.org/press/a2a-protocol-surpasses-150-organizations-lands-in-major-cloud-platforms-and-sees-enterprise-production-use-in-first-year",
+   "kind": "primary",
+   "publisher": "Linux Foundation",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s12",
+   "title": "A2A joins the Agentic AI Foundation",
+   "url": "https://aaif.io/blog/a2a-joins-aaif",
+   "kind": "primary",
+   "publisher": "Agentic AI Foundation",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s13",
+   "title": "ACP Joins Forces with A2A Under the Linux Foundation's LF AI & Data",
+   "url": "https://lfaidata.foundation/communityblog/2025/08/29/acp-joins-forces-with-a2a-under-the-linux-foundations-lf-ai-data/",
+   "kind": "primary",
+   "publisher": "LF AI & Data",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s14",
+   "title": "a2a-python README (v1.1.5)",
+   "url": "https://github.com/a2aproject/a2a-python/blob/v1.1.5/README.md",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s15",
+   "title": "a2a-python CHANGELOG (v1.1.5)",
+   "url": "https://github.com/a2aproject/a2a-python/blob/v1.1.5/CHANGELOG.md",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s16",
+   "title": "a2a-python migration guide v0.3 to v1.0",
+   "url": "https://github.com/a2aproject/a2a-python/blob/v1.1.5/docs/migrations/v1_0/README.md",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s17",
+   "title": "Amazon Bedrock AgentCore: A2A protocol contract",
+   "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a-protocol-contract.html",
+   "kind": "primary",
+   "publisher": "AWS",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s18",
+   "title": "Connect to an A2A agent endpoint from Foundry Agent Service",
+   "url": "https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/agent-to-agent",
+   "kind": "primary",
+   "publisher": "Microsoft",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s19",
+   "title": "Enterprise Implementation of A2A",
+   "url": "https://a2a-protocol.org/latest/topics/enterprise-ready/",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s21",
+   "title": "a2a-python agent_executor.py (v1.1.5)",
+   "url": "https://github.com/a2aproject/a2a-python/blob/v1.1.5/src/a2a/server/agent_execution/agent_executor.py",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s22",
+   "title": "a2a-python active_task.py (v1.1.5)",
+   "url": "https://github.com/a2aproject/a2a-python/blob/v1.1.5/src/a2a/server/agent_execution/active_task.py",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s23",
+   "title": "a2a-python default_request_handler_v2.py (v1.1.5)",
+   "url": "https://github.com/a2aproject/a2a-python/blob/v1.1.5/src/a2a/server/request_handlers/default_request_handler_v2.py",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  },
+  {
+   "id": "s24",
+   "title": "a2a-python jsonrpc_dispatcher.py (v1.1.5)",
+   "url": "https://github.com/a2aproject/a2a-python/blob/v1.1.5/src/a2a/server/routes/jsonrpc_dispatcher.py",
+   "kind": "primary",
+   "publisher": "A2A project (Linux Foundation)",
+   "accessed": "2026-09-27"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "The spec describes A2A as an open standard for communication between independent, possibly opaque AI agents, built on different frameworks, in different languages or by different vendors.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§1 Introduction",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§1 Introduction",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§1 Introduction",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "Its stated goal is that agents can work together without needing access to each other's internal state, memory or tools.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§1 Introduction (goal list)",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§1 Introduction (goal list)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§1 Introduction (goal list)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "The A2A docs argue that wrapping an agent as a tool limits it, and that A2A lets agents be exposed as they are.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Problems that A2A Solves: Agent Exposure",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Problems that A2A Solves: Agent Exposure",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Problems that A2A Solves: Agent Exposure",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "Google announced A2A on 9 April 2025, with more than 50 technology partners.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "opening; partner list",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "opening; partner list",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "opening; partner list",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "The A2A docs describe MCP as the way an agent reaches its tools and resources, A2A as the way agents collaborate with each other, and the two as complementary.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "intro; A2A loves MCP: Complementary Protocols",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "intro; A2A loves MCP: Complementary Protocols",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "intro; A2A loves MCP: Complementary Protocols",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "The spec calls the side that starts a request the A2A client, and the agent that serves it the A2A server, or remote agent.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§2.2 Core Concepts",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§2.2 Core Concepts",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§2.2 Core Concepts",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "One guiding principle is opaque execution: agents collaborate through declared capabilities and exchanged information, without sharing internal thoughts, plans or tool code.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§1.2 Guiding Principles: Opaque Execution",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§1.2 Guiding Principles: Opaque Execution",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§1.2 Guiding Principles: Opaque Execution",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "The spec has three layers: a data model, abstract operations, and protocol bindings that map those operations onto JSON-RPC, gRPC and HTTP+JSON/REST.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§1.3 Specification Structure",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§1.3 Specification Structure",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§1.3 Specification Structure",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "The file a2a.proto is the single authoritative definition of the protocol's data objects; schemas and SDK types must be generated from it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§1.4 Normative Content",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§1.4 Normative Content",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§1.4 Normative Content",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "An agent that offers several bindings must provide the same operations and equivalent results on each of them.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§5.1 Functional Equivalence Requirements",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§5.1 Functional Equivalence Requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§5.1 Functional Equivalence Requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Every A2A server must make an Agent Card available.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§8.1 Purpose",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§8.1 Purpose",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§8.1 Purpose",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "One way to find it is the well-known URI https://{server_domain}/.well-known/agent-card.json; registries and direct configuration are the others.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§8.2 Discovery Mechanisms",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§8.2 Discovery Mechanisms",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§8.2 Discovery Mechanisms",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "Required fields include name, description, version, supportedInterfaces, capabilities, defaultInputModes, defaultOutputModes and skills.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message AgentCard (REQUIRED field_behavior)",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message AgentCard (REQUIRED field_behavior)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message AgentCard (REQUIRED field_behavior)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "Each supportedInterfaces entry gives a URL, a protocolBinding (the core values are JSONRPC, GRPC and HTTP+JSON; custom bindings use a URI) and a protocolVersion; the list is in preference order and clients pick the first entry they support.",
+   "sources": [
+    "s2",
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message AgentInterface (core bindings); AgentCard.supported_interfaces",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§8.3.2 Client Protocol Selection; §5.8 Custom Binding Identification",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message AgentInterface (core bindings); AgentCard.supported_interfaces",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§8.3.2 Client Protocol Selection; §5.8 Custom Binding Identification",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message AgentInterface (core bindings); AgentCard.supported_interfaces",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§8.3.2 Client Protocol Selection; §5.8 Custom Binding Identification",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The capabilities object flags optional features: streaming, pushNotifications, extendedAgentCard and extensions.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message AgentCapabilities",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message AgentCapabilities",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message AgentCapabilities",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "A skill has an id, a name, a description and tags, and can list example prompts and its own input and output media types.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message AgentSkill",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message AgentSkill",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message AgentSkill",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "JSON uses camelCase field names, so the proto field protocol_version becomes protocolVersion.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§5.5 JSON Field Naming Convention",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§5.5 JSON Field Naming Convention",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§5.5 JSON Field Naming Convention",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "If pushNotifications is false or missing, webhook setup calls must fail with PushNotificationNotSupportedError; if streaming is false or missing, streaming calls must fail with UnsupportedOperationError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.3.4 Capability Validation",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.3.4 Capability Validation",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.3.4 Capability Validation",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "When a client sends a message, the agent may reply with a direct Message for simple interactions, or create a Task that tracks the work.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.1.1 Send Message",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.1.1 Send Message",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.1.1 Send Message",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "A Task has a server-generated id, a contextId, a status, and lists of artifacts and history.",
+   "sources": [
+    "s2",
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message Task",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.4.2 Task Identifier Semantics",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message Task",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.4.2 Task Identifier Semantics",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message Task",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.4.2 Task Identifier Semantics",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Its states are submitted, working, input-required, auth-required, completed, failed, canceled and rejected, written on the wire as TASK_STATE_SUBMITTED and so on.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "enum TaskState",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "enum TaskState",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "enum TaskState",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "Completed, failed, canceled and rejected are terminal states; input-required and auth-required are interrupted states.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "enum TaskState comments",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "enum TaskState comments",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "enum TaskState comments",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "The spec says results should come back as Artifacts, not Messages; messages are for talk such as questions and status updates.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.7 Messages and Artifacts",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.7 Messages and Artifacts",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.7 Messages and Artifacts",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "An Artifact holds one or more Parts, and each Part carries exactly one of text, raw bytes, a url or structured data, plus an optional mediaType.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message Artifact; message Part",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message Artifact; message Part",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message Artifact; message Part",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "A task in a terminal state cannot restart; a follow-up must start a new task in the same contextId.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Task Immutability",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Task Immutability",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Task Immutability",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "Clients should use the Message field referenceTaskIds to point at related earlier tasks.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.4.3 Follow-up Messages",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.4.3 Follow-up Messages",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.4.3 Follow-up Messages",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "In the JSON-RPC binding, methods use PascalCase names such as SendMessage and GetTask over HTTP(S), and streaming uses Server-Sent Events.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§9.1 Protocol Requirements",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§9.1 Protocol Requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§9.1 Protocol Requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "A Message needs a messageId set by whoever creates it, a role (ROLE_USER from the client, ROLE_AGENT from the agent) and at least one Part.",
+   "sources": [
+    "s2",
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message Message; enum Role",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§5.7 Required Fields (arrays at least one element)",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message Message; enum Role",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§5.7 Required Fields (arrays at least one element)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message Message; enum Role",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§5.7 Required Fields (arrays at least one element)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "Task ids are always generated by the server; a client may only send a taskId that refers to an existing task.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.4.2 Task Identifier Semantics",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.4.2 Task Identifier Semantics",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.4.2 Task Identifier Semantics",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "To answer an input-required task, the client sends a new message with the same taskId and contextId.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.4.3 Input Required State",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.4.3 Input Required State",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.4.3 Input Required State",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "Agents must reject a message whose contextId differs from its task's contextId, and must infer the contextId when only a taskId is sent.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.4.3 Context Continuity",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.4.3 Context Continuity",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.4.3 Context Continuity",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Enum values travel as their proto names in SCREAMING_SNAKE_CASE, for example \"TASK_STATE_INPUT_REQUIRED\" and \"ROLE_USER\".",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§5.5 Enum Values",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§5.5 Enum Values",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§5.5 Enum Values",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "SendMessage is blocking unless told otherwise: the server waits until the task is terminal or interrupted before it replies.",
+   "sources": [
+    "s1",
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.2.2 Execution Mode",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "SendMessageConfiguration.return_immediately",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.2.2 Execution Mode",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "SendMessageConfiguration.return_immediately",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.2.2 Execution Mode",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "SendMessageConfiguration.return_immediately",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "With returnImmediately set to true, the server replies as soon as the task exists, and the caller then polls, subscribes or relies on push notifications.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.2.2 Execution Mode",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.2.2 Execution Mode",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.2.2 Execution Mode",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "A task stream starts with the Task object, then status and artifact update events, and closes when the task reaches a terminal state.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.1.2 Send Streaming Message: Task lifecycle stream",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.1.2 Send Streaming Message: Task lifecycle stream",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.1.2 Send Streaming Message: Task lifecycle stream",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "SubscribeToTask reconnects to a running task and must send the current Task as its first event, so nothing is lost between a GetTask and the subscription.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.1.6 Subscribe to Task: Behavior",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.1.6 Subscribe to Task: Behavior",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.1.6 Subscribe to Task: Behavior",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "Push notifications are HTTP POSTs to a webhook the client registered, carrying the same StreamResponse payload a stream would.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.5.1 Push Notifications; §4.3.3 Push Notification Payload",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.5.1 Push Notifications; §4.3.3 Push Notification Payload",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.5.1 Push Notifications; §4.3.3 Push Notification Payload",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "Simple integrations, infrequent updates, clients behind restrictive firewalls",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.5.1 Polling: Best for",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.5.1 Polling: Best for",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.5.1 Polling: Best for",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "Interactive apps and live progress; needs capabilities.streaming set to true",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.5.1 Streaming: Best for; Requires",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.5.1 Streaming: Best for; Requires",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.5.1 Streaming: Best for; Requires",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "Server-to-server work, long-running tasks, event-driven systems; the client must be reachable over HTTP",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.5.1 Push Notifications: Best for",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.5.1 Push Notifications: Best for",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.5.1 Push Notifications: Best for",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "Events must arrive in the order they were generated, and several clients may stream the same task at once.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.5.2 Event Ordering; Multiple Streams Per Task",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.5.2 Event Ordering; Multiple Streams Per Task",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.5.2 Event Ordering; Multiple Streams Per Task",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "For push, the agent must attempt delivery at least once, and clients should process notifications idempotently because duplicates may occur.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§4.3.3 Server Guarantees; Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§4.3.3 Server Guarantees; Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§4.3.3 Server Guarantees; Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "A client that disconnects and reconnects may miss status messages, so messages must not be treated as reliable delivery for critical information.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.7 Messages and Artifacts (last paragraphs)",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.7 Messages and Artifacts (last paragraphs)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.7 Messages and Artifacts (last paragraphs)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "The A2A project hosts official SDKs in six languages: Python, Go, JavaScript, Java, .NET and Rust.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Longer term: SDKs",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Longer term: SDKs",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Longer term: SDKs",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "The Python SDK, a2a-sdk, implements spec version 1.0 over JSON-RPC, HTTP+JSON/REST and gRPC, with a compatibility mode for 0.3.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Compatibility",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Compatibility",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Compatibility",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "Since SDK version 1.0, an executor must pick one pattern per stream: exactly one Message, or a Task first followed by update events; mixing them fails with InvalidAgentResponseError.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "§4 Server: AgentExecutor Streaming Rules",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "§4 Server: AgentExecutor Streaming Rules",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "§4 Server: AgentExecutor Streaming Rules",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "The SDK's executor contract: to ask for input, publish an input-required status and return; the request resumes when the user's input arrives.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "AgentExecutor.execute docstring: Interrupted Workflows",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "AgentExecutor.execute docstring: Interrupted Workflows",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "AgentExecutor.execute docstring: Interrupted Workflows",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "Since SDK version 1.0, the server is assembled from Starlette route factories such as create_agent_card_routes and create_jsonrpc_routes.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "§5 Server: Application Setup",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "§5 Server: Application Setup",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "§5 Server: Application Setup",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "The SDK has optional extras for PostgreSQL, MySQL and SQLite.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Features: Optional Integrations; Installation table",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Features: Optional Integrations; Installation table",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Features: Optional Integrations; Installation table",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "Clients (other than 0.3 clients) must send the protocol version with each request, normally as an A2A-Version header such as 1.0; agents must treat an empty value as 0.3.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.6 Versioning; §3.6.1; §3.6.2",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.6 Versioning; §3.6.1; §3.6.2",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.6 Versioning; §3.6.1; §3.6.2",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "If the requested version isn't supported, the agent returns VersionNotSupportedError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.6.2 Server Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.6.2 Server Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.6.2 Server Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "Error details are an array of objects, each with an @type key, and google.rpc types such as ErrorInfo should be used.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.3.2 Error Payload Structure",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.3.2 Error Payload Structure",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.3.2 Error Payload Structure",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "JSON-RPC error codes (table): TaskNotFoundError -32001, TaskNotCancelableError -32002, PushNotificationNotSupportedError -32003, UnsupportedOperationError -32004, VersionNotSupportedError -32009.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§5.4 Error Code Mappings",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§5.4 Error Code Mappings",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§5.4 Error Code Mappings",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "Servers must not reveal that a resource exists to a caller who isn't allowed to see it; \"does not exist\" and \"not authorized\" should look the same.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.3.2 Authorization Errors; Resource Errors",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.3.2 Authorization Errors; Resource Errors",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.3.2 Authorization Errors; Resource Errors",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "It used slash-style method names such as message/send, tasks/get and tasks/resubscribe; v1.0 renamed them SendMessage, GetTask and SubscribeToTask.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Behavioral Changes for Core Operations",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Behavioral Changes for Core Operations",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Behavioral Changes for Core Operations",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "It used lowercase values such as \"completed\", \"input-required\" and \"user\", now TASK_STATE_COMPLETED, TASK_STATE_INPUT_REQUIRED and ROLE_USER.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Impact on Developers: 5. Enum Value Changes",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Impact on Developers: 5. Enum Value Changes",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Impact on Developers: 5. Enum Value Changes",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "Its parts had a kind field (text, file, data), replaced by one Part type holding text, raw, url or data, and its card named the primary endpoint in a top-level url field, now supportedInterfaces[0].url.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Impact on Developers: 1. Part Type Unification; 3. Agent Card Structure",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Impact on Developers: 1. Part Type Unification; 3. Agent Card Structure",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Impact on Developers: 1. Part Type Unification; 3. Agent Card Structure",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "Version 1.0.0 shipped these breaking changes on 12 March 2026; 1.0.1 followed on 26 May 2026.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "[1.0.1] (2026-05-26); [1.0.0] (2026-03-12) BREAKING CHANGES",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "[1.0.1] (2026-05-26); [1.0.0] (2026-03-12) BREAKING CHANGES",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "[1.0.1] (2026-05-26); [1.0.0] (2026-03-12) BREAKING CHANGES",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "The Python SDK can serve 0.3 clients alongside 1.0 if you add a 0.3 interface to the card and turn on the route factory's 0.3 compatibility flag.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "§6 Supporting v0.3 Clients",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "§6 Supporting v0.3 Clients",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "§6 Supporting v0.3 Clients",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "The client learns the required schemes from the card's securitySchemes, gets credentials outside A2A, and sends them in headers or metadata on every request.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§7.3 Client Authentication Process",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§7.3 Client Authentication Process",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§7.3 Client Authentication Process",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "The server must authenticate every incoming request.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§7.4 Server Authentication Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§7.4 Server Authentication Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§7.4 Server Authentication Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "The A2A docs say protocol payloads don't carry user or client identity; identity is set at the transport or HTTP layer.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "Authentication: No Identity in Payload",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Authentication: No Identity in Payload",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "Authentication: No Identity in Payload",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "Scheme types are API key, HTTP auth such as Bearer, OAuth 2.0, OpenID Connect and mutual TLS, modelled on OpenAPI security schemes.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message SecurityScheme (oneof scheme)",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message SecurityScheme (oneof scheme)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message SecurityScheme (oneof scheme)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "Production deployments must use HTTPS for HTTP bindings and TLS for gRPC.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§7.1 Protocol Security",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§7.1 Protocol Security",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§7.1 Protocol Security",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "In v1.0 the OAuth implicit and password flows are deprecated in the card; it offers authorization code (with a pkceRequired flag), client credentials and device code.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message OAuthFlows; AuthorizationCodeOAuthFlow.pkce_required",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message OAuthFlows; AuthorizationCodeOAuthFlow.pkce_required",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message OAuthFlows; AuthorizationCodeOAuthFlow.pkce_required",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "The agent can move the task to auth-required and explain in its status message what authorization it needs.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§7.6; §7.6.1 In-Task Authorization Agent Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§7.6; §7.6.1 In-Task Authorization Agent Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§7.6; §7.6.1 In-Task Authorization Agent Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "The agent may carry on as soon as it receives the credential out of band, so a client without an open stream should subscribe, register a webhook or poll to avoid missing updates.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§7.6.1; §7.6.2 In-Task Authorization Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§7.6.1; §7.6.2 In-Task Authorization Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§7.6.1; §7.6.2 In-Task Authorization Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c68",
+   "text": "If credentials are passed in-band through a chain of agents, every agent in the chain can see them, so the spec recommends binding them to the agent that requested them.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§7.6.3 In-Task Authorization Security Considerations",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§7.6.3 In-Task Authorization Security Considerations",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§7.6.3 In-Task Authorization Security Considerations",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c69",
+   "text": "An agent can also serve a richer, extended Agent Card to authenticated callers when capabilities.extendedAgentCard is true; that call must be authenticated.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.1.11 Get Extended Agent Card; §13.3",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.1.11 Get Extended Agent Card; §13.3",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.1.11 Get Extended Agent Card; §13.3",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c70",
+   "text": "In a2a-sdk version 1.1.4 (7 September 2026), a full subscriber queue now evicts that subscriber instead of wedging dispatch.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "[1.1.4] (2026-09-07) Bug Fixes: server: let subscriber taps evict on full",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "[1.1.4] (2026-09-07) Bug Fixes: server: let subscriber taps evict on full",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "[1.1.4] (2026-09-07) Bug Fixes: server: let subscriber taps evict on full",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c71",
+   "text": "Agents should time out webhook calls (10 to 30 seconds recommended) and may stop after a set number of consecutive failures; on retrying with exponential backoff the spec says MAY in one section and SHOULD in another.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§4.3.3 Server Guarantees; §13.2 Agent requirements",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§4.3.3 Server Guarantees; §13.2 Agent requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§4.3.3 Server Guarantees; §13.2 Agent requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c72",
+   "text": "ListTasks uses cursor pagination; with pageSize unset it returns at most 50 tasks, pageSize may not exceed 100, and nextPageToken is an empty string on the last page.",
+   "sources": [
+    "s2",
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "message ListTasksRequest.page_size; ListTasksResponse",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.1.4 List Tasks (nextPageToken note)",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "message ListTasksRequest.page_size; ListTasksResponse",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.1.4 List Tasks (nextPageToken note)",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "message ListTasksRequest.page_size; ListTasksResponse",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.1.4 List Tasks (nextPageToken note)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c73",
+   "text": "The SDK's own code notes that after a cancel, a client that was streaming may not receive the terminal state and may have to re-read the task.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "ActiveTask.cancel docstring",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "ActiveTask.cancel docstring",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "ActiveTask.cancel docstring",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c74",
+   "text": "For the card itself, the spec recommends Cache-Control and an ETag on the server and conditional requests on the client.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§8.6 Caching",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§8.6 Caching",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§8.6 Caching",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c75",
+   "text": "The spec says agents should validate webhook URLs against SSRF: reject private ranges such as 10.0.0.0/8 and 192.168.0.0/16, reject localhost and link-local addresses, and use allowlists where appropriate.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§13.2 Push Notification Security: Agent requirements",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§13.2 Push Notification Security: Agent requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§13.2 Push Notification Security: Agent requirements",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c76",
+   "text": "a2a-sdk 1.1.4 added push-URL checks both when a config is created and again before dispatch, as SSRF hardening; they run only if you pass a push_url_validator to the request handler, which is unset by default.",
+   "sources": [
+    "s15",
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "[1.1.4] Bug Fixes: validate push-notification URLs at config creation; before dispatch (SSRF hardening)",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "__init__ push_url_validator=None; _validate_push_url returns early when unset",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "[1.1.4] Bug Fixes: validate push-notification URLs at config creation; before dispatch (SSRF hardening)",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "__init__ push_url_validator=None; _validate_push_url returns early when unset",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "[1.1.4] Bug Fixes: validate push-notification URLs at config creation; before dispatch (SSRF hardening)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "__init__ push_url_validator=None; _validate_push_url returns early when unset",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c77",
+   "text": "Every operation must be authorization-checked and scoped to the caller, including ListTasks with no filter, and the check must run before any query that could reveal whether a resource exists.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§13.1 Data Access and Authorization Scoping",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§13.1 Data Access and Authorization Scoping",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§13.1 Data Access and Authorization Scoping",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c78",
+   "text": "The same SDK release made cancel and subscribe check the task's owner.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "[1.1.4] Bug Fixes: owner-scope cancel/subscribe",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "[1.1.4] Bug Fixes: owner-scope cancel/subscribe",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "[1.1.4] Bug Fixes: owner-scope cancel/subscribe",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c79",
+   "text": "Agent Cards may be signed with JWS (RFC 7515) over a JCS-canonicalized form (RFC 8785), and clients should verify at least one signature before trusting a card.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§8.4 Agent Card Signing; §8.4.1; §8.4.3 Security Considerations",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§8.4 Agent Card Signing; §8.4.1; §8.4.3 Security Considerations",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§8.4 Agent Card Signing; §8.4.1; §8.4.3 Security Considerations",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c80",
+   "text": "Clients should also verify the server's TLS certificate against trusted certificate authorities.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§7.2 Server Identity Verification",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§7.2 Server Identity Verification",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§7.2 Server Identity Verification",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c81",
+   "text": "Webhook receivers must validate the credentials on each notification; on checking that the task ID is one they created, the spec says MUST in one section and SHOULD in another.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§13.2 Client (Webhook Receiver) Requirements; §4.3.3 Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§13.2 Client (Webhook Receiver) Requirements; §4.3.3 Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§13.2 Client (Webhook Receiver) Requirements; §4.3.3 Client Responsibilities",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c82",
+   "text": "The official Python SDK's 1.1.4 release fixed bugs in each of these areas: SSRF checks on push URLs, owner scoping on cancel and subscribe, and a subscriber queue that could wedge dispatch.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "[1.1.4] (2026-09-07) Bug Fixes",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "[1.1.4] (2026-09-07) Bug Fixes",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "[1.1.4] (2026-09-07) Bug Fixes",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c83",
+   "text": "Spec: a message to a completed task gets UnsupportedOperationError (-32004).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.1.1 Send Message: Errors",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.1.1 Send Message: Errors",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.1.1 Send Message: Errors",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c84",
+   "text": "Rejected, but as invalid params (-32602), in a2a-sdk 1.1.5",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "ActiveTask: InvalidParamsError 'already completed' (maps to -32602); reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "ActiveTask: InvalidParamsError 'already completed' (maps to -32602); reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "ActiveTask: InvalidParamsError 'already completed' (maps to -32602); reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c85",
+   "text": "Accepted and processed by the default handler in a2a-sdk 1.1.5",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "_setup_active_task builds RequestContext with task=None, so the context mismatch check never runs; reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "_setup_active_task builds RequestContext with task=None, so the context mismatch check never runs; reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "_setup_active_task builds RequestContext with task=None, so the context mismatch check never runs; reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c88",
+   "text": "Microsoft Foundry's a2a tool is generally available on protocol 1.0; when the remote agent is itself a Foundry agent, version 1.0 uses JSON-RPC, only text is supported and streaming responses aren't.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "tool comparison table (a2a GA, 1.0); Prerequisites: Foundry agent targets",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "tool comparison table (a2a GA, 1.0); Prerequisites: Foundry agent targets",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "tool comparison table (a2a GA, 1.0); Prerequisites: Foundry agent targets",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c89",
+   "text": "AWS AgentCore Runtime expects an A2A server to speak JSON-RPC 2.0 on port 9000 at the root path, serve its card at /.well-known/agent-card.json, and its contract page's sample card shows protocolVersion 0.3.0.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "port and path; agent card endpoint; sample agent card",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "port and path; agent card endpoint; sample agent card",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "port and path; agent card endpoint; sample agent card",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c90",
+   "text": "The A2A project offers a Technology Compatibility Kit (a2a-tck) and the A2A Inspector to help validate agents.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Longer term: Validation",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Longer term: Validation",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Longer term: Validation",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c91",
+   "text": "Independent agents that reason, plan and keep state over multi-turn work",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Why Different Protocols? Agents (A2A domain)",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Why Different Protocols? Agents (A2A domain)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Why Different Protocols? Agents (A2A domain)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c92",
+   "text": "Tools and resources with well-defined, structured inputs and outputs",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Why Different Protocols? Tools and Resources (MCP Domain)",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Why Different Protocols? Tools and Resources (MCP Domain)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Why Different Protocols? Tools and Resources (MCP Domain)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c93",
+   "text": "In June 2025 the Linux Foundation launched the Agent2Agent project for the protocol Google had created, with AWS, Cisco, Microsoft, Salesforce, SAP and ServiceNow among its founding organizations.",
+   "sources": [
+    "s10",
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "dateline paragraph: launch of the A2A project, protocol created by Google",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "paragraph on the donation to the Linux Foundation: founding organizations",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "dateline paragraph: launch of A2A project, protocol created by Google (June 23, 2025)",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "paragraph on donation to the Linux Foundation: founding organizations list",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "dateline paragraph: launch of the A2A project, protocol created by Google",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "paragraph on the donation to the Linux Foundation: founding organizations",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c94",
+   "text": "In August 2025 IBM's Agent Communication Protocol (ACP) team wound down ACP development and joined A2A.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "announcement paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "announcement paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "announcement paragraphs",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c95",
+   "text": "By April 2026 the Linux Foundation counted more than 150 supporting organizations, with A2A in Azure AI Foundry, Copilot Studio and Amazon Bedrock AgentCore.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "headline; cloud platform paragraph",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "headline; cloud platform paragraph",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "headline; cloud platform paragraph",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c96",
+   "text": "On 17 August 2026 the Agentic AI Foundation announced that A2A is joining it as a hosted project, next to MCP.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "opening paragraph (post dated 17 Aug 2026); agentic stack section (MCP)",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "opening paragraph (post dated 17 Aug 2026); agentic stack section (MCP)",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "opening paragraph (post dated 17 Aug 2026); agentic stack section (MCP)",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported, wording flagged; reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c97",
+   "text": "The roadmap (last updated 15 September 2026) lists version 1.1 work and bidirectional streaming as near-term items.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Last updated; Near-term initiatives",
+     "result": "supported",
+     "at": "2026-09-27T10:40",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Last updated; Near-term initiatives",
+     "result": "supported",
+     "at": "2026-09-27T11:05",
+     "method": "fresh WebFetch of the live page, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Last updated; Near-term initiatives",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer: supported"
+    }
+   ]
+  },
+  {
+   "id": "c98",
+   "text": "If the task reached a terminal state during the gap, SubscribeToTask fails with UnsupportedOperationError",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§3.1.6 Subscribe to Task: Errors",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§3.1.6 Subscribe to Task: Errors",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§3.1.6 Subscribe to Task: Errors",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer finding; added and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c99",
+   "text": "In the JSON-RPC binding, -32601 is the standard Method not found error.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "§9.5 Standard JSON-RPC Error Codes",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "§9.5 Standard JSON-RPC Error Codes",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "§9.5 Standard JSON-RPC Error Codes",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer finding; added and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c100",
+   "text": "In this page's tests, a2a-sdk 1.1.5 answered message/send with -32601, with or without a version header",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "dispatch step 2: route by method name, unknown -> -32601; reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T11:25",
+     "method": "verbatim read: git clone of the tagged repo, or WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "dispatch step 2: route by method name, unknown -> -32601; reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T11:35",
+     "method": "fresh git show of the tagged file; page wording judged against the verbatim section text"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "dispatch step 2: route by method name, unknown -> -32601; reproduced by examples/a2a tests",
+     "result": "supported",
+     "at": "2026-09-27T11:20",
+     "method": "strict-mode independent reviewer; reviewer finding; added and re-checked in pass 2"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "The spec's method mapping table gives the REST route for SubscribeToTask as POST /tasks/{id}:subscribe.",
+   "reason": "a2a.proto v1.0.1 binds it as GET; the two normative texts disagree, so the REST route is left out"
+  },
+  {
+   "text": "The sample Agent Card uses a 'security' field for security requirements.",
+   "reason": "a2a.proto names the field securityRequirements; the sample and the proto disagree, so the page shows neither"
+  },
+  {
+   "text": "A2A's official stream-event example keys events as taskStatusUpdate.",
+   "reason": "whats-new-v1.md shows that key, but the proto and the SDK use statusUpdate; the page follows the proto"
+  },
+  {
+   "text": "Named companies running A2A in production (from the Linux Foundation's first-year release).",
+   "reason": "the release describes production use by industry but names no companies"
+  },
+  {
+   "text": "Prompt injection through a remote agent's output as a spec-defined threat.",
+   "reason": "the spec's security section doesn't cover it; the page gives it as advice, not as a spec fact"
+  },
+  {
+   "text": "a2a-sdk 1.1.5 answers a cancel on a completed task with success instead of TaskNotCancelableError.",
+   "reason": "only true in a race right after completion; from about 1 ms later the SDK returns -32002 as the spec says (independent reviewer finding, reproduced)"
+  },
+  {
+   "text": "A 1.0-only a2a-sdk agent answers a v0.3 message/send request with VersionNotSupportedError.",
+   "reason": "wrong: it answers -32601 Method not found before any version check (reviewer finding, reproduced); the page now says so"
+  }
+ ]
+}
