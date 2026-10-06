@@ -13,7 +13,7 @@
     "check": "npm run lint && npm run validate:html"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "2.5.15",
     "axe-core": "4.13.0",
     "html-validate": "11.16.0"
   }
