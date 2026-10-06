@@ -14,7 +14,7 @@ dependencies = [
 # Libraries used by the runnable code examples in examples/<topic>/.
 examples = [
     "a2a-sdk[http-server]==1.1.5",
-    "mcp==2.2.0",
+    "mcp==2.3.0",
     "pyjwt[crypto]>=2.10",
 ]
 dev = [
