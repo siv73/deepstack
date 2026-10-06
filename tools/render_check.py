@@ -166,6 +166,14 @@ def main(slug: str) -> None:
                         del errs[before:]  # axe's own probes are not page errors
                     if name == "topic" and tag == "desktop" and scheme == "light":
                         exercise_page(page, out, fails)
+                if tag == "phone":
+                    # Fonts differ between machines (CI vs local); a 320px pass leaves headroom at 390px.
+                    page.set_viewport_size({"width": 320, "height": h})
+                    page.goto(f"{base}/{topic.relative_to(ROOT / 'site').as_posix()}")
+                    page.wait_for_timeout(300)
+                    width = page.evaluate("document.documentElement.scrollWidth")
+                    if width > 321:
+                        fails.append(f"{label} topic: page scrolls sideways at 320px ({width}px wide)")
                 fails += [f"{label}: console error: {e}" for e in errs]
                 ctx.close()
         browser.close()

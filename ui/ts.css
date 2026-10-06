@@ -96,6 +96,8 @@ html {
   scroll-padding-top: 76px;
 }
 body {
+  /* Long identifiers, paths and URLs wrap rather than widening the page on narrow phones. */
+  overflow-wrap: anywhere;
   margin: 0;
   background: var(--bg);
   color: var(--ink);
@@ -116,6 +118,13 @@ a:hover {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
   border-radius: 4px;
+}
+/* Tables scroll inside their wrapper; never break ordinary words in cells. */
+table {
+  overflow-wrap: normal;
+}
+table code {
+  overflow-wrap: anywhere;
 }
 code,
 kbd,
