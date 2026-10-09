@@ -1,0 +1,2787 @@
+{
+ "verified": "2026-10-10",
+ "volatility": "stable",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "PostgreSQL 18 docs: 13.2 Transaction Isolation",
+   "url": "https://www.postgresql.org/docs/18/transaction-iso.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s2",
+   "title": "PostgreSQL 18 docs: 13.3 Explicit Locking",
+   "url": "https://www.postgresql.org/docs/18/explicit-locking.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s3",
+   "title": "PostgreSQL 18 docs: 13.5 Serialization Failure Handling",
+   "url": "https://www.postgresql.org/docs/18/mvcc-serialization-failure-handling.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s4",
+   "title": "PostgreSQL 18 docs: 19.12 Lock Management",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-locks.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s5",
+   "title": "PostgreSQL 18 docs: 19.11 Client Connection Defaults",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-client.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s6",
+   "title": "PostgreSQL 18 docs: 19.8 Error Reporting and Logging",
+   "url": "https://www.postgresql.org/docs/18/runtime-config-logging.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s7",
+   "title": "PostgreSQL 18 docs: SELECT (The Locking Clause)",
+   "url": "https://www.postgresql.org/docs/18/sql-select.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s8",
+   "title": "PostgreSQL 18 docs: ALTER TABLE",
+   "url": "https://www.postgresql.org/docs/18/sql-altertable.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s9",
+   "title": "PostgreSQL 18 docs: 9.27 System Information Functions and Operators",
+   "url": "https://www.postgresql.org/docs/18/functions-info.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s10",
+   "title": "PostgreSQL 18 docs: Appendix A. PostgreSQL Error Codes",
+   "url": "https://www.postgresql.org/docs/18/errcodes-appendix.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s11",
+   "title": "PostgreSQL 18 docs: 13.4 Data Consistency Checks at the Application Level",
+   "url": "https://www.postgresql.org/docs/18/applevel-consistency.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s12",
+   "title": "PostgreSQL 19 docs: E.1 Release 19 (release notes, not final)",
+   "url": "https://www.postgresql.org/docs/19/release-19.html",
+   "kind": "primary",
+   "publisher": "PostgreSQL Global Development Group",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s13",
+   "title": "PgBouncer: Features (SQL feature map for pooling modes)",
+   "url": "https://www.pgbouncer.org/features.html",
+   "kind": "primary",
+   "publisher": "PgBouncer project (official docs; used only for claims about PgBouncer)",
+   "accessed": "2026-10-10"
+  },
+  {
+   "id": "s14",
+   "title": "GoCardless: Zero-downtime Postgres migrations, the hard parts",
+   "url": "https://gocardless.com/blog/zero-downtime-postgres-migrations-the-hard-parts/",
+   "kind": "primary",
+   "publisher": "GoCardless (first-party account of its own incident; used only for claims about it)",
+   "accessed": "2026-10-10"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Read Committed is the default isolation level in PostgreSQL.",
+   "sources": [
+    "s1",
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1 Read Committed Isolation Level, first sentence; default_transaction_isolation",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "13.2.1 Read Committed Isolation Level, first sentence; default_transaction_isolation",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "19.11.1 Statement Behavior",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1 Read Committed Isolation Level, first sentence; default_transaction_isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "The SQL standard defines four isolation levels; PostgreSQL accepts all four but implements three, because its Read Uncommitted behaves like Read Committed.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation, paragraph after Table 13.1",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation, paragraph after Table 13.1",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "In Read Committed, a SELECT sees only data committed before the query began, plus its own transaction's earlier changes.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "Read Committed starts each command with a new snapshot, so two SELECTs in one transaction can see different data.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1, first paragraph and 'Because Read Committed mode starts each command with a new snapshot'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1, first paragraph and 'Because Read Committed mode starts each command with a new snapshot'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "If an UPDATE finds a row that another transaction is updating, it waits for that transaction to commit or roll back.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1, second paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1, second paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "If the first updater commits, the waiting UPDATE re-checks its WHERE clause against the updated version of the row and, if it still matches, applies its change to that version.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1, second paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1, second paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "The docs show a transfer written as UPDATE ... SET balance = balance + 100.00 working correctly in Read Committed, because each command affects only a predetermined row.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1, transfer example",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1, transfer example",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "The docs call Read Committed unsuitable for commands with complex search conditions, while adequate for many applications.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1, 'unsuitable for commands that involve complex search conditions' and 'adequate for many applications'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1, 'unsuitable for commands that involve complex search conditions' and 'adequate for many applications'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "In Repeatable Read, every query sees a snapshot taken at the start of the first non-transaction-control statement of the transaction.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.2, second paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.2, second paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "If a Repeatable Read transaction tries to update a row that another transaction updated or deleted and committed after its snapshot, it is rolled back with ERROR: could not serialize access due to concurrent update.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.2, third paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.2, third paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "The docs say to abort and retry the whole transaction from the beginning; the retry sees the committed change in its new snapshot.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.2, 'abort the current transaction and retry the whole transaction from the beginning'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.2, 'abort the current transaction and retry the whole transaction from the beginning'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "Only updating transactions might need to be retried; read-only transactions never have serialization conflicts at Repeatable Read.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.2, 'Note that only updating transactions might need to be retried'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.2, 'Note that only updating transactions might need to be retried'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "PostgreSQL implements Repeatable Read using Snapshot Isolation.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.2, implementation paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.2, implementation paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "In PostgreSQL, no level allows dirty reads; Read Committed allows nonrepeatable reads, phantom reads and serialization anomalies; Repeatable Read allows only serialization anomalies; Serializable allows none.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2, Table 13.1 Transaction Isolation Levels",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2, Table 13.1 Transaction Isolation Levels",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The SQL standard allows phantom reads at Repeatable Read, but PostgreSQL's Repeatable Read does not allow them.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2, Table 13.1 ('Allowed, but not in PG') and following paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2, Table 13.1 ('Allowed, but not in PG') and following paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "Serializable works exactly like Repeatable Read, and also watches for patterns that no one-at-a-time order of the transactions could produce; when it finds one, it raises a serialization failure.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "transaction A sums class 1 rows (30) and inserts the sum as a class 2 row, while B sums class 2 rows (300) and inserts it as a class 1 row; at Repeatable Read both commit, at Serializable one is rolled back.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, mytab example",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, mytab example",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "The rolled-back transaction gets ERROR: could not serialize access due to read/write dependencies among transactions.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, mytab example error",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, mytab example error",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "Serializable uses predicate locks, shown in pg_locks with mode SIReadLock; they never block and cannot cause a deadlock.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, predicate locking paragraphs",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, predicate locking paragraphs",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "Serialization failures always return SQLSTATE 40001.",
+   "sources": [
+    "s1",
+    "s3",
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3 ('always return with an SQLSTATE value of 40001'); 13.5; Appendix A class 40",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "13.2.3 ('always return with an SQLSTATE value of 40001'); 13.5; Appendix A class 40",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "13.2.3 ('always return with an SQLSTATE value of 40001'); 13.5; Appendix A class 40",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Appendix A, Class 40 Transaction Rollback",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3 ('always return with an SQLSTATE value of 40001'); 13.5; Appendix A class 40",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "PostgreSQL's Serializable is implemented with Serializable Snapshot Isolation, which adds checks for serialization anomalies on top of Snapshot Isolation.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, last paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, last paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "Most PostgreSQL commands take table-level locks automatically, so a table can't be dropped or changed in an incompatible way while a command runs.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking, introduction",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking, introduction",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Two transactions cannot hold locks of conflicting modes on the same table at the same time, though a transaction never conflicts with itself.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.1 Table-Level Locks, introduction",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.1 Table-Level Locks, introduction",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "SELECT takes ACCESS SHARE; SELECT FOR UPDATE takes ROW SHARE; INSERT, UPDATE, DELETE and MERGE take ROW EXCLUSIVE.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.1, Table-Level Lock Modes list",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.1, Table-Level Lock Modes list",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "VACUUM (without FULL), ANALYZE and CREATE INDEX CONCURRENTLY take SHARE UPDATE EXCLUSIVE; CREATE INDEX without CONCURRENTLY takes SHARE.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.1, SHARE UPDATE EXCLUSIVE and SHARE entries",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.1, SHARE UPDATE EXCLUSIVE and SHARE entries",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "DROP TABLE, TRUNCATE and VACUUM FULL take ACCESS EXCLUSIVE, and ALTER TABLE takes ACCESS EXCLUSIVE unless its documentation notes otherwise for that form.",
+   "sources": [
+    "s2",
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.1 ACCESS EXCLUSIVE entry; ALTER TABLE Description ('An ACCESS EXCLUSIVE lock is acquired unless explicitly noted')",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "13.3.1 ACCESS EXCLUSIVE entry; ALTER TABLE Description ('An ACCESS EXCLUSIVE lock is acquired unless explicitly noted')",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "ALTER TABLE",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.1 ACCESS EXCLUSIVE entry; ALTER TABLE Description ('An ACCESS EXCLUSIVE lock is acquired unless explicitly noted')",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "Only an ACCESS EXCLUSIVE lock blocks a plain SELECT.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.1, ACCESS EXCLUSIVE tip",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.1, ACCESS EXCLUSIVE tip",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "ACCESS SHARE conflicts only with ACCESS EXCLUSIVE; ROW EXCLUSIVE conflicts with SHARE, SHARE ROW EXCLUSIVE, EXCLUSIVE and ACCESS EXCLUSIVE; SHARE UPDATE EXCLUSIVE conflicts with itself and with SHARE, SHARE ROW EXCLUSIVE, EXCLUSIVE and ACCESS EXCLUSIVE.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.1, lock mode entries and Table 13.2 Conflicting Lock Modes",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.1, lock mode entries and Table 13.2 Conflicting Lock Modes",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "A lock is normally held until the end of the transaction; one taken after a savepoint is released if you roll back to that savepoint.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.1, after Table 13.2",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.1, after Table 13.2",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "ALTER TABLE ... ADD FOREIGN KEY takes SHARE ROW EXCLUSIVE on the table being altered and on the referenced table.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "ALTER TABLE, ADD table_constraint: 'ADD FOREIGN KEY requires only a SHARE ROW EXCLUSIVE lock'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "ALTER TABLE",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "ALTER TABLE, ADD table_constraint: 'ADD FOREIGN KEY requires only a SHARE ROW EXCLUSIVE lock'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Row-level locks don't affect reading; they block only writers and lockers of the same row.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.2 Row-Level Locks, introduction",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.2 Row-Level Locks, introduction",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "FOR UPDATE stops other transactions from locking, updating or deleting the row until the current transaction ends.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.2, FOR UPDATE",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.2, FOR UPDATE",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "DELETE takes FOR UPDATE, as does an UPDATE that changes columns with a unique index usable by a foreign key; any other UPDATE takes the weaker FOR NO KEY UPDATE.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.2, FOR UPDATE and FOR NO KEY UPDATE",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.2, FOR UPDATE and FOR NO KEY UPDATE",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "FOR KEY SHARE conflicts only with FOR UPDATE, so it doesn't block an UPDATE that leaves key columns alone.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.2, FOR KEY SHARE and Table 13.3 Conflicting Row-Level Locks",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.2, FOR KEY SHARE and Table 13.3 Conflicting Row-Level Locks",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "FOR SHARE and FOR NO KEY UPDATE conflict with each other and with FOR UPDATE, but FOR SHARE doesn't conflict with FOR SHARE.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.2, FOR SHARE and Table 13.3",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.2, FOR SHARE and Table 13.3",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "In Repeatable Read or Serializable, SELECT FOR UPDATE throws an error if the row changed after the transaction started.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.2, FOR UPDATE",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.2, FOR UPDATE",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "In Read Committed, once the first transaction commits, a waiting SELECT FOR UPDATE re-checks its WHERE clause and, if the row still matches, locks and returns the updated version of the row.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.1, second paragraph ('it is the updated version of the row that is locked and returned')",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.1, second paragraph ('it is the updated version of the row that is locked and returned')",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "With NOWAIT, a locking SELECT reports an error instead of waiting if a selected row can't be locked immediately.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "With SKIP LOCKED, rows that can't be locked immediately are skipped; the docs warn this gives an inconsistent view, usable for queue-like tables with multiple consumers but not for general-purpose work.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "NOWAIT and SKIP LOCKED apply only to row-level locks; the ROW SHARE table lock is still taken the ordinary way.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "SELECT, The Locking Clause",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "Advisory locks have meanings the application defines; the system doesn't enforce their use.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.5 Advisory Locks, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.5 Advisory Locks, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "A session-level advisory lock is held until it is released or the session ends, even if the transaction that took it rolls back; a transaction-level one is released automatically at transaction end.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.5, session level and transaction level paragraphs",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.5, session level and transaction level paragraphs",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "PgBouncer's transaction pooling assigns a server connection to a client only during a transaction, and its feature table lists session-level advisory locks as never working in that mode.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Features: pooling modes table, 'Session-level advisory locks' row",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "WebFetch of live page with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "SQL feature map for pooling modes",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "Features: pooling modes table, 'Session-level advisory locks' row",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "The docs warn that pg_advisory_lock(id) in a query with LIMIT may take locks the application didn't expect, because LIMIT isn't guaranteed to apply before the locking function runs.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.5, LIMIT example",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.5, LIMIT example",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "Both Repeatable Read and Serializable can raise serialization failures, and applications using them must be ready to retry.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling, first paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "The docs say deadlock failures, SQLSTATE 40P01, may also be worth retrying.",
+   "sources": [
+    "s3",
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "13.5, second paragraph; Appendix A deadlock_detected",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "13.5, second paragraph; Appendix A deadlock_detected",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Appendix A, Class 40 Transaction Rollback",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "13.5, second paragraph; Appendix A deadlock_detected",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "unique-key failures (23505) are sometimes worth retrying, but they may be persistent errors, so they need more care.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "13.5, unique_violation paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "13.5, unique_violation paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "The complete transaction must be retried, including the logic that decides what SQL to run and with which values; for that reason PostgreSQL has no automatic retry.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "13.5, 'It is important to retry the complete transaction'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "13.5, 'It is important to retry the complete transaction'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "A retry isn't guaranteed to succeed; under very high contention a transaction may need many attempts.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "13.5, last paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "13.5 Serialization Failure Handling",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "13.5, last paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "In the docs' example, transaction one updates account 11111, transaction two updates 22222 and then waits for 11111, and transaction one then waits for 22222: a deadlock.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.4 Deadlocks, accounts example",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.4 Deadlocks, accounts example",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "Deadlocks can happen through row-level locks alone, without any explicit locking.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.4, 'deadlocks can also occur as the result of row-level locks'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.4, 'deadlocks can also occur as the result of row-level locks'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "PostgreSQL detects deadlocks and aborts one of the transactions; which one is hard to predict and should not be relied on.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.4, first paragraphs",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.4, first paragraphs",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "deadlock_timeout is how long a session waits on a lock before checking for a deadlock; the check is relatively expensive, and the default is one second.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "deadlock_timeout",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "19.12 Lock Management",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "deadlock_timeout",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "The docs' best defence is to make every application take locks on multiple objects in a consistent order, and, for each object, to take the most restrictive mode it will need with the first lock rather than upgrading later.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.4, 'The best defense against deadlocks'",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.4, 'The best defense against deadlocks'",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "Without a deadlock, a transaction waiting for a lock waits indefinitely, so holding transactions open for long periods is a bad idea.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "13.3.4, last paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "13.3 Explicit Locking",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "13.3.4, last paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "pg_blocking_pids returns the sessions blocking a given session: those holding a conflicting lock (hard block) and those waiting for a conflicting lock ahead of it in the wait queue (soft block).",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Table: Session Information Functions, pg_blocking_pids",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "9.27.1 Session Information Functions, pg_blocking_pids",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "Table: Session Information Functions, pg_blocking_pids",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "The docs caution that calling pg_blocking_pids frequently can affect database performance.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "pg_blocking_pids",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "9.27.1 Session Information Functions, pg_blocking_pids",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "pg_blocking_pids",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "lock_timeout aborts any statement that waits longer than the limit for a lock; the limit applies to each lock attempt separately, and 0, the default, disables it.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "lock_timeout",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "19.11.1 Statement Behavior",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "lock_timeout",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "The docs recommend against setting lock_timeout in postgresql.conf, because it would affect all sessions.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "lock_timeout",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "19.11.1 Statement Behavior",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "lock_timeout",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "GoCardless describes a migration that dropped and recreated foreign-key constraints: its exclusive lock request queued behind a long-running read query, API reads and writes piled up behind it, and the result was about 15 seconds of API downtime.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "incident description",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "WebFetch of live page with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "So what happened? / Avoiding downtime",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "incident description",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "GoCardless's post recommends setting lock_timeout in migration scripts.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "lessons / fixes section",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "WebFetch of live page with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "So what happened? / Avoiding downtime",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "lessons / fixes section",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "ADD CONSTRAINT ... NOT VALID skips the scan of existing rows and can commit immediately; a later VALIDATE CONSTRAINT checks them while holding only SHARE UPDATE EXCLUSIVE, plus ROW SHARE on the referenced table for a foreign key.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "ALTER TABLE Notes, NOT VALID paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "ALTER TABLE",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "ALTER TABLE Notes, NOT VALID paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "Adding an ordinary column with a non-volatile DEFAULT stores the value in the table's metadata, so no table rewrite is needed; a volatile default, a stored generated or identity column, or a domain type with constraints rewrites the table.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "ALTER TABLE Notes, ADD COLUMN default paragraph",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "ALTER TABLE",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "ALTER TABLE Notes, ADD COLUMN default paragraph",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "idle_in_transaction_session_timeout ends sessions that sit idle inside an open transaction for longer than the limit; it is disabled (0) by default.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "idle_in_transaction_session_timeout",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "19.11.1 Statement Behavior",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "idle_in_transaction_session_timeout",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "An idle open transaction can hold locks, and it also stops VACUUM from removing recently dead rows, which can add to table bloat.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "idle_in_transaction_session_timeout",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "19.11.1 Statement Behavior",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "idle_in_transaction_session_timeout",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c68",
+   "text": "log_lock_waits logs a message when a session waits longer than deadlock_timeout for a lock; it is off by default in PostgreSQL 18.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "log_lock_waits",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "19.8 log_lock_waits",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "log_lock_waits",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c69",
+   "text": "The PostgreSQL 19 release notes, not final at the time of writing, enable log_lock_waits by default.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "E.1 Release 19, Server Configuration",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_19_STABLE doc/src/sgml/release-19.sgml, dated as of 2026-09-14)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "E.1.3.1.4 Monitoring",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "E.1 Release 19, Server Configuration",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c70",
+   "text": "For busy Serializable workloads the docs recommend declaring READ ONLY transactions, limiting active connections with a pool, keeping transactions small, and not leaving connections idle in transaction.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c71",
+   "text": "When the predicate lock table runs short of memory, page-level predicate locks are combined into a relation-level lock, which can raise the serialization failure rate.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c72",
+   "text": "A sequential scan always needs a relation-level predicate lock.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c73",
+   "text": "In PostgreSQL 18, max_pred_locks_per_transaction and max_locks_per_transaction both default to 64; the PostgreSQL 19 release notes raise max_locks_per_transaction to 128.",
+   "sources": [
+    "s4",
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "max_locks_per_transaction; max_pred_locks_per_transaction; E.1 Release 19, Server Configuration",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "max_locks_per_transaction; max_pred_locks_per_transaction; E.1 Release 19, Server Configuration",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_19_STABLE doc/src/sgml/release-19.sgml, dated as of 2026-09-14)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "19.12 Lock Management",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "E.1.3.1.4 Monitoring",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "max_locks_per_transaction; max_pred_locks_per_transaction; E.1 Release 19, Server Configuration",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages; reviewer flagged the earlier wording, claim reworded and re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c74",
+   "text": "Serializable's protection doesn't extend to hot standby or logical replicas; the docs say those setups may want Repeatable Read with explicit locking on the primary.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "13.4.1, Warning: Serializable Transactions and Data Replication",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "13.4.1 Enforcing Consistency with Serializable Transactions",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "13.4.1, Warning: Serializable Transactions and Data Replication",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c75",
+   "text": "If Serializable is used for all writes and for all reads that need a consistent view, the docs say no other effort is needed to ensure consistency, and suggest a framework that retries serialization failures automatically.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "13.4.1 Enforcing Consistency with Serializable Transactions",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "13.4.1 Enforcing Consistency with Serializable Transactions",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "13.4.1 Enforcing Consistency with Serializable Transactions",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c76",
+   "text": "The docs also suggest removing explicit locks and SELECT FOR UPDATE that Serializable makes unnecessary.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "13.2 Transaction Isolation",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "13.2.3, performance list",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  },
+  {
+   "id": "c77",
+   "text": "On PostgreSQL 18, NOT VALID is allowed for foreign-key, CHECK and not-null constraints, and SET NOT NULL skips its table scan when a valid CHECK constraint proves no NULL can exist.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "ALTER TABLE, ADD table_constraint and SET/DROP NOT NULL",
+     "result": "supported",
+     "at": "2026-10-10T00:40",
+     "method": "read: verbatim SGML from postgres/postgres git (REL_18_STABLE doc/src/sgml)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "ALTER TABLE",
+     "result": "supported",
+     "at": "2026-10-10T01:20",
+     "method": "fresh WebFetch of live page, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "ALTER TABLE, ADD table_constraint and SET/DROP NOT NULL",
+     "result": "supported",
+     "at": "2026-10-10T01:45",
+     "method": "independent reviewer agent (strict mode): verbatim REL_18_STABLE / REL_19_STABLE doc SGML, WebFetch with NOT IN CONTENT guard for non-PostgreSQL pages"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "GoCardless's incident lock was ACCESS EXCLUSIVE on the referenced table.",
+   "reason": "their post describes an older PostgreSQL; current docs say ADD FOREIGN KEY takes SHARE ROW EXCLUSIVE, so the page states only the queueing behaviour and the current lock mode"
+  },
+  {
+   "text": "NOWAIT failures use SQLSTATE 55P03 (lock_not_available).",
+   "reason": "the error-code appendix lists 55P03 but no read source ties it to NOWAIT explicitly"
+  },
+  {
+   "text": "Foreign-key checks take FOR KEY SHARE on the referenced row.",
+   "reason": "not stated in the sections read; left out rather than inferred"
+  }
+ ]
+}

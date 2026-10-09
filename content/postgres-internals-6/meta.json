@@ -1,0 +1,21 @@
+{
+ "slug": "postgres-internals-6",
+ "title": "PostgreSQL internals, Part 6: isolation levels and locking",
+ "tldr": "How PostgreSQL keeps concurrent transactions from corrupting each other, and what goes wrong when they wait: lost updates, Read Committed's per-statement snapshots and WHERE re-checks, Repeatable Read and serialization failures, Serializable and write skew, the eight table lock modes, row locks and SELECT FOR UPDATE, SKIP LOCKED job queues, advisory locks, the retry loop for 40001 and 40P01, deadlocks and lock order, the migration lock queue and lock_timeout, idle transactions, PgBouncer pitfalls, choosing a strategy, and an interview drill. The final part of the series.",
+ "category": "Databases",
+ "created": "2026-10-10",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "PostgreSQL internals, Part 2: MVCC and row versions", "slug": "postgres-internals-2"},
+  {"label": "PostgreSQL internals, Part 3: VACUUM and bloat", "slug": "postgres-internals-3"},
+  {"label": "PostgreSQL internals, Part 4: indexes beyond B-tree", "slug": "postgres-internals-4"},
+  {"label": "PostgreSQL internals, Part 5: query planning and EXPLAIN", "slug": "postgres-internals-5"}
+ ],
+ "related": [
+  {"label": "PostgreSQL internals, Part 2", "slug": "postgres-internals-2", "why": "row versions, xmin and xmax, and the snapshots every isolation level is built on"},
+  {"label": "PostgreSQL internals, Part 3", "slug": "postgres-internals-3", "why": "why long and idle transactions also stop VACUUM and cause bloat"},
+  {"label": "PostgreSQL internals, Part 4", "slug": "postgres-internals-4", "why": "CREATE INDEX CONCURRENTLY, the lock-friendly way to build indexes on busy tables"},
+  {"label": "PostgreSQL internals, Part 5", "slug": "postgres-internals-5", "why": "plans decide which rows and pages a query touches, and so which locks and predicate locks it takes"},
+  {"label": "PostgreSQL internals, Part 1: how a row is stored on disk", "slug": "postgres-internals-1", "why": "the start of the series, if you want to review it from the beginning"}
+ ]
+}

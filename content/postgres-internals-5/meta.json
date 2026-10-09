@@ -15,6 +15,6 @@
   {"label": "PostgreSQL internals, Part 4", "slug": "postgres-internals-4", "why": "index types, index-only scans, skip scan and the 'planner won't use my index' checklist this part builds on"},
   {"label": "PostgreSQL internals, Part 3", "slug": "postgres-internals-3", "why": "autovacuum, which also runs the ANALYZE that keeps estimates fresh"},
   {"label": "PostgreSQL internals, Part 1", "slug": "postgres-internals-1", "why": "pages, the unit every planner cost is measured in"},
-  {"label": "PostgreSQL internals, Part 6: isolation levels and locking", "why": "what concurrent queries see and block on, once each one has a good plan"}
+  {"label": "PostgreSQL internals, Part 6: isolation levels and locking", "slug": "postgres-internals-6", "why": "what concurrent queries see and block on, once each one has a good plan"}
  ]
 }

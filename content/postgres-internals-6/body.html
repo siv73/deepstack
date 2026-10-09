@@ -1,0 +1,382 @@
+<section class="ts-part" id="why-isolation" data-rung="1" data-min="4">
+<h2>Two buyers, one unit left</h2>
+<p class="ts-problem">A flash sale has one pair of headphones left. Two checkout requests arrive a few milliseconds apart. Both read <code>stock = 1</code>, both write <code>stock = 0</code>, and both customers get a confirmation email. Nothing errored, yet you sold two units you didn't have.</p>
+<p>Think of two cashiers sharing one paper stock sheet. Each glances at the sheet, walks to the shelf, sells the item, and comes back to write the new count. If both glance before either writes, both see "1", both sell, and both write "0". The second write silently wipes out the first.</p>
+<p>That silent overwrite has a name: a <dfn data-def="Two transactions read the same value, both compute a new value from it, and the second write overwrites the first, so one change disappears without any error.">lost update</dfn>. It isn't a bug in PostgreSQL. Both transactions did exactly what they were told; the problem is what each was allowed to see and when it was allowed to write.</p>
+<p>How much one running transaction is shielded from others is set by its <dfn data-def="A per-transaction setting that decides what a transaction sees of other transactions' changes and what PostgreSQL does when they collide.">isolation level</dfn>. <span class="ts-claim" data-claim="c2" data-src="s1">The SQL standard defines four isolation levels; PostgreSQL accepts all four but implements three, because its Read Uncommitted behaves like Read Committed.</span> <span class="ts-claim" data-claim="c1" data-src="s1 s5">Read Committed is the default isolation level in PostgreSQL.</span></p>
+<p>Part 2 of this series showed how each row version carries the transaction that made it, and how a snapshot decides which versions you see. This part answers the two questions left open: when is the snapshot taken, and what happens when two transactions want to change the same row? Then it covers locks, the other half of concurrency: who waits for whom, and what goes wrong when the wait never ends.</p>
+<figure class="ts-seq" data-title="The lost update">
+<script type="application/json">
+{"actors": [
+  {"id": "a", "label": "Checkout A", "sub": "transaction"},
+  {"id": "row", "label": "stock row", "sub": "product 42"},
+  {"id": "b", "label": "Checkout B", "sub": "transaction"}],
+ "steps": [
+  {"from": "a", "to": "row", "label": "SELECT stock", "note": "A reads the row and sees 1."},
+  {"from": "row", "to": "a", "label": "1", "dashed": true, "note": "A decides in application code: there is stock, sell it."},
+  {"from": "b", "to": "row", "label": "SELECT stock", "note": "B reads before A writes, so B also sees 1."},
+  {"from": "a", "to": "row", "label": "UPDATE SET stock = 0; COMMIT", "note": "A writes the value it computed: 1 minus 1."},
+  {"from": "b", "to": "row", "label": "UPDATE SET stock = 0; COMMIT", "note": "B writes the value it computed from its old read. A's sale is overwritten: two units sold, stock says 0."}]}
+</script>
+</figure>
+<p class="ts-takeaway">Concurrency bugs happen when transactions act on what they read earlier; the isolation level decides what they could see and what happens when their writes collide.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">In the diagram, which change alone would stop the oversell?</p>
+<ol>
+<li data-why="Speed narrows the window but never closes it; at enough traffic two reads still land before one write.">Make the SELECT faster</li>
+<li data-why="Adding an index changes how the row is found, not what each transaction is allowed to see or write.">Add an index on product id</li>
+<li>Stop B from writing a value it computed from a read that is now out of date</li>
+</ol>
+<p class="ts-why">The bug is B acting on a stale read. The rest of this part shows three ways PostgreSQL can stop that: do the arithmetic inside the UPDATE, lock the row before reading it, or make B fail and retry.</p>
+</div>
+</section>
+
+<section class="ts-part" id="read-committed" data-rung="2" data-min="5">
+<h2>Read Committed: a fresh view for every statement</h2>
+<p class="ts-bridge">Last part: the lost update comes from acting on a stale read. Still unsolved: what exactly does each statement see, and what does an UPDATE do when the row changed under it?</p>
+<p class="ts-problem">Your checkout code runs at Read Committed. You want to know which of your three statements can see a sale that another request committed half a second ago.</p>
+<p>Back to the cashiers. Read Committed is a cashier who looks at the sheet again before every single action. Each look shows the latest committed count, but nothing stops the count changing between two looks.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c3" data-src="s1">In Read Committed, a SELECT sees only data committed before the query began, plus its own transaction's earlier changes.</span></li>
+<li><span class="ts-claim" data-claim="c4" data-src="s1">Read Committed starts each command with a new snapshot, so two SELECTs in one transaction can see different data.</span></li>
+<li><span class="ts-claim" data-claim="c5" data-src="s1">If an UPDATE finds a row that another transaction is updating, it waits for that transaction to commit or roll back.</span></li>
+<li><span class="ts-claim" data-claim="c6" data-src="s1">If the first updater commits, the waiting UPDATE re-checks its WHERE clause against the updated version of the row and, if it still matches, applies its change to that version.</span></li>
+</ol>
+<p>Step 4 is why arithmetic inside SQL is safe here. <code>UPDATE products SET stock = stock - 1 WHERE id = 42 AND stock &gt;= 1</code> reads <code>stock</code> at the moment of writing, after any wait. B's UPDATE waits for A, re-checks <code>stock &gt;= 1</code> against A's committed 0, finds no match, and changes nothing. <span class="ts-claim" data-claim="c7" data-src="s1">The docs show a transfer written as UPDATE ... SET balance = balance + 100.00 working correctly in Read Committed, because each command affects only a predetermined row.</span></p>
+<p>The trouble in the last part was different: the app read 1 in one statement and wrote a constant in a later one. Nothing ties those two statements together. <span class="ts-claim" data-claim="c8" data-src="s1">The docs call Read Committed unsuitable for commands with complex search conditions, while adequate for many applications.</span></p>
+<p>The comparison breaks down in one place: a real cashier would notice the count changed. PostgreSQL only re-checks the row a waiting write touches; it never re-checks what your earlier SELECT saw.</p>
+<div class="ts-predict" data-claims="c4 c6">
+<p class="q">Stock is 1, at Read Committed. A runs <code>UPDATE ... SET stock = stock - 1 WHERE id = 42 AND stock &gt;= 1</code> and hasn't committed. B runs the same statement. What happens to B, and what does it return once A commits?</p>
+<div class="ts-reveal"><p>B waits on the row A is changing. When A commits, B re-checks its WHERE clause against A's version, where stock is 0. The condition fails, so B updates 0 rows, and your code can tell the customer it sold out. No error, no oversell.</p></div>
+</div>
+<p class="ts-takeaway">Read Committed gives each statement a fresh snapshot and re-checks a waiting UPDATE's WHERE clause against the newest row, so put the read and the write in one statement.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c4">
+<p class="q">Inside one Read Committed transaction you run <code>SELECT count(*) FROM orders</code> twice, a second apart. Another session commits 10 new orders in between. What do you see?</p>
+<ol>
+<li data-why="That describes one snapshot for the whole transaction, which is Repeatable Read, not the default.">The same count both times</li>
+<li>The second count is 10 higher</li>
+<li data-why="Uncommitted data is never visible in any PostgreSQL level; committed data is what changed here.">An error, because the data changed</li>
+</ol>
+<p class="ts-why">Each statement takes a new snapshot, so the second count includes everything committed before it started.</p>
+</div>
+</section>
+
+<section class="ts-part" id="repeatable-read" data-rung="2" data-min="5">
+<h2>Repeatable Read: one view, and an error when it's stale</h2>
+<p class="ts-bridge">Last part: Read Committed re-reads before every statement. Still unsolved: a report or a read-then-decide flow that needs the whole transaction to see one consistent picture.</p>
+<p class="ts-problem">A month-end report runs 40 queries over several minutes. Orders keep arriving. With a fresh snapshot per query, the totals page and the detail page disagree by the orders that landed in between.</p>
+<p>This cashier photographs the sheet once and works only from the photo. Every look shows the same numbers, however long the shift. The risk moves: the photo can be out of date when the cashier finally writes.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c9" data-src="s1">In Repeatable Read, every query sees a snapshot taken at the start of the first non-transaction-control statement of the transaction.</span> <code>BEGIN</code> alone doesn't take it; your first real query does.</li>
+<li><span class="ts-claim" data-claim="c10" data-src="s1">If a Repeatable Read transaction tries to update a row that another transaction updated or deleted and committed after its snapshot, it is rolled back with ERROR: could not serialize access due to concurrent update.</span></li>
+<li><span class="ts-claim" data-claim="c11" data-src="s1">The docs say to abort and retry the whole transaction from the beginning; the retry sees the committed change in its new snapshot.</span></li>
+</ol>
+<p>That error is a <dfn data-def="An error PostgreSQL raises instead of letting concurrent transactions produce a result that no one-at-a-time order could produce. The fix is to retry the whole transaction.">serialization failure</dfn>. It turns the silent lost update into a loud one: B's stale write is refused, B retries, sees stock 0, and doesn't sell. <span class="ts-claim" data-claim="c12" data-src="s1">Only updating transactions might need to be retried; read-only transactions never have serialization conflicts at Repeatable Read.</span> So the month-end report gets its stable picture for free.</p>
+<p><span class="ts-claim" data-claim="c13" data-src="s1">PostgreSQL implements Repeatable Read using Snapshot Isolation.</span> The table lists the classic anomalies each level allows in PostgreSQL. A nonrepeatable read is the same row reading differently twice; a phantom is a re-run query returning new rows.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Level</th><th>Dirty read</th><th>Nonrepeatable read</th><th>Phantom read</th><th>Serialization anomaly</th></tr></thead>
+<tbody>
+<tr><td>Read Committed</td><td><span class="ts-claim" data-claim="c14" data-src="s1">Not possible</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Possible</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Possible</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Possible</span></td></tr>
+<tr><td>Repeatable Read</td><td><span class="ts-claim" data-claim="c14" data-src="s1">Not possible</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Not possible</span></td><td><span class="ts-claim" data-claim="c15" data-src="s1">Not possible (the standard allows it)</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Possible</span></td></tr>
+<tr><td>Serializable</td><td><span class="ts-claim" data-claim="c14" data-src="s1">Not possible</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Not possible</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Not possible</span></td><td><span class="ts-claim" data-claim="c14" data-src="s1">Not possible</span></td></tr>
+</tbody>
+</table></div>
+<p class="ts-takeaway">Repeatable Read freezes one snapshot for the transaction and refuses a write to a row changed since then, so the app must retry instead of losing an update.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c10 c11">
+<p class="q">Two Repeatable Read transactions both read stock 1. A updates it to 0 and commits. B then runs <code>UPDATE products SET stock = 0 WHERE id = 42</code>. What should the application do?</p>
+<ol>
+<li>Catch the serialization failure and rerun the whole transaction, including the SELECT</li>
+<li data-why="Rerunning only the UPDATE reuses the stale decision made from the old read; the read must be redone too.">Rerun just the failed UPDATE</li>
+<li data-why="B waits only while A is still running; after A commits, B fails rather than waiting.">Nothing; B waits and then succeeds</li>
+</ol>
+<p class="ts-why">The retry takes a new snapshot, sees stock 0, and decides not to sell. Repeating only the UPDATE would repeat the stale decision.</p>
+</div>
+</section>
+
+<section class="ts-part" id="serializable" data-rung="2" data-min="5">
+<h2>Serializable: catching what snapshots miss</h2>
+<p class="ts-bridge">Last part: Repeatable Read catches two writes to the same row. Still unsolved: two transactions that each read what the other writes, but never write the same row.</p>
+<p class="ts-problem">A hospital rule says at least one doctor must be on call. Two doctors, both on call, ask to go off call at the same moment. Each checks "is anyone else on call?", sees yes, and removes only their own row. Both commit. Nobody is on call.</p>
+<p>The photographs don't help: each cashier changed a different line of the sheet, so no line was written twice. The error is in the combination. This pattern is called <dfn data-def="Two transactions each read an overlapping set of data, then each update a different part of it based on what they read, together breaking a rule neither broke alone.">write skew</dfn>.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c16" data-src="s1">Serializable works exactly like Repeatable Read, and also watches for patterns that no one-at-a-time order of the transactions could produce; when it finds one, it raises a serialization failure.</span></li>
+<li><span class="ts-claim" data-claim="c19" data-src="s1">Serializable uses predicate locks, shown in pg_locks with mode SIReadLock; they never block and cannot cause a deadlock.</span> They only record what each transaction read.</li>
+<li><span class="ts-claim" data-claim="c20" data-src="s1 s3 s10">Serialization failures always return SQLSTATE 40001.</span></li>
+</ol>
+<p>The docs' own example: <span class="ts-claim" data-claim="c17" data-src="s1">transaction A sums class 1 rows (30) and inserts the sum as a class 2 row, while B sums class 2 rows (300) and inserts it as a class 1 row; at Repeatable Read both commit, at Serializable one is rolled back.</span> Run one after the other, the second sum would have been 330 or the first would have changed. <span class="ts-claim" data-claim="c18" data-src="s1">The rolled-back transaction gets ERROR: could not serialize access due to read/write dependencies among transactions.</span></p>
+<p><span class="ts-claim" data-claim="c21" data-src="s1">PostgreSQL's Serializable is implemented with Serializable Snapshot Isolation, which adds checks for serialization anomalies on top of Snapshot Isolation.</span> The payoff: if a transaction is correct when run alone, it stays correct in any mix of Serializable transactions, or it fails with 40001.</p>
+<div class="ts-note" data-label="Where the comparison stops"><p>Cashiers notice each other; transactions don't. Every guarantee in this part comes from snapshots plus, at Serializable, a record of reads. Nothing waits for the other to finish thinking.</p></div>
+<p class="ts-takeaway">Serializable catches write skew by tracking reads without blocking, and turns any result no serial order could produce into a 40001 retry.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c14 c16">
+<p class="q">The on-call bug: two transactions each delete their own row after checking the other is still on call. Which is the lowest level that stops it without explicit locks?</p>
+<ol>
+<li data-why="Read Committed doesn't even keep one snapshot; both checks pass and both deletes succeed.">Read Committed</li>
+<li data-why="The rows written are different, so no row was changed under either snapshot; both commit. That's write skew.">Repeatable Read</li>
+<li>Serializable</li>
+</ol>
+<p class="ts-why">No single row is written twice, so only read tracking can see that the two checks and deletes can't be put in any serial order.</p>
+</div>
+<div class="ts-explain" data-points="Read Committed: new snapshot per statement; a waiting UPDATE re-checks WHERE on the newest row|Repeatable Read: one snapshot; a write to a row changed since then fails with a serialization failure|Serializable: also tracks reads and fails transactions that no serial order could produce (write skew)|At the two higher levels the fix is retrying the whole transaction">
+<p class="q">In your own words: what does each of PostgreSQL's three levels do when two transactions collide?</p>
+<div class="ts-model"><p>Read Committed gives every statement a fresh snapshot. If an UPDATE hits a row another transaction is changing, it waits and then re-checks its WHERE clause on the new version. Repeatable Read keeps one snapshot for the whole transaction, and if you try to change a row someone else changed and committed since then, you get a serialization failure. Serializable does the same and also tracks what you read, failing one transaction when the combination couldn't happen in any one-at-a-time order. At both higher levels the application retries the whole transaction.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="table-locks" data-rung="3" data-min="6">
+<h2>Table locks: what each command waits for</h2>
+<p class="ts-bridge">Last part: isolation levels decide what you see. Still unsolved: why a harmless-looking command can freeze every query on a table.</p>
+<p class="ts-problem">At peak hour you run <code>CREATE INDEX</code> on a 200-gigabyte orders table. Checkout traffic is 400 writes a second. Reads keep working, but every INSERT hangs until the 25-minute build finishes.</p>
+<p><span class="ts-claim" data-claim="c23" data-src="s2">Most PostgreSQL commands take table-level locks automatically, so a table can't be dropped or changed in an incompatible way while a command runs.</span> Each lock has a <dfn data-def="One of PostgreSQL's eight table lock strengths. The name says which other modes it conflicts with, not what it does to rows.">lock mode</dfn>. <span class="ts-claim" data-claim="c24" data-src="s2">Two transactions cannot hold locks of conflicting modes on the same table at the same time, though a transaction never conflicts with itself.</span></p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Command</th><th>Mode taken</th><th>Blocks reads?</th><th>Blocks writes?</th></tr></thead>
+<tbody>
+<tr><td>SELECT</td><td><span class="ts-claim" data-claim="c25" data-src="s2">ACCESS SHARE</span></td><td>No</td><td>No</td></tr>
+<tr><td>SELECT ... FOR UPDATE</td><td><span class="ts-claim" data-claim="c25" data-src="s2">ROW SHARE</span></td><td>No</td><td>No (row locks do that)</td></tr>
+<tr><td>INSERT, UPDATE, DELETE, MERGE</td><td><span class="ts-claim" data-claim="c25" data-src="s2">ROW EXCLUSIVE</span></td><td>No</td><td>No</td></tr>
+<tr><td>VACUUM, ANALYZE, CREATE INDEX CONCURRENTLY</td><td><span class="ts-claim" data-claim="c26" data-src="s2">SHARE UPDATE EXCLUSIVE</span></td><td>No</td><td>No</td></tr>
+<tr><td>CREATE INDEX</td><td><span class="ts-claim" data-claim="c26" data-src="s2">SHARE</span></td><td>No</td><td>Yes</td></tr>
+<tr><td>ALTER TABLE ... ADD FOREIGN KEY</td><td><span class="ts-claim" data-claim="c31" data-src="s8">SHARE ROW EXCLUSIVE, on both tables</span></td><td>No</td><td>Yes</td></tr>
+<tr><td>Most ALTER TABLE forms, DROP TABLE, TRUNCATE, VACUUM FULL</td><td><span class="ts-claim" data-claim="c27" data-src="s2 s8">ACCESS EXCLUSIVE</span></td><td>Yes</td><td>Yes</td></tr>
+</tbody>
+</table></div>
+<p>The two "blocks" columns follow from one rule. <span class="ts-claim" data-claim="c29" data-src="s2">ACCESS SHARE conflicts only with ACCESS EXCLUSIVE; ROW EXCLUSIVE conflicts with SHARE, SHARE ROW EXCLUSIVE, EXCLUSIVE and ACCESS EXCLUSIVE; SHARE UPDATE EXCLUSIVE conflicts with itself and with SHARE, SHARE ROW EXCLUSIVE, EXCLUSIVE and ACCESS EXCLUSIVE.</span> <span class="ts-claim" data-claim="c28" data-src="s2">Only an ACCESS EXCLUSIVE lock blocks a plain SELECT.</span> The file below encodes the docs' full conflict table; its tests check the table is symmetric and reproduce the rows above.</p>
+<div class="ts-code" data-lang="python" data-title="lock_modes.py" data-file="lock_modes.py" data-verified="ran"></div>
+<p>How long do you hold it? <span class="ts-claim" data-claim="c30" data-src="s2">A lock is normally held until the end of the transaction; one taken after a savepoint is released if you roll back to that savepoint.</span> A fast DDL inside a slow transaction holds its lock for the whole slow transaction.</p>
+<div class="ts-interview"><p>"Is it safe to add an index to a busy table?" A strong answer names the lock: plain CREATE INDEX takes SHARE, which blocks every write for the whole build; CONCURRENTLY takes SHARE UPDATE EXCLUSIVE, which blocks neither reads nor writes but builds more slowly and can leave an invalid index if it fails (Part 4). It then asks how long the build takes and whether writes can pause that long.</p></div>
+<p class="ts-takeaway">A command's lock mode, not how much work it does, decides what it blocks, and it holds that lock until its transaction ends.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c26 c29">
+<p class="q">A VACUUM is running on <code>orders</code>. Which of these has to wait for it?</p>
+<ol>
+<li data-why="SELECT's ACCESS SHARE conflicts only with ACCESS EXCLUSIVE; VACUUM takes SHARE UPDATE EXCLUSIVE.">A SELECT on orders</li>
+<li>A CREATE INDEX on orders</li>
+<li data-why="INSERT takes ROW EXCLUSIVE, which doesn't conflict with SHARE UPDATE EXCLUSIVE; that's why VACUUM runs alongside traffic.">An INSERT into orders</li>
+</ol>
+<p class="ts-why">CREATE INDEX takes SHARE, and SHARE UPDATE EXCLUSIVE conflicts with SHARE. Reads and writes don't conflict with it.</p>
+</div>
+</section>
+
+<section class="ts-part" id="row-locks" data-rung="3" data-min="6">
+<h2>Row locks: making the read count</h2>
+<p class="ts-bridge">Last part: table locks keep commands from tripping over each other. Still unsolved: making the read-then-decide flow from the first part safe at Read Committed.</p>
+<p class="ts-problem">Seat booking: the app must read the seat, run 30 lines of business rules in code, then write. The rules can't be squeezed into one UPDATE, and you'd rather not handle retries.</p>
+<p>Lock the row as you read it. <code>SELECT ... FOR UPDATE</code> reads and takes a <dfn data-def="A lock on one row version, recorded in the row itself. It blocks other writers and lockers of that row, never plain readers.">row lock</dfn> in one step. <span class="ts-claim" data-claim="c33" data-src="s2">FOR UPDATE stops other transactions from locking, updating or deleting the row until the current transaction ends.</span> The second buyer's FOR UPDATE waits. <span class="ts-claim" data-claim="c38" data-src="s1">In Read Committed, once the first transaction commits, a waiting SELECT FOR UPDATE re-checks its WHERE clause and, if the row still matches, locks and returns the updated version of the row.</span> So the second buyer reads stock 0 after the wait, and the business rules decide on real data.</p>
+<p><span class="ts-claim" data-claim="c32" data-src="s2">Row-level locks don't affect reading; they block only writers and lockers of the same row.</span> There are four strengths, and plain writes take them too:</p>
+<ul>
+<li><span class="ts-claim" data-claim="c34" data-src="s2">DELETE takes FOR UPDATE, as does an UPDATE that changes columns with a unique index usable by a foreign key; any other UPDATE takes the weaker FOR NO KEY UPDATE.</span></li>
+<li><span class="ts-claim" data-claim="c35" data-src="s2">FOR KEY SHARE conflicts only with FOR UPDATE, so it doesn't block an UPDATE that leaves key columns alone.</span></li>
+<li><span class="ts-claim" data-claim="c36" data-src="s2">FOR SHARE and FOR NO KEY UPDATE conflict with each other and with FOR UPDATE, but FOR SHARE doesn't conflict with FOR SHARE.</span></li>
+</ul>
+<p>The model below replays the first part's race under three fixes. Its tests show the read-then-write version overselling at Read Committed, the guarded UPDATE selling once, and Repeatable Read refusing the stale write.</p>
+<div class="ts-code" data-lang="python" data-title="lost_update.py" data-file="lost_update.py" data-verified="ran"></div>
+<div class="ts-trap"><p>FOR UPDATE at a higher level behaves differently. <span class="ts-claim" data-claim="c37" data-src="s2">In Repeatable Read or Serializable, SELECT FOR UPDATE throws an error if the row changed after the transaction started.</span> Code that never retried at Read Committed starts failing the day someone raises the level.</p></div>
+<div class="ts-interview"><p>"Pessimistic or optimistic locking for this flow?" A strong answer picks by contention and cost of a retry. FOR UPDATE suits a hot row with expensive side effects (charging a card), since only one transaction proceeds at a time. A version column checked in the UPDATE, or Repeatable Read with a retry, suits rare conflicts, since nothing waits. It names the cost of each: waiting and deadlock risk versus wasted work on retry.</p></div>
+<p class="ts-takeaway">SELECT ... FOR UPDATE turns a read-then-decide flow into one where the second transaction waits and then decides on the committed row.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c32">
+<p class="q">Transaction A holds <code>FOR UPDATE</code> on seat 14C for 2 seconds. During that time, a plain <code>SELECT * FROM seats WHERE id = '14C'</code> runs. What happens?</p>
+<ol>
+<li>It returns immediately with the last committed version</li>
+<li data-why="Row locks block only writers and other lockers; plain reads use their snapshot.">It waits 2 seconds for A to finish</li>
+<li data-why="Row locks never raise errors for plain readers; NOWAIT applies only to locking requests.">It fails with a lock error</li>
+</ol>
+<p class="ts-why">Readers never wait for row locks; they see the committed version their snapshot allows.</p>
+</div>
+</section>
+
+<section class="ts-part" id="job-queue" data-rung="3" data-min="5">
+<h2>A job queue that doesn't serialize its workers</h2>
+<p class="ts-bridge">Last part: FOR UPDATE makes the next transaction wait for the row. Still unsolved: 20 workers all wanting "the next job" would all wait on the same row.</p>
+<p class="ts-problem">An email table works as a queue. 20 workers each run <code>SELECT ... ORDER BY id LIMIT 1 FOR UPDATE</code>. All 20 pick the same oldest row; 19 wait in line behind one worker, and throughput is that of a single worker.</p>
+<p>Two options change what a locking SELECT does when a row is taken. <span class="ts-claim" data-claim="c39" data-src="s7">With NOWAIT, a locking SELECT reports an error instead of waiting if a selected row can't be locked immediately.</span> <span class="ts-claim" data-claim="c40" data-src="s7">With SKIP LOCKED, rows that can't be locked immediately are skipped; the docs warn this gives an inconsistent view, usable for queue-like tables with multiple consumers but not for general-purpose work.</span></p>
+<div class="ts-code" data-lang="sql" data-title="claim_job.sql" data-verified="spec" data-claims="c39 c40 c41">
+<pre><code>BEGIN;
+SELECT id, payload
+FROM email_jobs
+WHERE status = 'pending'
+ORDER BY id
+LIMIT 10
+FOR UPDATE SKIP LOCKED;     -- each worker gets 10 rows nobody else holds
+-- send the emails, then:
+UPDATE email_jobs SET status = 'sent' WHERE id = ANY($1);
+COMMIT;                     -- row locks are released here</code></pre>
+</div>
+<p>Each worker gets a different batch, and a worker that crashes rolls back, so its rows become claimable again. <span class="ts-claim" data-claim="c41" data-src="s7">NOWAIT and SKIP LOCKED apply only to row-level locks; the ROW SHARE table lock is still taken the ordinary way.</span> A pending ACCESS EXCLUSIVE on the table still stops the whole queue.</p>
+<p>Sometimes the thing to lock isn't a row at all: "only one nightly billing run per tenant". <span class="ts-claim" data-claim="c43" data-src="s2">Advisory locks have meanings the application defines; the system doesn't enforce their use.</span> <span class="ts-claim" data-claim="c44" data-src="s2">A session-level advisory lock is held until it is released or the session ends, even if the transaction that took it rolls back; a transaction-level one is released automatically at transaction end.</span> Prefer the transaction-level form (<code>pg_advisory_xact_lock</code>) unless you need the lock to outlive a transaction; the part on ten times the load shows why.</p>
+<div class="ts-interview"><p>"Why not use Kafka or SQS for this queue?" A strong answer says a Postgres queue with SKIP LOCKED is fine at modest volume and gives you the job and the business write in one transaction. It names the limits: every claimed or finished job leaves dead row versions for VACUUM (Part 3), and polling adds load. Past those limits, or when many consumers need the same events, a log or broker fits better.</p></div>
+<p class="ts-takeaway">FOR UPDATE SKIP LOCKED lets many workers claim different rows at once; advisory locks cover things that aren't rows.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c40">
+<p class="q">Where would SKIP LOCKED give a wrong answer?</p>
+<ol>
+<li data-why="Claiming jobs is exactly the queue-like use the docs describe.">Workers claiming jobs from a queue table</li>
+<li>A balance report that sums every row of an accounts table</li>
+<li data-why="Each worker takes whichever free rows exist; skipping held ones is the point.">Picking 10 unassigned support tickets for an agent</li>
+</ol>
+<p class="ts-why">Skipping rows another transaction holds means the sum silently leaves them out: the inconsistent view the docs warn about.</p>
+</div>
+</section>
+
+<section class="ts-part" id="retry-loop" data-rung="3" data-min="5">
+<h2>The retry loop every higher level needs</h2>
+<p class="ts-bridge">Last part: locks that let workers avoid waiting. Still unsolved: Repeatable Read and Serializable promise to fail, not to succeed. Who handles the failure?</p>
+<p class="ts-problem">You switch payments to Serializable. Under load, about 1 in 100 transactions now fails with 40001, and each failure becomes an HTTP 500 for a customer who did nothing wrong.</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c47" data-src="s3">Both Repeatable Read and Serializable can raise serialization failures, and applications using them must be ready to retry.</span></li>
+<li><span class="ts-claim" data-claim="c48" data-src="s3 s10">The docs say deadlock failures, SQLSTATE 40P01, may also be worth retrying.</span></li>
+<li><span class="ts-claim" data-claim="c50" data-src="s3">The complete transaction must be retried, including the logic that decides what SQL to run and with which values; for that reason PostgreSQL has no automatic retry.</span></li>
+</ol>
+<p>So the retry belongs in your code, around the whole unit of work: the reads, the decisions in code, and the writes. A wrapper that resends only the last statement repeats the stale decision.</p>
+<div class="ts-code" data-lang="python" data-title="retry.py" data-file="retry.py" data-verified="ran"></div>
+<p>Three details carry the weight. <code>work(conn)</code> holds the reads and decisions, so a retry re-decides. Commit is inside the <code>try</code>. And other errors are not retried: <span class="ts-claim" data-claim="c49" data-src="s3">unique-key failures (23505) are sometimes worth retrying, but they may be persistent errors, so they need more care.</span> Side effects outside the database, like charging a card or sending an email, must not run inside <code>work</code>, or a retry repeats them.</p>
+<p><span class="ts-claim" data-claim="c51" data-src="s3">A retry isn't guaranteed to succeed; under very high contention a transaction may need many attempts.</span> Hence the attempt limit, and the backoff with random jitter so colliding transactions don't collide again in lockstep.</p>
+<div class="ts-interview"><p>"You're getting serialization failures. Do you lower the isolation level?" A strong answer first measures the retry rate and finds the hot rows or relation-level predicate locks causing it. Retries are the expected cost of Serializable; the fix is usually a smaller transaction, a READ ONLY declaration, or an index that turns a sequential scan into narrower locks. Lowering the level trades a visible retry for a silent anomaly.</p></div>
+<p class="ts-takeaway">At Repeatable Read and Serializable, wrap the whole transaction, decisions included, in a bounded retry on 40001 and 40P01, and keep outside side effects out of it.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c50">
+<p class="q">A colleague's ORM retries just the statement that failed with 40001. What's wrong?</p>
+<ol>
+<li data-why="Retrying is right; the problem is what gets retried.">Serialization failures should never be retried</li>
+<li data-why="The statement isn't idempotent by default; and even if it were, the values in it came from stale reads.">Nothing, if the statement is idempotent</li>
+<li>The values in that statement came from reads in the failed transaction; the whole transaction must rerun</li>
+</ol>
+<p class="ts-why">The failed transaction's snapshot is gone. Only a full rerun takes a new snapshot and makes new decisions from it.</p>
+</div>
+<div class="ts-explain" data-points="Plain UPDATE with the arithmetic and a guard in SQL is safe at Read Committed|SELECT FOR UPDATE makes the next reader wait and then see the committed row|SKIP LOCKED lets workers claim different rows; NOWAIT errors instead of waiting|Higher levels need a bounded retry of the whole transaction on 40001 and 40P01">
+<p class="q">In your own words: list the tools from this rung for the "last unit" problem and when you'd reach for each.</p>
+<div class="ts-model"><p>If the change fits in one statement, I put the arithmetic and a guard in the UPDATE; at Read Committed a waiting UPDATE re-checks its WHERE on the committed row, so it can't oversell. If the decision needs code between read and write, I read with FOR UPDATE so the next transaction waits and then sees the real value. For many workers taking jobs I use FOR UPDATE SKIP LOCKED, or NOWAIT when I'd rather fail than wait. At Repeatable Read or Serializable I wrap the whole transaction in a bounded retry on 40001 and 40P01.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="deadlocks" data-rung="4" data-min="5">
+<h2>Deadlocks: two transactions waiting for each other</h2>
+<p class="ts-bridge">Last part: retries for failures the database raises on purpose. Still unsolved: the failure you cause yourself by locking rows in the wrong order.</p>
+<p class="ts-problem">Money transfers between two wallets. At 10 transfers a second, deadlock errors are rare. At 100 a second, with a few busy merchant wallets, you see dozens of 40P01 errors a minute, and each one stalls a request for a second first.</p>
+<p><span class="ts-claim" data-claim="c52" data-src="s2">In the docs' example, transaction one updates account 11111, transaction two updates 22222 and then waits for 11111, and transaction one then waits for 22222: a deadlock.</span> <span class="ts-claim" data-claim="c53" data-src="s2">Deadlocks can happen through row-level locks alone, without any explicit locking.</span></p>
+<figure class="ts-graph" data-title="Who waits for whom">
+<script type="application/json">
+{"nodes": [
+  {"id": "t1", "label": "Transfer 1", "sub": "11111 to 22222", "col": 0, "row": 0},
+  {"id": "r1", "label": "Row 11111", "col": 1, "row": 0},
+  {"id": "t2", "label": "Transfer 2", "sub": "22222 to 11111", "col": 1, "row": 1},
+  {"id": "r2", "label": "Row 22222", "col": 0, "row": 1}],
+ "edges": [
+  {"from": "t1", "to": "r1", "label": "holds", "step": 1},
+  {"from": "t2", "to": "r2", "label": "holds", "step": 1},
+  {"from": "t2", "to": "r1", "label": "waits for", "dashed": true, "step": 2},
+  {"from": "t1", "to": "r2", "label": "waits for", "dashed": true, "step": 3}],
+ "captions": ["Each transfer locks its first row by updating it.", "Transfer 2 wants row 11111, which transfer 1 holds, so it waits.", "Transfer 1 wants row 22222, which transfer 2 holds. Each waits for the other: a cycle, and neither can ever finish."]}
+</script>
+</figure>
+<p><span class="ts-claim" data-claim="c54" data-src="s2">PostgreSQL detects deadlocks and aborts one of the transactions; which one is hard to predict and should not be relied on.</span> <span class="ts-claim" data-claim="c55" data-src="s4">deadlock_timeout is how long a session waits on a lock before checking for a deadlock; the check is relatively expensive, and the default is one second.</span> That second is the stall in the problem: every deadlock costs a full wait before anyone notices.</p>
+<p>The fix is ordering, not detection. <span class="ts-claim" data-claim="c56" data-src="s2">The docs' best defence is to make every application take locks on multiple objects in a consistent order, and, for each object, to take the most restrictive mode it will need with the first lock rather than upgrading later.</span> For transfers: always lock the lower account id first, whichever way the money moves. Then the second transfer queues behind the first instead of forming a cycle.</p>
+<div class="ts-code" data-lang="python" data-title="deadlock.py" data-file="deadlock.py" data-verified="ran"></div>
+<p>Its tests run both transfers side by side: opposite order produces a cycle; sorted ids produce one transaction waiting and none deadlocked. At ten times the load, more transfers overlap in time, so the chance two of them touch the same pair in opposite order grows faster than traffic; ordering makes it zero instead of smaller. Detect it from 40P01 counts in your error metrics and the deadlock errors in the server log.</p>
+<p class="ts-takeaway">Deadlocks come from taking the same locks in different orders; detection costs a timeout and an aborted transaction, while a fixed lock order removes them.</p>
+<div class="ts-predict" data-claims="c54 c55">
+<p class="q">You raise deadlock_timeout from one second to ten, hoping for fewer deadlocks. What changes?</p>
+<div class="ts-reveal"><p>The number of deadlocks doesn't change: the cycles still form. Each one is just found later, so the stuck transactions block for ten seconds instead of one before one is aborted. A higher value saves needless checks on a busy server whose lock waits are usually short; it never prevents a deadlock.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="lock-queue" data-rung="4" data-min="6">
+<h2>The migration that took the site down while waiting</h2>
+<p class="ts-bridge">Last part: two transactions waiting on each other. Still unsolved: a migration that does no work at all yet stalls every query.</p>
+<p class="ts-problem">A deploy runs <code>ALTER TABLE orders ADD COLUMN note text</code>, instant by itself. An analytics query has been reading <code>orders</code> for eight minutes. The ALTER waits, and within seconds every API request touching <code>orders</code> is waiting too.</p>
+<p>The ALTER needs ACCESS EXCLUSIVE, which conflicts with the report's ACCESS SHARE, so it waits. New SELECTs arrive behind it, and the definition of blocking covers that: <span class="ts-claim" data-claim="c58" data-src="s9">pg_blocking_pids returns the sessions blocking a given session: those holding a conflicting lock (hard block) and those waiting for a conflicting lock ahead of it in the wait queue (soft block).</span> API queries are soft-blocked by the ALTER, itself hard-blocked by the report.</p>
+<div class="ts-code" data-lang="python" data-title="lock_queue.py" data-file="lock_queue.py" data-verified="ran"></div>
+<p>The tests replay it: readers queue behind the ALTER, and cancelling it frees them. ADD FOREIGN KEY lets readers through but queues writers.</p>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c62" data-src="s14">GoCardless describes a migration that dropped and recreated foreign-key constraints: its exclusive lock request queued behind a long-running read query, API reads and writes piled up behind it, and the result was about 15 seconds of API downtime.</span> <span class="ts-claim" data-claim="c63" data-src="s14">GoCardless's post recommends setting lock_timeout in migration scripts.</span></p></div>
+<p>The fix is to bound the wait. <span class="ts-claim" data-claim="c60" data-src="s5">lock_timeout aborts any statement that waits longer than the limit for a lock; the limit applies to each lock attempt separately, and 0, the default, disables it.</span> Set it only in the migration session, to a few seconds, and retry later. <span class="ts-claim" data-claim="c61" data-src="s5">The docs recommend against setting lock_timeout in postgresql.conf, because it would affect all sessions.</span></p>
+<p>Then shrink what needs the strong lock. <span class="ts-claim" data-claim="c64" data-src="s8">ADD CONSTRAINT ... NOT VALID skips the scan of existing rows and can commit immediately; a later VALIDATE CONSTRAINT checks them while holding only SHARE UPDATE EXCLUSIVE, plus ROW SHARE on the referenced table for a foreign key.</span> <span class="ts-claim" data-claim="c65" data-src="s8">Adding an ordinary column with a non-volatile DEFAULT stores the value in the table's metadata, so no table rewrite is needed; a volatile default, a stored generated or identity column, or a domain type with constraints rewrites the table.</span></p>
+<div class="ts-trap"><p>Diagnose with <code>pg_blocking_pids(pid)</code>, starting from the waiting ALTER: its blocker is the culprit. <span class="ts-claim" data-claim="c59" data-src="s9">The docs caution that calling pg_blocking_pids frequently can affect database performance.</span></p></div>
+<div class="ts-interview"><p>"How do you run schema changes on a table taking 5,000 queries a second?" A strong answer sets lock_timeout and retries, checks for long transactions first, splits risky changes (NOT VALID then VALIDATE; CREATE INDEX CONCURRENTLY), and knows which ALTER forms rewrite the table.</p></div>
+<p class="ts-takeaway">A waiting ACCESS EXCLUSIVE request blocks everything queued behind it, so migrations need lock_timeout plus retry, and changes split so the strong lock is held briefly.</p>
+<div class="ts-order" data-claims="c58 c60">
+<p class="q">Put the safe migration routine in order.</p>
+<ol>
+<li>Check for long-running transactions on the table</li>
+<li>SET lock_timeout to a few seconds in the migration session</li>
+<li>Run the ALTER</li>
+<li>If it timed out, wait and retry, rather than waiting longer</li>
+</ol>
+<p class="ts-why">Clear the hard blockers first, cap how long the request can sit in the queue, run it, and treat a timeout as "try again", never "wait harder".</p>
+</div>
+</section>
+
+<section class="ts-part" id="at-scale" data-rung="4" data-min="6">
+<h2>What breaks first at ten times the load</h2>
+<p class="ts-bridge">Last part: a queued lock request that froze a table. Still unsolved: the slower failures that grow with traffic, and how to see them coming.</p>
+<p class="ts-problem">Traffic grows 10 times. Nothing was changed, yet p99 latency triples, serialization failures go from rare to constant, and one tenant's billing job sometimes runs twice.</p>
+<p><strong>Idle transactions first.</strong> A request that opens a transaction, then calls a slow HTTP API, holds every lock it took. <span class="ts-claim" data-claim="c57" data-src="s2">Without a deadlock, a transaction waiting for a lock waits indefinitely, so holding transactions open for long periods is a bad idea.</span> <span class="ts-claim" data-claim="c66" data-src="s5">idle_in_transaction_session_timeout ends sessions that sit idle inside an open transaction for longer than the limit; it is disabled (0) by default.</span> <span class="ts-claim" data-claim="c67" data-src="s5">An idle open transaction can hold locks, and it also stops VACUUM from removing recently dead rows, which can add to table bloat.</span></p>
+<p><strong>Serializable next.</strong> <span class="ts-claim" data-claim="c71" data-src="s1">When the predicate lock table runs short of memory, page-level predicate locks are combined into a relation-level lock, which can raise the serialization failure rate.</span> <span class="ts-claim" data-claim="c72" data-src="s1">A sequential scan always needs a relation-level predicate lock.</span> So one query that loses its index plan (Part 5) can make every writer of that table conflict. <span class="ts-claim" data-claim="c73" data-src="s4 s12">In PostgreSQL 18, max_pred_locks_per_transaction and max_locks_per_transaction both default to 64; the PostgreSQL 19 release notes raise max_locks_per_transaction to 128.</span> <span class="ts-claim" data-claim="c70" data-src="s1">For busy Serializable workloads the docs recommend declaring READ ONLY transactions, limiting active connections with a pool, keeping transactions small, and not leaving connections idle in transaction.</span></p>
+<p><strong>Then the pooler.</strong> <span class="ts-claim" data-claim="c45" data-src="s13">PgBouncer's transaction pooling assigns a server connection to a client only during a transaction, and its feature table lists session-level advisory locks as never working in that mode.</span> The lock lands on a server connection that the next transaction, from another client, may get, while the client that took it may find it gone. That's the billing job running twice.</p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c46" data-src="s2">The docs warn that pg_advisory_lock(id) in a query with LIMIT may take locks the application didn't expect, because LIMIT isn't guaranteed to apply before the locking function runs.</span> Those locks stay until the session ends. Pick the ids in a subquery, then lock.</p></div>
+<p><strong>Detect it.</strong> <span class="ts-claim" data-claim="c68" data-src="s6">log_lock_waits logs a message when a session waits longer than deadlock_timeout for a lock; it is off by default in PostgreSQL 18.</span> <span class="ts-claim" data-claim="c69" data-src="s12">The PostgreSQL 19 release notes, not final at the time of writing, enable log_lock_waits by default.</span> Alert on the rate of 40001 and 40P01 errors, on sessions idle in transaction for longer than a few seconds, and on lock-wait log lines.</p>
+<p class="ts-takeaway">At scale the first failures are long or idle transactions holding locks, coarse predicate locks raising retry rates, and session-level state lost behind a transaction pooler.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c45 c44">
+<p class="q">Behind PgBouncer in transaction mode, which way of ensuring "one billing run per tenant" works?</p>
+<ol>
+<li data-why="Session-level advisory locks are listed as never working in transaction pooling: the session behind the lock changes between transactions.">pg_advisory_lock at the start, pg_advisory_unlock at the end, across several transactions</li>
+<li>pg_advisory_xact_lock inside the single transaction that does the billing run</li>
+<li data-why="A session-level setting has the same problem as a session-level lock: the next transaction may run on another server connection.">A session variable that marks the tenant as busy</li>
+</ol>
+<p class="ts-why">A transaction-level advisory lock lives and dies with one transaction, which is exactly the unit transaction pooling keeps on one server connection.</p>
+</div>
+<div class="ts-explain" data-points="Opposite lock order causes deadlocks; fix with a fixed order, not a longer timeout|A waiting ACCESS EXCLUSIVE request blocks everyone behind it; use lock_timeout and retry|Long or idle transactions hold locks; cap them with idle_in_transaction_session_timeout|Session-level locks break behind transaction pooling; use transaction-level ones">
+<p class="q">In your own words: name the lock failures from this rung, how you'd detect each, and the fix.</p>
+<div class="ts-model"><p>Deadlocks come from two transactions locking the same rows in opposite order; I'd see 40P01 errors and log entries, and fix it by always locking in id order. A migration waiting for ACCESS EXCLUSIVE queues every later query behind it; pg_blocking_pids shows the chain, and lock_timeout with a retry bounds it. Idle or long transactions hold locks and stop VACUUM removing dead rows; I'd alert on idle-in-transaction sessions and set idle_in_transaction_session_timeout. Session-level advisory locks don't survive transaction pooling, so I'd use transaction-level ones.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="choose" data-rung="5" data-min="5">
+<h2>Choosing a concurrency strategy</h2>
+<p class="ts-bridge">Last part: what fails as load grows. Still unsolved: picking one approach for a given flow and defending it.</p>
+<p class="ts-problem">Your team has three flows: decrement stock, transfer money between wallets, and approve an expense only while the team stays under budget. One setting won't fit all three.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Approach</th><th>Pick it when</th><th>What you pay</th></tr></thead>
+<tbody>
+<tr><td>Atomic UPDATE with a guard, Read Committed</td><td>The change fits in one statement on known rows (stock, counters, balances)</td><td>No retry code. <span class="ts-claim" data-claim="c6" data-src="s1">A waiting UPDATE re-checks its WHERE clause on the committed row.</span> Doesn't cover rules that span other rows.</td></tr>
+<tr><td>SELECT ... FOR UPDATE</td><td>Code must run between read and write; conflicts are frequent; a retry is expensive</td><td><span class="ts-claim" data-claim="c33" data-src="s2">Other writers and lockers of the row wait until your transaction ends.</span> Deadlock risk if order varies.</td></tr>
+<tr><td>Version column checked in the UPDATE</td><td>Conflicts are rare, transactions are long or span user think-time</td><td>The app handles "0 rows updated" as a conflict and reloads</td></tr>
+<tr><td>Repeatable Read plus retry</td><td>A stable view across many reads, or refusing stale writes to the same rows</td><td><span class="ts-claim" data-claim="c10" data-src="s1">Serialization failures on concurrent updates to the same row.</span> Doesn't stop write skew.</td></tr>
+<tr><td>Serializable plus retry</td><td>Rules span many rows (budgets, on-call, no double booking) and you want correctness by default</td><td><span class="ts-claim" data-claim="c16" data-src="s1">Read tracking overhead and 40001 retries.</span> Watch the retry rate.</td></tr>
+<tr><td>Advisory lock</td><td>The thing to protect isn't a row (a job, a tenant-wide operation)</td><td><span class="ts-claim" data-claim="c43" data-src="s2">The system doesn't enforce it.</span> Every code path must remember to take it.</td></tr>
+</tbody>
+</table></div>
+<p>A rule of thumb: start with the atomic UPDATE where it fits. For rules across rows, Serializable everywhere is simplest to reason about. <span class="ts-claim" data-claim="c75" data-src="s11">If Serializable is used for all writes and for all reads that need a consistent view, the docs say no other effort is needed to ensure consistency, and suggest a framework that retries serialization failures automatically.</span> <span class="ts-claim" data-claim="c76" data-src="s1">The docs also suggest removing explicit locks and SELECT FOR UPDATE that Serializable makes unnecessary.</span></p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c74" data-src="s11">Serializable's protection doesn't extend to hot standby or logical replicas; the docs say those setups may want Repeatable Read with explicit locking on the primary.</span> A business check that reads from a replica gets no Serializable guarantee.</p></div>
+<div class="ts-interview"><p>"Why not run everything at Serializable?" A strong answer weighs it honestly: simplest correctness model, no lock-order reasoning, but every caller needs the retry wrapper, retry rates climb under contention or sequential scans, and replica reads are outside the guarantee. Many teams keep Read Committed with atomic updates for hot counters and use Serializable for the flows with cross-row rules.</p></div>
+<p class="ts-takeaway">Pick by the shape of the rule: one statement on known rows, a read-then-decide on one hot row, or a rule across many rows, and say what each choice costs.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c14 c16">
+<p class="q">Expense approval: approve only if the sum of the team's approved expense rows stays under budget. There is no running-total row. Two managers approve two different expenses at the same moment. Which approach is correct without extra locking?</p>
+<ol>
+<li data-why="Each UPDATE touches a different expense row and the total lives in no single row, so no WHERE re-check sees the other approval. (With a running-total row, a guarded UPDATE on it would work.)">Atomic UPDATE on the expense row at Read Committed</li>
+<li data-why="The two transactions write different rows, so no stale write is detected: this is write skew.">Repeatable Read with retry</li>
+<li>Serializable with retry</li>
+</ol>
+<p class="ts-why">Both read the same total and write different rows: write skew. Only Serializable's read tracking catches it without an explicit lock on the team.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="8">
+<h2>Interview drill: concurrency at the senior bar</h2>
+<p class="ts-bridge">Last part: a table of approaches. Still unsolved: defending a design under questioning, trade-offs said out loud.</p>
+<p class="ts-problem">Three prompts that come up in product-company rounds. For each, commit to an answer before opening the reference.</p>
+<p>For every prompt, say four things: the anomaly or lock risk, the mechanism you'd use, how you'd detect it failing, and what the choice costs.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. Movie seat booking. 500 people try to book the last 10 seats of a premiere in the same minute. A booking holds a seat for 5 minutes while the user pays. Design it.</p>
+<div class="ts-reveal"><p>Don't hold a database transaction open for the 5 minutes: idle transactions hold locks and stop VACUUM removing dead rows. Make the hold a row: <code>UPDATE seats SET held_by = $user, held_until = now() + interval '5 min' WHERE id = $seat AND (held_by IS NULL OR held_until &lt; now())</code>. At Read Committed a waiting UPDATE re-checks that guard on the committed row, so exactly one user gets each seat; the rest see 0 rows and get "taken". Payment confirmation is a second short transaction checking the hold is still yours. Detect problems via conflict rate and expired holds. Cost: expired holds need clean-up, and users can lose a seat if payment runs past the hold.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. Wallet transfers at 2,000 a second, with a few merchant wallets receiving most of the money. Deadlocks and lock waits are rising. Fix it.</p>
+<div class="ts-reveal"><p>Lock both wallets in a fixed order, lowest id first, removing the deadlocks; add a bounded retry on 40P01 and 40001 for safety. The rising waits come from hot merchant rows: every transfer to them serializes on one row. Options, with costs: append transfers to a ledger table and update the merchant balance in batches (balance is briefly stale); split a hot wallet into several sub-balance rows and sum them (reads get more expensive). Detect with lock-wait logs and per-row wait sampling via pg_locks during incidents. State that Serializable alone doesn't fix hot-row contention: writers still wait on the row lock, and then some also fail and retry.</p></div>
+</div>
+<div class="ts-predict" data-claims="c64 c77">
+<p class="q">3. Add a NOT NULL foreign key from <code>orders</code> (800 million rows, 3,000 writes a second) to a new <code>customers_v2</code> table without downtime.</p>
+<div class="ts-reveal"><p>Every step runs with a short lock_timeout and a retry, after checking for long transactions. Add the nullable column (no rewrite, brief ACCESS EXCLUSIVE). Backfill in small batches, each its own short transaction, so no long transaction holds row locks or stops VACUUM removing dead rows. Add the foreign key NOT VALID: no scan, brief SHARE ROW EXCLUSIVE on both tables, which pauses writes only for that moment. VALIDATE CONSTRAINT under SHARE UPDATE EXCLUSIVE while traffic flows. For NOT NULL, add the not-null constraint NOT VALID as well and validate it later; on PostgreSQL 18 NOT VALID works for not-null constraints, and a validated CHECK (col IS NOT NULL) would also let SET NOT NULL skip its scan. Cost: a multi-step, multi-deploy migration and app code that tolerates NULLs during the backfill.</p></div>
+</div>
+<div class="ts-interview"><p>"Read Committed or Serializable as the starting level for a new service?" A strong answer gives a position and its cost: Serializable makes every transaction correct in isolation and needs a retry wrapper everywhere; Read Committed is faster to start but needs every cross-row rule found and locked by hand. It notes the deciding question: how many rules span rows, and whether the team will reliably spot them.</p></div>
+<div class="ts-note" data-label="End of the series"><p>This completes the six-part PostgreSQL internals series: rows on disk, MVCC, VACUUM, indexes, planning, and now isolation and locking. Rows carry versions, snapshots choose among them, VACUUM clears the dead ones, indexes find them, the planner picks the route, and locks plus isolation decide who sees and changes what.</p></div>
+<p class="ts-takeaway">A senior concurrency answer names the anomaly, picks the narrowest mechanism that prevents it, keeps transactions short, and states the cost in waits, retries or staleness.</p>
+<div class="ts-explain" data-points="Name the anomaly or lock risk (lost update, write skew, deadlock, lock queue)|Pick the narrowest mechanism: guarded UPDATE, FOR UPDATE, Serializable, or lock_timeout|Keep transactions short; never hold one open across user think-time|State the cost: waits, retries, staleness or migration steps">
+<p class="q">Pick one of the three prompts and give your full answer as you would in an interview, including what you'd give up.</p>
+<div class="ts-model"><p>For seat booking: the risk is two users getting one seat, a lost update. I wouldn't hold a transaction for 5 minutes; I'd store the hold in the row with a guarded UPDATE that only succeeds if the seat is free or the old hold expired. At Read Committed a waiting UPDATE re-checks that guard on the committed row, so exactly one user wins and the rest see 0 rows. Confirming payment is a second short transaction. The cost: expired holds need clean-up, and a slow payer can lose the seat.</p></div>
+</div>
+</section>

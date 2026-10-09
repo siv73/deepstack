@@ -14,6 +14,6 @@
   {"label": "PostgreSQL internals, Part 1", "slug": "postgres-internals-1", "why": "pages, line pointers and the ctid every index entry points at"},
   {"label": "PostgreSQL internals, Part 3", "slug": "postgres-internals-3", "why": "HOT updates, the visibility map, B-tree bloat and REINDEX CONCURRENTLY"},
   {"label": "PostgreSQL internals, Part 5: query planning and EXPLAIN", "why": "how the planner costs index scans, bitmap scans and sequential scans, and reading plans in depth"},
-  {"label": "PostgreSQL internals, Part 6: isolation levels and locking", "why": "lock modes such as SHARE and SHARE UPDATE EXCLUSIVE that index builds take"}
+  {"label": "PostgreSQL internals, Part 6: isolation levels and locking", "slug": "postgres-internals-6", "why": "lock modes such as SHARE and SHARE UPDATE EXCLUSIVE that index builds take"}
  ]
 }
