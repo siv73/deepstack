@@ -1,0 +1,344 @@
+<section class="ts-part" id="reserving-for-the-longest-answer" data-rung="1" data-min="5">
+<h2>Why reserving room for the longest answer caps the batch</h2>
+<p class="ts-bridge">Last part: continuous batching lets requests join and leave at every step, so the batch is as big as the KV cache memory allows. Still unsolved: how that memory is handed to each request.</p>
+<p class="ts-problem">Part 2's Llama 3.1 8B on one H100 leaves about 54.6 GB for the KV cache, at 131,072 bytes per token. A request arrives. It may answer in 20 tokens or in 2,000. How much memory do you give it?</p>
+<p>Picture a restaurant that does not know how many friends will join each party. To be safe, it seats every party at a 12-seat table. Most tables end up with three people and nine empty chairs, and the queue outside grows.</p>
+<p><span class="ts-claim" data-claim="c1" data-src="s1">Before vLLM, serving systems stored each request's KV cache in one contiguous chunk of memory, reserved up front for the request's maximum possible length.</span> <span class="ts-claim" data-claim="c2" data-src="s1">They had to guess high, because the output length depends on the input and the model, and generation stops at an end-of-sequence token or at the maximum length.</span></p>
+<p><span class="ts-claim" data-claim="c3" data-src="s1">The vLLM paper's own example: one token of OPT-13B's KV cache takes about 800 KB, so a request of up to 2,048 tokens can need 1.6 GB.</span></p>
+<p>Now our model. <span class="ts-claim" data-claim="c4" data-src="s2">Llama 3.1 8B has 32 layers, a model dimension of 4,096, 32 attention heads and 8 key/value heads.</span> That gives Part 2's 131,072 bytes per token.</p>
+<ol class="ts-steps">
+<li>Set the maximum length to 2,048 tokens. Each request reserves 2,048 × 131,072 = 268 MB.</li>
+<li>A request answers in 300 tokens. It uses 39.3 MB of its 268 MB: 85% of the chunk sits idle.</li>
+<li>54.6 GB ÷ 268 MB = 203 requests at once, however short the real answers are.</li>
+</ol>
+<p class="ts-takeaway">Reserving for the longest possible answer caps the batch by the worst case, not by what requests actually use.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">With contiguous reservation, you lower the maximum length from 4,096 to 2,048 tokens. Real answers stay the same. What happens to the number of requests that fit?</p>
+<ol>
+<li>It doubles, because each reservation halves</li>
+<li data-why="The cap comes from the reservation, not from what requests use; the reservation changed.">It stays the same, because real answers did not change</li>
+<li data-why="A smaller reservation leaves room for more requests, not fewer.">It halves</li>
+</ol>
+<p class="ts-why">Capacity is the budget divided by the reservation. Halving the reservation doubles capacity, and requests longer than 2,048 tokens are now rejected. The real lengths never enter the sum.</p>
+</div>
+</section>
+
+<section class="ts-part" id="three-kinds-of-waste" data-rung="1" data-min="5">
+<h2>Three ways a reserved chunk wastes memory</h2>
+<p class="ts-bridge">Last part: contiguous reservation sizes every request for the worst case. Still unsolved: where exactly the memory goes, and how bad it gets in practice.</p>
+<p class="ts-problem">Take one request with 2,048 reserved slots. It has produced 300 tokens and will stop at 900. Which of its 1,748 empty slots are wasted, and are they all wasted the same way?</p>
+<p>Back at the restaurant: some chairs are empty because friends are still on their way. Some will stay empty all night. And between tables there is floor space too narrow for another table.</p>
+<p><span class="ts-claim" data-claim="c5" data-src="s1">The vLLM paper names three kinds of waste in this scheme. Reserved slots hold space for tokens the request will produce later, so no other request can use it in the meantime.</span> <span class="ts-claim" data-claim="c6" data-src="s1">Internal fragmentation is space reserved for the maximum length that is never filled, because the answer ends sooner.</span> <span class="ts-claim" data-claim="c7" data-src="s1">External fragmentation is memory the allocator cannot hand out, because each request's chunk is a different size.</span></p>
+<p>The paper uses two terms for this. <dfn data-def="Memory reserved inside a request's own chunk that is never used, because the request ends before its maximum length.">Internal fragmentation</dfn> is waste inside a chunk. <dfn data-def="Free memory left in gaps between chunks, too small or badly placed to hold another request's chunk.">External fragmentation</dfn> is waste between chunks.</p>
+<p><span class="ts-claim" data-claim="c8" data-src="s1">Measured in existing systems, only 20.4% to 38.2% of KV cache memory held actual token states.</span> The rest was one of the three kinds of waste.</p>
+<p>A sample of eight requests, final lengths from 60 to 2,048 tokens, lands in that range. Reserved at 2,048 each, they hold 16,384 slots and use 6,178: 37.7% used, 62.3% wasted.</p>
+<p class="ts-takeaway">Reserved slots, internal fragmentation and external fragmentation together left 62% to 80% of KV memory without real tokens in the paper's measurements.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The request above has 2,048 slots, has written 300 tokens and will stop at 900. Split its 1,748 empty slots into reserved slots and internal fragmentation.</p>
+<div class="ts-reveal"><p>600 slots are reserved: tokens 301 to 900 will fill them later, but nobody else can use them until then. 1,148 slots are internal fragmentation: they will never be filled. External fragmentation is not inside this chunk at all; it is in the gaps around it.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="blocks-and-block-tables" data-rung="2" data-min="6">
+<h2>Blocks and block tables: allocate as you grow</h2>
+<p class="ts-bridge">Last part: 62% to 80% of a contiguous KV cache can sit empty. Still unsolved: how to stop reserving memory for tokens that may never come.</p>
+<p class="ts-problem">Keep the same 54.6 GB, but stop guessing lengths. Hand each request memory in small pieces as it grows. The pieces will land all over GPU memory. How does the request find its own?</p>
+<p>The restaurant switches to 4-seat tables. A party gets one table, then another as friends arrive. The host keeps a card per party listing its tables. They need not be next to each other.</p>
+<ol class="ts-steps">
+<li>At startup, cut the KV memory into equal pieces, each with room for a fixed number of tokens.</li>
+<li>A request fills its own numbered pieces left to right: piece 0, piece 1, and so on.</li>
+<li>A per-request list maps each of those numbers to whichever physical piece was free.</li>
+<li>Take a new piece only when the last one is full. Return all of them when the request ends.</li>
+</ol>
+<p>Each piece is a <dfn data-def="A fixed-size slice of KV cache memory with room for the keys and values of a set number of tokens, such as 16.">KV block</dfn>. The per-request list is its <dfn data-def="A request's list mapping its logical blocks (0, 1, 2, ...) to physical KV blocks anywhere in GPU memory.">block table</dfn>.</p>
+<p><span class="ts-claim" data-claim="c9" data-src="s1">In the paper, a request's logical blocks fill left to right, and a block engine maps them to physical blocks carved out of a contiguous chunk of GPU memory.</span> <span class="ts-claim" data-claim="c10" data-src="s1">Each block table entry records the physical block and how many of its positions are filled.</span> <span class="ts-claim" data-claim="c11" data-src="s1">Because blocks are taken only when needed, the paper bounds a request's waste to one block.</span> <span class="ts-claim" data-claim="c12" data-src="s1">Because every block is the same size, external fragmentation goes away.</span></p>
+<p>Step through a 12-block pool with 4-token blocks. Watch the block tables point at blocks that are not next to each other. Steps 7 to 9 preview sharing, covered in its own part below.</p>
+<figure class="ts-blocks" data-title="Three requests growing in a 12-block pool">
+<script type="application/json">
+{"blocks":12,"block_size":4,"steps":[{"pool":[[4,1,["A"]],[2,1,["A"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1],6]],"copy":null},{"pool":[[4,1,["A"]],[2,1,["A"]],[3,1,["B"]],[4,1,["C"]],[4,1,["C"]],[1,1,["C"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1],6],["B",[2],3],["C",[3,4,5],9]],"copy":null},{"pool":[[4,1,["A"]],[3,1,["A"]],[4,1,["B"]],[4,1,["C"]],[4,1,["C"]],[2,1,["C"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1],7],["B",[2],4],["C",[3,4,5],10]],"copy":null},{"pool":[[4,1,["A"]],[4,1,["A"]],[4,1,["B"]],[4,1,["C"]],[4,1,["C"]],[3,1,["C"]],[1,1,["B"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1],8],["B",[2,6],5],["C",[3,4,5],11]],"copy":null},{"pool":[[4,1,["A"]],[4,1,["A"]],[4,1,["B"]],[4,1,["C"]],[4,1,["C"]],[4,1,["C"]],[2,1,["B"]],[1,1,["A"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1,7],9],["B",[2,6],6],["C",[3,4,5],12]],"copy":null},{"pool":[[4,1,["A"]],[4,1,["A"]],[4,1,["B"]],[0,0,[]],[0,0,[]],[0,0,[]],[2,1,["B"]],[1,1,["A"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1,7],9],["B",[2,6],6]],"copy":null},{"pool":[[4,1,["A"]],[4,1,["A"]],[4,2,["B","B2"]],[0,0,[]],[0,0,[]],[0,0,[]],[2,2,["B","B2"]],[1,1,["A"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1,7],9],["B",[2,6],6],["B2",[2,6],6]],"copy":null},{"pool":[[4,1,["A"]],[4,1,["A"]],[4,2,["B","B2"]],[3,1,["B"]],[0,0,[]],[0,0,[]],[2,1,["B2"]],[1,1,["A"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1,7],9],["B",[2,3],7],["B2",[2,6],6]],"copy":[6,3]},{"pool":[[4,1,["A"]],[4,1,["A"]],[4,2,["B","B2"]],[3,1,["B"]],[0,0,[]],[0,0,[]],[3,1,["B2"]],[1,1,["A"]],[0,0,[]],[0,0,[]],[0,0,[]],[0,0,[]]],"tables":[["A",[0,1,7],9],["B",[2,3],7],["B2",[2,6],7]],"copy":null}],"captions":["A arrives with a 6-token prompt. It gets two blocks: 4 tokens in block 0, 2 in block 1. Nothing is reserved for its answer.","B arrives with 3 tokens and gets one block. C arrives with 9 tokens and gets three. 6 of 12 blocks are in use.","One decode step: each request writes one token into the free slot of its last block. No new blocks.","Next step: A fills block 1 exactly. B's block was full, so B takes block 6. Its table now points at blocks 2 and 6, which are not next to each other.","Next step: A needs a new block and takes block 7. C fills its last block.","C finishes. Its three blocks go straight back to the free list and can be handed to anyone. No gaps are left behind.","B asks for two samples. The second sample, B2, gets a copy of B's block table: blocks 2 and 6 now have two owners each. No data is copied.","B writes a token. Its last block is shared, so it gets a private copy first (block 6 is copied into block 3), then writes there.","B2 writes a token. Block 6 now has one owner, so B2 writes in place. Only one block was ever copied."]}
+</script>
+</figure>
+<p>Back to the 300-token request, with 16-token blocks: it holds 19 blocks, 304 slots, and wastes 4 slots instead of 1,748.</p>
+<p class="ts-takeaway">Fixed-size blocks taken on demand, found through a per-request block table, cap each request's waste at one partly filled block.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c10 c11">
+<p class="q">Block size is 16 tokens. A request holds 33 tokens. How many blocks does it hold, and how many slots are empty?</p>
+<ol>
+<li data-why="33 tokens do not fit in 2 blocks of 16; the 33rd token needs a third block.">2 blocks, 0 empty</li>
+<li>3 blocks, 15 empty</li>
+<li data-why="Blocks are taken one at a time as the request grows; nothing is reserved for the maximum length.">128 blocks, as many as a 2,048-token maximum needs</li>
+</ol>
+<p class="ts-why">Two full blocks hold 32 tokens; the 33rd starts a third block with 15 free slots. That last partly filled block is the only waste.</p>
+</div>
+</section>
+
+<section class="ts-part" id="the-virtual-memory-mapping" data-rung="2" data-min="5">
+<h2>The same trick your operating system plays</h2>
+<p class="ts-bridge">Last part: requests take fixed-size blocks on demand and find them through a block table. Still unsolved: where this idea comes from, and how far the comparison holds.</p>
+<p class="ts-problem">Two processes on your laptop each believe they own a long, unbroken stretch of memory starting at the same address. Neither is true, and neither process can tell. The KV cache needs the same illusion.</p>
+<p><span class="ts-claim" data-claim="c13" data-src="s1">An operating system splits memory into fixed-size pages and maps each program's logical pages to physical pages.</span> The program sees one unbroken range; the physical pages can be anywhere. <span class="ts-claim" data-claim="c14" data-src="s1">The vLLM paper draws the mapping itself: blocks are pages, tokens are bytes, and requests are processes.</span> That is where the name PagedAttention comes from.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Operating system</th><th>Paged KV cache</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td>Process</td><td>Request</td><td>The thing that owns memory</td></tr>
+<tr><td>Page</td><td>KV block</td><td>The unit handed out</td></tr>
+<tr><td>Byte</td><td>Token</td><td>What fills a unit</td></tr>
+<tr><td>Page table</td><td>Block table</td><td>Logical number to physical location</td></tr>
+<tr><td>Free page list</td><td>Free block queue</td><td>Units ready to hand out</td></tr>
+</tbody>
+</table></div>
+<p>Where the comparison stops working:</p>
+<ol class="ts-steps">
+<li>No hardware does the lookup. Address translation in an OS happens in the CPU's memory hardware. Here the attention code reads the block table itself (next part).</li>
+<li>No page faults. <span class="ts-claim" data-claim="c15" data-src="s3 s4">In vLLM v0.31.0 the scheduler asks the KV cache manager for every scheduled request's blocks before the model runs; a request that cannot get them is not run in that step.</span></li>
+<li>No disk. An OS can write a page out and read it back. <span class="ts-claim" data-claim="c16" data-src="s5">In vLLM V1 the default preemption mode is RECOMPUTE rather than SWAP.</span> <span class="ts-claim" data-claim="c65" data-src="s3 s9">The v0.31.0 scheduler has no swap path at all; copying KV blocks to CPU memory is a separate feature, off unless kv_offloading_size is set.</span> Thrown-away blocks are rebuilt by running the model again, as a later part shows.</li>
+<li>A block is not a few kilobytes of one array. <span class="ts-claim" data-claim="c17" data-src="s6">In v0.31.0, when all of a model's layers share one KV cache group, as Llama 3.1 8B's do, one block ID covers its token slots in every layer: the bytes per block are the sum of every layer's page size.</span> Hybrid models split layers into groups, and a block then covers one group.</li>
+</ol>
+<p class="ts-takeaway">PagedAttention borrows virtual memory's core move, fixed-size units behind a per-owner mapping table, but the lookup is software, nothing faults, and evicted blocks are recomputed rather than read back.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c16 c65">
+<p class="q">Which operating-system behaviour has no direct counterpart in vLLM v0.31.0's default setup?</p>
+<ol>
+<li data-why="The block table plays exactly this role: logical block number to physical block.">Mapping logical units to physical units through a per-owner table</li>
+<li data-why="Blocks are all the same size, like pages, which is what removes external fragmentation.">Handing out memory in fixed-size units</li>
+<li>Writing evicted units to slower storage and reading them back later</li>
+</ol>
+<p class="ts-why">V1 has no swap preemption path: a preempted request's blocks are freed and rebuilt by running the model again, not saved and restored. CPU offloading exists, but as a separate opt-in feature.</p>
+</div>
+</section>
+
+<section class="ts-part" id="reading-scattered-blocks" data-rung="2" data-min="5">
+<h2>How attention reads keys scattered across blocks</h2>
+<p class="ts-bridge">Last part: the block table is the page table, but software reads it. Still unsolved: how attention works when a request's keys and values are spread across blocks 2, 6 and 9.</p>
+<p class="ts-problem">Request B's next token must attend to all its earlier tokens. Their keys and values sit in physical blocks 2 and 6, with request A's data in between. A normal attention routine expects one unbroken array.</p>
+<p>Think of a paginated API. You cannot fetch a 10,000-row table in one call, so you walk the page tokens and fold each page into a running result. The answer is the same as one big read.</p>
+<ol class="ts-steps">
+<li>Take the new token's query vector.</li>
+<li>Walk the request's block table in order: block 2, then block 6.</li>
+<li>For each block, load its keys and score the query against them.</li>
+<li>Load that block's values, weight them by the scores, and add them to a running total.</li>
+<li>Normalise the scores across all blocks, so the result equals reading one long array.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c18" data-src="s1">PagedAttention computes attention block by block: it fetches each key block, scores the query against it, then weights the matching value blocks and sums them.</span> <span class="ts-claim" data-claim="c19" data-src="s1">That is what lets keys and values that belong together sit in non-contiguous memory.</span></p>
+<p>Writing new tokens needs an address too. <span class="ts-claim" data-claim="c20" data-src="s7 s24">In v0.31.0 the model runner keeps block tables for the running requests and, each step, computes a slot mapping that tells the kernel which cache slot each scheduled token's key and value go to.</span></p>
+<div class="ts-legacy"><p><span class="ts-claim" data-claim="c21" data-src="s8">vLLM's PagedAttention kernel design doc is now marked historical: it follows the original paper and no longer describes the code vLLM uses today.</span> You will meet it in blog posts. The idea above still holds; the kernel it describes does not.</p></div>
+<p class="ts-takeaway">Attention walks the block table and folds in one block at a time, so the request's keys and values can live anywhere in the pool.</p>
+<div class="ts-explain" data-points="Contiguous reservation sizes every request for the maximum length, so most memory holds no real tokens|Paging hands out fixed-size blocks only as a request grows, so waste is at most one partly filled block per request|A per-request block table maps logical blocks to physical blocks anywhere in the pool|Attention walks the block table block by block, so blocks need not be next to each other">
+<p class="q">In your own words: what does PagedAttention change about KV cache memory, and why does attention still work?</p>
+<div class="ts-model"><p>Without paging, each request gets one contiguous chunk sized for its maximum length, and most of it never holds a token. PagedAttention cuts memory into equal blocks and gives a request a new block only when its last one is full, so the most it wastes is one partly filled block. Each request keeps a block table, like a page table, that maps its logical blocks to physical blocks anywhere in GPU memory. Attention walks that table, scoring the query against one key block at a time and summing the weighted values, so the result is the same as if the cache were one array.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="sharing-with-copy-on-write" data-rung="3" data-min="6">
+<h2>Sharing blocks between samples, and what changed since 2023</h2>
+<p class="ts-bridge">Last part: attention reads blocks wherever they are. Still unsolved: can two requests point at the same block?</p>
+<p class="ts-problem">A user asks for 4 different answers to one 1,000-token prompt. Stored separately, the prompt's keys and values exist 4 times: 524 MB where 131 MB would do.</p>
+<p>Like a shared Google Doc: everyone reads one copy, and an editor makes their own copy first.</p>
+<ol class="ts-steps">
+<li>Each sample's block table points at the same prompt blocks.</li>
+<li>Each block counts the tables pointing at it.</li>
+<li>Writing into a shared block copies that one block first.</li>
+<li>A finished sample lowers its blocks' counts; a block at zero is free.</li>
+</ol>
+<p>The count is a <dfn data-def="The number of block tables that point at a physical block. The block is free only when it reaches zero.">reference count</dfn>; copying only on the first write is <dfn data-def="Sharing one copy until someone writes, then giving the writer a private copy of only the part being changed.">copy-on-write</dfn>. <span class="ts-claim" data-claim="c22" data-src="s1">For parallel sampling, the paper maps every sample's prompt blocks to the same physical blocks and gives each physical block a reference count.</span> <span class="ts-claim" data-claim="c23" data-src="s1">When a sample writes to a shared block, it gets a fresh copy first, so copy-on-write happens one block at a time.</span> <span class="ts-claim" data-claim="c24" data-src="s1">In beam search most blocks stay shared; a dropped beam lowers its blocks' reference counts, and blocks that reach zero are freed.</span> <span class="ts-claim" data-claim="c25" data-src="s1">The paper reports that the prompt's cache was 12% of KV memory in its parallel-sampling experiment, and that sharing saves up to 55% of memory in beam search.</span></p>
+<div class="ts-note" data-label="Changed since the 2023 paper"><p><span class="ts-claim" data-claim="c26" data-src="s13">In vLLM v0.31.0, a request with n greater than 1 is split into n child requests, each with n = 1.</span> <span class="ts-claim" data-claim="c27" data-src="s14">Its offline beam search runs above the engine: every step submits each beam as a new request for one token, asking for 2 × beam_width log-probabilities.</span> Those requests share blocks through prefix caching, the next part, and <span class="ts-claim" data-claim="c28" data-src="s4">only full blocks are cached.</span> <span class="ts-claim" data-claim="c29" data-src="s10">v0.31.0's block pool treats a block as writable only when one request holds it and it has no hash.</span> So a shared full block is never written. <span class="ts-claim" data-claim="c30" data-src="s12 s23">Copy-on-write survives for one case: when a prefix-cache hit ends inside a block, the request gets a private copy of that block; vLLM allows such hits only for hybrid models whose Mamba layers use mamba_cache_mode align with a match unit finer than their block size.</span></p></div>
+<div class="ts-interview"><p><b>Asked:</b> "How does vLLM avoid storing the same prompt 4 times for n = 4?" <b>Strong answer:</b> the 2023 design shares blocks with reference counts and copy-on-write; current vLLM splits n = 4 into four requests that share full prompt blocks through prefix caching. Each sample computes the partly filled last prompt block itself. Cost: up to one block of repeated work per sample, for simpler, append-only block tables.</p></div>
+<p class="ts-takeaway">Reference counts let many requests point at one block; the paper copies a shared block only on its first write, while vLLM v0.31.0 mostly shares full, never-written blocks through prefix caching instead.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c22 c23">
+<p class="q">Under the paper's design, two samples share a prompt that ends halfway through a block. Each then generates 100 tokens with block size 16. How many blocks get copied?</p>
+<ol>
+<li data-why="Copy-on-write copies only blocks that are written while shared, not the whole prompt.">Every prompt block, once per sample</li>
+<li>One: the half-full last prompt block, on the first write while it is still shared</li>
+<li data-why="After one sample copies, the other is the sole owner and writes in place; new blocks are fresh, not copies.">One per generated block, for both samples</li>
+</ol>
+<p class="ts-why">Full prompt blocks are only read. The half-full block is written by both samples; the first writer copies it, and the second becomes its only owner and writes in place. New blocks after that are fresh, never shared.</p>
+</div>
+</section>
+
+<section class="ts-part" id="prefix-caching-in-v031" data-rung="3" data-min="6">
+<h2>Automatic prefix caching: finding blocks someone already computed</h2>
+<p class="ts-bridge">Last part: current vLLM shares full blocks across requests. Still unsolved: how a new request finds them.</p>
+<p class="ts-problem">Your RAG endpoint sends the same 3,000-token system prompt and document with every question. Each request redoes 3,000 tokens of prefill. That is the same work, thousands of times a day.</p>
+<p>It works like git's content-addressed storage: a chunk named by the hash of its contents and history is found by name.</p>
+<ol class="ts-steps">
+<li>When a block fills, hash it with its parent block's hash and its own tokens.</li>
+<li>A new prompt is hashed block by block and each hash looked up, stopping at the first miss.</li>
+<li>On a hit, the block's reference count goes up and the prompt's prefill skips those tokens.</li>
+<li>Freed blocks keep their hashes until the pool reuses them, least recently used first.</li>
+</ol>
+<p>The hash is the <dfn data-def="An identifier for a full block computed from its parent block's hash, its own tokens and any extra keys, so equal prefixes give equal hashes.">block hash</dfn>. <span class="ts-claim" data-claim="c31" data-src="s4">vLLM hashes each full block from three things: the parent block's hash, the block's own tokens, and extra keys such as LoRA IDs, image hashes or a cache salt.</span> <span class="ts-claim" data-claim="c32" data-src="s9">Prefix caching is on by default in v0.31.0, and the default hash algorithm is sha256.</span></p>
+<p><span class="ts-claim" data-claim="c33" data-src="s4 s10">On a hit, the cached block's reference count goes up, and it leaves the free queue if no running request was using it.</span> <span class="ts-claim" data-claim="c34" data-src="s11">If every prompt token hits, the last token is still recomputed to get its logits, which can recompute a whole block.</span></p>
+<p>The free list is the <dfn data-def="The ordered list of blocks no request is using. New blocks come from its head; freed blocks that may be reused go to its tail.">free queue</dfn>. <span class="ts-claim" data-claim="c35" data-src="s4 s11">A finished request's blocks are freed in reverse order, so its tail blocks, the least likely to be reused, are evicted first.</span> <span class="ts-claim" data-claim="c36" data-src="s4 s10">Allocation takes blocks from the queue's head, and a taken block that is still cached is evicted from the cache at that moment.</span> <span class="ts-claim" data-claim="c37" data-src="s10">In the v0.31.0 source, freed blocks with no hash go to the front of the queue to be reused first, and cached blocks go to the back, so the least recently used one is evicted first.</span></p>
+<div class="ts-note" data-label="Doc versus source"><p><span class="ts-claim" data-claim="c38" data-src="s4">The design doc's worked example still appends every freed block to the back of the queue.</span> Replayed on the toy, which follows the source, its last request gets blocks 6, 4, 7, 8, 9, not the doc's 7, 8, 9, 4, 3.</p></div>
+<p><span class="ts-claim" data-claim="c39" data-src="s4">Block tables are append-only in v1, so a request that computes a block already in the cache keeps its own duplicate until it is freed.</span> <span class="ts-claim" data-claim="c40" data-src="s19">Prefix caching only cuts prefill time; it does not shorten decoding, so it helps little when answers are long or prompts share nothing.</span></p>
+<p class="ts-takeaway">Prefix caching names each full block by a hash of its whole prefix, keeps freed blocks findable until they are reused, and evicts the least recently used one first.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c28 c31">
+<p class="q">Block size 4. Request 0's prompt has 15 tokens and is cached. Request 1 has 14 prompt tokens; its first 10 match request 0. How many prompt tokens hit the cache?</p>
+<ol>
+<li data-why="Only full blocks are cached and matched; a block whose tokens match 2 of 4 is a miss.">10, every shared token</li>
+<li>8: two full blocks match; the third matches only 2 of its 4 tokens</li>
+<li data-why="The first two blocks are identical, including their parents, so their hashes match.">0, because the prompts differ</li>
+</ol>
+<p class="ts-why">Matching is per full block. Blocks 0 and 1 hash the same; block 2 differs in its last two tokens, so the lookup stops there. This is the design doc's own example.</p>
+</div>
+</section>
+
+<section class="ts-part" id="sizing-the-block-pool" data-rung="3" data-min="6">
+<h2>How gpu_memory_utilization becomes a pool of blocks</h2>
+<p class="ts-bridge">Last part: blocks are shared and reused through hashes. Still unsolved: how many blocks there are, and which knobs set that number.</p>
+<p class="ts-problem">Your service runs Llama 3.1 8B on one H100 SXM. You leave the defaults. How many requests can hold KV cache at once, and what would raise it?</p>
+<p><span class="ts-claim" data-claim="c41" data-src="s9">In v0.31.0 the default block size is 16 tokens and the default gpu_memory_utilization is 0.92.</span> <span class="ts-claim" data-claim="c66" data-src="s22">If you do not set a block size, the attention backend can replace 16 with a size it prefers, and hybrid models get sizes aligned to their other layers.</span> <span class="ts-claim" data-claim="c42" data-src="s9">That fraction is a per-instance limit: two vLLM instances sharing one GPU can each be set to 0.5.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c43" data-src="s15">At startup the worker requests total GPU memory × gpu_memory_utilization, and fails if that much is not free.</span></li>
+<li><span class="ts-claim" data-claim="c44" data-src="s16">A profiling run measures non-KV memory, such as weights and peak activations, and the KV cache gets the requested memory minus that.</span></li>
+<li><span class="ts-claim" data-claim="c45" data-src="s6">The number of blocks is that KV memory divided by the bytes one block needs across all layers, rounded down.</span></li>
+</ol>
+<p><span class="ts-claim" data-claim="c46" data-src="s17">For a standard attention layer, one block takes KV heads × block size × (key size + value size) × bytes per value.</span> <span class="ts-claim" data-claim="c47" data-src="s9 s16">Setting kv_cache_memory_bytes replaces this calculation, so gpu_memory_utilization no longer sizes the KV cache, though the startup free-memory check still uses it.</span></p>
+<p>Llama 3.1 8B in BF16: 32 layers × 8 heads × 16 tokens × (128 + 128) × 2 bytes = 2,097,152 bytes per block. <span class="ts-claim" data-claim="c48" data-src="s18">The H100 SXM has 80 GB of memory.</span> At 0.92, minus 16 GB of weights and a 3 GB guess for everything else, 54.6 GB is left: 26,035 blocks, or 416,560 token slots.</p>
+<p>Block size trades two costs. <span class="ts-claim" data-claim="c49" data-src="s20">Hugging Face Transformers v5.19.0, which also pages its cache, defaults to 256-token blocks to match its decode kernel, and notes that larger blocks cut bookkeeping but waste space when a sequence does not fill its last block.</span> Larger blocks also coarsen prefix matching, since only full blocks are cached.</p>
+<div class="ts-fragcalc" data-title="Fragmentation calculator: contiguous vs paged">
+<script type="application/json">
+{"defaults":{"lengths":"120,450,800,1500,300,2048,60,900","max_len":2048,"block_size":16,"kv_bytes":131072,"budget_gb":54.6}}
+</script>
+</div>
+<p>With the default mix: contiguous holds 16,384 slots for 6,178 tokens and fits 203 requests; paged holds 6,224 slots and fits 535, about 2.6 times as many. Try block size 256, or one 2,048-token request among short ones.</p>
+<div class="ts-interview"><p><b>Asked:</b> "Your vLLM pods show KV cache usage near 100% and preemptions. Do you raise gpu_memory_utilization to 0.98?" <b>Strong answer:</b> it adds blocks, but the profile run already reserved peak activation memory; going higher risks out-of-memory errors from anything the profile missed. First check whether max_model_len, prompt sizes or max_num_seqs explain the pressure, then add GPUs or tensor parallelism. State the trade: more blocks per GPU against crash risk.</p></div>
+<p class="ts-takeaway">vLLM sizes the block pool once at startup: requested memory minus measured non-KV memory, divided by the bytes per block across all layers.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c41 c45 c46">
+<p class="q">You change block_size from 16 to 32 and change nothing else. What happens to the number of blocks and to the number of token slots?</p>
+<ol>
+<li data-why="Each block doubles in bytes, so the same memory holds fewer blocks.">Blocks stay the same; token slots double</li>
+<li data-why="Memory for the KV cache did not change, so total slots cannot double.">Both double</li>
+<li>Blocks roughly halve; token slots stay about the same</li>
+</ol>
+<p class="ts-why">Bytes per block scale with block size, and the KV memory is fixed, so the block count halves. Total slots stay about the same; what changes is waste per request and prefix-match granularity.</p>
+</div>
+</section>
+
+<section class="ts-part" id="a-toy-block-allocator" data-rung="3" data-min="6">
+<h2>A toy block allocator you can run</h2>
+<p class="ts-bridge">Last part: the pool's size is fixed at startup. Still unsolved: what the bookkeeping looks like in code, end to end.</p>
+<p class="ts-problem">Four short files implement everything so far: block tables, allocate, append, free, a copy-on-write fork, and prefix reuse with reference counts. Run them with <code>uv run pytest examples/llm-serving-4</code>.</p>
+<div class="ts-tabs">
+<div data-tab="pool.py"><div class="ts-code" data-lang="python" data-title="pool.py" data-file="pool.py" data-verified="ran"></div></div>
+<div data-tab="hashing.py"><div class="ts-code" data-lang="python" data-title="hashing.py" data-file="hashing.py" data-verified="ran"></div></div>
+<div data-tab="allocator.py"><div class="ts-code" data-lang="python" data-title="allocator.py" data-file="allocator.py" data-verified="ran"></div></div>
+<div data-tab="fragmentation.py"><div class="ts-code" data-lang="python" data-title="fragmentation.py" data-file="fragmentation.py" data-verified="ran"></div></div>
+</div>
+<p>What the tests pin down:</p>
+<ol class="ts-steps">
+<li>A 6-token prompt with 4-token blocks gets exactly 2 blocks; a refused request changes nothing.</li>
+<li>A fork copies no data; the first write to a shared, partly filled block copies exactly one block.</li>
+<li>A second prompt sharing 10 tokens hits 8; a fully cached 8-token prompt hits only 4.</li>
+<li>Different cache salts never share; freed cached blocks still hit until evicted.</li>
+<li>The diagram on this page and the calculator's numbers come from this code.</li>
+</ol>
+<p>What the toy leaves out: <span class="ts-claim" data-claim="c50" data-src="s10">vLLM's pool sets aside block 0 as a placeholder null block.</span> <span class="ts-claim" data-claim="c51" data-src="s4">Its free queue is a doubly linked list threaded through the block objects, so moving a block out of the middle takes constant time.</span> It also tracks several cache groups for hybrid models, and never stores keys or values in Python.</p>
+<p class="ts-takeaway">A paged KV cache is a small allocator: a free queue, reference counts, per-request block tables, and a hash map from prefix to block.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the toy's <code>allocate()</code> in order for a request whose prompt partly hits the cache.</p>
+<ol>
+<li>Hash the prompt's full blocks and look them up, stopping at the first miss</li>
+<li>Check that enough free blocks remain for the rest of the prompt</li>
+<li>Raise the reference count of every hit block, taking it off the free queue if needed</li>
+<li>Write the remaining tokens, taking a new block at each block boundary</li>
+<li>Hash each new block as it fills, so later requests can find it</li>
+</ol>
+<p class="ts-why">Lookup comes first so the capacity check counts only blocks that must be new. The check comes before any change, so a refused request leaves the pool untouched.</p>
+</div>
+</section>
+
+<section class="ts-part" id="when-blocks-run-out" data-rung="4" data-min="6">
+<h2>When blocks run out: preemption by recompute</h2>
+<p class="ts-bridge">Last part: the allocator in code. Still unsolved: what happens when a running request needs a block and none is free?</p>
+<p class="ts-problem">At 10 times your usual traffic, 500 running requests keep growing. Request #500 needs block 26,036; there are 26,035.</p>
+<p><span class="ts-claim" data-claim="c52" data-src="s1">The paper offered two ways out: swap a preempted request's blocks to CPU memory, or drop them and recompute the cache later from the prompt plus the tokens generated so far.</span> <span class="ts-claim" data-claim="c53" data-src="s1">It evicted all of a sequence group's blocks or none, and preempted the latest-arrived requests first.</span></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c54" data-src="s3">In v0.31.0, when a running request cannot get its new blocks, the scheduler preempts the last request in the running list under the default policy, or the lowest-priority, latest-arriving one under the priority policy.</span></li>
+<li><span class="ts-claim" data-claim="c55" data-src="s3">The victim's blocks are freed, its count of computed tokens is set to zero, and it goes back to the waiting queue.</span> There is no swap step.</li>
+<li><span class="ts-claim" data-claim="c56" data-src="s3 s4">Because its count is zero, it does a fresh prefix-cache lookup when readmitted, so its full blocks that were not evicted meanwhile are reused instead of recomputed.</span></li>
+</ol>
+<div class="ts-note" data-label="Changed since the 2023 paper"><p><span class="ts-claim" data-claim="c57" data-src="s5">vLLM's tuning guide says V1 defaults to RECOMPUTE rather than SWAP, because recomputing costs less in the V1 architecture.</span> Moving blocks to CPU memory lives on as KV offloading, a later part. <span class="ts-claim" data-claim="c58" data-src="s20 s25">Hugging Face's continuous batching offers the other road as an option: with cpu_offload_space set (default 0.0, off), it copies evicted blocks to a pinned CPU buffer and back without recomputing; otherwise it frees them and requeues the request.</span></p></div>
+<p>What breaks first at 10 times load: KV usage hits 100%, preemptions start, and each victim redoes its prefill inside decode steps, so TPOT rises for everyone. Victims' streams stall, then resume.</p>
+<p><span class="ts-claim" data-claim="c59" data-src="s21">vLLM exports vllm:kv_cache_usage_perc, where 1 means 100%, vllm:num_preemptions, a running total, and vllm:prefix_cache_queries and vllm:prefix_cache_hits, both counted in tokens.</span> Alert on the rate of num_preemptions; a full cache is fine if nobody is preempted.</p>
+<p><span class="ts-claim" data-claim="c60" data-src="s5">The tuning guide's fixes for frequent preemption: raise gpu_memory_utilization, lower max_num_seqs or max_num_batched_tokens, or add GPUs through tensor or pipeline parallelism.</span></p>
+<div class="ts-trap"><p>Recompute storms. Under sustained overload, victims re-enter and push out others, recomputing tokens already computed once. Their cached blocks are reused fast under load, so prefix caching helps little. Cap max_num_seqs or shed load at your API.</p></div>
+<div class="ts-interview"><p><b>Asked:</b> "Paging admits more requests than fit at full length. Isn't that overbooking?" <b>Strong answer:</b> yes, deliberately, like an airline, because most answers end early. The cost is preemption when many run long at once: recomputed prefill and latency spikes for victims. Bound it with max_num_seqs and watch num_preemptions. Contiguous reservation never preempts but fits about 2.6 times fewer requests in the sample mix.</p></div>
+<p class="ts-takeaway">vLLM v0.31.0 handles a full pool by preempting the newest running request and recomputing it later, with prefix caching as the only shortcut back.</p>
+<div class="ts-predict" data-claims="c55 c56">
+<p class="q">Request R is preempted with 1,200 tokens computed, 16-token blocks. Before it is readmitted, other requests take 30 of its 75 freed blocks. What does readmission cost?</p>
+<div class="ts-reveal"><p>R's computed count is zero, so it looks up the prefix cache again. Its blocks were freed tail first and joined the back of the queue in that order, so the 30 taken first are its last 30. The first 45 blocks, 720 tokens, still hit. It recomputes the other 480 tokens in one prefill, then resumes decoding.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="prefix-cache-traps" data-rung="4" data-min="4">
+<h2>Prefix caching in a multi-tenant service: the security traps</h2>
+<p class="ts-bridge">Last part: a full pool means preemption and recompute. Still unsolved: what can go wrong when blocks are shared between users who should not see each other's data.</p>
+<p class="ts-problem">Your API serves two customers from one vLLM fleet. Customer B sends a guessed prompt, such as a rival's confidential system prompt, and times the first token. A fast reply means the guess was already cached.</p>
+<p>That is a timing side channel: a cache hit makes prefill shorter, and the attacker can measure it. <span class="ts-claim" data-claim="c61" data-src="s4">vLLM's answer is an optional per-request cache_salt, mixed into the first block's hash, so only requests with the same salt can reuse each other's blocks; the docs name timing attacks as the threat.</span> Because each block's hash includes its parent's, the salt changes every block after the first too.</p>
+<div class="ts-trap"><p>Choosing a fast hash. <span class="ts-claim" data-claim="c62" data-src="s4 s9">The xxhash options are faster but not cryptographic; the docs warn that a collision can cause undefined behaviour or leak private information in multi-tenant setups.</span> A collision maps one user's prompt to another user's cached keys and values. <span class="ts-claim" data-claim="c63" data-src="s4">The docs say the default became sha256 as of v0.11, because earlier hash keys were not guaranteed collision-free.</span></p></div>
+<p>Detecting misuse: a per-tenant salt makes cross-tenant hits impossible by construction, so there is nothing to detect. Without salts, watch prefix_cache_hits per tenant; a tenant with a high hit rate on prompts it never sent before is probing.</p>
+<div class="ts-interview"><p><b>Asked:</b> "We serve many tenants from one vLLM pool. Turn prefix caching off?" <b>Strong answer:</b> no; salt it per tenant, and use a shared salt only for prompts that are public, such as a common product system prompt. You give up cross-tenant reuse of the same document, and keep sha256. Turning caching off throws away within-tenant reuse, which is most of the win.</p></div>
+<p class="ts-takeaway">Shared prefix blocks leak through timing and through hash collisions; per-tenant cache salts and the sha256 default close both.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c61 c31">
+<p class="q">Two tenants send the identical 4,000-token prompt with different cache_salt values. How many blocks do they share?</p>
+<ol>
+<li>None: the salt changes the first block's hash, and every later hash includes its parent's</li>
+<li data-why="The salt is mixed only into the first block's hash, but the chain carries it to every block after it.">All but the first block</li>
+<li data-why="The salt is part of the block hash, not a label checked after a hit.">All of them, but the salt hides the hit from the attacker</li>
+</ol>
+<p class="ts-why">Hashes chain: block 1's hash includes block 0's, and so on. A different salt in block 0 changes every hash in the chain, so nothing matches.</p>
+</div>
+</section>
+
+<section class="ts-part" id="paging-versus-the-alternatives" data-rung="5" data-min="6">
+<h2>Paged or contiguous, recompute or offload, and the backend analogies</h2>
+<p class="ts-bridge">Last part: sharing needs salts and a strong hash. Still unsolved: when you would pick each memory scheme, and which backend patterns really match it.</p>
+<p class="ts-problem">You are choosing a serving stack for three workloads: short chat, long-document Q&amp;A with a shared prefix, and batch jobs with 8,000-token answers. Which memory scheme fits each?</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Scheme</th><th>Memory wasted</th><th>When full</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>Contiguous, reserved for max length</td><td><span class="ts-claim" data-claim="c64" data-src="s1">Only 20.4% to 38.2% held token states in the paper's measurements</span></td><td>Never preempts; refuses to admit</td><td>Answers are almost always near max length, or the kernel cannot read paged memory</td></tr>
+<tr><td>Paged, recompute on preemption (vLLM v0.31.0 default)</td><td>At most one partly filled block per request</td><td>Frees the newest request's blocks, recomputes it later</td><td>Lengths vary and spare compute is cheaper than CPU transfers</td></tr>
+<tr><td>Paged, copy to CPU on eviction (opt-in in Hugging Face continuous batching and vLLM)</td><td>At most one partly filled block per request</td><td>Copies blocks to pinned CPU memory and back</td><td>Prompts are long, so recompute is costly, and CPU bandwidth is free</td></tr>
+<tr><td>Paged with prefix caching</td><td>Same, plus shared prefixes stored once</td><td>Evicts least recently used cached blocks first</td><td>Many requests share system prompts, documents or chat history</td></tr>
+</tbody>
+</table></div>
+<p>Backend analogies, honestly scored:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Analogy</th><th>What maps</th><th>What does not</th></tr></thead>
+<tbody>
+<tr><td>Slab or pool allocator</td><td>Equal-size slots made up front, a free list, no external fragmentation, constant-time take and return</td><td>A slab object is used alone; KV blocks are stitched into one logical sequence by a table and read in order</td></tr>
+<tr><td>Database connection pool</td><td>Fixed pool sized at startup, borrow and return, callers wait when it is empty</td><td>A caller holds one connection; a request holds a growing number of blocks, and vLLM takes them back by preemption</td></tr>
+<tr><td>Snowflake micro-partitions, as you use them</td><td>A table kept as many units, with metadata that lets a query skip units it does not need, much as a prefix lookup skips computed blocks</td><td>Those are units of stored table data that queries scan; KV blocks are GPU memory slots written one token at a time by a live request, and gone when evicted</td></tr>
+</tbody>
+</table></div>
+<p class="ts-takeaway">Paging wins whenever request lengths vary; the real choices are recompute versus offload when memory is full, and whether shared prefixes justify prefix caching.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c55 c56 c58 c65">
+<p class="q">Batch jobs with 30,000-token prompts often get preempted under load. Which change most directly cuts the wasted work?</p>
+<ol>
+<li data-why="Smaller blocks reduce last-block waste, which is tiny already; they do not stop preemption or recompute.">Use smaller blocks</li>
+<li>Move evicted blocks to CPU memory and back instead of recomputing the evicted parts of 30,000-token prompts</li>
+<li data-why="Contiguous reservation would fit fewer requests; it avoids preemption by admitting far less work.">Switch to contiguous reservation</li>
+</ol>
+<p class="ts-why">Recompute redoes every token whose blocks were evicted meanwhile, which is expensive for long prompts. Offloading pays a copy over the CPU link instead. In vLLM v0.31.0 that is the opt-in KV offloading feature, not a preemption mode.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="7">
+<h2>Interview drill: designs where KV memory is the crux</h2>
+<p class="ts-bridge">Last part: when to pick each scheme. Still unsolved: defending those choices out loud, with numbers.</p>
+<p class="ts-problem">Three prompts an interviewer could give a senior backend candidate. Commit to an answer before opening each one.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. "A support bot sends a 2,500-token system prompt with every chat. 400 chats run at once on one GPU. Size the win from prefix caching."</p>
+<div class="ts-reveal"><p>2,500 tokens is 156 full 16-token blocks, plus 4 tokens in a 157th that is not shared. Without caching: 400 × 2,500 = 1,000,000 prompt slots, 131 GB at 131,072 bytes per token, which does not fit in 54.6 GB at all. With caching: one copy of the 156 shared blocks, about 327 MB, plus each chat's own tokens. Prefill for the shared part runs once. Trade-off: hits need the system prompt to be byte-identical at the start; put per-user data after it, and salt per tenant if tenants differ.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. "p99 TPOT doubles every afternoon. KV usage sits at 100% then. What is happening and what do you change?"</p>
+<div class="ts-reveal"><p>Afternoon traffic has longer conversations, so running requests outgrow the pool and preemption begins. Each preempted request re-runs its prefill inside decode steps, slowing every stream. Confirm with the rate of vllm:num_preemptions. Fixes in order: cap max_num_seqs so fewer requests share the pool, add GPUs, then consider a little more gpu_memory_utilization. You give up some peak throughput for steady latency.</p></div>
+</div>
+<div class="ts-explain" data-points="Paging bounds waste to one block per request, so capacity follows real lengths, not the maximum|Parallel samples share full prompt blocks; only the partly filled block and new tokens are per sample|Under pressure the newest request is preempted and recomputed, so admission must be capped|Per-tenant salts and the sha256 default protect shared prefix caches">
+<p class="q">3. "Design KV memory management for an API serving 4 samples per prompt to many tenants." Explain your design and its main trade-off.</p>
+<div class="ts-model"><p>Use a paged KV cache with fixed blocks, so memory follows real lengths and each request wastes at most one block. The 4 samples share the prompt's full blocks through reference counts; only the last partly filled prompt block and each sample's new tokens are separate. Turn on prefix caching with a per-tenant salt and the sha256 default, so repeated prompts reuse blocks without leaking across tenants. When memory runs out, the newest request is preempted and recomputed, so cap max_num_seqs and alert on preemptions. The trade-off is overbooking: far more concurrent requests than contiguous reservation, paid for with occasional preemption and recompute.</p></div>
+</div>
+<p>Named previews of later parts: chunked prefill, which splits long prompts across steps; disaggregated prefill and decode on separate GPUs; KV offloading and connectors, which move blocks off the GPU; and KV cache quantization, which shrinks bytes per token.</p>
+<p class="ts-takeaway">In KV memory design, state the number of blocks, who shares them, and what happens when they run out; every senior answer turns on those three.</p>
+</section>

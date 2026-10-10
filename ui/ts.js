@@ -1409,6 +1409,330 @@
   }
 
   /* =====================================================================
+     BLOCK POOL (.ts-blocks): a paged KV cache stepped snapshot by snapshot.
+     Spec JSON: {"blocks":12, "block_size":4,
+                 "steps":[{"pool":[[filled, ref_cnt, ["owner", ...]], ...],
+                           "tables":[["A",[0,1],6], ...], "copy":[src,dst]|null}],
+                 "captions":["...", ...]}
+     Same data as examples/llm-serving-4/block_trace.py.
+     ===================================================================== */
+  function initBlocks(fig) {
+    const spec = readJSON($("script[type='application/json']", fig));
+    if (!spec?.steps?.length) return;
+    // phones get a narrower drawing with 4 blocks per row, so the labels stay readable
+    const narrow = (fig.getBoundingClientRect().width || 600) < 480;
+    const nb = spec.blocks,
+      bs = spec.block_size || 4,
+      perRow = Math.min(nb, narrow ? 4 : 6),
+      rows = Math.ceil(nb / perRow);
+    const owners = [];
+    spec.steps.forEach((s) => {
+      s.tables.forEach(([rid]) => {
+        if (!owners.includes(rid)) owners.push(rid);
+      });
+    });
+    const cls = (rid) => `is-o${owners.indexOf(rid) % 4}`;
+    const W = narrow ? 340 : 560,
+      L = 8,
+      bw = (W - 2 * L) / perRow,
+      bh = 40,
+      rowH = bh + 30,
+      poolTop = 26,
+      tablesTop = poolTop + rows * rowH + 18,
+      lineH = 24;
+    const maxTables = Math.max(...spec.steps.map((s) => s.tables.length));
+    const H = tablesTop + 22 + maxTables * lineH + 6;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      class: "ts-bk-chart",
+      "aria-label": `A pool of ${nb} KV blocks of ${bs} tokens each, and each request's block table, over ${spec.steps.length} steps`,
+    });
+    svg.appendChild(sv("text", { class: "ts-bk-head", x: L, y: 16, text: "Physical blocks (GPU memory)" }));
+    svg.appendChild(
+      sv("text", { class: "ts-bk-head", x: L, y: tablesTop + 4, text: "Block tables (logical → physical)" }),
+    );
+    const pos = (i) => ({ x: L + (i % perRow) * bw, y: poolTop + Math.floor(i / perRow) * rowH + 14 });
+    spec.steps.forEach((step, si) => {
+      const g = sv("g", { "data-s": si + 1, class: "ts-bk-snap" });
+      step.pool.forEach(([filled, ref, who], i) => {
+        const { x, y } = pos(i);
+        const shared = ref > 1;
+        g.appendChild(
+          sv("text", { class: "ts-bk-id", x: x + 4, y: y - 4, text: `block ${i}${shared ? `  ×${ref}` : ""}` }),
+        );
+        g.appendChild(
+          sv("rect", {
+            class: `ts-bk-box${ref ? ` ${cls(who[0])}` : ""}${shared ? " is-shared" : ""}`,
+            x: x + 2,
+            y,
+            width: bw - 6,
+            height: bh,
+            rx: 5,
+          }),
+        );
+        const sw = (bw - 14) / bs;
+        for (let k = 0; k < bs; k++)
+          g.appendChild(
+            sv("rect", {
+              class: `ts-bk-slot${k < filled ? ` is-full ${cls(who[0])}` : ""}`,
+              x: x + 6 + k * sw,
+              y: y + 6,
+              width: sw - 3,
+              height: bh - 22,
+              rx: 2,
+            }),
+          );
+        if (ref)
+          g.appendChild(
+            sv("text", {
+              class: "ts-bk-own",
+              x: x + (bw - 4) / 2,
+              y: y + bh - 4,
+              "text-anchor": "middle",
+              text: who.join(" + "),
+            }),
+          );
+      });
+      if (step.copy) {
+        const [a, b] = step.copy.map(pos);
+        // from the source block's top edge to the copy's bottom edge (or top, if on the same row)
+        const x1 = a.x + bw / 2,
+          y1 = a.y,
+          x2 = b.x + bw / 2,
+          y2 = b.y < a.y ? b.y + bh + 2 : b.y - 2;
+        const c1 = y1 - 14,
+          c2 = b.y < a.y ? y2 + 14 : y2 - 14;
+        g.appendChild(
+          sv("path", {
+            class: "ts-bk-copy",
+            d: `M${x1},${y1} C${x1},${c1} ${x2},${c2} ${x2},${y2}`,
+            "marker-end": "url(#ts-bk-arrow)",
+          }),
+        );
+        g.appendChild(
+          sv("text", {
+            class: "ts-bk-copylbl",
+            x: (x1 + x2) / 2,
+            y: (y1 + y2) / 2 + 4,
+            "text-anchor": "middle",
+            text: "copy",
+          }),
+        );
+      }
+      step.tables.forEach(([rid, table, n], ti) => {
+        const y = tablesTop + 24 + ti * lineH;
+        g.appendChild(sv("rect", { class: `ts-bk-chip ${cls(rid)}`, x: L, y: y - 13, width: 30, height: 18, rx: 4 }));
+        g.appendChild(sv("text", { class: "ts-bk-rid", x: L + 15, y: y, "text-anchor": "middle", text: rid }));
+        g.appendChild(
+          sv("text", {
+            class: "ts-bk-row",
+            x: L + 40,
+            y,
+            text: `[${table.join(", ")}]   ${n} tokens in ${table.length} block${table.length === 1 ? "" : "s"}`,
+          }),
+        );
+      });
+      svg.appendChild(g);
+    });
+    const defs = sv("defs");
+    const mk = sv("marker", {
+      id: "ts-bk-arrow",
+      viewBox: "0 0 10 10",
+      refX: 8,
+      refY: 5,
+      markerWidth: 9,
+      markerHeight: 9,
+      markerUnits: "userSpaceOnUse",
+      orient: "auto-start-reverse",
+    });
+    mk.appendChild(sv("path", { d: "M0,0 L10,5 L0,10 z", class: "ts-bk-arrowhead" }));
+    defs.appendChild(mk);
+    svg.insertBefore(defs, svg.firstChild);
+    const title = fig.getAttribute("data-title");
+    fig.classList.add("ts-fig", "ts-bk");
+    fig.innerHTML = "";
+    if (title) fig.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    fig.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    fig.appendChild(
+      el(
+        "ul",
+        { class: "ts-kv-legend" },
+        owners
+          .map((o) => el("li", {}, [el("span", { class: `ts-bk-sw ${cls(o)}` }), el("span", { text: `Request ${o}` })]))
+          .concat([
+            el("li", {}, [el("span", { class: "ts-bk-sw" }), el("span", { text: "Empty token slot" })]),
+            el("li", {}, [el("span", { class: "ts-bk-sw is-shared" }), el("span", { text: "Shared block (×owners)" })]),
+          ]),
+      ),
+    );
+    stepper(fig, svg, spec.steps.length, spec.captions || []);
+  }
+  function initBlocksAll() {
+    $$(".ts-blocks").forEach((f) => {
+      try {
+        initBlocks(f);
+      } catch (e) {
+        console.error("[teach-site] block pool failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
+     FRAGMENTATION CALCULATOR (.ts-fragcalc): contiguous max-length vs paged allocation.
+     Spec JSON: {"defaults":{"lengths":"120,450,...","max_len","block_size","kv_bytes","budget_gb"}}
+     Same arithmetic as examples/llm-serving-4/fragmentation.py.
+     ===================================================================== */
+  function fragReport(lengths, maxLen, bs, kvBytes, budgetBytes) {
+    const n = lengths.length,
+      used = lengths.reduce((a, b) => a + b, 0);
+    const contiguous = n * maxLen,
+      paged = lengths.reduce((a, x) => a + Math.ceil(x / bs), 0) * bs;
+    const budgetTokens = budgetBytes / kvBytes;
+    return {
+      n,
+      used,
+      contiguous,
+      paged,
+      cWaste: 1 - used / contiguous,
+      pWaste: 1 - used / paged,
+      cCap: Math.floor(budgetTokens / maxLen),
+      pCap: Math.floor((budgetTokens * n) / paged),
+    };
+  }
+  function initFragCalc(box, n) {
+    const spec = readJSON($("script[type='application/json']", box));
+    const d = spec?.defaults || {};
+    const id = (k) => `ts-fc-${n}-${k}`;
+    const title = box.getAttribute("data-title");
+    box.classList.add("ts-fig");
+    box.innerHTML = "";
+    if (title) box.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    function num(key, label, val, min, max, step) {
+      const inp = el("input", { id: id(key), type: "number", min, max, step, value: val, inputmode: "decimal" });
+      return [inp, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), inp])];
+    }
+    const lIn = el("input", { id: id("len"), type: "text", value: d.lengths || "120,450,800,1500,300,2048,60,900" });
+    const lLab = el("label", { class: "ts-rl-field ts-fc-wide", for: id("len") }, [
+      el("span", { text: "Final lengths of the requests (tokens, comma-separated)" }),
+      lIn,
+    ]);
+    const [mIn, mLab] = num("max", "Max length reserved (max_model_len)", d.max_len || 2048, 1, 10000000, 1);
+    const [bIn, bLab] = num("bs", "Block size (tokens)", d.block_size || 16, 1, 4096, 1);
+    const [kIn, kLab] = num("kv", "KV bytes per token", d.kv_bytes || 131072, 1, 1e9, 1);
+    const [gIn, gLab] = num("gb", "KV budget (GB)", d.budget_gb ?? 54.6, 0.001, 100000, "any");
+    box.appendChild(el("div", { class: "ts-rl-form" }, [lLab, mLab, bLab, kLab, gLab]));
+    const W = (box.getBoundingClientRect().width || 600) < 480 ? 340 : 560,
+      H = 104,
+      L = 92,
+      R = 10;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      class: "ts-fc-chart",
+      "aria-label": "KV memory held for these requests: contiguous reservation versus paged blocks",
+    });
+    box.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    box.appendChild(
+      el("ul", { class: "ts-kv-legend" }, [
+        el("li", {}, [el("span", { class: "ts-fc-sw is-used" }), el("span", { text: "Holds real tokens" })]),
+        el("li", {}, [el("span", { class: "ts-fc-sw is-waste" }), el("span", { text: "Held but never used" })]),
+      ]),
+    );
+    const out = el("div", { class: "ts-rl-out", "aria-live": "polite" });
+    box.appendChild(out);
+    function row(k, v, c) {
+      return el("div", { class: `ts-rl-row${c ? ` ${c}` : ""}` }, [el("dt", { text: k }), el("dd", { text: v })]);
+    }
+    const pct = (x) => `${(100 * x).toFixed(x < 0.1 ? 2 : 1)}%`;
+    function update() {
+      const maxLen = Math.max(1, Math.round(+mIn.value || 2048)),
+        bs = Math.max(1, Math.round(+bIn.value || 16)),
+        kv = Math.max(1, +kIn.value || 131072),
+        gb = Math.max(0.001, +gIn.value || 54.6);
+      const lengths = lIn.value
+        .split(/[\s,]+/)
+        .filter(Boolean)
+        .map((x) => Math.round(+x));
+      svg.innerHTML = "";
+      out.innerHTML = "";
+      const bad = !lengths.length || lengths.some((x) => !(x >= 1));
+      const over = lengths.filter((x) => x > maxLen);
+      if (bad || over.length) {
+        out.appendChild(
+          el("dl", { class: "ts-rl-list" }, [
+            row(
+              "Check the inputs",
+              bad
+                ? "Enter whole numbers of 1 or more, separated by commas."
+                : `${over.length} length${over.length > 1 ? "s are" : " is"} over the max length; a server would reject ${over.length > 1 ? "them" : "it"}.`,
+              "is-bad",
+            ),
+          ]),
+        );
+        return;
+      }
+      const r = fragReport(lengths, maxLen, bs, kv, gb * 1e9);
+      const scale = (W - L - R) / r.contiguous;
+      [
+        ["Contiguous", r.contiguous, 18],
+        ["Paged", r.paged, 62],
+      ].forEach(([lbl, total, y]) => {
+        svg.appendChild(sv("text", { class: "ts-fc-lbl", x: L - 8, y: y + 16, "text-anchor": "end", text: lbl }));
+        svg.appendChild(sv("rect", { class: "ts-fc-bar is-used", x: L, y, width: r.used * scale, height: 24, rx: 3 }));
+        svg.appendChild(
+          sv("rect", {
+            class: "ts-fc-bar is-waste",
+            x: L + r.used * scale,
+            y,
+            width: Math.max(0, (total - r.used) * scale),
+            height: 24,
+            rx: 3,
+          }),
+        );
+      });
+      out.appendChild(
+        el("dl", { class: "ts-rl-list" }, [
+          row(
+            "Contiguous",
+            `${fmtInt(r.contiguous)} token slots held for ${fmtInt(r.used)} real tokens: ${pct(r.cWaste)} wasted (${fmtBytes(r.contiguous * kv)})`,
+            "is-mem",
+          ),
+          row(
+            "Paged",
+            `${fmtInt(r.paged)} slots in ${fmtInt(r.paged / bs)} blocks: ${pct(r.pWaste)} wasted (${fmtBytes(r.paged * kv)})`,
+            "is-cmp",
+          ),
+          row(
+            "Requests that fit at once",
+            `contiguous ${fmtInt(r.cCap)}, paged ${fmtInt(r.pCap)}${r.cCap > 0 ? ` (${(r.pCap / r.cCap).toFixed(1)}×)` : ""}`,
+          ),
+        ]),
+      );
+      out.appendChild(
+        el("p", {
+          class: "ts-rl-note",
+          text: "Final lengths: the whole life of each request. Contiguous ignores external fragmentation, so it is a best case. Capacity assumes new requests keep arriving with the same mix.",
+        }),
+      );
+    }
+    [lIn, mIn, bIn, kIn, gIn].forEach((inp) => {
+      inp.addEventListener("input", update);
+      inp.addEventListener("change", update);
+    });
+    update();
+  }
+  function initFragCalcs() {
+    $$(".ts-fragcalc").forEach((b, i) => {
+      try {
+        initFragCalc(b, i + 1);
+      } catch (e) {
+        console.error("[teach-site] fragmentation calculator failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
      CODE + TABS
      ===================================================================== */
   const KW =
@@ -2129,6 +2453,8 @@
     initKvCalcs();
     initSlotsAll();
     initBatchCalcs();
+    initBlocksAll();
+    initFragCalcs();
     initCode();
     initTabs();
     initTerms();

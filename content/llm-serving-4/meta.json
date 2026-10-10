@@ -1,0 +1,20 @@
+{
+ "slug": "llm-serving-4",
+ "title": "LLM inference serving, Part 4: PagedAttention",
+ "tldr": "How a server manages KV cache memory like virtual memory: why reserving each request's cache for its maximum length wastes most of it (the vLLM paper's reserved slots, internal and external fragmentation, and its 20.4% to 38.2% measurement), fixed-size KV blocks with per-request block tables and the operating-system page-table mapping and where it breaks, how attention reads scattered blocks, copy-on-write sharing in the 2023 paper versus automatic prefix caching in vLLM v0.31.0 (block hashes, reference counts, LRU eviction), how gpu_memory_utilization and block size set the block pool, preemption by recompute when blocks run out, multi-tenant cache traps, a step-through block pool, a fragmentation calculator, a tested toy allocator, honest backend analogies and an interview drill.",
+ "category": "AI systems",
+ "created": "2026-10-11",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2"},
+  {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3"}
+ ],
+ "related": [
+  {"label": "Next: Part 5 (title to be fixed when its scope is set)", "slug": "llm-serving-5", "why": "the next part of this series"},
+  {"label": "Later part: chunked prefill", "why": "splitting long prompts across steps so one prefill cannot stall every decode"},
+  {"label": "Later part: prefill/decode disaggregation", "why": "running prefill and decode on different GPUs, which means moving KV blocks between them"},
+  {"label": "Later part: KV offloading and connectors", "why": "moving KV blocks to CPU memory or other machines instead of recomputing them"},
+  {"label": "Later part: KV cache quantization", "why": "storing keys and values in fewer bytes per token, so the same pool holds more blocks"},
+  {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3", "why": "the scheduler loop that asks this page's allocator for blocks every step"}
+ ]
+}

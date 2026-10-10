@@ -161,6 +161,31 @@ Use the existing classes (`node`, `edge`, `msg`, `over`, `lblbg`, `arrowhead`) a
 - Inputs: model, GPU, arrival rate, prompt and output length, max batch (max_num_seqs), `gpu_memory_utilization`, reserve. Outputs: running requests, throughput, TPOT, TTFT estimate, KV memory used, prefill share; a chart of tokens/s and TPOT against batch size with every slot full.
 - Same arithmetic as `examples/llm-serving-3/steady_state.py`. Model shapes and GPU figures must appear on the page as verified claims.
 
+### Block pool (paged KV cache, stepped snapshot by snapshot)
+```html
+<figure class="ts-blocks" data-title="Three requests growing in a 12-block pool">
+<script type="application/json">
+{"blocks": 12, "block_size": 4,
+ "steps": [{"pool": [[4, 1, ["A"]], [2, 1, ["A"]], [0, 0, []]], "tables": [["A", [0, 1], 6]], "copy": null}],
+ "captions": ["One caption per step."]}
+</script>
+</figure>
+```
+- `pool`: one `[filled slots, reference count, [owners]]` entry per physical block. `tables`: `[request, [physical block ids], tokens]`. `copy`: `[from, to]` when the step made a copy-on-write copy, else `null`.
+- Each step is a full snapshot; only the current one is drawn. Phones get 4 blocks per row.
+- Generate the JSON from tested code and assert in a test that the page's block matches it (see `examples/llm-serving-4/test_allocator.py`).
+
+### Fragmentation calculator (contiguous max-length vs paged allocation)
+```html
+<div class="ts-fragcalc" data-title="Fragmentation calculator">
+<script type="application/json">
+{"defaults": {"lengths": "120,450,800,1500,300,2048,60,900", "max_len": 2048, "block_size": 16, "kv_bytes": 131072, "budget_gb": 54.6}}
+</script>
+</div>
+```
+- Inputs: final request lengths, max length reserved, block size, KV bytes per token, KV budget. Outputs: slots held and wasted by each scheme, bytes, and requests that fit at once with the same mix.
+- Same arithmetic as `examples/llm-serving-4/fragmentation.py`; external fragmentation is not modelled.
+
 ## 5. Code and tabs
 
 ```html

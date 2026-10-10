@@ -1217,6 +1217,151 @@ dfn {
   font-weight: 700;
 }
 
+/* ---------- Block pool (paged KV cache, stepped) ---------- */
+.ts-fig svg.ts-bk-chart {
+  min-width: 0;
+}
+/* the generic "current step" outline would paint every block; keep block colours meaningful */
+.ts-fig.ts-bk [data-s].is-now rect.ts-bk-box {
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+.ts-fig.ts-bk [data-s].is-now rect.ts-bk-box.is-shared {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+.ts-fig.ts-bk [data-s].is-now rect.ts-bk-slot,
+.ts-fig.ts-bk [data-s].is-now rect.ts-bk-chip {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+/* each step is a full snapshot: show only the current one (Show all lands on the last) */
+.ts-fig.ts-bk.is-stepping [data-s]:not(.is-now) {
+  display: none;
+}
+.ts-bk-head {
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.ts-bk-id,
+.ts-bk-own {
+  font-size: 11px;
+  fill: var(--muted);
+}
+.ts-bk-own,
+.ts-bk-rid {
+  font-weight: 700;
+  fill: var(--ink);
+}
+.ts-bk-rid,
+.ts-bk-row {
+  font-size: 12.5px;
+}
+.ts-bk-row {
+  fill: var(--ink);
+}
+.ts-bk-box {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+.ts-bk-box.is-shared {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-dasharray: 5 3;
+}
+.ts-bk-slot {
+  fill: var(--surface-2);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.ts-bk-copy,
+.ts-fig.ts-bk [data-s].is-now path.ts-bk-copy {
+  fill: none;
+  stroke: var(--r4);
+  stroke-width: 2.5;
+}
+.ts-bk-arrowhead {
+  fill: var(--r4);
+}
+.ts-bk-copylbl {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--r4-ink);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+}
+.ts-bk-sw,
+.ts-fc-sw {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.ts-bk-sw.is-shared {
+  background: var(--surface);
+  border: 2px dashed var(--ink);
+}
+.ts-bk-slot.is-full.is-o0,
+.ts-bk-chip.is-o0,
+.ts-bk-sw.is-o0 {
+  fill: color-mix(in srgb, var(--r1) 60%, var(--surface));
+  background: color-mix(in srgb, var(--r1) 60%, var(--surface));
+}
+.ts-bk-slot.is-full.is-o1,
+.ts-bk-chip.is-o1,
+.ts-bk-sw.is-o1 {
+  fill: color-mix(in srgb, var(--r2) 60%, var(--surface));
+  background: color-mix(in srgb, var(--r2) 60%, var(--surface));
+}
+.ts-bk-slot.is-full.is-o2,
+.ts-bk-chip.is-o2,
+.ts-bk-sw.is-o2 {
+  fill: color-mix(in srgb, var(--r3) 60%, var(--surface));
+  background: color-mix(in srgb, var(--r3) 60%, var(--surface));
+}
+.ts-bk-slot.is-full.is-o3,
+.ts-bk-chip.is-o3,
+.ts-bk-sw.is-o3 {
+  fill: color-mix(in srgb, var(--r5) 60%, var(--surface));
+  background: color-mix(in srgb, var(--r5) 60%, var(--surface));
+}
+
+/* ---------- Fragmentation calculator ---------- */
+.ts-fig svg.ts-fc-chart {
+  min-width: 0;
+}
+.ts-fc-wide {
+  grid-column: 1 / -1;
+}
+.ts-fc-lbl {
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.ts-fc-bar {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.ts-fc-bar.is-used,
+.ts-fc-sw.is-used {
+  fill: color-mix(in srgb, var(--r2) 60%, var(--surface));
+  background: color-mix(in srgb, var(--r2) 60%, var(--surface));
+}
+.ts-fc-bar.is-waste,
+.ts-fc-sw.is-waste {
+  fill: color-mix(in srgb, var(--r4) 22%, var(--surface));
+  background: color-mix(in srgb, var(--r4) 22%, var(--surface));
+}
+.ts-fc-bar.is-waste {
+  stroke: var(--r4);
+  stroke-dasharray: 3 2;
+}
+
 /* ---------- Checks: quiz / order / predict / explain ---------- */
 .ts-check {
   margin: 26px 0;
