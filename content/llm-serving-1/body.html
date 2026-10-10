@@ -1,0 +1,446 @@
+<section class="ts-part" id="why-idle" data-rung="1" data-min="4">
+<h2>Why a chat reply can leave a top-end GPU almost idle</h2>
+<p class="ts-problem">Your team puts an 8-billion-parameter chat model on one H100 behind a FastAPI endpoint. A typical answer of 300 tokens streams back in about one and a half seconds. The GPU dashboard says it is busy the whole time. By the end of part 6 you will see that its arithmetic units are doing useful work well under 1% of that time.</p>
+<p>That gap is not a bug in your code. It comes from how a language model writes text: one small piece at a time, and every piece needs the entire model read out of GPU memory again. Reading, not calculating, sets the pace.</p>
+<p>Think of a bank clerk who, for each word of a letter, must walk to the archive, carry back all 16 binders of the rulebook, and then write a single word. The writing takes a second; the walk takes a minute. A faster pen changes nothing. Carrying the binders once for twenty customers at the same desk changes everything.</p>
+<ol class="ts-steps">
+<li><strong>What the model reads and writes:</strong> tokens, and the loop that produces them one by one (part 2).</li>
+<li><strong>The two phases of every request:</strong> prefill and decode, and what each one costs (parts 3 to 6).</li>
+<li><strong>Using it:</strong> a calculator, the latency metrics, and a script that estimates both phases (parts 7 to 10).</li>
+<li><strong>Breaking it and choosing:</strong> why one-request-at-a-time serving collapses under load, and how to reason about hardware and metrics in interviews (parts 11 to 14).</li>
+</ol>
+<p>This is Part 1 of a seven-part series on how LLM inference servers work inside. It sets up the problem the rest of the series solves. Batching, memory management and scheduling come in later parts.</p>
+<p class="ts-takeaway">Generating text is limited mostly by how fast the GPU can read the model's weights, not by how fast it can calculate.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">In the bank clerk story, which change would speed up the clerk the most?</p>
+<ol>
+<li data-why="The pen is the arithmetic. The clerk is already waiting on the walk, so faster writing saves almost nothing.">A faster pen</li>
+<li>Serving many customers per trip to the archive</li>
+<li data-why="Shorter letters mean fewer trips, but each word still costs a full walk. The cost per word stays the same.">Asking customers for shorter letters</li>
+</ol>
+<p class="ts-why">The walk dominates. Sharing each walk across many customers spreads its cost. On a GPU that idea is called batching, and Parts 3 and 4 of the series are about doing it well.</p>
+</div>
+</section>
+
+<section class="ts-part" id="tokens-loop" data-rung="1" data-min="5">
+<h2>The model writes one token, then starts over</h2>
+<p class="ts-bridge">Last part: reading the model, not calculating, sets the pace. Still unsolved: why does it have to read the model again for every piece of output?</p>
+<p class="ts-problem">A user asks for a 300-word summary. You might expect the model to produce the summary in one shot, the way a database returns a result set. Instead it runs a few hundred times in a row, and you cannot run those passes in parallel.</p>
+<p>A model does not see characters or words. It sees <dfn data-def="A small chunk of text the model treats as one unit: a common word, part of a rare word, or a punctuation mark. Each token is an integer ID from the model's vocabulary.">tokens</dfn>. <span class="ts-claim" data-claim="c1" data-src="s14">Hugging Face's tokenizer guide describes subword tokenization: common words stay whole as one token, and rare words are split into smaller pieces.</span></p>
+<ol class="ts-steps">
+<li>The prompt is turned into a list of token IDs.</li>
+<li>The model runs once over that list and scores every possible next token.</li>
+<li>The server picks one token and appends it to the list.</li>
+<li>The model runs again over the longer list to pick the token after that.</li>
+<li>This repeats until a stop condition.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c2" data-src="s13">A language model generates the next token from the prompt plus everything it has generated so far, and stops at a length limit or when it produces an end-of-sequence token.</span> Each output becomes part of the next input. That is called <dfn data-def="Generating a sequence one element at a time, where each new element is computed from all the elements before it, including the model's own earlier outputs.">autoregressive</dfn> generation. <span class="ts-claim" data-claim="c3" data-src="s7">The original Transformer paper describes its decoder this way: it emits output one symbol at a time, feeding earlier outputs back in as extra input for the next step.</span></p>
+<p>As a backend engineer, picture a chain of database queries where each query needs the previous query's result in its WHERE clause. You cannot fire them in parallel, however many connections you have. Token 101 cannot start until token 100 exists.</p>
+<p class="ts-takeaway">Output is produced one token per model run, and each run needs the token before it, so the runs form a strict sequence.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c2 c3">
+<p class="q">A product manager asks: "We have spare GPUs. Can we generate tokens 1 to 150 on one GPU and 151 to 300 on another, at the same time?" What is the problem?</p>
+<ol>
+<li data-why="Memory is a real limit, but even with unlimited memory the split would not work.">The second GPU would run out of memory</li>
+<li data-why="Tokenizers are deterministic and fast; they are not the blocker here.">The two GPUs would tokenize the prompt differently</li>
+<li>Token 151 depends on tokens 1 to 150, which do not exist yet</li>
+</ol>
+<p class="ts-why">Generation is autoregressive: each token is computed from all earlier tokens, including the model's own outputs. The second half cannot start before the first half is finished.</p>
+</div>
+<div class="ts-explain" data-points="Text is split into tokens, integer IDs from a vocabulary|The model produces one token per run|Each new token is appended and fed back in, so runs cannot be parallelised for one request|Generation stops at an end-of-sequence token or a length limit">
+<p class="q">In your own words: why can't one request's output be generated all at once?</p>
+<div class="ts-model"><p>The model reads and writes tokens, small chunks of text with integer IDs. Each run of the model produces just one next token, which is appended to the input for the following run. Because every token depends on all the tokens before it, the runs for one request must happen in order. It stops when it writes an end-of-sequence token or hits a length limit.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="request-walkthrough" data-rung="2" data-min="6">
+<h2>One request, step by step: prefill, then decode</h2>
+<p class="ts-bridge">Last part: output comes one token per model run. Still unsolved: is every run the same, or is the first one special?</p>
+<p class="ts-problem">A 2,000-token prompt asks for a 300-token answer. The model runs about 300 times. The first run takes in 2,000 tokens; every later run adds just one. Those are very different jobs.</p>
+<div class="ts-predict" data-claims="c5 c6">
+<p class="q">Before you look at the diagram: for a 2,000-token prompt and a 300-token answer, how many runs of the model are there, and how many tokens does each one take in that the model has not seen before?</p>
+<div class="ts-reveal"><p>300 runs. The first run takes in all 2,000 prompt tokens at once and produces output token 1. Each of the remaining 299 runs takes in one new token, the one produced just before, and produces the next. The first run is prefill; the other 299 are decode steps.</p></div>
+</div>
+<p>One run of the model over some tokens is a <dfn data-def="One complete run of the model's layers over a set of input tokens, producing scores for the next token.">forward pass</dfn>. A request has two phases of forward passes.</p>
+<ol class="ts-steps">
+<li><strong><dfn data-def="The first phase of a request: one forward pass over the whole prompt, processing all prompt tokens in parallel, which produces the first output token.">Prefill</dfn>:</strong> <span class="ts-claim" data-claim="c5" data-src="s8 s9">the server runs the whole prompt through the model in one step, processing all prompt tokens in parallel, and that step produces the first output token.</span></li>
+<li><strong><dfn data-def="The second phase of a request: one forward pass per output token, each taking in only the newest token.">Decode</dfn>:</strong> <span class="ts-claim" data-claim="c6" data-src="s8">the server generates the remaining tokens one per step, over many steps.</span></li>
+<li><strong>Reuse:</strong> <span class="ts-claim" data-claim="c7" data-src="s15">the model stores per-token attention state (the KV cache) as it processes tokens, so later steps reuse it instead of recomputing it.</span> That is why a decode step only needs the newest token. Part 2 of the series covers how big this state gets.</li>
+</ol>
+<figure class="ts-seq" data-title="One streamed request">
+<script type="application/json">
+{"actors": [
+  {"id": "app", "label": "Your app", "sub": "FastAPI client"},
+  {"id": "srv", "label": "Inference server", "sub": "tokenizer + scheduler"},
+  {"id": "gpu", "label": "GPU", "sub": "model weights"}],
+ "steps": [
+  {"from": "app", "to": "srv", "label": "Prompt, stream=true", "note": "Your app sends the prompt and asks for the reply to be streamed. The TTFT and end-to-end clocks start here."},
+  {"over": ["srv"], "label": "Tokenize: 2,000 token IDs", "note": "The server turns the text into token IDs. This is cheap compared with the model runs."},
+  {"from": "srv", "to": "gpu", "label": "Prefill: all 2,000 tokens, one pass", "note": "One forward pass over the whole prompt. All 2,000 tokens are processed in parallel."},
+  {"over": ["gpu"], "label": "Store attention state (KV cache)", "note": "While processing the prompt, the model keeps per-token attention state so later steps can reuse it."},
+  {"from": "gpu", "to": "srv", "label": "Output token 1", "dashed": true, "note": "Prefill ends by producing the first output token."},
+  {"from": "srv", "to": "app", "label": "Stream token 1", "dashed": true, "note": "The first token reaches your app. This moment ends the time to first token (TTFT)."},
+  {"from": "srv", "to": "gpu", "label": "Decode step: 1 new token in", "note": "The first decode step feeds in just token 1. The rest of the context comes from the stored attention state."},
+  {"from": "gpu", "to": "srv", "label": "Output token 2", "dashed": true, "note": "Each decode step produces exactly one token."},
+  {"from": "srv", "to": "app", "label": "Stream token 2", "dashed": true, "note": "The gap between streamed tokens is the inter-token latency."},
+  {"over": ["srv", "gpu"], "label": "Repeat 298 more times", "note": "The loop runs until an end-of-sequence token or the length limit."},
+  {"from": "srv", "to": "app", "label": "Done (token 300)", "dashed": true, "note": "The last token arrives. The end-to-end latency clock stops."}]}
+</script>
+</figure>
+<p>In backend terms, prefill is a batch job: all the input is known up front and processed in one go. Decode is a streaming response: small pieces, one after another, each waiting on the last.</p>
+<p class="ts-takeaway">Every request runs one big parallel prefill pass that yields the first token, then many one-token decode passes.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put one streamed request in order.</p>
+<ol>
+<li>The server tokenizes the prompt</li>
+<li>Prefill runs one forward pass over every prompt token</li>
+<li>The first output token is streamed back</li>
+<li>Decode steps each feed in the newest token and produce one more</li>
+<li>The model emits an end-of-sequence token and the stream closes</li>
+</ol>
+<p class="ts-why">Tokenize, prefill (which yields token 1), then the decode loop until a stop condition. Only prefill sees the prompt tokens as new input.</p>
+</div>
+</section>
+
+<section class="ts-part" id="phase-work" data-rung="2" data-min="5">
+<h2>What each phase actually costs: arithmetic and reading</h2>
+<p class="ts-bridge">Last part: prefill takes in the whole prompt once; each decode step takes in one token. Still unsolved: why would one-token steps be slow?</p>
+<p class="ts-problem">Prefill over 2,000 tokens does 2,000 times more arithmetic than one decode step. Yet on an H100 that prefill takes only about 7 times as long as a decode step. Something other than arithmetic is setting the decode time.</p>
+<p>Any forward pass has two costs. One is arithmetic. A <dfn data-def="Floating-point operation: one addition or multiplication on decimal numbers. GPU speed is quoted in FLOPs per second.">FLOP</dfn> is one multiply or one add. <span class="ts-claim" data-claim="c8" data-src="s6">A forward pass costs about 2 FLOPs per model parameter per token, one multiply and one add, plus an attention term that grows with context length and stays a small share while the model width exceeds the context length divided by 12.</span></p>
+<p>The other cost is reading the weights from GPU memory into the chips that do the arithmetic. How fast that happens is the <dfn data-def="How many bytes per second the GPU can move between its main memory (HBM) and its compute units.">memory bandwidth</dfn>. <span class="ts-claim" data-claim="c9" data-src="s17">In BF16 each parameter takes 2 bytes, so loading an X-billion-parameter model takes about 2X GB of GPU memory.</span></p>
+<p>The key asymmetry: one forward pass reads the weights once, however many tokens go through it. So the reading cost is fixed per pass, while the arithmetic grows with the tokens in the pass.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>8B model in BF16</th><th>Tokens in the pass</th><th>Arithmetic</th><th>Weights read</th></tr></thead>
+<tbody>
+<tr><td>Prefill, 2,000-token prompt</td><td>2,000</td><td>2 × 8 billion × 2,000 = 32 trillion FLOPs</td><td>16 GB, once</td></tr>
+<tr><td>One decode step</td><td>1</td><td>2 × 8 billion = 16 billion FLOPs</td><td>16 GB, again</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c10" data-src="s16">Hugging Face's docs state that every active parameter must be read from memory for every generated token, and call this a bottleneck for text generation.</span> For a 300-token answer, that is 300 full reads of 16 GB: about 4.8 TB moved to write a few paragraphs.</p>
+<p class="ts-takeaway">Every forward pass reads all the weights once; prefill spreads that read over thousands of tokens, decode spends it on one.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c8 c9 c10">
+<p class="q">A 13-billion-parameter model in BF16 writes a 100-token answer. Roughly how many bytes of weights does decode read in total?</p>
+<ol>
+<li>About 2.6 TB: 26 GB of weights, read about 100 times</li>
+<li data-why="This counts the weights once, as if all tokens shared one pass. Decode needs one pass per token.">About 26 GB: the weights are read once</li>
+<li data-why="This uses 1 byte per parameter. BF16 takes 2 bytes per parameter.">About 1.3 TB: 13 GB read 100 times</li>
+</ol>
+<p class="ts-why">13 billion parameters × 2 bytes = 26 GB. Each decode step reads all of it, and there is roughly one step per output token, so about 100 × 26 GB.</p>
+</div>
+</section>
+
+<section class="ts-part" id="intensity" data-rung="2" data-min="5">
+<h2>FLOPs per byte: the number that decides who waits</h2>
+<p class="ts-bridge">Last part: each pass reads all the weights once, and the arithmetic grows with the tokens in it. Still unsolved: how do you tell which of the two costs wins?</p>
+<p class="ts-problem">Two services run on the same server. One resizes images; adding CPU cores makes it faster. The other proxies calls to a slow storage API; adding cores does nothing. You already know these as CPU-bound and I/O-bound. A GPU has the same split.</p>
+<p>The deciding number is how much arithmetic you do per byte you read. Call it <dfn data-def="FLOPs performed per byte read from main memory. High values mean the work is mostly arithmetic; low values mean it is mostly reading.">arithmetic intensity</dfn>. <span class="ts-claim" data-claim="c11" data-src="s5">The Roofline paper (Williams, Waterman and Patterson) calls this ratio operational intensity: operations performed per byte of traffic to main memory.</span></p>
+<p>For a dense model in BF16 the weights-only intensity falls straight out of part 4. Each token costs 2 FLOPs per parameter, and each pass reads 2 bytes per parameter. So the intensity equals the number of tokens in the pass.</p>
+<ol class="ts-steps">
+<li><strong>Prefill of a 2,000-token prompt:</strong> about 2,000 FLOPs per byte.</li>
+<li><strong>One decode step for one request:</strong> about 1 FLOP per byte.</li>
+</ol>
+<p>Work with high intensity is <dfn data-def="Limited by how fast the GPU can do arithmetic. Faster compute makes it faster; more memory bandwidth does not.">compute-bound</dfn>: it finishes when the arithmetic is done. Work with low intensity is <dfn data-def="Limited by how fast data can be read from GPU memory. More bandwidth makes it faster; more compute does not.">memory-bound</dfn>: the arithmetic units sit waiting for bytes.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Backend idea you know</th><th>GPU equivalent</th><th>What helps</th></tr></thead>
+<tbody>
+<tr><td>CPU-bound batch job (resize 10,000 images)</td><td>Prefill: compute-bound</td><td>More arithmetic speed</td></tr>
+<tr><td>I/O-bound streaming endpoint (each chunk waits on storage)</td><td>Decode: memory-bound</td><td>More bandwidth, or fewer bytes per useful result</td></tr>
+<tr><td>Serving many callers from one disk read (a shared cache fill)</td><td>Batching decode steps of many requests</td><td>Raises FLOPs per byte read</td></tr>
+</tbody>
+</table></div>
+<p>The comparison has a limit. An I/O-bound web service waits on something outside the machine, and async code lets it serve others while it waits. A memory-bound decode step waits on the GPU's own memory, and nothing else runs on those arithmetic units unless you put more work into the same pass.</p>
+<p class="ts-takeaway">Weights-only intensity equals tokens per pass: thousands for prefill, one for a single request's decode step.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c8 c9">
+<p class="q">A server runs one decode step for 32 requests together in a single pass. What is the weights-only arithmetic intensity of that pass?</p>
+<ol>
+<li data-why="That would be true if each request needed its own read of the weights. In one shared pass the weights are read once.">About 1 FLOP per byte, same as one request</li>
+<li>About 32 FLOPs per byte</li>
+<li data-why="Intensity depends on tokens in the pass, not on the prompt length of requests that are already decoding.">About 2,000 FLOPs per byte, like a prefill</li>
+</ol>
+<p class="ts-why">The pass reads the weights once (2 bytes per parameter) but does 2 FLOPs per parameter for each of 32 tokens. 64 ÷ 2 = 32 FLOPs per byte.</p>
+</div>
+</section>
+
+<section class="ts-part" id="roofline" data-rung="2" data-min="6">
+<h2>The roofline: a GPU's two speed limits on one chart</h2>
+<p class="ts-bridge">Last part: prefill does about 2,000 FLOPs per byte, single-request decode about 1. Still unsolved: where is the line between compute-bound and memory-bound on a real GPU?</p>
+<p class="ts-problem">You need a number for the H100: below how many FLOPs per byte does it stop being limited by arithmetic? Without it, "memory-bound" is just a feeling.</p>
+<p><span class="ts-claim" data-claim="c12" data-src="s5">The Roofline model says reachable performance is the lower of two ceilings: peak compute, and memory bandwidth multiplied by the intensity.</span> <span class="ts-claim" data-claim="c13" data-src="s5">The ridge point is where the two ceilings meet: the lowest intensity at which a kernel can reach peak compute.</span> The <dfn data-def="Intensity at which the memory ceiling meets the compute ceiling: peak FLOPs per second divided by bytes per second. Below it, work is memory-bound.">ridge point</dfn> is peak FLOPs per second divided by bytes per second.</p>
+<p>Now the H100. <span class="ts-claim" data-claim="c14" data-src="s1">NVIDIA lists the H100 SXM at 1,979 teraFLOPS of BF16 Tensor Core throughput with sparsity, 3.35 TB/s of memory bandwidth and 80 GB of memory.</span> <span class="ts-claim" data-claim="c15" data-src="s3 s4">NVIDIA's with-sparsity figures are twice the dense ones; for example, the A100 lists 312 teraFLOPS of BF16 dense and 624 with sparsity.</span> An ordinary model is dense, so its usable peak on the H100 is about 989 teraFLOPS.</p>
+<ol class="ts-steps">
+<li>Ridge: 989 trillion FLOP/s ÷ 3.35 trillion bytes/s ≈ 295 FLOPs per byte.</li>
+<li>Decode, one request (about 1 FLOP per byte): at most 3.35 teraFLOPS, about 0.34% of peak.</li>
+<li>Prefill, 2,000 tokens (about 2,000 FLOPs per byte): past the ridge, so it can use the full 989.</li>
+</ol>
+<figure class="ts-svg" data-title="H100 SXM roofline, dense BF16 (log scales)">
+<svg viewBox="0 0 700 310" role="img" aria-label="Roofline chart for the H100 SXM. A memory ceiling rises with intensity until the ridge near 295 FLOPs per byte, then a flat compute ceiling at about 989 teraFLOPS. Decode for one request sits low on the slope; prefill of 2,000 tokens sits on the flat roof.">
+<g>
+<line class="life" x1="70" y1="270" x2="680" y2="270"/>
+<line class="life" x1="70" y1="20" x2="70" y2="270"/>
+<text x="70" y="288" text-anchor="middle" class="num">0.1</text>
+<text x="171.7" y="288" text-anchor="middle" class="num">1</text>
+<text x="273.3" y="288" text-anchor="middle" class="num">10</text>
+<text x="375" y="288" text-anchor="middle" class="num">100</text>
+<text x="476.7" y="288" text-anchor="middle" class="num">1,000</text>
+<text x="578.3" y="288" text-anchor="middle" class="num">10,000</text>
+<text x="375" y="305" text-anchor="middle" class="num">FLOPs per byte read (log scale)</text>
+<text x="64" y="42" text-anchor="end" class="num">989</text>
+<text x="64" y="186" text-anchor="end" class="num">3.35</text>
+<text x="16" y="145" text-anchor="middle" class="num" transform="rotate(-90 16 145)">TFLOP/s reachable (log)</text>
+</g>
+<g class="edge" data-s="1"><path d="M70,239.5 L422.8,37.8"/><rect class="lblbg" x="150" y="140" width="150" height="20"/><text x="225" y="155" text-anchor="middle">memory ceiling</text></g>
+<g class="edge" data-s="2"><path d="M422.8,37.8 L680,37.8"/><rect class="lblbg" x="480" y="44" width="150" height="20"/><text x="555" y="59" text-anchor="middle">compute ceiling</text></g>
+<g class="edge dashed" data-s="3"><path d="M422.8,37.8 L422.8,270"/><rect class="lblbg" x="430" y="200" width="160" height="20"/><text x="510" y="215" text-anchor="middle">ridge ≈ 295 FLOPs/byte</text></g>
+<g class="node" data-s="4"><circle class="num" cx="171.7" cy="181.4" r="8"/><rect class="lblbg" x="186" y="186" width="190" height="20"/><text x="190" y="201">decode, 1 request: 0.34%</text></g>
+<g class="node" data-s="5"><circle class="num" cx="507.3" cy="37.8" r="8"/><rect class="lblbg" x="440" y="80" width="190" height="20"/><text x="535" y="95" text-anchor="middle">prefill, 2,000 tokens</text></g>
+<g class="node" data-s="6"><circle class="num" cx="355.3" cy="76.4" r="8"/><rect class="lblbg" x="200" y="90" width="150" height="20"/><text x="275" y="105" text-anchor="middle">decode, 64 requests</text></g>
+</svg>
+<ol class="ts-captions">
+<li>The memory ceiling: below the ridge, performance can only rise as fast as bandwidth times intensity. Each tenfold rise in intensity allows tenfold more FLOP/s.</li>
+<li>The compute ceiling: about 989 dense BF16 teraFLOPS. No intensity gets you above it.</li>
+<li>The ridge, about 295 FLOPs per byte. Left of it you are memory-bound; right of it, compute-bound.</li>
+<li>Decode for one request sits at about 1 FLOP per byte: roughly 3.35 teraFLOPS, about a third of one percent of peak.</li>
+<li>Prefill of a 2,000-token prompt sits right of the ridge and can use the full compute ceiling.</li>
+<li>Decoding 64 requests in one pass moves the point 64 times to the right and 64 times up the slope. This is why batching is the main lever for decode.</li>
+</ol>
+</figure>
+<p>So the clerk from part 1 is real: an H100 decoding one request spends over 99% of each step waiting for weights.</p>
+<p class="ts-takeaway">On an H100 anything below about 295 FLOPs per byte is memory-bound; single-request decode sits near 1.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c12 c13 c14 c15">
+<p class="q">A colleague says: "Decode is slow, so let's turn on the sparse Tensor Core mode; NVIDIA says it doubles BF16 throughput." What is wrong with the plan for single-request decode?</p>
+<ol>
+<li data-why="Sparsity is a real hardware feature; the problem is not that it is fictional.">The sparse figure is only marketing and does not exist</li>
+<li data-why="Raising the ceiling for compute does nothing for work that never reaches that ceiling.">It would double decode speed only for large models</li>
+<li>Decode is far below the ridge, so a higher compute ceiling does not change its speed; only bandwidth or more tokens per pass does</li>
+</ol>
+<p class="ts-why">Reachable performance is the lower of the two ceilings. At about 1 FLOP per byte the memory ceiling is the binding one, so raising the compute ceiling changes nothing. You need more bandwidth or a higher intensity.</p>
+</div>
+<div class="ts-explain" data-points="Prefill handles many tokens per weight read, so it has high FLOPs per byte and is compute-bound|Decode for one request does about 1 FLOP per byte, far below the H100's ridge near 295, so it is memory-bound|The ridge is peak FLOPs divided by memory bandwidth|Putting more tokens in the same pass raises intensity">
+<p class="q">In your own words: why is prefill compute-bound while decode is memory-bandwidth-bound? Use the H100's numbers.</p>
+<div class="ts-model"><p>Each forward pass reads all the weights once and does about 2 FLOPs per parameter for each token in the pass. Prefill pushes thousands of prompt tokens through one read, so it does thousands of FLOPs per byte, well past the H100's ridge of about 295, which is 989 teraFLOPS of dense BF16 divided by 3.35 TB/s. Decode for one request pushes one token through a full read, about 1 FLOP per byte, so the arithmetic units wait on memory. The way out is to put more tokens into each pass.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="calculator" data-rung="3" data-min="5">
+<h2>Try it: which limit does your setup hit?</h2>
+<p class="ts-bridge">Last part: the H100's ridge is about 295 FLOPs per byte, and single-request decode sits near 1. Still unsolved: what happens with your model, your GPU and your traffic?</p>
+<p class="ts-problem">Procurement asks whether a newer GPU will speed up your chatbot. Before anyone benchmarks, you should be able to predict which phase benefits and by roughly how much.</p>
+<p>The calculator uses the weights-only roofline from parts 4 to 6. A <dfn data-def="The set of requests whose next token is computed in the same forward pass, so they share one read of the weights.">batch</dfn> here means the requests decoded together in one pass. The GPU figures come from NVIDIA's spec pages, halved to dense.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>GPU</th><th>NVIDIA spec: BF16 with sparsity, bandwidth, memory</th><th>Dense peak used here</th></tr></thead>
+<tbody>
+<tr><td>A100 80GB PCIe</td><td><span class="ts-claim" data-claim="c16" data-src="s3">624 teraFLOPS, 1,935 GB/s, 80 GB</span></td><td>312 TFLOP/s</td></tr>
+<tr><td>H100 SXM</td><td><span class="ts-claim" data-claim="c19" data-src="s1">1,979 teraFLOPS, 3.35 TB/s, 80 GB</span></td><td>989.5 TFLOP/s</td></tr>
+<tr><td>H100 NVL</td><td><span class="ts-claim" data-claim="c17" data-src="s1">1,671 teraFLOPS, 3.9 TB/s, 94 GB</span></td><td>835.5 TFLOP/s</td></tr>
+<tr><td>H200 SXM</td><td><span class="ts-claim" data-claim="c18" data-src="s2">1,979 teraFLOPS, 4.8 TB/s, 141 GB</span></td><td>989.5 TFLOP/s</td></tr>
+</tbody>
+</table></div>
+<div class="ts-roofline" data-title="Roofline calculator (dense model, BF16, weights only)">
+<script type="application/json">
+{"gpus": [
+  {"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80},
+  {"id": "h100-nvl", "label": "H100 NVL", "tflops": 835.5, "tbps": 3.9, "gb": 94},
+  {"id": "h200-sxm", "label": "H200 SXM", "tflops": 989.5, "tbps": 4.8, "gb": 141},
+  {"id": "a100-pcie", "label": "A100 80GB PCIe", "tflops": 312, "tbps": 1.935, "gb": 80}],
+ "defaults": {"gpu": "h100-sxm", "params": 8, "batch": 1, "prompt": 2000}}
+</script>
+</div>
+<p>Things to try: switch the H100 SXM to the H200 and watch decode speed up while prefill stays put. Raise the batch from 1 to 64 to 512 and watch decode cross the ridge. Set the model to 70 billion parameters and see it stop fitting on one 80 GB card.</p>
+<div class="ts-interview"><p><strong>"Our 8B chatbot on an H100 streams at about 200 tokens per second. Will a GPU with twice the FLOPs make it faster?"</strong> A strong answer: single-request decode is memory-bound at about 1 FLOP per byte against a ridge near 295, so more FLOPs do nothing for it. The ceiling is bandwidth ÷ weight bytes, 3.35 TB/s ÷ 16 GB ≈ 209 tokens per second. Ask for more bandwidth, smaller weights, or more requests per pass. More FLOPs would only shorten prefill, which is TTFT.</p></div>
+<p class="ts-takeaway">Same-FLOPs, more-bandwidth hardware speeds up decode and leaves prefill unchanged; more FLOPs does the reverse.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c19 c18">
+<p class="q">You move an 8B BF16 model from an H100 SXM to an H200 SXM, one request at a time. What changes for a 2,000-token prompt, by the weights-only roofline?</p>
+<ol>
+<li data-why="Prefill of a long prompt is compute-bound, and both GPUs list the same BF16 compute.">Both TTFT and decode speed improve by about 1.4 times</li>
+<li>Decode gets about 1.4 times faster (4.8 vs 3.35 TB/s); prefill time stays about the same</li>
+<li data-why="Memory capacity limits what fits and how much room is left over; it does not set per-step speed.">Nothing, because the extra 61 GB of memory is unused by an 8B model</li>
+</ol>
+<p class="ts-why">Both list 1,979 BF16 teraFLOPS with sparsity, so compute-bound prefill is unchanged. Decode is memory-bound and scales with bandwidth: 4.8 ÷ 3.35 ≈ 1.43.</p>
+</div>
+</section>
+
+<section class="ts-part" id="ttft-tpot" data-rung="3" data-min="5">
+<h2>TTFT and TPOT: the two numbers a user actually feels</h2>
+<p class="ts-bridge">Last part: more bandwidth speeds up decode, more FLOPs speed up prefill. Still unsolved: how do those show up in what users see and what you put on a dashboard?</p>
+<p class="ts-problem">Support tickets say "the bot thinks for four seconds before it starts typing, then types fast." Another team says "it starts instantly but types like a snail." Those are two different metrics, driven by two different phases.</p>
+<p><dfn data-def="Time to first token: from sending a request until the first streamed output arrives. Mostly queue wait plus prefill.">TTFT</dfn> is how long a user waits before anything appears. <span class="ts-claim" data-claim="c20" data-src="s12">vLLM's benchmark docs define TTFT as the time from sending a request to receiving its first streamed output.</span></p>
+<p><dfn data-def="Time per output token: the average gap between output tokens after the first one. Mostly the decode step time.">TPOT</dfn> is how fast text flows once it starts. <span class="ts-claim" data-claim="c22" data-src="s11 s12">vLLM computes TPOT per request as (end-to-end latency minus TTFT) divided by (output tokens minus 1).</span></p>
+<p><span class="ts-claim" data-claim="c24" data-src="s8">The DistServe paper treats TTFT as the duration of the prefill phase and TPOT as the measure of the decoding phase.</span> In a real server TTFT also includes time spent queued before prefill starts.</p>
+<ol class="ts-steps">
+<li><strong>TTFT ≈ queue wait + prefill.</strong> Long prompts and busy servers raise it.</li>
+<li><strong>TPOT ≈ one decode step.</strong> Model size, bandwidth and whatever else shares the pass raise it.</li>
+<li><strong>End-to-end ≈ TTFT + TPOT × (output tokens − 1).</strong> This is the TPOT formula rearranged.</li>
+</ol>
+<p>Worked example, 8B model on an H100 SXM, best case, empty queue, 2,000-token prompt, 300-token answer: TTFT about 32 ms, TPOT about 4.8 ms, end-to-end about 32 + 299 × 4.8 ≈ 1,460 ms. Decode is about 98% of the total. For long answers, end-to-end latency is a decode story.</p>
+<p class="ts-takeaway">TTFT is queue plus prefill; TPOT is the decode step; long answers make end-to-end mostly decode.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c20 c22 c24 c26">
+<p class="q">"Thinks for four seconds, then types fast." The model and prompt sizes have not changed this week. Which is the most likely cause?</p>
+<ol>
+<li>Requests are waiting in the queue before prefill starts, which inflates TTFT</li>
+<li data-why="A slow decode step would show up as slow typing (high TPOT), which users are not reporting.">Decode steps got slower</li>
+<li data-why="Output length affects end-to-end time, not how long the user waits for the first token.">Answers got longer</li>
+</ol>
+<p class="ts-why">TTFT is queue wait plus prefill. Prefill cost depends on prompt length, which has not changed. Fast typing means TPOT is fine. That leaves the queue, which grows when traffic outruns capacity.</p>
+</div>
+</section>
+
+<section class="ts-part" id="itl-throughput" data-rung="3" data-min="5">
+<h2>ITL, throughput, and what vLLM actually exports</h2>
+<p class="ts-bridge">Last part: TTFT is queue plus prefill, TPOT is the decode step. Still unsolved: what do you put on the dashboard, and what do the metric names mean in a real server?</p>
+<p class="ts-problem">Your Grafana panel shows mean TPOT of 20 ms, but users complain about stutters. An average per request hides the one 900 ms pause in the middle of a stream.</p>
+<p><dfn data-def="Inter-token latency: each individual gap between consecutive streamed outputs, recorded one sample per gap, so a single long pause is visible.">ITL</dfn> keeps every gap. <span class="ts-claim" data-claim="c21" data-src="s12">vLLM's benchmark docs define inter-token latency (ITL) as the time between consecutive streamed outputs.</span> <span class="ts-claim" data-claim="c23" data-src="s12">With standard decoding each streamed output usually holds one token, so ITL and TPOT are usually close.</span> Their percentiles are not: a p99 of ITL catches stutters that mean TPOT smooths away.</p>
+<p><dfn data-def="Work completed per second across all requests, usually output tokens per second. A capacity number, not a latency number.">Throughput</dfn> is the server's view. <span class="ts-claim" data-claim="c27" data-src="s12">vLLM's benchmark reports request throughput (requests per second), output token throughput and total token throughput (tokens per second).</span></p>
+<p><span class="ts-claim" data-claim="c29" data-src="s21">This page follows vLLM v0.31.0, the newest non-preview release tag when it was written.</span> <span class="ts-claim" data-claim="c25" data-src="s11">vLLM exports these as Prometheus histograms named vllm:time_to_first_token_seconds, vllm:inter_token_latency_seconds, vllm:request_time_per_output_token_seconds and vllm:e2e_request_latency_seconds.</span></p>
+<p><span class="ts-claim" data-claim="c26" data-src="s11">It also splits each request's time into a queue interval, a prefill interval (from being scheduled to the first new tokens) and a decode interval (first to last new tokens), exported as vllm:request_queue_time_seconds, vllm:request_prefill_time_seconds and vllm:request_decode_time_seconds.</span> Those three map straight onto this page's phases.</p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c28" data-src="s11">vLLM's docs warn that ITL and TPOT diverge when one streamed output bundles several tokens, as with speculative decoding.</span> <span class="ts-claim" data-claim="c30" data-src="s12">They also warn that metric names are not standardized across benchmarking tools, so compare measurement points and formulas, not names.</span> <span class="ts-claim" data-claim="c31" data-src="s9">The Splitwise paper, for example, reports TTFT, time between tokens (TBT) and end-to-end latency.</span></p></div>
+<div class="ts-interview"><p><strong>"Which latency SLOs would you set for a chat product, and why not just end-to-end?"</strong> A strong answer sets TTFT p95/p99 (perceived responsiveness, driven by queue and prefill) and ITL p99 (stream smoothness, driven by decode and interference). End-to-end mixes both and scales with answer length, so it cannot tell you which phase to fix. Throughput is a capacity target, tracked separately.</p></div>
+<p class="ts-takeaway">Watch TTFT and ITL percentiles for users, the queue/prefill/decode split for diagnosis, and tokens per second for capacity.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c21 c22 c23">
+<p class="q">Mean TPOT is a steady 20 ms but users report the stream "freezing" mid-answer now and then. Which metric would show it?</p>
+<ol>
+<li data-why="End-to-end latency would rise a little, but it cannot tell a single long pause from uniformly slower typing.">Mean end-to-end latency</li>
+<li data-why="TTFT covers only the wait for the first token; the freeze happens after streaming has started.">p99 TTFT</li>
+<li>p99 inter-token latency</li>
+</ol>
+<p class="ts-why">ITL records every gap between streamed outputs, so one long pause lands in its tail. TPOT averages the gaps within each request, which hides the pause.</p>
+</div>
+</section>
+
+<section class="ts-part" id="estimate-script" data-rung="3" data-min="5">
+<h2>Estimate both phases in code before you rent the GPU</h2>
+<p class="ts-bridge">Last part: TTFT, ITL and throughput, and their vLLM names. Still unsolved: how do you get a first estimate for a new model and GPU without a benchmark?</p>
+<p class="ts-problem">Your team is choosing between an H100 and an H200 for a 70B model. A benchmark rig takes a week to arrange. A back-of-envelope estimate takes a minute and tells you whether the model even fits.</p>
+<p>The script below turns parts 4 to 8 into code. Each forward pass costs the larger of its arithmetic time and its weight-reading time. Prefill is one pass over the prompt; each decode step is one pass over one token per request.</p>
+<div class="ts-tabs">
+<div data-tab="estimate.py"><div class="ts-code" data-lang="python" data-title="estimate.py" data-file="estimate.py" data-verified="ran"></div></div>
+<div data-tab="gpus.py"><div class="ts-code" data-lang="python" data-title="gpus.py" data-file="gpus.py" data-verified="ran"></div></div>
+</div>
+<p>Run it with <code>uv run estimate.py h100-sxm 8 2000 300</code> from the example folder. For an 8B model on an H100 SXM it prints a compute-bound prefill of about 32 ms, a memory-bound decode step of about 4.8 ms, about 209 tokens per second, and a ridge of about 295 FLOPs per byte. The tests check each of those numbers.</p>
+<p>Two things to get right in production estimates. These figures are ceilings: real kernels reach a fraction of peak, so treat them as best cases. And the script counts only weights; attention reads extra state per request that grows with context and batch, which Part 2 adds.</p>
+<div class="ts-interview"><p><strong>"Will a 70B model serve well on one H100?"</strong> A strong answer starts with capacity, not speed: 70 billion × 2 bytes = 140 GB in BF16, which does not fit in 80 GB. On an H200's 141 GB it fits with about 1 GB to spare, which leaves almost nothing for per-request attention state, so you would still shard it or quantize it. Only then estimate speed: about 3.35 TB/s ÷ 140 GB ≈ 24 tokens per second per pass on H100-class bandwidth.</p></div>
+<p class="ts-takeaway">Per pass, time ≈ max(2 × params × tokens ÷ peak FLOP/s, 2 × params ÷ bandwidth), and check that 2 × params fits first.</p>
+<div class="ts-predict" data-claims="c18 c19">
+<p class="q">Predict, then check with the calculator or the script: a 70B BF16 model on an H200 SXM, one request. Does it fit, and roughly how many tokens per second can decode reach?</p>
+<div class="ts-reveal"><p>It fits, barely: 140 GB of weights against 141 GB. Decode reads 140 GB per step at 4.8 TB/s, so about 29 ms per token, roughly 34 tokens per second at best. The 1 GB left over is the real problem: there is almost no room for the attention state that every request needs.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="naive-serving" data-rung="4" data-min="6">
+<h2>One request at a time: what breaks at 10 times the load</h2>
+<p class="ts-bridge">Last part: per pass, time is the larger of arithmetic and reading. Still unsolved: what happens to a server that runs one request at a time when real traffic arrives?</p>
+<p class="ts-problem">Your 8B model on one H100 handles one request at a time. Each 300-token answer takes about 1.46 s at best, so the GPU completes at most about 0.7 requests per second. Launch day brings 7 requests per second, ten times that.</p>
+<p>The papers agree on the cause. <span class="ts-claim" data-claim="c32" data-src="s10">The vLLM paper (SOSP 2023) notes that the prompt phase uses the GPU's parallelism well, while the token-by-token generation phase is limited by memory access and leaves GPU compute underused.</span> <span class="ts-claim" data-claim="c33" data-src="s8 s23">DistServe (OSDI 2024) describes prefill as tending to be compute-bound and a single decoding job as heavily bandwidth-bound.</span></p>
+<ol class="ts-steps">
+<li><strong>What breaks first:</strong> the queue. Requests arrive ten times faster than they finish, so the backlog grows every second.</li>
+<li><strong>What users see:</strong> TTFT climbs from tens of milliseconds to minutes, then client timeouts. Once a request starts, TPOT stays at about 4.8 ms, so streams look normal.</li>
+<li><strong>A bad client:</strong> one caller sending a huge prompt or asking for thousands of output tokens holds the only slot, and everyone waits behind it.</li>
+<li><strong>How you detect it:</strong> queue time and waiting requests rising while ITL stays flat.</li>
+<li><strong>The fix:</strong> put many requests in each pass. <span class="ts-claim" data-claim="c35" data-src="s10">The vLLM paper explains why batching helps: requests in a batch share the same weights, so the cost of moving them is spread across the batch.</span></li>
+</ol>
+<p><span class="ts-claim" data-claim="c38" data-src="s11">vLLM's reference Grafana dashboard tracks queue time and the number of running and waiting requests alongside TTFT and inter-token latency.</span> Alert on queue time and waiting requests, not only on latency.</p>
+<div class="ts-trap"><p>"GPU utilization is 100%, so we are at capacity." <span class="ts-claim" data-claim="c36" data-src="s18">NVML reports GPU utilization as the percent of time over the sample period during which one or more kernels was executing on the GPU.</span> <span class="ts-claim" data-claim="c37" data-src="s19">nvidia-smi is built on top of NVML.</span> A single-request decode loop keeps a kernel running nearly all the time, so it reads close to 100% while using well under 1% of the arithmetic. Judge headroom by tokens per second against the roofline, not by this number.</p></div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Same GPU and model, but now the server runs one decode pass for 64 requests at a time. By the weights-only roofline, roughly what happens to the step time and to total tokens per second?</p>
+<div class="ts-reveal"><p>At 64 tokens per pass the intensity is about 64 FLOPs per byte, still under the ridge near 295, so the step is still set by the 16 GB weight read: about 4.8 ms. But it now produces 64 tokens, so the ceiling rises from about 209 to about 13,400 tokens per second. In practice attention's per-request reads (Part 2) cut into this, which is why the rest of the series exists.</p></div>
+</div>
+<p class="ts-takeaway">Serving one request at a time caps an H100 at about 209 tokens per second for an 8B model, so extra load turns into queueing and exploding TTFT.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c21 c36 c37 c38">
+<p class="q">During the launch-day incident, which pair of signals best confirms "one-request-at-a-time capacity, not slow hardware"?</p>
+<ol>
+<li data-why="Both would be high in this incident, and both would also be high on an overloaded but well-batched server. They do not separate the causes.">GPU utilization at 100% and high end-to-end latency</li>
+<li>Queue time and waiting requests climbing while ITL stays flat</li>
+<li data-why="Rising TPOT would point at slower decode steps; here each step is unchanged, it is the waiting that grew.">TPOT rising steadily with load</li>
+</ol>
+<p class="ts-why">Flat ITL says each step is as fast as before. Growing queue time says requests wait for the single slot. NVML's utilization only measures time with a kernel running, so it reads high either way.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interference" data-rung="4" data-min="5">
+<h2>When one long prompt freezes everyone else's stream</h2>
+<p class="ts-bridge">Last part: batching decode steps is the fix for one-at-a-time serving. Still unsolved: what goes wrong when prefill and decode share the same GPU?</p>
+<p class="ts-problem">You batch decode for 64 chat users. A customer uploads a 100,000-token contract. By the weights-only estimate its prefill alone takes at least 1.6 s on an H100, more once attention over that long a context is counted, and 64 people watch their streams stop for that long.</p>
+<p>Prefill and decode want opposite things. Prefill is compute-bound and long. Decode is memory-bound and needs to run every few milliseconds. <span class="ts-claim" data-claim="c39" data-src="s8">DistServe reports that mixing them slows both: prefill steps delay the decoding steps they share a batch with, which lengthens TPOT.</span> <span class="ts-claim" data-claim="c40" data-src="s22">Hugging Face's continuous batching docs likewise note that processing a long prompt in a single step blocks other requests from generating.</span></p>
+<ol class="ts-steps">
+<li><strong>What breaks at 10 times the load:</strong> more arrivals mean more prefills cutting into decode, so ITL p99 rises for everyone even when average TPOT looks fine.</li>
+<li><strong>Misuse:</strong> a client sending maximum-length prompts in a loop can stall every other user's stream; cap prompt and output tokens per tenant.</li>
+<li><strong>Detection:</strong> ITL p99 spikes that line up with large values of vllm:request_prompt_tokens.</li>
+<li><strong>The fixes, later in the series:</strong> splitting long prefills into chunks, and running prefill and decode on separate GPUs.</li>
+</ol>
+<div class="ts-interview"><p><strong>"Users say streams stutter when someone pastes a big document. Why, and what are your options?"</strong> A strong answer names prefill-decode interference: the compute-bound prefill occupies the GPU while memory-bound decode steps wait, so ITL spikes. Options: cap prompt length, split prefill into chunks interleaved with decode, or separate prefill and decode onto different machines. Each trades something: chunking adds a little to the long request's TTFT; separation costs extra hardware and moving attention state between machines.</p></div>
+<p class="ts-takeaway">A long prefill on a shared GPU pauses every decode stream batched with it, which shows up as ITL tail spikes.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c39 c40">
+<p class="q">Average TPOT is fine, but ITL p99 jumps every few minutes. Prompt-length histograms show occasional 80,000-token prompts at the same moments. Best explanation?</p>
+<ol>
+<li>Long prefills are blocking the decode steps of the requests batched with them</li>
+<li data-why="A memory leak would worsen steadily, not spike in step with long prompts.">The GPU is slowly running out of memory</li>
+<li data-why="Tokenizing is cheap compared with model passes; it would not freeze other users' streams.">The tokenizer is slow on long documents</li>
+</ol>
+<p class="ts-why">The spikes line up with long prompts, and long prefills delay the decode steps that share the GPU with them. Averages hide it; the ITL tail shows it.</p>
+</div>
+<div class="ts-explain" data-points="One-at-a-time serving caps throughput at bandwidth divided by weight bytes, so overload becomes queueing and TTFT growth|Detect it by queue time and waiting requests rising while ITL stays flat, not by GPU utilization|Batching shares each weight read across requests|Long prefills sharing the GPU with decode cause ITL tail spikes">
+<p class="q">In your own words: what fails first when an LLM server takes ten times its load, and how would you see it on a dashboard?</p>
+<div class="ts-model"><p>With one request at a time, the GPU can only produce about bandwidth divided by weight bytes tokens per second, so extra traffic piles up in the queue and TTFT explodes while each stream still types normally. You see it as queue time and waiting requests climbing with flat ITL; GPU utilization reads high either way because it only measures time with a kernel running. Batching fixes it by sharing each weight read. Once batched, long prefills sharing the GPU stall everyone's decode steps, which shows up as ITL p99 spikes.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="choosing" data-rung="5" data-min="5">
+<h2>Choosing hardware and metrics for a workload</h2>
+<p class="ts-bridge">Last part: long prefills stall decode on a shared GPU. Still unsolved: given a workload, which phase matters, which metric do you promise, and which hardware lever do you pull?</p>
+<p class="ts-problem">Three teams ask for GPUs on the same day: a chat assistant, an overnight job summarising 2 million support tickets, and a tool that answers questions about 200-page PDFs. One answer for all three wastes money on at least two.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Workload</th><th>Phase that dominates</th><th>Metric to promise</th><th>Lever to pull</th></tr></thead>
+<tbody>
+<tr><td>Interactive chat, medium prompts, long answers</td><td>Decode</td><td>TTFT p95 and ITL p99</td><td>Memory bandwidth; batch decode within the ITL budget</td></tr>
+<tr><td>Questions over long documents, short answers</td><td>Prefill</td><td>TTFT p95</td><td>Compute (FLOPs); keep long prefills from stalling others</td></tr>
+<tr><td>Offline batch summarisation, nobody waiting</td><td>Both, run in big batches</td><td>Output tokens per second per GPU</td><td>Largest batches that fit; latency barely matters</td></tr>
+<tr><td>Agents with long reasoning output</td><td>Decode</td><td>End-to-end latency and ITL</td><td>Bandwidth; fewer bytes per token</td></tr>
+</tbody>
+</table></div>
+<p>Hardware follows from the phase. <span class="ts-claim" data-claim="c41" data-src="s2">NVIDIA claims the H200 boosts LLM inference by up to 2X over the H100 on models like Llama 2.</span> Its listed BF16 compute equals the H100 SXM's, so whatever speedup you get comes from the extra bandwidth and memory. <span class="ts-claim" data-claim="c43" data-src="s16">Hugging Face's docs say the main levers for faster generation are quantizing the model or using hardware with more memory bandwidth, and that more compute does not meaningfully help.</span></p>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c42" data-src="s20">Moonshot AI's Mooncake, the serving platform behind its Kimi LLM service, separates prefill and decoding into different clusters.</span> That is the extreme form of this page's lesson: the two phases want different hardware, so give them different machines. Later parts cover what that costs.</p></div>
+<div class="ts-interview"><p><strong>"You have budget for either more FLOPs or more bandwidth. Which?"</strong> A strong answer asks for the workload first. Long prompts with short answers are prefill-heavy and compute-bound: buy FLOPs. Chat and agents are decode-heavy and memory-bound: buy bandwidth and memory. Name what you give up: a bandwidth-first choice does little for TTFT on huge prompts.</p></div>
+<div class="ts-note" data-label="Beyond senior"><p>Staff-level questions sit on top of this: capacity planning across several model sizes, cost per million tokens as a product decision, and when to run your own GPUs versus a hosted API. This series stays with the engine.</p></div>
+<p class="ts-takeaway">Find the dominant phase first; prefill-heavy work wants FLOPs and TTFT targets, decode-heavy work wants bandwidth and ITL targets.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c18 c19">
+<p class="q">The PDF question-answering team (100,000-token prompts, 50-token answers) wants H200s instead of H100 SXMs "because they are faster for LLMs". What do you tell them?</p>
+<ol>
+<li data-why="The extra bandwidth helps decode, which is a tiny share of this workload.">Yes: the H200's extra bandwidth will cut their latency nearly in half</li>
+<li data-why="Memory capacity matters for fitting state, but it is not what limits prefill speed.">Yes: 141 GB of memory makes prefill faster</li>
+<li>Their latency is mostly prefill, which is compute-bound, and both list the same BF16 compute, so expect little TTFT gain</li>
+</ol>
+<p class="ts-why">A 100,000-token prompt with a 50-token answer is prefill-dominated. Prefill is compute-bound, and the H200 and H100 SXM list the same 1,979 BF16 teraFLOPS (with sparsity). The bandwidth gain mostly helps decode.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="7">
+<h2>Interview drill and final check</h2>
+<p class="ts-bridge">Last part: match the hardware lever and the metric to the dominant phase. Still unsolved: can you put it all together under interview pressure?</p>
+<p class="ts-problem">Three prompts an interviewer could open with. Commit to an answer before revealing each one; each reference answer names the trade-off.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Prompt 1: "Design an endpoint that serves an 8B model to 50 concurrent chat users on one H100. Estimate whether one GPU is enough."</p>
+<div class="ts-reveal"><p>Set assumptions: 2,000-token prompts, 300-token answers, target ITL under 50 ms. Weights are 16 GB, so it fits. One at a time, the ceiling is about 209 tokens per second, which serves under one request per second: not enough. Decoding all 50 together, the weight read is still about 4.8 ms per step, well inside the ITL budget, so weights-only it fits easily. The trade-off: bigger batches raise throughput but add attention reads per request and make prefill interference more likely, so verify with a load test and watch ITL p99.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Prompt 2: "TTFT p99 tripled after we launched a 'summarise this file' feature. Walk me through your diagnosis."</p>
+<div class="ts-reveal"><p>Split TTFT into queue and prefill using the queue and prefill interval metrics. If prefill time rose, long prompts are the cause: prefill is compute-bound, so time scales with prompt tokens. If queue time rose, long prefills are holding the GPU and others wait. Then check ITL p99 for interference. Fixes trade off: capping file size limits the product; chunked prefill protects other users at the cost of the long request's own TTFT; separate prefill machines cost hardware.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Prompt 3: "Why can't we make decode faster by buying GPUs with more FLOPs?"</p>
+<div class="ts-reveal"><p>Single-request decode does about 1 FLOP per byte of weights read, far below a ridge of hundreds, so it is memory-bound: it waits for weights, not arithmetic. The levers are more bandwidth, fewer bytes per parameter, or more tokens per pass through batching. The trade-off with batching is per-request latency and memory for each request's attention state, which Part 2 sizes.</p></div>
+</div>
+<p class="ts-takeaway">Every serving question starts with the same move: identify the phase, place it on the roofline, then name the lever and what it costs.</p>
+<div class="ts-quiz" data-answer="d" data-claims="c8 c9 c12 c13 c14 c15">
+<p class="q">Final check. A 30B dense BF16 model on an H100 SXM decodes 16 requests per pass. Which statement is right by the weights-only roofline?</p>
+<ol>
+<li data-why="Batching changes intensity, not the weight bytes. 30 billion × 2 bytes is 60 GB, which fits in 80 GB.">The model does not fit in 80 GB</li>
+<li data-why="16 FLOPs per byte is far below the ridge near 295; it is still memory-bound.">The pass is compute-bound because 16 requests share it</li>
+<li data-why="The step reads the same 60 GB whether it serves 1 request or 16, so the step time does not grow 16 times.">Each step takes 16 times longer than for one request</li>
+<li>The pass is memory-bound at about 16 FLOPs per byte, takes about 18 ms, and yields about 890 tokens per second in total</li>
+</ol>
+<p class="ts-why">Weights: 60 GB, fits. Intensity equals tokens per pass, 16, below the ridge of about 295, so the step is set by the read: 60 GB ÷ 3.35 TB/s ≈ 18 ms. Sixteen tokens per step gives about 16 ÷ 0.018 ≈ 890 tokens per second.</p>
+</div>
+<div class="ts-explain" data-points="Autoregressive generation makes output one token per forward pass|Prefill processes the whole prompt in one pass, has high FLOPs per byte and is compute-bound; it drives TTFT|Decode processes one token per request per pass, has low FLOPs per byte and is memory-bound; it drives TPOT and ITL|One-at-a-time serving wastes the GPU, and sharing each weight read across requests is the fix">
+<p class="q">Explain back the whole page: what are prefill and decode, why does each hit a different limit, which metrics do they drive, and why does naive serving waste the GPU?</p>
+<div class="ts-model"><p>An LLM writes one token per forward pass, each depending on the ones before. Prefill is the first pass: all prompt tokens at once, thousands of FLOPs per byte of weights read, so it is compute-bound and sets TTFT along with queue time. Decode is every later pass: one new token per request, about 1 FLOP per byte when serving a single request, far below an H100's ridge near 295, so it is memory-bound and sets TPOT and ITL. Serving one request at a time leaves almost all of the arithmetic idle and caps throughput at bandwidth divided by weight bytes. Putting many requests in each pass shares the weight read, which is where the rest of the series picks up.</p></div>
+</div>
+<p><strong>Next: <a href="../llm-serving-2/index.html">Part 2: The KV cache</a></strong>, the attention state this page kept to one line, how big it gets, and why it, not the weights, decides how many requests fit on a GPU.</p>
+</section>

@@ -107,6 +107,18 @@ Use a diagram only when the part shows movement between components, an order ove
 ```
 Use the existing classes (`node`, `edge`, `msg`, `over`, `lblbg`, `arrowhead`) and CSS variables (`var(--ink)`, `var(--surface-2)`, `var(--line)`, `var(--rc)`) only. No hard-coded colours: they break dark mode.
 
+### Roofline calculator (compute-bound vs memory-bound, for GPU/LLM topics)
+```html
+<div class="ts-roofline" data-title="Roofline calculator">
+<script type="application/json">
+{"gpus": [{"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80}],
+ "defaults": {"gpu": "h100-sxm", "params": 8, "batch": 1, "prompt": 2000}}
+</script>
+</div>
+```
+- Renders inputs (GPU, model size in billions, batch, prompt tokens), a log-log roofline with decode and prefill points, and the weights-only estimate (BF16, 2 FLOPs and 2 bytes per parameter).
+- `tflops` is the dense peak, `tbps` memory bandwidth in TB/s, `gb` memory. Every figure must also appear on the page as a verified claim (e.g. in a spec table next to it).
+
 ## 5. Code and tabs
 
 ```html

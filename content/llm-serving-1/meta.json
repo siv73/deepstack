@@ -1,0 +1,17 @@
+{
+ "slug": "llm-serving-1",
+ "title": "LLM inference serving, Part 1: prefill vs decode",
+ "tldr": "What happens inside an LLM server for one request: tokens and the one-token-at-a-time loop, the prefill pass over the whole prompt and the decode loop after it, why prefill is compute-bound and decode is memory-bandwidth-bound (arithmetic intensity and the roofline, with H100, H200 and A100 numbers), TTFT, TPOT, ITL and throughput and the phase behind each, a roofline calculator and a tested estimator script, why one-request-at-a-time serving collapses under load, prefill-decode interference, choosing hardware and metrics per workload, and an interview drill.",
+ "category": "AI systems",
+ "created": "2026-10-10",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "What an LLM API call looks like from the client side (prompt in, streamed text out)"},
+  {"label": "CPU-bound vs I/O-bound services, and p95/p99 latency"}
+ ],
+ "related": [
+  {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2", "why": "the attention state this page kept to one line: what it stores, how big it gets, and why it limits how many requests fit"},
+  {"label": "LLM inference serving, Parts 3 and 4: batching and PagedAttention", "why": "how servers put many requests into each pass without wasting memory"},
+  {"label": "Python asyncio, Part 1", "slug": "python-asyncio-1", "why": "the I/O-bound side of the backend comparison used on this page"}
+ ]
+}

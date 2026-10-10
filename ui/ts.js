@@ -605,6 +605,210 @@
   }
 
   /* =====================================================================
+     ROOFLINE CALCULATOR (.ts-roofline): dense model, weights-only roofline.
+     Spec JSON: {"gpus":[{"id","label","tflops","tbps","gb"}], "defaults":{"gpu","params","batch","prompt"}}
+     tflops = dense peak (TFLOP/s), tbps = memory bandwidth (TB/s), gb = memory (GB).
+     ===================================================================== */
+  function fmtNum(x, unit) {
+    if (!Number.isFinite(x)) return "–";
+    const a = Math.abs(x);
+    const s = a >= 100 ? Math.round(x).toLocaleString("en-US") : a >= 10 ? x.toFixed(1) : x.toPrecision(2);
+    return unit ? `${s} ${unit}` : s;
+  }
+  function fmtInt(x) {
+    return Math.round(x).toLocaleString("en-US");
+  }
+  function fmtTime(sec) {
+    if (sec >= 1) return fmtNum(sec, "s");
+    if (sec >= 1e-3) return fmtNum(sec * 1e3, "ms");
+    return fmtNum(sec * 1e6, "µs");
+  }
+  function initRoofline(box, n) {
+    const spec = readJSON($("script[type='application/json']", box));
+    if (!spec?.gpus?.length) return;
+    const d = spec.defaults || {};
+    const id = (k) => `ts-rl-${n}-${k}`;
+    const title = box.getAttribute("data-title");
+    box.classList.add("ts-fig");
+    box.innerHTML = "";
+    if (title) box.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    const gpuSel = el(
+      "select",
+      { id: id("gpu") },
+      spec.gpus.map((g) => el("option", { value: g.id, text: g.label })),
+    );
+    gpuSel.value = d.gpu || spec.gpus[0].id;
+    function num(key, label, val, min, max, step) {
+      const inp = el("input", { id: id(key), type: "number", min, max, step, value: val, inputmode: "decimal" });
+      return [inp, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), inp])];
+    }
+    const [pIn, pLab] = num("params", "Model size (billions of parameters)", d.params || 8, 0.1, 2000, "any");
+    const [bIn, bLab] = num("batch", "Requests decoded together (batch)", d.batch || 1, 1, 4096, 1);
+    const [lIn, lLab] = num("prompt", "Prompt length (tokens)", d.prompt || 2000, 1, 1000000, 1);
+    const gLab = el("label", { class: "ts-rl-field", for: id("gpu") }, [el("span", { text: "GPU" }), gpuSel]);
+    box.appendChild(el("div", { class: "ts-rl-form" }, [gLab, pLab, bLab, lLab]));
+
+    // log-log chart
+    const W = 560,
+      H = 300,
+      L = 58,
+      R = 16,
+      T = 14,
+      B = 46;
+    const X0 = -1,
+      X1 = 6,
+      Y0 = -1,
+      Y1 = 3.5; // log10 ranges: FLOPs/byte, TFLOP/s
+    const xp = (i) => L + ((Math.log10(i) - X0) / (X1 - X0)) * (W - L - R);
+    const yp = (t) => T + (1 - (Math.log10(t) - Y0) / (Y1 - Y0)) * (H - T - B);
+    const clampX = (i) => Math.min(10 ** X1, Math.max(10 ** X0, i));
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      class: "ts-rl-chart",
+      "aria-label": "Roofline chart: reachable TFLOP/s against FLOPs per byte, log scales",
+    });
+    const axes = sv("g", { class: "ts-rl-axis" });
+    for (let e = X0; e <= X1; e++) {
+      const x = xp(10 ** e);
+      axes.appendChild(sv("line", { class: "ts-rl-grid", x1: x, x2: x, y1: T, y2: H - B }));
+      axes.appendChild(sv("text", { x, y: H - B + 16, "text-anchor": "middle", text: e < 0 ? "0.1" : `1e${e}` }));
+    }
+    for (let e = Y0; e <= Math.floor(Y1); e++) {
+      const y = yp(10 ** e);
+      axes.appendChild(sv("line", { class: "ts-rl-grid", x1: L, x2: W - R, y1: y, y2: y }));
+      axes.appendChild(sv("text", { x: L - 6, y: y + 4, "text-anchor": "end", text: e < 0 ? "0.1" : String(10 ** e) }));
+    }
+    axes.appendChild(
+      sv("text", { x: (L + W - R) / 2, y: H - 8, "text-anchor": "middle", text: "FLOPs per byte read (log)" }),
+    );
+    axes.appendChild(
+      sv("text", {
+        x: 14,
+        y: (T + H - B) / 2,
+        "text-anchor": "middle",
+        transform: `rotate(-90 14 ${(T + H - B) / 2})`,
+        text: "TFLOP/s reachable (log)",
+      }),
+    );
+    svg.appendChild(axes);
+    const roof = sv("path", { class: "ts-rl-roof" });
+    const ridgeLn = sv("line", { class: "ts-rl-ridge" });
+    const ridgeTx = sv("text", { class: "ts-rl-ridge-t" });
+    svg.appendChild(roof);
+    svg.appendChild(ridgeLn);
+    svg.appendChild(ridgeTx);
+    function point(cls, label) {
+      const g = sv("g", { class: `ts-rl-pt ${cls}` });
+      const c = sv("circle", { r: 7 });
+      const t = sv("text", { "text-anchor": "middle", text: label });
+      g.appendChild(c);
+      g.appendChild(t);
+      svg.appendChild(g);
+      return { c, t };
+    }
+    const decPt = point("is-decode", "decode"),
+      prePt = point("is-prefill", "prefill");
+    box.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    const out = el("div", { class: "ts-rl-out", "aria-live": "polite" });
+    box.appendChild(out);
+
+    function row(k, v, cls) {
+      return el("div", { class: `ts-rl-row${cls ? ` ${cls}` : ""}` }, [el("dt", { text: k }), el("dd", { text: v })]);
+    }
+    function update() {
+      const g = spec.gpus.find((x) => x.id === gpuSel.value) || spec.gpus[0];
+      const P = Math.max(0.1, +pIn.value || 0.1) * 1e9;
+      const batch = Math.max(1, Math.round(+bIn.value || 1));
+      const prompt = Math.max(1, Math.round(+lIn.value || 1));
+      const F = g.tflops * 1e12,
+        BW = g.tbps * 1e12;
+      const weights = 2 * P; // BF16 bytes
+      const ridge = F / BW;
+      const pass = (tokens) => {
+        const c = (2 * P * tokens) / F,
+          m = weights / BW;
+        return { t: Math.max(c, m), bound: c > m ? "compute" : "memory", used: c / Math.max(c, m) };
+      };
+      const dec = pass(batch),
+        pre = pass(prompt * batch);
+      // roof: memory slope up to the ridge, then flat at the peak
+      const yAt = (i) => Math.min(g.tflops, g.tbps * i); // TB/s × FLOPs/byte = TFLOP/s
+      const xr = clampX(ridge);
+      roof.setAttribute(
+        "d",
+        `M${xp(10 ** X0)},${yp(Math.max(10 ** Y0, yAt(10 ** X0)))} L${xp(xr)},${yp(yAt(xr))} L${xp(10 ** X1)},${yp(g.tflops)}`,
+      );
+      ridgeLn.setAttribute("x1", xp(xr));
+      ridgeLn.setAttribute("x2", xp(xr));
+      ridgeLn.setAttribute("y1", yp(g.tflops));
+      ridgeLn.setAttribute("y2", H - B);
+      // label sits under the flat roof, beside the dashed ridge line
+      const leftSide = xp(xr) > W - R - 170;
+      ridgeTx.setAttribute("text-anchor", leftSide ? "end" : "start");
+      ridgeTx.setAttribute("x", xp(xr) + (leftSide ? -6 : 6));
+      ridgeTx.setAttribute("y", yp(g.tflops) + 40);
+      ridgeTx.textContent = `ridge ≈ ${fmtInt(ridge)} FLOPs/byte`;
+      function place(pt, intensity, above) {
+        const i = clampX(intensity);
+        const x = xp(i),
+          y = yp(Math.max(10 ** Y0, yAt(i)));
+        pt.c.setAttribute("cx", x);
+        pt.c.setAttribute("cy", y);
+        // decode label up-left of its point, prefill label below: both clear of the roof line
+        pt.t.setAttribute("text-anchor", above ? "end" : "middle");
+        pt.t.setAttribute("x", above ? Math.max(L + 50, x - 12) : Math.min(W - R - 26, Math.max(L + 26, x)));
+        pt.t.setAttribute("y", above ? y - 14 : y + 22);
+      }
+      place(decPt, batch, true);
+      place(prePt, prompt * batch, false);
+
+      out.innerHTML = "";
+      const fits = weights <= g.gb * 1e9;
+      const dl = el("dl", { class: "ts-rl-list" }, [
+        row(
+          "Weights in BF16",
+          `${fmtNum(weights / 1e9, "GB")} of ${fmtNum(g.gb, "GB")} ${fits ? "(fits)" : "(does not fit on one GPU)"}`,
+          fits ? "" : "is-bad",
+        ),
+        row("Ridge point", `${fmtInt(ridge)} FLOPs per byte`),
+        row(
+          "Decode step",
+          `${fmtInt(batch)} FLOPs/byte → ${dec.bound}-bound, ${fmtTime(dec.t)} per token, compute ${fmtNum(dec.used * 100)}% busy`,
+          dec.bound === "memory" ? "is-mem" : "is-cmp",
+        ),
+        row("Decode throughput", `${fmtInt(batch / dec.t)} tokens/s across ${fmtInt(batch)} request(s)`),
+        row(
+          "Prefill",
+          `${fmtInt(prompt * batch)} FLOPs/byte → ${pre.bound}-bound, ${fmtTime(pre.t)} for the prompt(s)`,
+          pre.bound === "memory" ? "is-mem" : "is-cmp",
+        ),
+      ]);
+      out.appendChild(dl);
+      out.appendChild(
+        el("p", {
+          class: "ts-rl-note",
+          text: "Best case: weights only, 100% of peak. Real servers reach less, and attention's own reads (Part 2) are left out.",
+        }),
+      );
+    }
+    [gpuSel, pIn, bIn, lIn].forEach((x) => {
+      x.addEventListener("input", update);
+      x.addEventListener("change", update);
+    });
+    update();
+  }
+  function initRooflines() {
+    $$(".ts-roofline").forEach((b, i) => {
+      try {
+        initRoofline(b, i + 1);
+      } catch (e) {
+        console.error("[teach-site] roofline failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
      CODE + TABS
      ===================================================================== */
   const KW =
@@ -1321,6 +1525,7 @@
     });
 
     initFigures();
+    initRooflines();
     initCode();
     initTabs();
     initTerms();

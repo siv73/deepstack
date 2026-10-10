@@ -1,0 +1,1696 @@
+{
+ "verified": "2026-10-10",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "NVIDIA H100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/h100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table"
+  },
+  {
+   "id": "s2",
+   "title": "NVIDIA H200 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/h200/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table and highlights"
+  },
+  {
+   "id": "s3",
+   "title": "NVIDIA A100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/a100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table"
+  },
+  {
+   "id": "s4",
+   "title": "NVIDIA Hopper Architecture In-Depth (NVIDIA Technical Blog)",
+   "url": "https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Table 3 and footnote 2"
+  },
+  {
+   "id": "s5",
+   "title": "Williams, Waterman, Patterson: Roofline: An Insightful Visual Performance Model for Floating-Point Programs and Multicore Architectures (UCB/EECS-2008-134)",
+   "url": "https://www2.eecs.berkeley.edu/Pubs/TechRpts/2008/EECS-2008-134.pdf",
+   "kind": "primary",
+   "publisher": "UC Berkeley EECS",
+   "accessed": "2026-10-10",
+   "locator": "Section 3"
+  },
+  {
+   "id": "s6",
+   "title": "Kaplan et al.: Scaling Laws for Neural Language Models (arXiv:2001.08361)",
+   "url": "https://arxiv.org/pdf/2001.08361",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Section 2.1, Eq. 2.2, Table 1"
+  },
+  {
+   "id": "s7",
+   "title": "Vaswani et al.: Attention Is All You Need (arXiv:1706.03762)",
+   "url": "https://arxiv.org/html/1706.03762v7",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Section 3"
+  },
+  {
+   "id": "s8",
+   "title": "Zhong et al.: DistServe: Disaggregating Prefill and Decoding for Goodput-optimized LLM Serving (arXiv:2401.09670)",
+   "url": "https://arxiv.org/html/2401.09670v3",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Sections 1, 2.1, 2.3, 3.2"
+  },
+  {
+   "id": "s9",
+   "title": "Patel et al.: Splitwise: Efficient generative LLM inference using phase splitting (arXiv:2311.18677)",
+   "url": "https://arxiv.org/html/2311.18677v2",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Abstract, Sections I, II-B, II-C"
+  },
+  {
+   "id": "s10",
+   "title": "Kwon et al.: Efficient Memory Management for Large Language Model Serving with PagedAttention (vLLM, SOSP 2023)",
+   "url": "https://arxiv.org/pdf/2309.06180",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Sections 2.2, 2.3"
+  },
+  {
+   "id": "s11",
+   "title": "vLLM v0.31.0 docs: Metrics (design)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/design/metrics.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "v1 Metrics; Grafana Dashboard; Engine Core Events"
+  },
+  {
+   "id": "s12",
+   "title": "vLLM v0.31.0 docs: Benchmark CLI, Understanding the Latency Metrics",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/benchmarking/cli.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "Understanding the Latency Metrics; example output"
+  },
+  {
+   "id": "s13",
+   "title": "Hugging Face Transformers v5.19.0 docs: Generation with LLMs",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/llm_tutorial.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Introduction"
+  },
+  {
+   "id": "s14",
+   "title": "Hugging Face Transformers v5.19.0 docs: Tokenizer summary",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/tokenizer_summary.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Introduction"
+  },
+  {
+   "id": "s15",
+   "title": "Hugging Face Transformers v5.19.0 docs: How caching works",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/cache_explanation.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Introduction"
+  },
+  {
+   "id": "s16",
+   "title": "Hugging Face Transformers v5.19.0 docs: Chat basics (conversations)",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/conversations.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Performance and memory usage"
+  },
+  {
+   "id": "s17",
+   "title": "Hugging Face Transformers v5.19.0 docs: Optimizing LLMs for Speed and Memory",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/llm_tutorial_optimization.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Section 1, Lower Precision"
+  },
+  {
+   "id": "s18",
+   "title": "NVML API Reference: nvmlUtilization_t",
+   "url": "https://docs.nvidia.com/deploy/nvml-api/api/structnvmlUtilization__t.html",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Field gpu"
+  },
+  {
+   "id": "s19",
+   "title": "NVIDIA System Management Interface (nvidia-smi)",
+   "url": "https://developer.nvidia.com/system-management-interface",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Overview"
+  },
+  {
+   "id": "s20",
+   "title": "Qin et al.: Mooncake: A KVCache-centric Disaggregated Architecture for LLM Serving (arXiv:2407.00079)",
+   "url": "https://arxiv.org/abs/2407.00079v3",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Abstract"
+  },
+  {
+   "id": "s21",
+   "title": "vLLM tags on GitHub (v0.31.0)",
+   "url": "https://github.com/vllm-project/vllm/tags",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "Tag list, non-rc tags"
+  },
+  {
+   "id": "s22",
+   "title": "Hugging Face Transformers v5.19.0 docs: Continuous batching architecture",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/continuous_batching_architecture.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Chunked prefill"
+  },
+  {
+   "id": "s23",
+   "title": "USENIX OSDI '24: DistServe presentation page",
+   "url": "https://www.usenix.org/conference/osdi24/presentation/zhong-yinmin",
+   "kind": "primary",
+   "publisher": "USENIX",
+   "accessed": "2026-10-10",
+   "locator": "Conference page"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Hugging Face's tokenizer guide describes subword tokenization: common words stay whole as one token, and rare words are split into smaller pieces.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Introduction (subword tokenization)",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Introduction (subword tokenization)",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "A language model generates the next token from the prompt plus everything it has generated so far, and stops at a length limit or when it produces an end-of-sequence token.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "The original Transformer paper describes its decoder this way: it emits output one symbol at a time, feeding earlier outputs back in as extra input for the next step.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Section 3",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Section 3",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "the server runs the whole prompt through the model in one step, processing all prompt tokens in parallel, and that step produces the first output token.",
+   "sources": [
+    "s8",
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 1 and 2.1; Splitwise Section I/II-B",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Abstract, Sections I, II-B, II-C",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 1 and 2.1; Splitwise Section I/II-B",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Section II-B",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "the server generates the remaining tokens one per step, over many steps.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 1",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 1",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "the model stores per-token attention state (the KV cache) as it processes tokens, so later steps reuse it instead of recomputing it.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "A forward pass costs about 2 FLOPs per model parameter per token, one multiply and one add, plus an attention term that grows with context length and stays a small share while the model width exceeds the context length divided by 12.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Section 2.1, Eq. 2.2",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Section 2.1, Eq. 2.2",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "In BF16 each parameter takes 2 bytes, so loading an X-billion-parameter model takes about 2X GB of GPU memory.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "Section 1 rule of thumb",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "Section 1 rule of thumb",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Hugging Face's docs state that every active parameter must be read from memory for every generated token, and call this a bottleneck for text generation.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Performance and memory usage",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Performance and memory usage",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "The Roofline paper (Williams, Waterman and Patterson) calls this ratio operational intensity: operations performed per byte of traffic to main memory.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Section 3",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Section 3",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "The Roofline model says reachable performance is the lower of two ceilings: peak compute, and memory bandwidth multiplied by the intensity.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Section 3, p. 2",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Section 3, p. 2",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "The ridge point is where the two ceilings meet: the lowest intensity at which a kernel can reach peak compute.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Section 3, p. 2",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Section 3, p. 2",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "NVIDIA lists the H100 SXM at 1,979 teraFLOPS of BF16 Tensor Core throughput with sparsity, 3.35 TB/s of memory bandwidth and 80 GB of memory.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "NVIDIA's with-sparsity figures are twice the dense ones; for example, the A100 lists 312 teraFLOPS of BF16 dense and 624 with sparsity.",
+   "sources": [
+    "s3",
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Specifications table, footnote \"With sparsity\"; Hopper blog Table 3 footnote 2",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Table 3 and footnote 2",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Specifications table, footnote \"With sparsity\"; Hopper blog Table 3 footnote 2",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Table 3, footnote 2",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "624 teraFLOPS, 1,935 GB/s, 80 GB",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Specifications table, A100 80GB PCIe column",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Specifications table, A100 80GB PCIe column",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "1,671 teraFLOPS, 3.9 TB/s, 94 GB",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 NVL",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 NVL",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "1,979 teraFLOPS, 4.8 TB/s, 141 GB",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "1,979 teraFLOPS, 3.35 TB/s, 80 GB",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "vLLM's benchmark docs define TTFT as the time from sending a request to receiving its first streamed output.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "vLLM's benchmark docs define inter-token latency (ITL) as the time between consecutive streamed outputs.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "vLLM computes TPOT per request as (end-to-end latency minus TTFT) divided by (output tokens minus 1).",
+   "sources": [
+    "s11",
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Grafana Dashboard list; cli.md TPOT formula",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics; example output",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Grafana Dashboard list; cli.md TPOT formula",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics, TPOT formula",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "With standard decoding each streamed output usually holds one token, so ITL and TPOT are usually close.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "The DistServe paper treats TTFT as the duration of the prefill phase and TPOT as the measure of the decoding phase.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 1",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 1",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "vLLM exports these as Prometheus histograms named vllm:time_to_first_token_seconds, vllm:inter_token_latency_seconds, vllm:request_time_per_output_token_seconds and vllm:e2e_request_latency_seconds.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "v1 Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "v1 Metrics",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "It also splits each request's time into a queue interval, a prefill interval (from being scheduled to the first new tokens) and a decode interval (first to last new tokens), exported as vllm:request_queue_time_seconds, vllm:request_prefill_time_seconds and vllm:request_decode_time_seconds.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Engine Core Events; Grafana Dashboard",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Engine Core Events; Grafana Dashboard",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "vLLM's benchmark reports request throughput (requests per second), output token throughput and total token throughput (tokens per second).",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Example benchmark output",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Example benchmark output",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "vLLM's docs warn that ITL and TPOT diverge when one streamed output bundles several tokens, as with speculative decoding.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Grafana Dashboard, paragraph after list",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Grafana Dashboard, paragraph after list",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "This page follows vLLM v0.31.0, the newest non-preview release tag when it was written.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "git tags (non-rc) list",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "git tags (non-rc) list",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "They also warn that metric names are not standardized across benchmarking tools, so compare measurement points and formulas, not names.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics, note",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Understanding the Latency Metrics, note",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "The Splitwise paper, for example, reports TTFT, time between tokens (TBT) and end-to-end latency.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Section II-C, Table II",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Section II-C, Table II",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "The vLLM paper (SOSP 2023) notes that the prompt phase uses the GPU's parallelism well, while the token-by-token generation phase is limited by memory access and leaves GPU compute underused.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Section 2.2",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Section 2.2",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "DistServe (OSDI 2024) describes prefill as tending to be compute-bound and a single decoding job as heavily bandwidth-bound.",
+   "sources": [
+    "s8",
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Sections 2.1, 3.2",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Conference page",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Sections 2.1, 3.2",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Conference page, venue line",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "The vLLM paper explains why batching helps: requests in a batch share the same weights, so the cost of moving them is spread across the batch.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "NVML reports GPU utilization as the percent of time over the sample period during which one or more kernels was executing on the GPU.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Field gpu",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Field gpu",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "nvidia-smi is built on top of NVML.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Overview",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "vLLM's reference Grafana dashboard tracks queue time and the number of running and waiting requests alongside TTFT and inter-token latency.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Grafana Dashboard",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Grafana Dashboard",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "DistServe reports that mixing them slows both: prefill steps delay the decoding steps they share a batch with, which lengthens TPOT.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Sections 1, 2.3",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Sections 1, 2.3",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "Hugging Face's continuous batching docs likewise note that processing a long prompt in a single step blocks other requests from generating.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "Chunked prefill",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "Chunked prefill",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "NVIDIA claims the H200 boosts LLM inference by up to 2X over the H100 on models like Llama 2.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Highlights",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Highlights",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "Moonshot AI's Mooncake, the serving platform behind its Kimi LLM service, separates prefill and decoding into different clusters.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "Hugging Face's docs say the main levers for faster generation are quantizing the model or using hardware with more memory bandwidth, and that more compute does not meaningfully help.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Performance and memory usage",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "git: verbatim docs at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Performance and memory usage",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "git: fresh read of exact line at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Exact dense BF16 figure for the H100 printed by NVIDIA without sparsity",
+   "reason": "NVIDIA's current H100 page lists only with-sparsity figures; the datasheet was not reachable. The page states the halving rule with its source instead."
+  },
+  {
+   "text": "NVIDIA's Hopper blog figures of 1000/2000 BF16 TFLOPS and 3000 GB/s for H100 SXM5",
+   "reason": "Preliminary launch numbers that differ from the current spec page; used only for the dense-to-sparse ratio."
+  },
+  {
+   "text": "DistServe and Splitwise production deployment details",
+   "reason": "Research papers; no official deployment page found."
+  },
+  {
+   "text": "Typical model FLOPs utilization (MFU) percentages for real inference servers",
+   "reason": "Only blog and benchmark sources found; no primary source states a general figure."
+  }
+ ]
+}

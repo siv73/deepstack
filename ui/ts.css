@@ -955,6 +955,113 @@ dfn {
   color: var(--rc-ink, var(--ink));
 }
 
+/* ---------- Roofline calculator ---------- */
+.ts-rl-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px 14px;
+  margin: 4px 0 12px;
+}
+.ts-rl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ts-rl-field input,
+.ts-rl-field select {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 8px 10px;
+  min-height: 40px;
+}
+.ts-rl-field input:focus,
+.ts-rl-field select:focus {
+  border-color: var(--focus);
+  outline: none;
+}
+.ts-rl-axis text,
+.ts-rl-ridge-t,
+.ts-rl-pt text {
+  fill: var(--muted);
+  font-size: 12px;
+}
+.ts-rl-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.ts-rl-roof {
+  stroke: var(--ink);
+  stroke-width: 3;
+  fill: none;
+}
+.ts-rl-ridge {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+}
+.ts-rl-pt circle {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.ts-rl-pt.is-decode circle {
+  fill: var(--r4);
+}
+.ts-rl-pt.is-prefill circle {
+  fill: var(--r2);
+}
+.ts-rl-pt text {
+  fill: var(--ink);
+  font-weight: 700;
+}
+.ts-rl-list {
+  margin: 10px 0 0;
+  display: grid;
+  gap: 6px;
+}
+.ts-rl-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 160px) 1fr;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-s);
+  font-size: 15px;
+}
+.ts-rl-row dt {
+  font-weight: 700;
+}
+.ts-rl-row dd {
+  margin: 0;
+}
+.ts-rl-row.is-mem dt {
+  color: var(--r4-ink);
+}
+.ts-rl-row.is-cmp dt {
+  color: var(--r2-ink);
+}
+.ts-rl-row.is-bad dd {
+  color: var(--bad);
+  font-weight: 700;
+}
+.ts-rl-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+@media (max-width: 480px) {
+  .ts-rl-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
 /* ---------- Checks: quiz / order / predict / explain ---------- */
 .ts-check {
   margin: 26px 0;
