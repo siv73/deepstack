@@ -1119,6 +1119,104 @@ dfn {
   border: 1px solid var(--line);
 }
 
+/* ---------- Slot timeline (batching policies over time) ---------- */
+.ts-fig svg.ts-sl-chart {
+  min-width: 0;
+}
+.ts-sl-lbl,
+.ts-sl-arr {
+  font-size: 11px;
+  fill: var(--muted);
+}
+.ts-sl-arr {
+  font-weight: 700;
+  fill: var(--ink);
+}
+.ts-sl-lane {
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.ts-sl-cell,
+.ts-sl-sw {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.ts-sl-cell.is-P,
+.ts-sl-sw.is-P {
+  fill: var(--r3);
+  background: var(--r3);
+}
+.ts-sl-cell.is-d,
+.ts-sl-sw.is-d {
+  fill: color-mix(in srgb, var(--r2) 55%, var(--surface));
+  background: color-mix(in srgb, var(--r2) 55%, var(--surface));
+}
+.ts-sl-cell.is-pad,
+.ts-sl-sw.is-pad {
+  fill: color-mix(in srgb, var(--r4) 22%, var(--surface));
+  background: color-mix(in srgb, var(--r4) 22%, var(--surface));
+  stroke: var(--r4);
+  stroke-dasharray: 3 2;
+}
+.ts-sl-cell.is-wait,
+.ts-sl-sw.is-wait {
+  fill: var(--surface-2);
+  background: var(--surface-2);
+  stroke: var(--muted);
+  stroke-dasharray: 2 3;
+}
+.ts-sl-cell.is-free,
+.ts-sl-sw.is-free {
+  fill: var(--surface);
+  background: var(--surface);
+}
+.ts-sl-sw {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+}
+.ts-sl-id {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.ts-sl-id.is-pad {
+  fill: var(--muted);
+  font-weight: 400;
+}
+
+/* ---------- Batch trade-off calculator ---------- */
+.ts-fig svg.ts-bc-chart {
+  min-width: 0;
+}
+.ts-bc-line {
+  fill: none;
+  stroke-width: 2.5;
+}
+.ts-bc-line.is-tps,
+.ts-bc-dot.is-tps {
+  stroke: var(--r2);
+}
+.ts-bc-line.is-tpot,
+.ts-bc-dot.is-tpot {
+  stroke: var(--r4);
+}
+.ts-bc-dot {
+  fill: var(--surface);
+  stroke-width: 3;
+}
+.ts-bc-mark {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.ts-bc-axlbl {
+  font-weight: 700;
+}
+
 /* ---------- Checks: quiz / order / predict / explain ---------- */
 .ts-check {
   margin: 26px 0;

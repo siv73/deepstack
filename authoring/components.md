@@ -133,6 +133,34 @@ Use the existing classes (`node`, `edge`, `msg`, `over`, `lblbg`, `arrowhead`) a
 - Renders a model preset (plus Custom: params in billions, layers, query heads, KV heads, head dimension), GPU, KV data type, tokens per request, batch, `gpu_memory_utilization` and other reserved GB; a memory bar (weights, reserve, KV in use, KV free, unrequested); and KV bytes per token and per request, the KV budget, requests that fit, the decode step including KV reads, and the batch where decode turns compute-bound.
 - Same arithmetic as `examples/llm-serving-2/kv_cache.py`: weights in BF16, attention FLOPs of 4 × layers × query heads × head_dim per cached token. Model shapes and GPU figures must appear on the page as verified claims.
 
+### Slot timeline (batching policies over time, stepped column by column)
+```html
+<figure class="ts-slots" data-title="Six requests, three slots">
+<script type="application/json">
+{"slots": 3,
+ "requests": [{"id": "A", "arrives": 0, "tokens": 2}],
+ "lanes": [{"label": "Static batching", "cols": [["wait", "wait", "wait"], ["P:A", "P:B", "P:C"]]},
+           {"label": "Continuous batching", "cols": [["P:A", "P:B", ""]]}],
+ "captions": ["One caption per column of the longest lane."]}
+</script>
+</figure>
+```
+- Cell kinds: `P:<id>` prefill, `d:<id>` decode, `pad:<id>` a finished row still in the batch, `wait` an empty slot while the GPU waits, `""` an empty slot. `arrives` is a 0-based column; the axis is labelled from 1.
+- Generate the JSON from tested code and assert in a test that the page's block matches it (see `examples/llm-serving-3/test_batching.py`).
+
+### Batch trade-off calculator (continuous batching in steady state)
+```html
+<div class="ts-batchcalc" data-title="Batch trade-off calculator">
+<script type="application/json">
+{"models": [{"id": "llama-3.1-8b", "label": "Llama 3.1 8B", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [{"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80}],
+ "defaults": {"model": "llama-3.1-8b", "gpu": "h100-sxm", "rate": 10, "prompt": 1000, "output": 250, "max_seqs": 1024, "util": 0.92, "reserve": 3}}
+</script>
+</div>
+```
+- Inputs: model, GPU, arrival rate, prompt and output length, max batch (max_num_seqs), `gpu_memory_utilization`, reserve. Outputs: running requests, throughput, TPOT, TTFT estimate, KV memory used, prefill share; a chart of tokens/s and TPOT against batch size with every slot full.
+- Same arithmetic as `examples/llm-serving-3/steady_state.py`. Model shapes and GPU figures must appear on the page as verified claims.
+
 ## 5. Code and tabs
 
 ```html

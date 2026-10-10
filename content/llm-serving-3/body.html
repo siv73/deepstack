@@ -1,0 +1,426 @@
+<section class="ts-part" id="why-batching" data-rung="1" data-min="5">
+<h2>Why sharing a step is the main lever</h2>
+<p class="ts-problem">Your FastAPI service fronts one H100 running Llama 3.1 8B. One chat decodes at about 4.8 ms per token, roughly 207 tokens per second. Sixteen chats decoded one after another would need 16 GPUs to keep that pace. Run them in the same step and one GPU does it.</p>
+<p>Think of a bus. The trip costs the same fuel whether one passenger rides or forty. Each passenger only adds their own luggage. The fuel is the model's weights; the luggage is each request's KV cache.</p>
+<ol class="ts-steps">
+<li>Every decode step reads all 16 GB of weights from GPU memory, whatever the number of requests in it (Part 1).</li>
+<li>Each request in the step also reads its own KV cache, and nobody else can share that read (Part 2).</li>
+<li>So a step for 16 requests costs one weight read plus 16 small cache reads, not 16 weight reads.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c1" data-src="s8">The vLLM paper explains why batching helps: requests in a batch share the same weights, so the cost of moving them is spread across the batch.</span> Running several requests in one forward pass is called <dfn data-def="Running several requests through the model in the same forward pass, so they share one read of the weights.">batching</dfn>.</p>
+<p>With Part 2's step model: one request with 1,000 cached tokens takes 4.82 ms per step. Sixteen such requests take 5.40 ms. That is 16 times the tokens for 12% more time, or about 14 times the throughput.</p>
+<p>The rest of this page is about one question: which requests go into each step, and when. Two terms from Part 1 come back. <dfn data-def="Time to first token: from sending a request to receiving its first output token.">TTFT</dfn> is how long a user waits for the first word. <dfn data-def="Time per output token: the average gap between a request's tokens after the first.">TPOT</dfn> is how fast the words then stream.</p>
+<p class="ts-takeaway">One step reads the weights once for every request in it, so putting more requests in each step is the biggest throughput lever a server has.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c1">
+<p class="q">A decode step for 1 request takes 4.82 ms; for 16 requests it takes 5.40 ms. Why so little extra time?</p>
+<ol>
+<li data-why="The GPU does more arithmetic for 16 requests, not less; the arithmetic is not what sets the time here.">The GPU runs the arithmetic for 16 requests faster than for 1</li>
+<li>The weight read, the biggest cost, happens once per step and is shared; each request adds only its own small cache read</li>
+<li data-why="The caches are per request; Part 2 showed no two requests share one.">The 16 requests share one KV cache</li>
+</ol>
+<p class="ts-why">Decode is memory-bound: reading 16 GB of weights dominates the step, and that read is shared by everyone in it. Each request adds only its own cache read, about 0.04 ms here.</p>
+</div>
+</section>
+
+<section class="ts-part" id="static-batching" data-rung="2" data-min="6">
+<h2>Static batching: fill a batch, pad it, wait for the slowest</h2>
+<p class="ts-bridge">Last part: sharing a step is the lever. Still unsolved: the simplest way to share, and what it costs.</p>
+<p class="ts-problem">Four requests arrive together: prompts of 300, 800, 1,200 and 2,000 tokens, answers of 50, 120, 300 and 600 tokens. You batch them the obvious way. The 50-token answer is ready after 0.38 s but reaches the user after 3.21 s.</p>
+<p>The obvious way works like a tour bus that leaves only when every seat is full, and returns only when the last sightseer is back.</p>
+<ol class="ts-steps">
+<li>Wait until the batch has its fixed number of requests.</li>
+<li>Pad every prompt to the longest one, so the batch is a neat rectangle, and prefill it in one step.</li>
+<li>Decode all rows together, one token each per step.</li>
+<li>Keep every row running until the longest answer is done; finished rows produce padding.</li>
+<li>Return the whole batch, then start the next one.</li>
+</ol>
+<p>This is <dfn data-def="Batching whole requests: a fixed group starts together, is padded to one shape, and finishes together.">static batching</dfn>. <span class="ts-claim" data-claim="c2" data-src="s8">The vLLM paper names the two problems with batching naively: requests arrive at different times, so some wait for others, and requests of different lengths need padding, which wastes compute and memory.</span> <span class="ts-claim" data-claim="c4" data-src="s10">Hugging Face's architecture guide describes traditional batching as running a fixed group together and waiting for the slowest request before the next group starts, which leaves the GPU idle between batches.</span></p>
+<p>The four requests, by Part 2's step model on an H100:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Phase</th><th>Rows the GPU runs</th><th>Rows doing real work</th><th>Wasted</th></tr></thead>
+<tbody>
+<tr><td>Prefill (padded to 2,000)</td><td>8,000 tokens</td><td>4,300 tokens</td><td>46%</td></tr>
+<tr><td>Decode (599 steps × 4 rows)</td><td>2,396 row-steps</td><td>1,066 row-steps</td><td>56%</td></tr>
+</tbody>
+</table></div>
+<p>Overall 48% of the work is padding. Padding the prompts makes prefill take 134 ms instead of 71 ms. The 50-token request makes its last token at 0.38 s and waits until 3.21 s for the 600-token one: 8.4 times longer than it needed.</p>
+<p class="ts-takeaway">Static batching wastes work twice, on padded prompts and on finished rows, and makes every request wait for the slowest one.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c2 c4">
+<p class="q">A static batch holds 8 requests. Seven want 20 tokens; one wants 2,000. Ignoring prompts, roughly what share of decode row-steps is wasted?</p>
+<ol>
+<li data-why="Padding is not about prompts alone; finished rows keep running too.">None: decode has no padding</li>
+<li data-why="It is not one row in eight; seven rows sit idle for almost every step.">About 12%</li>
+<li>About 87%: seven rows sit idle for 1,980 of 1,999 steps</li>
+<li data-why="The long row still does useful work every step, so it cannot reach 100%.">100%</li>
+</ol>
+<p class="ts-why">The batch runs 1,999 decode steps × 8 rows = 15,992 row-steps. Useful work is 7 × 19 + 1,999 = 2,132. About 87% is padding: one long answer holds seven slots hostage.</p>
+</div>
+</section>
+
+<section class="ts-part" id="iteration-level" data-rung="2" data-min="6">
+<h2>Continuous batching: re-pick the batch every step</h2>
+<p class="ts-bridge">Last part: static batches wait to fill, pad, and hold every request until the slowest ends. Still unsolved: how to stop finished rows from blocking new ones.</p>
+<p class="ts-problem">Six requests, A to F, arrive over 5 steps; the server has room for 3 at a time. Under static batching the last one finishes in step 11. Can the same GPU finish by step 8?</p>
+<p>Swap the tour bus for a city bus. It never waits to fill. At every stop some passengers get off and whoever is waiting gets on, up to the number of seats.</p>
+<p><span class="ts-claim" data-claim="c5" data-src="s7">The Orca paper (OSDI 2022) calls static batching request-level scheduling: a request that finishes early cannot go back to its client until the whole batch is done, and a new request waits until the running batch completes.</span> <span class="ts-claim" data-claim="c6" data-src="s7">Orca's fix is iteration-level scheduling: the scheduler runs one iteration of the model at a time over the requests it picks, and returns any finished request to its client right away.</span></p>
+<ol class="ts-steps">
+<li>Before each step, look at the waiting queue and the free slots.</li>
+<li>Admit waiting requests into free slots; their prefill runs in this step.</li>
+<li>Run one forward pass: one new token for every running request.</li>
+<li>Retire every request that just finished and return it immediately.</li>
+</ol>
+<p>Scheduling per step like this is <dfn data-def="Choosing which requests run at every forward pass, so requests join and leave the batch between any two steps. Also called iteration-level scheduling.">continuous batching</dfn>. <span class="ts-claim" data-claim="c7" data-src="s10">Hugging Face's guide describes the same loop: at every generation step the scheduler removes finished requests and replaces them with waiting ones.</span></p>
+<p>Step through both policies on the same six requests. The top row shows which requests arrive at each step.</p>
+<figure class="ts-slots" data-title="Six requests, three slots: static vs continuous batching">
+<script type="application/json">
+{"slots":3,"requests":[{"id":"A","arrives":0,"tokens":2},{"id":"B","arrives":0,"tokens":6},{"id":"C","arrives":1,"tokens":3},{"id":"D","arrives":2,"tokens":2},{"id":"E","arrives":3,"tokens":4},{"id":"F","arrives":4,"tokens":3}],"lanes":[{"label":"Static batching (batch of 3)","cols":[["wait","wait","wait"],["P:A","P:B","P:C"],["d:A","d:B","d:C"],["pad:A","d:B","d:C"],["pad:A","d:B","pad:C"],["pad:A","d:B","pad:C"],["pad:A","d:B","pad:C"],["P:D","P:E","P:F"],["d:D","d:E","d:F"],["pad:D","d:E","d:F"],["pad:D","d:E","pad:F"]]},{"label":"Continuous batching (3 slots)","cols":[["P:A","P:B",""],["d:A","d:B","P:C"],["P:D","d:B","d:C"],["d:D","d:B","d:C"],["P:E","d:B","P:F"],["d:E","d:B","d:F"],["d:E","","d:F"],["d:E","",""]]}],"captions":["A and B arrive. Static batching waits for a third request, so the GPU idles. Continuous batching starts both prefills now.","C arrives. Static prefills A, B and C together. Continuous decodes A and B and prefills C in the same step. A has both its tokens and leaves.","D arrives. Static: A makes its last token. Continuous: D takes A's empty slot right away.","E arrives. Static: A's row is padding, doing no useful work, but it stays. Continuous: C and D finish. E waits, because all three slots were busy when the step started.","F arrives. Static: A and C are padding, and D, E and F wait for B. Continuous: E and F take the two free slots.","Static runs three rows for one useful token. Continuous: B makes its sixth and last token and leaves.","Static: B finishes and the whole batch returns, A included, though A's answer was ready in step 3. Continuous: F finishes; one slot sits empty because nobody is waiting.","Static only now prefills D, E and F. Continuous: E finishes, and all six requests are done.","Static: D has both its tokens, but its row keeps running.","Static: F is done too; two of the three rows are padding.","Static: E finishes, 3 steps after continuous finished everything. Static spent 10 of its 33 slot-steps on padding and 3 on waiting."]}
+</script>
+</figure>
+<p>Both lanes do the same 14 decode tokens. Static also burns 10 slot-steps on padding and 3 waiting, and returns A four steps after it was ready. Continuous never pads; its empty cells are slots with nobody waiting, not wasted work.</p>
+<p class="ts-takeaway">Continuous batching rebuilds the batch at every step, so finished requests leave at once and new ones join at the next step instead of the next batch.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put one continuous-batching step in order.</p>
+<ol>
+<li>Check the waiting queue and free slots</li>
+<li>Admit waiting requests into free slots</li>
+<li>Run one forward pass for all running requests</li>
+<li>Return requests that just finished</li>
+</ol>
+<p class="ts-why">Admission happens before the pass so newcomers' prefills share it; retirement happens after, so their slots are free for the next step.</p>
+</div>
+</section>
+
+<section class="ts-part" id="selective-batching" data-rung="2" data-min="5">
+<h2>How requests of different lengths share one forward pass</h2>
+<p class="ts-bridge">Last part: continuous batching mixes requests at every step. Still unsolved: in one step, request A is at token 3 and request B at token 900. How does one forward pass run both without padding?</p>
+<p class="ts-problem">Your step holds 16 decoding requests with caches from 200 to 2,000 tokens, plus one new 1,500-token prompt. Padding them to one shape would bring back the waste continuous batching was meant to remove.</p>
+<p>Look at what each layer does. Most of the work, the big matrix multiplies, treats each token on its own. It does not care which request a token came from. Attention is different: a token must look at its own request's earlier tokens, and only those.</p>
+<p><span class="ts-claim" data-claim="c8" data-src="s7">Orca's answer is selective batching: operations such as Linear, LayerNorm, Add and GeLU are batched by flattening every request's tokens into one tensor, while attention is split and run per request, because attention must look only at each request's own tokens, and each request has a different number of them.</span></p>
+<ol class="ts-steps">
+<li>Line up every token in the step: 16 decode tokens plus 1,500 prompt tokens, 1,516 rows.</li>
+<li>Run the weight-heavy layers once over all 1,516 rows. This is where the shared weight read pays off.</li>
+<li>Split the rows back by request for attention; each reads only its own cache.</li>
+<li>Join the rows again for the next layer.</li>
+</ol>
+<p>The bus comparison stops here. Passengers on a bus do not slow each other down. Requests in a step do: the step ends only when its slowest piece of work ends, so one long prompt delays every decode in it. Rung 4 puts a number on that.</p>
+<p><span class="ts-claim" data-claim="c9" data-src="s7">On GPT-3 175B, the Orca paper reports 36.9 times the throughput of NVIDIA FasterTransformer at the same latency level.</span></p>
+<p class="ts-takeaway">Per-token layers run once over every request's tokens flattened together; only attention is split per request, so no padding is needed.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c8">
+<p class="q">Which part of a layer cannot be run as one flattened batch across requests at different positions?</p>
+<ol>
+<li>Attention, because each request must attend only to its own tokens, and every request has a different number of them</li>
+<li data-why="Linear layers treat each token on its own, so tokens from any request can share one multiply.">The Linear (matrix multiply) layers</li>
+<li data-why="LayerNorm normalises each token separately, so flattening is fine.">LayerNorm</li>
+</ol>
+<p class="ts-why">Linear, LayerNorm, Add and GeLU work token by token, so tokens from all requests can be stacked. Attention mixes a token with its own request's history, and each history has a different length.</p>
+</div>
+<div class="ts-explain" data-points="Static batching waits for a full batch and returns it only when the slowest request ends|Padding wastes work on short prompts and finished rows|Continuous batching admits and retires requests between any two steps|Per-token layers run flattened across requests; attention runs per request">
+<p class="q">Explain to a teammate why continuous batching beats static batching, and how one forward pass can serve requests of different lengths.</p>
+<div class="ts-model"><p>Static batching waits for a fixed group, pads it to one shape, and holds every request until the slowest one ends, so short requests wait and many rows do padding. Continuous batching decides the batch at every step: finished requests leave and waiting ones join right away. One pass works across lengths because most layers treat each token alone, so all tokens are stacked into one tensor; only attention is run per request over its own cache.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="vllm-loop" data-rung="3" data-min="6">
+<h2>Inside vLLM: one scheduler loop, two queues</h2>
+<p class="ts-bridge">Last part: one pass can serve requests of any length. Still unsolved: how a real server decides, every few milliseconds, who is in the next pass.</p>
+<p class="ts-problem">Your vLLM pod shows 40 running requests and 12 waiting on its dashboard. Before you tune anything, you need to know what the scheduler does between two forward passes and why those 12 are not running.</p>
+<p>This page follows vLLM v0.31.0, as Parts 1 and 2 do. The scheduler keeps two lists. The <dfn data-def="Requests that hold a place in the batch and get tokens every step.">running queue</dfn> holds requests already in the batch. The <dfn data-def="Requests that have arrived but are not yet in the batch, kept in arrival order by default.">waiting queue</dfn> holds the rest.</p>
+<p><span class="ts-claim" data-claim="c11" data-src="s17">In vLLM v0.31.0, each engine step does three things: the scheduler picks requests and tokens, the model runs once over them, and the scheduler updates every request from the output.</span> <span class="ts-claim" data-claim="c12" data-src="s11">The scheduler has no separate prefill and decode phases: each request has a count of tokens computed so far and a count it needs, and each step hands out tokens so the first catches up with the second.</span></p>
+<figure class="ts-seq" data-title="One vLLM engine step">
+<script type="application/json">
+{"actors": [
+ {"id": "eng", "label": "Engine core", "sub": "EngineCore.step"},
+ {"id": "sch", "label": "Scheduler", "sub": "running + waiting"},
+ {"id": "gpu", "label": "Model runner", "sub": "GPU"}],
+ "steps": [
+ {"from": "eng", "to": "sch", "label": "schedule()", "note": "Each step starts by asking the scheduler which requests run and how many tokens each gets."},
+ {"from": "sch", "to": "sch", "label": "Running requests first", "note": "Every running request gets the tokens it needs, one for a decoding request, while token budget lasts."},
+ {"from": "sch", "to": "sch", "label": "Then waiting, in order", "note": "Waiting requests join in queue order while budget is left and fewer than max_num_seqs are running."},
+ {"from": "sch", "to": "eng", "label": "Tokens per request", "dashed": true, "note": "The plan for this step: which requests, and how many tokens of each."},
+ {"from": "eng", "to": "gpu", "label": "execute_model: one forward pass", "note": "One pass over every scheduled token, prompts and decodes together."},
+ {"from": "gpu", "to": "eng", "label": "New tokens", "dashed": true, "note": "One sampled token per request that reached the end of its scheduled tokens."},
+ {"from": "eng", "to": "sch", "label": "update_from_output()", "note": "The scheduler appends the tokens, frees every finished request, and the loop starts again."}]}
+</script>
+</figure>
+<p><span class="ts-claim" data-claim="c13" data-src="s11">It schedules the running requests first, then admits waiting requests in queue order while token budget is left and, by default, fewer than max_num_seqs requests are running.</span> <span class="ts-claim" data-claim="c16" data-src="s12">The scheduling policy is first come, first served by default; a priority policy is also available.</span></p>
+<p>So your 12 waiting requests are blocked by one of three things: no free slot under max_num_seqs, no token budget left this step, or, as the next parts show, no room in the KV cache.</p>
+<div class="ts-interview"><p><strong>"Walk me through what happens between two decode steps in vLLM."</strong> A strong answer: the engine asks the scheduler for a plan; running requests are served first, then waiting ones join in order under the token budget and the request cap; one forward pass runs; the output updates each request and finished ones are freed. There is no separate prefill phase: a new request is a request whose computed-token count is far behind.</p></div>
+<p class="ts-takeaway">vLLM runs one loop: plan the step (running first, then waiting), run one forward pass, update and free finished requests.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c13">
+<p class="q">A request reaches the front of the waiting queue. Running requests are below max_num_seqs, but they used the whole token budget this step. What happens to it?</p>
+<ol>
+<li data-why="A free slot is not enough: admission also needs token budget for its prompt.">It joins this step, because there is a free slot</li>
+<li>It waits for a later step, because running requests are served first and no budget is left</li>
+<li data-why="The default policy is first come, first served; nobody is evicted to make room for a newcomer.">A running request is evicted to make room</li>
+</ol>
+<p class="ts-why">Running requests are scheduled first. Waiting ones are admitted only while budget remains and the running count is under max_num_seqs.</p>
+</div>
+</section>
+
+<section class="ts-part" id="knobs" data-rung="3" data-min="6">
+<h2>The two knobs that bound a step</h2>
+<p class="ts-bridge">Last part: the scheduler fills each step from two queues. Still unsolved: what limits how big a step can get, and what those limits are by default.</p>
+<p class="ts-problem">A teammate reads vLLM's config code, sees max_num_seqs = 128, and sizes your capacity plan around 128 concurrent requests on an H100. Your server actually admits up to 1,024.</p>
+<p><span class="ts-claim" data-claim="c15" data-src="s12">max_num_batched_tokens caps the tokens processed in one step, and max_num_seqs caps the requests processed in one step.</span> A decoding request costs one token, so 100 decodes use 100 of the token budget. A 2,000-token prompt can use 2,000 in one step.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Where vLLM v0.31.0 runs</th><th>max_num_batched_tokens</th><th>max_num_seqs</th></tr></thead>
+<tbody>
+<tr><td><span class="ts-claim" data-claim="c17" data-src="s13">For vllm serve on a GPU with at least 70 GiB but under 160 GiB of memory that is not an A100, such as the H100 or H200, the defaults are max_num_batched_tokens = 8192 and max_num_seqs = 1024.</span></td><td>8,192</td><td>1,024</td></tr>
+<tr><td><span class="ts-claim" data-claim="c18" data-src="s13">The offline LLM class gets 16,384 tokens on those GPUs, GPUs with at least 160 GiB get 16,384 tokens and 1,024 sequences for both, and every other GPU, A100 included, gets 2,048 tokens and 256 sequences under vllm serve.</span></td><td>16,384 / 16,384 / 2,048</td><td>1,024 / 1,024 / 256</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c19" data-src="s13 s19">Setting performance_mode to throughput doubles both defaults; the default mode is balanced.</span> <span class="ts-claim" data-claim="c20" data-src="s12">vLLM rejects a max_num_batched_tokens smaller than max_num_seqs.</span></p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c34" data-src="s12">SchedulerConfig itself defaults to 2048 tokens and 128 sequences, but its docstrings say those values are for testing and that real defaults are set by EngineArgs.</span> Read the startup log or EngineArgs, not the dataclass, before you plan capacity.</p></div>
+<p>Neither knob is the whole story. Part 2 showed the KV cache caps how many requests fit; on an H100 with the 8B model that is about 416,565 cached tokens. A max_num_seqs of 1,024 is a ceiling you rarely reach. The cache, or the token budget, usually binds first.</p>
+<div class="ts-interview"><p><strong>"What limits how many requests vLLM runs at once?"</strong> A strong answer names three limits and says which binds: max_num_seqs (slots), max_num_batched_tokens (work per step, mostly eaten by prompts), and free KV cache. For short chats on a large GPU the cache rarely binds and max_num_seqs might; for long contexts the cache binds well before 1,024.</p></div>
+<p class="ts-takeaway">max_num_seqs caps requests per step and max_num_batched_tokens caps tokens per step; their real defaults depend on the GPU and on vllm serve vs the LLM class.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c17 c18">
+<p class="q">You run vllm serve with default settings on an A100 80GB. What max_num_seqs does the scheduler use?</p>
+<ol>
+<li data-why="128 is the dataclass fallback that the docstring calls a testing value.">128</li>
+<li data-why="1,024 is for 70 GiB GPUs other than the A100; the code checks the device name.">1,024</li>
+<li>256</li>
+</ol>
+<p class="ts-why">The A100 is excluded from the large-GPU branch by name, so it falls into the "other GPUs" defaults: 2,048 tokens and 256 sequences for vllm serve.</p>
+</div>
+</section>
+
+<section class="ts-part" id="simulator" data-rung="3" data-min="6">
+<h2>A simulator: same trace, two policies</h2>
+<p class="ts-bridge">Last part: the knobs that bound a step. Still unsolved: how big the gap between static and continuous batching is on realistic traffic, in TTFT and throughput.</p>
+<p class="ts-problem">Product asks: "If we keep the simple batch job, how much worse is it?" You need numbers for 400 chat requests, not a diagram.</p>
+<p>The simulator replays one request trace twice. Requests arrive at random (a Poisson process), with prompts of 100 to 2,000 tokens and answers of 20 to 500. Every step costs what Part 2's model says: one weight read, each decoding request's cache read, and 2 FLOPs per parameter per token, whichever is slower. Both policies get the same H100, the same 8B model and the same limit of 16 requests at a time.</p>
+<div class="ts-tabs">
+<div data-tab="step.py"><div class="ts-code" data-lang="python" data-title="step.py" data-file="step.py" data-verified="ran"></div></div>
+<div data-tab="static.py"><div class="ts-code" data-lang="python" data-title="static.py" data-file="static.py" data-verified="ran"></div></div>
+<div data-tab="continuous.py"><div class="ts-code" data-lang="python" data-title="continuous.py" data-file="continuous.py" data-verified="ran"></div></div>
+<div data-tab="simulate.py"><div class="ts-code" data-lang="python" data-title="simulate.py" data-file="simulate.py" data-verified="ran"></div></div>
+<div data-tab="workload.py"><div class="ts-code" data-lang="python" data-title="workload.py" data-file="workload.py" data-verified="ran"></div></div>
+</div>
+<p>TPOT here follows vLLM's formula. <span class="ts-claim" data-claim="c33" data-src="s15">vLLM computes per-request TPOT as (end-to-end latency minus TTFT) divided by (output tokens minus 1).</span> Run <code>uv run simulate.py 4 400 16</code> in the example folder.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>400 requests, limit 16</th><th>Output tokens/s</th><th>TTFT mean / p99</th><th>TPOT</th><th>End-to-end mean</th><th>GPU idle</th></tr></thead>
+<tbody>
+<tr><td>4 req/s, static</td><td>1,040</td><td>2.55 s / 5.25 s</td><td>6.03 ms</td><td>5.43 s</td><td>16%</td></tr>
+<tr><td>4 req/s, continuous</td><td>1,072</td><td>20 ms / 42 ms</td><td>5.33 ms</td><td>1.41 s</td><td>0.2%</td></tr>
+<tr><td>8 req/s, static</td><td>1,224</td><td>17.4 s mean, growing</td><td>6.03 ms</td><td>20.2 s</td><td>1%</td></tr>
+<tr><td>8 req/s, continuous</td><td>2,079</td><td>87 ms mean</td><td>5.87 ms</td><td>1.62 s</td><td>0%</td></tr>
+</tbody>
+</table></div>
+<p>At 4 requests per second both keep up, so throughput matches. The user experience does not: static's first token comes about 130 times later, mostly spent waiting for 16 requests to arrive. Static also spends 47% of its work on padding. At 8 requests per second static cannot keep up: its queue grows, and TTFT grows with it.</p>
+<p>The simulator leaves out real costs: kernels below peak, CPU scheduling time, KV writes. Trust its ratios more than its milliseconds.</p>
+<div class="ts-interview"><p><strong>"Our batch job hits the same tokens per second as vLLM at low load. Why switch?"</strong> A strong answer: at low load throughput equals the arrival rate for any policy that keeps up, so tokens per second hides the difference. Compare TTFT and end-to-end latency: static waits to fill and returns with its slowest member. Then raise the load: static saturates at roughly half the throughput, because half its work is padding.</p></div>
+<p class="ts-takeaway">Below capacity, both policies match on throughput but continuous answers about 100 times sooner; near capacity, static's padding halves how much load it can take.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Keep 4 requests per second but make every answer exactly 200 tokens and every prompt exactly 1,000. Does static batching's padding share go up, down, or to zero?</p>
+<div class="ts-reveal"><p>To zero. Padding comes from unequal lengths: shorter prompts padded to the longest, and finished rows waiting for the longest answer. With identical lengths no row finishes early. Static still loses on TTFT, because each request still waits for 15 others to arrive before its batch starts.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="calculator" data-rung="3" data-min="6">
+<h2>Try it: the batch trade-off calculator</h2>
+<p class="ts-bridge">Last part: a simulator compared the two policies on one trace. Still unsolved: a quick way to size continuous batching for your own model, GPU and traffic.</p>
+<p class="ts-problem">You expect 10 requests per second with about 1,000-token prompts and 250-token answers, on one H100. How many requests will be running, how fast will tokens stream, and how full will the cache be?</p>
+<p>The calculator uses Little's law from queueing: requests running = arrival rate × time each spends running. Each spends (output − 1) decode steps, so it solves for the step time where both agree. Each arrival also adds its prefill to one step.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>GPU</th><th>BF16 with sparsity, memory bandwidth, memory</th></tr></thead>
+<tbody>
+<tr><td>H100 SXM</td><td><span class="ts-claim" data-claim="c36" data-src="s1">1,979 teraFLOPS, 3.35 TB/s, 80 GB</span></td></tr>
+<tr><td>H100 NVL</td><td><span class="ts-claim" data-claim="c37" data-src="s1">1,671 teraFLOPS, 3.9 TB/s, 94 GB</span></td></tr>
+<tr><td>H200 SXM</td><td><span class="ts-claim" data-claim="c38" data-src="s2">1,979 teraFLOPS, 4.8 TB/s, 141 GB</span></td></tr>
+<tr><td>A100 80GB PCIe</td><td><span class="ts-claim" data-claim="c39" data-src="s3">624 teraFLOPS, 1,935 GB/s, 80 GB</span></td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c40" data-src="s1 s2 s3 s4">NVIDIA prints BF16 Tensor Core figures with sparsity; dense work gets half, as the A100's 312 dense and 624 sparse BF16 teraFLOPS show.</span> The calculator uses the dense half. <span class="ts-claim" data-claim="c35" data-src="s5 s6">Llama 3.1 8B has 32 layers, a model dimension of 4,096, 32 attention heads and 8 key/value heads.</span> The MHA and MQA presets are hypothetical variants of it, as in Part 2.</p>
+<div class="ts-batchcalc" data-title="Batch trade-off calculator">
+<script type="application/json">
+{"models": [
+ {"id": "llama-3.1-8b", "label": "Llama 3.1 8B (GQA, 8 KV heads)", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128},
+ {"id": "8b-as-mha", "label": "8B with MHA (hypothetical)", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 32, "head_dim": 128},
+ {"id": "8b-as-mqa", "label": "8B with MQA (hypothetical)", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 1, "head_dim": 128}],
+ "gpus": [
+ {"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80},
+ {"id": "h100-nvl", "label": "H100 NVL", "tflops": 835.5, "tbps": 3.9, "gb": 94},
+ {"id": "h200-sxm", "label": "H200 SXM", "tflops": 989.5, "tbps": 4.8, "gb": 141},
+ {"id": "a100-pcie", "label": "A100 80GB PCIe", "tflops": 312, "tbps": 1.935, "gb": 80}],
+ "defaults": {"model": "llama-3.1-8b", "gpu": "h100-sxm", "rate": 10, "prompt": 1000, "output": 250, "max_seqs": 1024, "util": 0.92, "reserve": 3}}
+</script>
+</div>
+<p>With the defaults: about 15 requests running, 2,500 output tokens per second, a TPOT of 6.1 ms, a TTFT of about 20 ms, and 2.25 GB of the 54.6 GB cache budget in use. The curves show every batch size with all slots full; the dot is your load. Raise the rate until the rows turn red to find this GPU's limit.</p>
+<div class="ts-code" data-lang="python" data-title="steady_state.py" data-file="steady_state.py" data-verified="ran"></div>
+<p class="ts-takeaway">Little's law turns arrival rate and step time into the number of running requests, and that number sets TPOT, throughput and cache use.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">In the calculator, you double the output length from 250 to 500 tokens at the same arrival rate. What happens to the number of running requests?</p>
+<ol>
+<li>It roughly doubles, because each request now stays in the batch for twice as many steps</li>
+<li data-why="Output length does not change how often requests arrive, but it does change how long each one stays.">It stays the same, because the arrival rate did not change</li>
+<li data-why="Longer answers keep requests longer, so more overlap, not fewer.">It halves</li>
+</ol>
+<p class="ts-why">Running requests = arrival rate × steps each one stays × step time. Doubling the steps roughly doubles the count, and the bigger batch also lengthens each step a little.</p>
+</div>
+<div class="ts-explain" data-points="vLLM plans each step from the running queue first, then the waiting queue|max_num_seqs caps requests and max_num_batched_tokens caps tokens per step|Real defaults come from EngineArgs and depend on the GPU|Running requests follow Little's law: arrival rate times time spent running">
+<p class="q">Explain how vLLM decides who runs in the next step, and how you would estimate how many requests will be running for your traffic.</p>
+<div class="ts-model"><p>Each step the scheduler serves running requests first, then admits waiting ones in arrival order while the token budget (max_num_batched_tokens) and the request cap (max_num_seqs) allow; on an H100 with vllm serve those default to 8,192 and 1,024. Then one forward pass runs and finished requests are freed. To estimate concurrency, use Little's law: running requests equal the arrival rate times how long each stays, which is its output length times the step time.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="tradeoff" data-rung="4" data-min="6">
+<h2>Bigger batches: more tokens per second, slower tokens for each user</h2>
+<p class="ts-bridge">Last part: Little's law sizes the batch for a given load. Still unsolved: what happens to each user as the batch grows, and what breaks first at 10 times the load.</p>
+<p class="ts-problem">Traffic grows from 4 to 40 requests per second. You can raise max_num_seqs to absorb it, or keep it low to protect streaming speed. Each choice breaks something different.</p>
+<p>Every request added to a step adds its own cache read, so the step gets longer. Throughput rises because more tokens come out per step. Each user's tokens arrive more slowly because steps take longer. The estimator, with every slot full, Llama 3.1 8B on an H100, 1,000-token prompts and 250-token answers:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Requests per step</th><th>Output tokens/s</th><th>TPOT</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>206</td><td>4.87 ms</td></tr>
+<tr><td>8</td><td>1,461</td><td>5.50 ms</td></tr>
+<tr><td>32</td><td>4,244</td><td>7.57 ms</td></tr>
+<tr><td>128</td><td>8,796</td><td>14.61 ms</td></tr>
+<tr><td>333 (cache full)</td><td>14,606</td><td>22.89 ms</td></tr>
+</tbody>
+</table></div>
+<p>From 1 to 333 requests, throughput rises 71 times while TPOT rises 4.7 times. The cache, not max_num_seqs, stops it at 333.</p>
+<p>Now the 10 times load in the simulator: 40 requests per second, three settings of max_num_seqs.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>max_num_seqs at 40 req/s</th><th>Output tokens/s</th><th>TPOT</th><th>TTFT mean</th></tr></thead>
+<tbody>
+<tr><td>32</td><td>4,029</td><td>7.5 ms</td><td>6.38 s</td></tr>
+<tr><td>128</td><td>7,005</td><td>14.1 ms</td><td>0.60 s</td></tr>
+<tr><td>512</td><td>7,411</td><td>17.8 ms</td><td>0.07 s</td></tr>
+</tbody>
+</table></div>
+<p>A low cap keeps streaming fast for those admitted, but the waiting queue grows and TTFT climbs into seconds. A high cap admits everyone quickly and makes every stream slower. Admission policy decides who pays: the newcomers in TTFT, or everyone in TPOT.</p>
+<p>To detect which way you are breaking: <span class="ts-claim" data-claim="c28" data-src="s16">vLLM exports vllm:num_preemptions, a running total of preemptions, and the gauges vllm:num_requests_running and vllm:num_requests_waiting.</span> <span class="ts-claim" data-claim="c29" data-src="s15">It also exports histograms of time to first token, inter-token latency and per-request time per output token.</span> A waiting count that keeps rising with TTFT means the cap or the cache is too small for the load; TPOT rising with a flat queue means the batch is too big for your latency target.</p>
+<div class="ts-interview"><p><strong>"Product wants both higher throughput and faster streaming on the same GPU. What do you tell them?"</strong> A strong answer: on one GPU they pull against each other. Throughput comes from bigger batches, and bigger batches make every step, and so every token, slower. Pick a TPOT target, cap the batch where TPOT meets it, and serve the rest with more GPUs. Watch TTFT, because a cap moves the cost into the queue.</p></div>
+<p class="ts-takeaway">Bigger batches raise tokens per second and TPOT together; capping the batch protects TPOT but moves the wait into the queue, which shows up as TTFT.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c28 c29 c13">
+<p class="q">After a launch, vllm:num_requests_waiting climbs steadily, TTFT p99 is several seconds, and TPOT is flat and low. What is the most likely cause?</p>
+<ol>
+<li data-why="A too-big batch would push TPOT up, but TPOT is flat and low.">The batch is too big, so every step is slow</li>
+<li>Admission is capped (max_num_seqs or the cache) below what the load needs, so requests queue</li>
+<li data-why="Prefill stalls raise inter-token gaps for running requests; they do not by themselves grow a waiting queue with low TPOT.">Long prompts are stalling decodes</li>
+</ol>
+<p class="ts-why">Low TPOT says the running batch is small and fast. A growing queue with high TTFT says requests cannot get in: raise the cap if the cache allows, or add GPUs.</p>
+</div>
+</section>
+
+<section class="ts-part" id="preemption" data-rung="4" data-min="6">
+<h2>When the cache runs out mid-answer: preemption</h2>
+<p class="ts-bridge">Last part: a cap on the batch trades TPOT against TTFT. Still unsolved: what happens when the batch is under its cap but the KV cache fills while answers are still growing.</p>
+<p class="ts-problem">Your server admitted 300 requests while their caches were small. Every step each one adds a token to its cache. Halfway through their answers, the cache has no room for the next token of all 300.</p>
+<p><span class="ts-claim" data-claim="c32" data-src="s7">Orca's scheduler caps each batch at a maximum size and admits a request only if enough key/value slots remain for its maximum total length: its prompt plus the most tokens it may generate.</span> <span class="ts-claim" data-claim="c44" data-src="s11">vLLM's scheduler allocates cache space for each request's new tokens at every step, rather than for its whole answer at admission.</span> That fits more requests, but the cache can run out mid-answer. How it hands out that space is Part 4.</p>
+<ol class="ts-steps">
+<li>Before the step, the scheduler finds no cache room for a running request's next token.</li>
+<li>It picks a victim and frees all of that request's cache.</li>
+<li>The victim goes back to the waiting queue, and no new request is admitted this step.</li>
+<li>Later, when there is room, the victim is admitted again and its prompt plus the tokens it already made are prefilled again.</li>
+</ol>
+<p>This is <dfn data-def="Stopping a running request and taking back its KV cache so others can continue; the request is resumed later.">preemption</dfn>. <span class="ts-claim" data-claim="c24" data-src="s14">vLLM's tuning guide says that when KV cache space runs out, vLLM can preempt requests to free space and recompute them once space is available again, which can hurt end-to-end latency.</span> <span class="ts-claim" data-claim="c25" data-src="s11">Under the default policy the victim is the most recently admitted running request: its cache blocks are freed, its count of computed tokens goes back to zero, and it goes to the front of the waiting queue.</span> <span class="ts-claim" data-claim="c14" data-src="s11">In a step where a running request had to be preempted, no waiting request is admitted.</span> <span class="ts-claim" data-claim="c26" data-src="s14">In vLLM V1 the default preemption mode is RECOMPUTE rather than SWAP.</span></p>
+<p>In the simulator at 40 requests per second with max_num_seqs 512: the full H100 budget of about 416,565 tokens never preempts. Shrink the cache to 100,000 tokens and there are 51 preemptions; throughput falls from 7,411 to 5,930 tokens per second and mean TTFT rises from 0.07 s to 1.89 s.</p>
+<div class="ts-trap"><p>Preemption shows up as a user's stream pausing, then resuming after a recompute, and as a rising vllm:num_preemptions. <span class="ts-claim" data-claim="c27" data-src="s14">The guide's fixes: raise gpu_memory_utilization, lower max_num_seqs or max_num_batched_tokens, or spread the model over more GPUs with tensor or pipeline parallelism.</span></p></div>
+<p class="ts-takeaway">When the cache cannot hold the next token for everyone, vLLM evicts the newest running request, frees its cache, and recomputes it later; a rising preemption count means the batch is bigger than the cache.</p>
+<div class="ts-predict" data-claims="c25 c14">
+<p class="q">The cache is full. Request X was admitted 2 s ago; request Y was admitted 10 ms ago and is mid-prefill. Under the default policy, which is preempted, and can a third request Z join in that step?</p>
+<div class="ts-reveal"><p>Y, the most recently admitted running request, is preempted: its cache is freed and it returns to the front of the waiting queue. Z cannot join that step, because no waiting request is admitted in a step that preempted. The default keeps the requests admitted earliest.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="prefill-stall" data-rung="4" data-min="6">
+<h2>One prompt's prefill slows every stream in its step</h2>
+<p class="ts-bridge">Last part: running out of cache forces preemption. Still unsolved: the bus comparison broke because requests in one step slow each other. By how much?</p>
+<p class="ts-problem">Sixteen users are streaming smoothly at about 5.4 ms per token. One user pastes a 2,000-token document. Every one of the 16 sees a stall.</p>
+<p>A decode step is memory-bound and short. A prefill is compute-bound: 2,000 prompt tokens means 2,000 tokens of arithmetic in one step. When they share a step, the step lasts as long as the prefill.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>One step on the H100, 16 decodes at 1,000 cached tokens</th><th>Step time</th><th>Versus decode only</th></tr></thead>
+<tbody>
+<tr><td>Decode only</td><td>5.40 ms</td><td>1×</td></tr>
+<tr><td>Plus one 2,000-token prompt</td><td>33.7 ms</td><td>6.2×</td></tr>
+<tr><td>Plus 8,000 prompt tokens (a full default budget)</td><td>147 ms</td><td>27×</td></tr>
+</tbody>
+</table></div>
+<p>In the simulator at 4 requests per second, mean TPOT is 5.33 ms, yet the longest gap any user saw between two tokens was 57.6 ms. <span class="ts-claim" data-claim="c30" data-src="s18">The DistServe paper reports that adding one prefill to a batch of decodes slows both: the decodes wait for the longer prefill, which raises TPOT.</span> <span class="ts-claim" data-claim="c43" data-src="s18">DistServe also notes that mixing new prefills into running decodes, as continuous batching does, raises utilization but forces a trade between TTFT and TPOT.</span></p>
+<p>The simulator prefills each prompt in one step. vLLM's default does not. <span class="ts-claim" data-claim="c21" data-src="s14">In vLLM V1, chunked prefill is on by default whenever possible: pending decodes are scheduled first, pending prefills fill what is left of the max_num_batched_tokens budget, and a prompt that does not fit is split across steps.</span> <span class="ts-claim" data-claim="c22" data-src="s14">vLLM's tuning guide says smaller max_num_batched_tokens values, such as 2048, give better inter-token latency because fewer prefills slow down the decodes, while larger values give better time to first token.</span> <span class="ts-claim" data-claim="c23" data-src="s14">For the best throughput it recommends values above 8192, especially for smaller models on large GPUs.</span> So max_num_batched_tokens is also the cap on how long one stall can be.</p>
+<p>Two later parts take this further, named here only. <strong>Chunked prefill</strong> splits long prompts so no step carries too much prefill. <strong>Prefill/decode disaggregation</strong> runs the two phases on different GPUs so they stop sharing steps at all.</p>
+<p class="ts-takeaway">A step lasts as long as its heaviest work, so one long prefill stalls every decode in it; max_num_batched_tokens bounds that stall.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c22">
+<p class="q">Users complain that streaming stutters when others paste long documents, but TTFT is fine. Which change does vLLM's tuning guide point to?</p>
+<ol>
+<li>Lower max_num_batched_tokens, so less prefill shares each step with the decodes</li>
+<li data-why="A bigger budget lets more prefill into each step, which makes the stutter worse; the guide ties larger values to better TTFT.">Raise max_num_batched_tokens</li>
+<li data-why="Fewer requests per step does not shorten the prefill that is stalling them.">Lower max_num_seqs to 1</li>
+</ol>
+<p class="ts-why">Smaller budgets mean fewer prefill tokens per step, so each decode waits less; the cost is slower TTFT for long prompts.</p>
+</div>
+<div class="ts-explain" data-points="Bigger batches raise throughput and TPOT together|A cap on the batch moves the wait into the queue as TTFT|When the cache fills, vLLM preempts the newest request and recomputes it later|A prefill in a step stalls every decode in it, bounded by max_num_batched_tokens">
+<p class="q">Your vLLM service is degrading at 10 times its usual load. Explain the three ways it can break and the metric that shows each.</p>
+<div class="ts-model"><p>If the batch grows to absorb the load, every step reads more cache, so TPOT rises; the inter-token latency and TPOT histograms show it. If max_num_seqs or the cache caps the batch, requests queue instead, and vllm:num_requests_waiting and TTFT climb. If the cache fills while answers grow, vLLM preempts the newest requests and recomputes them, which vllm:num_preemptions counts. Separately, long prompts stall every decode in their step, which shows as spikes in inter-token latency and is bounded by max_num_batched_tokens.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="worker-pool" data-rung="5" data-min="6">
+<h2>Batch job vs worker pool, and where the analogy breaks</h2>
+<p class="ts-bridge">Last part: one prefill stalls every decode it shares a step with. Still unsolved: how to explain all of this in terms a backend team already knows, and when to pick which policy.</p>
+<p class="ts-problem">Your platform team asks: "Isn't continuous batching just a Celery worker pool?" Half right. The half that is wrong is where the incidents come from.</p>
+<p><strong>Static batching is a fixed-size batch job.</strong> A cron-style job waits for N records, processes them together, and writes all results at the end. Records that finish early still wait for the job.</p>
+<p><strong>Continuous batching is a worker pool pulling from a queue</strong>, like a Celery pool or a Kafka consumer group. A free worker takes the next message; a finished task acks at once. max_num_seqs is the pool's concurrency and the waiting queue is the broker.</p>
+<p>Where it breaks:</p>
+<ol class="ts-steps">
+<li>Celery workers run independently. Here every running request is a row in one shared forward pass, so a heavy task slows every other task in the same step.</li>
+<li>A worker pool's limit is a worker count. Here the binding limit is often memory: the KV cache each request grows while it runs. <span class="ts-claim" data-claim="c31" data-src="s8">The vLLM paper notes that how many requests can be batched is limited by GPU memory, especially KV cache space.</span></li>
+<li>Workers do not get evicted mid-task for using too much broker memory. Requests do: preemption throws away their cache and redoes the work.</li>
+<li>Adding a worker adds capacity. Adding a request to a step adds throughput but slows every request already in it.</li>
+</ol>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Policy</th><th>How the batch forms</th><th>Pick it when</th><th>You give up</th></tr></thead>
+<tbody>
+<tr><td>Static batching</td><td><span class="ts-claim" data-claim="c3" data-src="s9">Hugging Face's continuous batching docs note that with static batching, prompts of different lengths have to be padded to the same length.</span></td><td>Offline jobs where every item has a similar length and nobody waits on one item</td><td>TTFT, end-to-end latency, and the work spent on padding</td></tr>
+<tr><td>Continuous batching, whole prefills</td><td><span class="ts-claim" data-claim="c10" data-src="s8">The vLLM paper lists iteration-level scheduling, citing Orca, among fine-grained batching methods: finished requests leave the batch and new ones join after one iteration.</span></td><td>Interactive serving with short prompts</td><td>Smooth streaming when long prompts arrive</td></tr>
+<tr><td>Continuous batching with chunked prefill (vLLM V1's default)</td><td><span class="ts-claim" data-claim="c41" data-src="s10">Hugging Face's guide says that when a prompt does not fit the step's token budget, the scheduler processes part of it and continues on later steps, interleaving that prefill with ongoing decodes.</span></td><td>Mixed traffic with long prompts; the usual default</td><td>Some TTFT for long prompts, tuned with max_num_batched_tokens</td></tr>
+<tr><td>Prefill/decode disaggregation (later part)</td><td>Prefill and decode run on separate GPUs</td><td>Strict, separate TTFT and TPOT targets at scale</td><td>Simplicity: two pools, and moving each cache between them</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c42" data-src="s14">vLLM's tuning guide says chunked prefill helps because it puts compute-bound prefill work and memory-bound decode work in the same batch.</span></p>
+<p class="ts-takeaway">Continuous batching is a worker pool whose workers share one forward pass and one memory budget, so every admission slows the others and memory, not worker count, is the usual limit.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c31">
+<p class="q">You size a vLLM pod like a Celery pool: max_num_seqs = 1,024 "workers" for 1,024 concurrent users with 8,000-token contexts on one H100 running the 8B model. What goes wrong first?</p>
+<ol>
+<li data-why="The default token budget limits prefill per step, but it does not stop requests from being admitted over time.">The token budget rejects the requests</li>
+<li data-why="1,024 is within max_num_seqs; slots are not the problem.">The scheduler refuses to start with so many slots</li>
+<li>The KV cache: at about 1 GB per 8,000-token request, roughly 50 fit, so the rest wait or get preempted</li>
+</ol>
+<p class="ts-why">Part 2's budget for this GPU and model is about 54.6 GB, and an 8,192-token request needs about 1.07 GB, so about 50 fit. Memory binds long before the "worker count".</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="8">
+<h2>Interview drill and final check</h2>
+<p class="ts-bridge">Last part: the worker-pool picture and where it breaks. Still unsolved: putting it together under interview pressure.</p>
+<p class="ts-problem">Three design prompts where batching is the crux. Commit to an answer before you open each one.</p>
+<div class="ts-predict" data-claims="c13 c15 c17">
+<p class="q">1. "Design the serving layer for a chat product: 30 requests per second at peak, 1,000-token prompts, 250-token answers, 8B model, TPOT target 15 ms." How many H100s, and how do you set the batch?</p>
+<div class="ts-reveal"><p>Use continuous batching. By the estimator, one H100 at 30 requests per second runs about 90 requests at about 12 ms TPOT, inside the target, using about 13 GB of the 54.6 GB cache. The bound is TPOT, not memory. Keep vLLM's default max_num_seqs of 1,024 but alert on TPOT, and add a second GPU before about 35 requests per second, where the estimator puts TPOT at 14.5 ms with about 127 running. The trade-off: a lower cap protects TPOT and pushes overload into TTFT; more GPUs cost money.</p></div>
+</div>
+<div class="ts-predict" data-claims="c22 c21 c30 c43">
+<p class="q">2. "Users paste 20-page documents into a chat that also serves short questions. Streaming stutters for everyone." What do you change?</p>
+<div class="ts-reveal"><p>The long prefills share steps with everyone's decodes. vLLM V1 already chunks prompts by default, so lower max_num_batched_tokens (towards 2,048) to cap the prefill per step and smooth inter-token latency, accepting slower TTFT for the document users. If both targets must hold at scale, run prefill and decode on separate GPUs. The trade-off: smoother streams cost long-prompt TTFT, or the operational weight of two pools.</p></div>
+</div>
+<div class="ts-predict" data-claims="c24 c25 c27 c28">
+<p class="q">3. "After a model update with longer answers, p99 end-to-end latency doubled but the average barely moved." What do you check first?</p>
+<div class="ts-reveal"><p>Check vllm:num_preemptions. Longer answers grow each cache further, so the cache fills mid-answer and vLLM evicts the most recently admitted requests and recomputes them: the tail pays, the average barely does. Fixes from vLLM's guide: more gpu_memory_utilization, a lower max_num_seqs or max_num_batched_tokens, or more GPUs. The trade-off: a lower cap reduces the cache the batch needs, and so the preemptions, but raises queueing (TTFT) at peak.</p></div>
+</div>
+<div class="ts-interview"><p><strong>"Why not always max out the batch?"</strong> A strong answer: throughput keeps rising until the cache is full, but every request added lengthens every step, so TPOT rises with it, and a full cache risks preemption that hurts the tail. Size the batch to the latency target, not to the memory.</p></div>
+<p class="ts-takeaway">Batching decisions are latency decisions: choose the batch size from your TTFT and TPOT targets, then check the cache can hold it.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c5 c6">
+<p class="q">Final check. A team says: "Static batching at batch 32 gives us the same tokens per second as vLLM at our current traffic, so it is just as good." What is the strongest reply?</p>
+<ol>
+<li data-why="Static batching can match throughput below capacity; the gap is elsewhere.">Static batching always has lower throughput</li>
+<li>Below capacity throughput equals arrival rate for both; static still waits to fill each batch and returns each request with its slowest batch-mate, so TTFT and end-to-end latency are far worse, and it saturates sooner</li>
+<li data-why="Static batching also shares one weight read per step; that is not the difference.">Static batching reads the weights once per request</li>
+</ol>
+<p class="ts-why">In the simulator at 4 requests per second, throughput was 1,040 vs 1,072 tokens per second, while TTFT was 2.55 s vs 20 ms. At 8 requests per second static fell behind.</p>
+</div>
+<div class="ts-explain" data-points="Batching shares one weight read per step, but each request adds its own cache read|Static batching pads and waits for the slowest; continuous batching admits and retires every step|vLLM's step is bounded by max_num_seqs, max_num_batched_tokens and the KV cache, and preempts when the cache fills|Bigger batches trade TPOT for throughput; caps move the cost into TTFT">
+<p class="q">Explain batching for LLM serving end to end, as you would in a senior interview, in five sentences.</p>
+<div class="ts-model"><p>Batching works because a decode step reads the weights once for every request in it, while each request adds only its own cache read. Static batching waits for a full batch, pads it, and holds everyone until the slowest finishes, wasting about half its work in realistic traffic. Continuous batching, from Orca's iteration-level scheduling, re-picks the batch every step, and vLLM bounds each step by max_num_seqs, max_num_batched_tokens and the free KV cache, preempting the newest request when the cache fills. Bigger batches raise throughput but slow every token, and capping the batch moves that cost into the queue as TTFT. A long prefill stalls every decode in its step, which is why vLLM chunks prompts by default and why some systems split prefill and decode onto separate GPUs.</p></div>
+</div>
+</section>

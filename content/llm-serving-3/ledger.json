@@ -1,0 +1,1702 @@
+{
+ "verified": "2026-10-10",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "NVIDIA H100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/h100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table and footnote"
+  },
+  {
+   "id": "s2",
+   "title": "NVIDIA H200 GPU: specifications",
+   "url": "https://www.nvidia.com/en-in/data-center/h200/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table and footnote"
+  },
+  {
+   "id": "s3",
+   "title": "NVIDIA A100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/a100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table"
+  },
+  {
+   "id": "s4",
+   "title": "NVIDIA Ampere Architecture In-Depth (NVIDIA Technical Blog)",
+   "url": "https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Tables 1 to 3"
+  },
+  {
+   "id": "s5",
+   "title": "Meta llama-models reference code: Llama 3.1 model arguments",
+   "url": "https://github.com/meta-llama/llama-models/blob/0e0b8c519242d5833d8c11bffc1232b77ad7f301/models/sku_list.py",
+   "kind": "primary",
+   "publisher": "Meta",
+   "accessed": "2026-10-10",
+   "locator": "llama3_1_base_models"
+  },
+  {
+   "id": "s6",
+   "title": "Llama Team, Meta: The Llama 3 Herd of Models (arXiv:2407.21783)",
+   "url": "https://ar5iv.labs.arxiv.org/html/2407.21783",
+   "kind": "primary",
+   "publisher": "Meta",
+   "accessed": "2026-10-10",
+   "locator": "Section 3.2, Table 3"
+  },
+  {
+   "id": "s7",
+   "title": "Yu et al.: Orca: A Distributed Serving System for Transformer-Based Generative Models (OSDI 2022)",
+   "url": "https://www.usenix.org/conference/osdi22/presentation/yu",
+   "kind": "primary",
+   "publisher": "USENIX",
+   "accessed": "2026-10-10",
+   "locator": "Abstract; Section 3 (C1, S1, S2); Section 4.2; Section 6.2"
+  },
+  {
+   "id": "s8",
+   "title": "Kwon et al.: Efficient Memory Management for Large Language Model Serving with PagedAttention (vLLM, SOSP 2023)",
+   "url": "https://ar5iv.labs.arxiv.org/html/2309.06180",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Sections 2.3 and 3"
+  },
+  {
+   "id": "s9",
+   "title": "Hugging Face Transformers v5.19.0 docs: Continuous batching",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/continuous_batching.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "ContinuousBatchingManager"
+  },
+  {
+   "id": "s10",
+   "title": "Hugging Face Transformers v5.19.0 docs: Continuous batching architecture",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/continuous_batching_architecture.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Introduction"
+  },
+  {
+   "id": "s11",
+   "title": "vLLM v0.31.0 source: Scheduler.schedule() and _preempt_request()",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/core/sched/scheduler.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "schedule(); _preempt_request()"
+  },
+  {
+   "id": "s12",
+   "title": "vLLM v0.31.0 source: SchedulerConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/scheduler.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "SchedulerConfig fields and validation"
+  },
+  {
+   "id": "s13",
+   "title": "vLLM v0.31.0 source: EngineArgs batch defaults",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/engine/arg_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "get_batch_defaults(); _set_default_max_num_seqs_and_batched_tokens_args()"
+  },
+  {
+   "id": "s14",
+   "title": "vLLM v0.31.0 docs: Optimization and Tuning",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/configuration/optimization.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "Preemption; Chunked Prefill"
+  },
+  {
+   "id": "s15",
+   "title": "vLLM v0.31.0 docs: Metrics (design)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/design/metrics.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "v1 Metrics; Grafana Dashboard"
+  },
+  {
+   "id": "s16",
+   "title": "vLLM v0.31.0 source: Prometheus metric definitions",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/metrics/loggers.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "PrometheusStatLogger gauges and counters"
+  },
+  {
+   "id": "s17",
+   "title": "vLLM v0.31.0 source: EngineCore.step()",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/engine/core.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "EngineCore.step()"
+  },
+  {
+   "id": "s18",
+   "title": "Zhong et al.: DistServe: Disaggregating Prefill and Decoding for Goodput-optimized LLM Serving (arXiv:2401.09670)",
+   "url": "https://arxiv.org/html/2401.09670v3",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Sections 2.2 and 2.3"
+  },
+  {
+   "id": "s19",
+   "title": "vLLM v0.31.0 source: VllmConfig.performance_mode",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/vllm.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "VllmConfig.performance_mode"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "The vLLM paper explains why batching helps: requests in a batch share the same weights, so the cost of moving them is spread across the batch.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "It also names the two problems with batching naively: requests arrive at different times, so some wait for others, and requests of different lengths need padding, which wastes compute and memory.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "Hugging Face's continuous batching docs note that with static batching, prompts of different lengths have to be padded to the same length.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "ContinuousBatchingManager",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "ContinuousBatchingManager",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "ContinuousBatchingManager",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "Their architecture guide describes traditional batching as running a fixed group together and waiting for the slowest request before the next group starts, which leaves the GPU idle between batches.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "The Orca paper (OSDI 2022) calls this request-level scheduling: a request that finishes early cannot go back to its client until the whole batch is done, and a new request waits until the running batch completes.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Section 3, C1",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch: PDF"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Section 3, C1",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Section 3, C1",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "Orca's fix is iteration-level scheduling: the scheduler runs one iteration of the model at a time over the requests it picks, and returns any finished request to its client right away.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Section 3, S1",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch: PDF"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Section 3, S1",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Section 3, S1",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "Hugging Face's guide describes the same loop: at every generation step the scheduler removes finished requests and replaces them with waiting ones.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "Orca's answer is selective batching: operations such as Linear, LayerNorm, Add and GeLU are batched by flattening every request's tokens into one tensor, while attention is split and run per request, because attention must look only at each request's own tokens, and each request has a different number of them.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Section 3, S2",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch: PDF"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Section 3, S2",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Section 3, S2",
+     "result": "supported",
+     "at": "2026-10-10T23:25",
+     "method": "webfetch: PDF, reworded text"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Section 3, S2",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ],
+   "note": "Pass 2 found the first wording too strong (reason given as cached keys and values); reworded to match the paper and re-checked."
+  },
+  {
+   "id": "c9",
+   "text": "On GPT-3 175B, the Orca paper reports 36.9 times the throughput of NVIDIA FasterTransformer at the same latency level.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Abstract; Section 6.2",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch: abstract page and PDF"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Abstract; Section 6.2",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Abstract; Section 6.2",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "The vLLM paper lists iteration-level scheduling, citing Orca, among fine-grained batching methods: finished requests leave the batch and new ones join after one iteration.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "In vLLM v0.31.0, each engine step does three things: the scheduler picks requests and tokens, the model runs once over them, and the scheduler updates every request from the output.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "EngineCore.step()",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "EngineCore.step()",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "EngineCore.step()",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "The scheduler has no separate prefill and decode phases: each request has a count of tokens computed so far and a count it needs, and each step hands out tokens so the first catches up with the second.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "schedule(), opening comment",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "schedule(), opening comment",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "schedule(), opening comment",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "It schedules the running requests first, then admits waiting requests in queue order while token budget is left and, by default, fewer than max_num_seqs requests are running.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "schedule(): running loop, then waiting loop",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "schedule(): running loop, then waiting loop",
+     "result": "supported",
+     "at": "2026-10-10T23:45",
+     "method": "git: fresh fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "schedule(): running loop, then waiting loop",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ],
+   "note": "Strict review asked for a missing condition or softer wording; reworded and re-checked."
+  },
+  {
+   "id": "c14",
+   "text": "In a step where a running request had to be preempted, no waiting request is admitted.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "schedule(): 'if not preempted_reqs' before the waiting loop",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "schedule(): 'if not preempted_reqs' before the waiting loop",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "schedule(): 'if not preempted_reqs' before the waiting loop",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "max_num_batched_tokens caps the tokens processed in one step, and max_num_seqs caps the requests processed in one step.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "SchedulerConfig.max_num_batched_tokens, max_num_seqs",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "SchedulerConfig.max_num_batched_tokens, max_num_seqs",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "SchedulerConfig.max_num_batched_tokens, max_num_seqs",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "The scheduling policy is first come, first served by default; a priority policy is also available.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "SchedulerConfig.policy",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "SchedulerConfig.policy",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "SchedulerConfig.policy",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "For vllm serve on a GPU with at least 70 GiB but under 160 GiB of memory that is not an A100, such as the H100 or H200, the defaults are max_num_batched_tokens = 8192 and max_num_seqs = 1024.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "get_batch_defaults()",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "get_batch_defaults()",
+     "result": "supported",
+     "at": "2026-10-10T23:45",
+     "method": "git: fresh fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "get_batch_defaults()",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ],
+   "note": "Strict review asked for a missing condition or softer wording; reworded and re-checked."
+  },
+  {
+   "id": "c18",
+   "text": "The offline LLM class gets 16,384 tokens on those GPUs, GPUs with at least 160 GiB get 16,384 tokens and 1,024 sequences for both, and every other GPU, A100 included, gets 2,048 tokens and 256 sequences under vllm serve.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "get_batch_defaults()",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "get_batch_defaults()",
+     "result": "supported",
+     "at": "2026-10-10T23:45",
+     "method": "git: fresh fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "get_batch_defaults()",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ],
+   "note": "Strict review asked for a missing condition or softer wording; reworded and re-checked."
+  },
+  {
+   "id": "c19",
+   "text": "Setting performance_mode to throughput doubles both defaults; the default mode is balanced.",
+   "sources": [
+    "s13",
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "_set_default_max_num_seqs_and_batched_tokens_args(); VllmConfig.performance_mode",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "_set_default_max_num_seqs_and_batched_tokens_args(); VllmConfig.performance_mode",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "_set_default_max_num_seqs_and_batched_tokens_args(); VllmConfig.performance_mode",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "_set_default_max_num_seqs_and_batched_tokens_args(); VllmConfig.performance_mode",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "_set_default_max_num_seqs_and_batched_tokens_args(); VllmConfig.performance_mode",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "vLLM rejects a max_num_batched_tokens smaller than max_num_seqs.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "SchedulerConfig validation",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "SchedulerConfig validation",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "SchedulerConfig validation",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "In vLLM V1, chunked prefill is on by default whenever possible: pending decodes are scheduled first, pending prefills fill what is left of the max_num_batched_tokens budget, and a prompt that does not fit is split across steps.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "vLLM's tuning guide says smaller max_num_batched_tokens values, such as 2048, give better inter-token latency because fewer prefills slow down the decodes, while larger values give better time to first token.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "For the best throughput it recommends values above 8192, especially for smaller models on large GPUs.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "vLLM's tuning guide says that when KV cache space runs out, vLLM can preempt requests to free space and recompute them once space is available again, which can hurt end-to-end latency.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T23:45",
+     "method": "git: fresh fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ],
+   "note": "Strict review asked for a missing condition or softer wording; reworded and re-checked."
+  },
+  {
+   "id": "c25",
+   "text": "Under the default policy the victim is the most recently admitted running request: its cache blocks are freed, its count of computed tokens goes back to zero, and it goes to the front of the waiting queue.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "schedule(): preemption branch; _preempt_request()",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "schedule(): preemption branch; _preempt_request()",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "schedule(): preemption branch; _preempt_request()",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "In vLLM V1 the default preemption mode is RECOMPUTE rather than SWAP.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "The guide's fixes: raise gpu_memory_utilization, lower max_num_seqs or max_num_batched_tokens, or spread the model over more GPUs with tensor or pipeline parallelism.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "vLLM exports vllm:num_preemptions, a running total of preemptions, and the gauges vllm:num_requests_running and vllm:num_requests_waiting.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "PrometheusStatLogger",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "PrometheusStatLogger",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "PrometheusStatLogger",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "It also exports histograms of time to first token, inter-token latency and per-request time per output token.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "v1 Metrics",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "v1 Metrics",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "v1 Metrics",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "The DistServe paper reports that adding one prefill to a batch of decodes slows both: the decodes wait for the longer prefill, which raises TPOT.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "The vLLM paper notes that how many requests can be batched is limited by GPU memory, especially KV cache space.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 3",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 3",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Section 3",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Orca's scheduler caps each batch at a maximum size and admits a request only if enough key/value slots remain for its maximum total length: its prompt plus the most tokens it may generate.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Section 4.2",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch: PDF"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Section 4.2",
+     "result": "supported",
+     "at": "2026-10-10T23:25",
+     "method": "webfetch: PDF, reworded text"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Section 4.2",
+     "result": "supported",
+     "at": "2026-10-10T23:45",
+     "method": "webfetch: new call, neutral prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Section 4.2",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ],
+   "note": "Pass 2 found the first wording too strong (slots reserved for output length only); reworded to match the paper and re-checked. Strict review asked for a missing condition or softer wording; reworded and re-checked."
+  },
+  {
+   "id": "c33",
+   "text": "vLLM computes per-request TPOT as (end-to-end latency minus TTFT) divided by (output tokens minus 1).",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Grafana Dashboard",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Grafana Dashboard",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Grafana Dashboard",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "SchedulerConfig itself defaults to 2048 tokens and 128 sequences, but its docstrings say those values are for testing and that real defaults are set by EngineArgs.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "SchedulerConfig.max_num_batched_tokens, max_num_seqs",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "SchedulerConfig.max_num_batched_tokens, max_num_seqs",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "SchedulerConfig.max_num_batched_tokens, max_num_seqs",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "Llama 3.1 8B has 32 layers, a model dimension of 4,096, 32 attention heads and 8 key/value heads.",
+   "sources": [
+    "s5",
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "llama3_1_base_models; Table 3",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c16 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "llama3_1_base_models; Table 3",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c16 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "llama3_1_base_models; Table 3",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "1,979 teraFLOPS, 3.35 TB/s, 80 GB",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c27 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c27 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "1,671 teraFLOPS, 3.9 TB/s, 94 GB",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c28 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c28 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "1,979 teraFLOPS, 4.8 TB/s, 141 GB",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c29 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c29 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "624 teraFLOPS, 1,935 GB/s, 80 GB",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-1 claim c16 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-1 claim c16 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "NVIDIA prints BF16 Tensor Core figures with sparsity; dense work gets half, as the A100's 312 dense and 624 sparse BF16 teraFLOPS show.",
+   "sources": [
+    "s1",
+    "s2",
+    "s3",
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications footnotes; Tables 1 to 3",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c30 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications footnotes; Tables 1 to 3",
+     "result": "supported",
+     "at": "2026-10-10T00:00",
+     "method": "carried from the llm-serving-2 claim c30 ledger, where it passed pass 1 and pass 2 on 2026-10-10; not re-read in this session because the site needed an approval nobody was present to give"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "Hugging Face's guide says that when a prompt does not fit the step's token budget, the scheduler processes part of it and continues on later steps, interleaving that prefill with ongoing decodes.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Introduction (chunked prefill paragraph)",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Introduction (chunked prefill paragraph)",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Introduction (chunked prefill paragraph)",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "vLLM's tuning guide says chunked prefill helps because it puts compute-bound prefill work and memory-bound decode work in the same batch.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "DistServe also notes that mixing new prefills into running decodes, as continuous batching does, raises utilization but forces a trade between TTFT and TPOT.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Section 2.2",
+     "result": "supported",
+     "at": "2026-10-10T22:45",
+     "method": "webfetch"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Section 2.2",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "webfetch: new call, neutral SUPPORTED/CONTRADICTED prompt"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "Section 2.2",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "vLLM's scheduler allocates cache space for each request's new tokens at every step, rather than for its whole answer at admission.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "schedule(): kv_cache_manager.allocate_slots(request, num_new_tokens)",
+     "result": "supported",
+     "at": "2026-10-10T22:50",
+     "method": "git: verbatim file"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "schedule(): kv_cache_manager.allocate_slots(request, num_new_tokens)",
+     "result": "supported",
+     "at": "2026-10-10T23:30",
+     "method": "git: fresh raw.githubusercontent.com fetch, exact-phrase search"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "schedule(): kv_cache_manager.allocate_slots(request, num_new_tokens)",
+     "result": "supported",
+     "at": "2026-10-10T23:40",
+     "method": "independent reviewer (strict mode); wording notes applied"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Exact throughput gains vLLM reports over Orca",
+   "reason": "The comparison sits in vLLM paper Section 6, beyond what was read in this session; Part 4 covers the memory side that drives it."
+  },
+  {
+   "text": "How Triton or other servers implement dynamic batching with a queue delay",
+   "reason": "No primary source read in this session; the page models static batching as the simplest request-level policy instead."
+  },
+  {
+   "text": "The H100's total memory as the driver reports it, used by vLLM's 70 GiB test",
+   "reason": "No primary source found; the page relies on the source code naming H100 and H200 as the GPUs this branch targets."
+  },
+  {
+   "text": "Static batching pads prompts in Orca's FasterTransformer baseline",
+   "reason": "The Orca paper describes its baseline treating every request as having the shortest input, not padding; the padding claim is taken from the vLLM paper and Hugging Face instead."
+  },
+  {
+   "text": "Real-world adoption figures for continuous batching at a named company",
+   "reason": "No official engineering source was read in this session; the page cites the Orca and vLLM papers and the vLLM and Hugging Face docs instead of an In-the-wild case."
+  }
+ ],
+ "strict_review": "Independent reviewer: 0 contradicted; c36 to c40 not checked (nvidia.com unreachable from this session, carried from Parts 1 and 2); wording notes on c13, c17, c18, c24, c32 applied and re-checked; quiz/predict citation notes applied."
+}

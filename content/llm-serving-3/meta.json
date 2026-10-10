@@ -1,0 +1,18 @@
+{
+ "slug": "llm-serving-3",
+ "title": "LLM inference serving, Part 3: batching",
+ "tldr": "How a server decides which requests share each forward pass, from static batches to continuous (iteration-level) batching: why one shared weight read makes batching the main lever, how static batching wastes about half its work on padding and waiting, Orca's iteration-level scheduling and selective batching, how vLLM v0.31.0's scheduler loop admits and retires requests every step under max_num_seqs and max_num_batched_tokens, what preemption does when the KV cache runs out, the throughput versus TPOT and TTFT trade-off with numbers, a step-through slot timeline, a batch trade-off calculator, a tested simulator, where the worker-pool analogy breaks, and an interview drill.",
+ "category": "AI systems",
+ "created": "2026-10-10",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "LLM inference serving, Part 1: prefill vs decode", "slug": "llm-serving-1"},
+  {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2"}
+ ],
+ "related": [
+  {"label": "Next: Part 4 — PagedAttention", "slug": "llm-serving-4", "why": "how vLLM splits the KV cache into pages so a batch is not capped by memory reserved for tokens that never come"},
+  {"label": "Later part: chunked prefill", "why": "splitting long prompts across steps so one prefill cannot stall every decode"},
+  {"label": "Later part: prefill/decode disaggregation", "why": "running prefill and decode on different GPUs so they stop slowing each other"},
+  {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2", "why": "the step-time model and the cache budget this page's simulator uses"}
+ ]
+}

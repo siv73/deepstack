@@ -1035,6 +1035,380 @@
   }
 
   /* =====================================================================
+     SLOT TIMELINE (.ts-slots): batch slots over time, one lane per policy, stepped column by column.
+     Spec JSON: {"slots":3, "requests":[{"id","arrives","tokens"}],
+                 "lanes":[{"label","cols":[["P:A","d:B",""], ...]}], "captions":["...", ...]}
+     Cell kinds: P prefill, d decode, pad finished-but-still-batched, wait empty while the GPU
+     waits for a full batch, "" empty slot. Same data as examples/llm-serving-3/timeline.py.
+     ===================================================================== */
+  const SLOT_KINDS = [
+    ["P", "Prefill (first token)"],
+    ["d", "Decode (one token)"],
+    ["pad", "Padding: finished, still in the batch"],
+    ["wait", "GPU idle, waiting for a full batch"],
+    ["free", "Empty slot"],
+  ];
+  function initSlots(fig) {
+    const spec = readJSON($("script[type='application/json']", fig));
+    if (!spec?.lanes?.length) return;
+    const slots = spec.slots || 3;
+    const steps = Math.max(...spec.lanes.map((l) => l.cols.length));
+    const W = 560,
+      L = 34,
+      cw = (W - L - 4) / steps,
+      ch = 26,
+      laneH = 22 + slots * ch + 14;
+    const H = 26 + spec.lanes.length * laneH + 22;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      class: "ts-sl-chart",
+      "aria-label": `Batch slots over ${steps} steps under ${spec.lanes.map((l) => l.label).join(" and ")}`,
+    });
+    svg.appendChild(sv("text", { class: "ts-sl-lbl", x: L - 6, y: 17, "text-anchor": "end", text: "in" }));
+    spec.lanes.forEach((lane, li) => {
+      const y0 = 26 + li * laneH;
+      svg.appendChild(sv("text", { class: "ts-sl-lane", x: L, y: y0 + 15, text: lane.label }));
+      for (let r = 0; r < slots; r++)
+        svg.appendChild(
+          sv("text", {
+            class: "ts-sl-lbl",
+            x: L - 6,
+            y: y0 + 22 + r * ch + ch / 2 + 4,
+            "text-anchor": "end",
+            text: `s${r + 1}`,
+          }),
+        );
+    });
+    for (let j = 0; j < steps; j++) {
+      const g = sv("g", { "data-s": j + 1 });
+      const x = L + j * cw;
+      const arr = (spec.requests || []).filter((q) => q.arrives === j).map((q) => q.id);
+      if (arr.length)
+        g.appendChild(
+          sv("text", { class: "ts-sl-arr", x: x + cw / 2, y: 17, "text-anchor": "middle", text: arr.join("") }),
+        );
+      spec.lanes.forEach((lane, li) => {
+        const y0 = 26 + li * laneH + 22;
+        const col = lane.cols[j];
+        for (let r = 0; r < slots; r++) {
+          const cell = col ? col[r] || "" : null;
+          if (cell === null) continue; // this lane already finished
+          const [kind, id] = cell ? cell.split(":") : ["free", ""];
+          g.appendChild(
+            sv("rect", {
+              class: `ts-sl-cell is-${kind}`,
+              x: x + 1.5,
+              y: y0 + r * ch + 1.5,
+              width: cw - 3,
+              height: ch - 3,
+              rx: 4,
+            }),
+          );
+          if (id)
+            g.appendChild(
+              sv("text", {
+                class: `ts-sl-id is-${kind}`,
+                x: x + cw / 2,
+                y: y0 + r * ch + ch / 2 + 4,
+                "text-anchor": "middle",
+                text: kind === "pad" ? id.toLowerCase() : id,
+              }),
+            );
+        }
+      });
+      g.appendChild(
+        sv("text", { class: "ts-sl-lbl", x: x + cw / 2, y: H - 6, "text-anchor": "middle", text: String(j + 1) }),
+      );
+      svg.appendChild(g);
+    }
+    svg.appendChild(sv("text", { class: "ts-sl-lbl", x: L - 6, y: H - 6, "text-anchor": "end", text: "step" }));
+    const title = fig.getAttribute("data-title");
+    fig.classList.add("ts-fig");
+    fig.innerHTML = "";
+    if (title) fig.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    fig.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    fig.appendChild(
+      el(
+        "ul",
+        { class: "ts-kv-legend" },
+        SLOT_KINDS.map(([k, t]) => el("li", {}, [el("span", { class: `ts-sl-sw is-${k}` }), el("span", { text: t })])),
+      ),
+    );
+    stepper(fig, svg, steps, spec.captions || []);
+  }
+  function initSlotsAll() {
+    $$(".ts-slots").forEach((f) => {
+      try {
+        initSlots(f);
+      } catch (e) {
+        console.error("[teach-site] slot timeline failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
+     BATCH TRADE-OFF CALCULATOR (.ts-batchcalc): continuous batching in steady state.
+     Spec JSON: {"models":[{"id","label","params","layers","q_heads","kv_heads","head_dim"}],
+                 "gpus":[{"id","label","tflops","tbps","gb"}],
+                 "defaults":{"model","gpu","rate","prompt","output","max_seqs","util","reserve"}}
+     Same arithmetic as examples/llm-serving-3/steady_state.py (BF16 weights and KV cache).
+     ===================================================================== */
+  function batchEstimate(g, m, rate, prompt, output, maxSeqs, util, reserveGb) {
+    const F = g.tflops * 1e12,
+      BW = g.tbps * 1e12,
+      P = m.params * 1e9;
+    const kvTok = 2 * m.layers * m.kv_heads * m.head_dim * 2;
+    const attn = 4 * m.layers * m.q_heads * m.head_dim;
+    const ctx = prompt + output / 2;
+    const budget = g.gb * 1e9 * util - 2 * P - reserveGb * 1e9;
+    const cap = Math.min(maxSeqs, Math.floor(budget / ((prompt + output) * kvTok)));
+    if (!(cap >= 1)) return { fits: false, budget };
+    const pre = (2 * P * prompt + (attn * prompt * (prompt + 1)) / 2) / F;
+    const costs = (n) => {
+      const c = (n * (2 * P + attn * ctx)) / F,
+        mem = (2 * P + n * ctx * kvTok) / BW;
+      return [Math.max(c, mem), Math.max(c + pre, mem)];
+    };
+    const gap = (t) => {
+      const [d, d1] = costs(rate * (output - 1) * t);
+      return d + rate * t * (d1 - d) - t;
+    };
+    const tCap = cap / (rate * (output - 1));
+    let n, t, served;
+    if (gap(tCap) <= 0) {
+      let lo = 0,
+        hi = tCap;
+      for (let i = 0; i < 100; i++) {
+        const mid = (lo + hi) / 2;
+        if (gap(mid) <= 0) hi = mid;
+        else lo = mid;
+      }
+      n = rate * (output - 1) * hi;
+      t = hi;
+      served = rate;
+    } else {
+      const [d, d1] = costs(cap);
+      n = cap;
+      t = d + (cap / (output - 1)) * (d1 - d);
+      served = cap / ((output - 1) * t);
+    }
+    const [d, d1] = costs(n);
+    return {
+      fits: true,
+      overloaded: served < rate,
+      running: n,
+      cap,
+      kvCap: Math.floor(budget / ((prompt + output) * kvTok)),
+      tpot: t,
+      ttft: served === rate ? t / 2 + d1 : Number.POSITIVE_INFINITY,
+      served,
+      tokens: served * output,
+      kvUsed: n * ctx * kvTok,
+      budget,
+      prefillShare: Math.min(1, (served * t * (d1 - d)) / t),
+    };
+  }
+  function initBatchCalc(box, n) {
+    const spec = readJSON($("script[type='application/json']", box));
+    if (!spec?.models?.length || !spec?.gpus?.length) return;
+    const d = spec.defaults || {};
+    const id = (k) => `ts-bc-${n}-${k}`;
+    const title = box.getAttribute("data-title");
+    box.classList.add("ts-fig");
+    box.innerHTML = "";
+    if (title) box.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    function sel(key, label, items, val) {
+      const s = el(
+        "select",
+        { id: id(key) },
+        items.map((x) => el("option", { value: x.id, text: x.label })),
+      );
+      s.value = val;
+      return [s, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), s])];
+    }
+    function num(key, label, val, min, max, step) {
+      const inp = el("input", { id: id(key), type: "number", min, max, step, value: val, inputmode: "decimal" });
+      return [inp, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), inp])];
+    }
+    const [mSel, mLab] = sel("model", "Model", spec.models, d.model || spec.models[0].id);
+    const [gSel, gLab] = sel("gpu", "GPU", spec.gpus, d.gpu || spec.gpus[0].id);
+    const [rIn, rLab] = num("rate", "Arrival rate (requests/s)", d.rate ?? 10, 0.01, 100000, "any");
+    const [pIn, pLab] = num("prompt", "Prompt length (tokens)", d.prompt || 1000, 1, 1000000, 1);
+    const [oIn, oLab] = num("output", "Output length (tokens)", d.output || 250, 2, 1000000, 1);
+    const [sIn, sLab] = num("seqs", "Max batch (max_num_seqs)", d.max_seqs || 1024, 1, 100000, 1);
+    const [uIn, uLab] = num("util", "gpu_memory_utilization", d.util || 0.92, 0.05, 1, 0.01);
+    const [zIn, zLab] = num("reserve", "Other reserved memory (GB)", d.reserve ?? 3, 0, 1000, "any");
+    box.appendChild(el("div", { class: "ts-rl-form" }, [mLab, gLab, rLab, pLab, oLab, sLab, uLab, zLab]));
+
+    // two stacked panels sharing a log x axis: tokens/s (top) and TPOT (bottom) at every batch size
+    const W = 560,
+      H = 300,
+      L = 58,
+      R = 16,
+      T = 12,
+      B = 40,
+      gapY = 26;
+    const ph = (H - T - B - gapY) / 2;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      class: "ts-bc-chart",
+      "aria-label": "Output tokens per second and time per output token against batch size, with every slot full",
+    });
+    const axes = sv("g", { class: "ts-rl-axis" });
+    const curveT = sv("path", { class: "ts-bc-line is-tps" });
+    const curveP = sv("path", { class: "ts-bc-line is-tpot" });
+    const mark = sv("line", { class: "ts-bc-mark" });
+    const dotT = sv("circle", { class: "ts-bc-dot is-tps", r: 5 });
+    const dotP = sv("circle", { class: "ts-bc-dot is-tpot", r: 5 });
+    [axes, curveT, curveP, mark, dotT, dotP].forEach((x) => {
+      svg.appendChild(x);
+    });
+    box.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    const out = el("div", { class: "ts-rl-out", "aria-live": "polite" });
+    box.appendChild(out);
+    function row(k, v, cls) {
+      return el("div", { class: `ts-rl-row${cls ? ` ${cls}` : ""}` }, [el("dt", { text: k }), el("dd", { text: v })]);
+    }
+    const pos = (inp, lo, def) => Math.max(lo, +inp.value || def);
+    const nice = (x) => {
+      const e = 10 ** Math.floor(Math.log10(x));
+      return [1, 2, 5, 10].map((k) => k * e).find((v) => v >= x);
+    };
+
+    function update() {
+      const g = spec.gpus.find((x) => x.id === gSel.value) || spec.gpus[0];
+      const m = spec.models.find((x) => x.id === mSel.value) || spec.models[0];
+      const rate = pos(rIn, 0.001, 10),
+        prompt = Math.round(pos(pIn, 1, 1000)),
+        output = Math.max(2, Math.round(pos(oIn, 2, 250))),
+        seqs = Math.round(pos(sIn, 1, 1024)),
+        util = Math.min(1, pos(uIn, 0.01, 0.92)),
+        reserve = Math.max(0, +zIn.value || 0);
+      const e = batchEstimate(g, m, rate, prompt, output, seqs, util, reserve);
+      axes.innerHTML = "";
+      out.innerHTML = "";
+      if (!e.fits) {
+        [curveT, curveP, mark, dotT, dotP].forEach((x) => {
+          x.setAttribute("visibility", "hidden");
+        });
+        out.appendChild(
+          el("dl", { class: "ts-rl-list" }, [
+            row(
+              "Does not fit",
+              e.budget <= 0
+                ? `The weights (${fmtBytes(2 * m.params * 1e9)}) leave no room for a KV cache on one ${g.label} at this setting.`
+                : `Not even one request of ${fmtInt(prompt + output)} tokens fits in the ${fmtBytes(e.budget)} KV budget.`,
+              "is-bad",
+            ),
+          ]),
+        );
+        return;
+      }
+      [curveT, curveP, mark, dotT, dotP].forEach((x) => {
+        x.removeAttribute("visibility");
+      });
+      // saturated curve: every slot full, for batch sizes 1..maxCap
+      const maxCap = Math.max(2, Math.min(seqs, e.kvCap));
+      const pts = [];
+      for (let k = 0; k <= 60; k++) {
+        const c = Math.max(1, Math.round(maxCap ** (k / 60)));
+        if (pts.length && pts[pts.length - 1].c === c) continue;
+        const s = batchEstimate(g, m, 1e9, prompt, output, c, util, reserve);
+        pts.push({ c, tps: s.tokens, tpot: s.tpot });
+      }
+      const yT = nice(Math.max(...pts.map((p) => p.tps), e.tokens) * 1.05);
+      const yP = nice(Math.max(...pts.map((p) => p.tpot), e.tpot) * 1e3 * 1.05);
+      const xp = (c) => L + (Math.log(c) / Math.log(maxCap)) * (W - L - R);
+      const top = (v) => T + ph - (v / yT) * ph;
+      const bot = (v) => T + ph + gapY + ph - ((v * 1e3) / yP) * ph;
+      [
+        [T, yT, "tokens/s"],
+        [T + ph + gapY, yP, "TPOT (ms)"],
+      ].forEach(([y0, ymax, lbl]) => {
+        for (let k = 0; k <= 2; k++) {
+          const y = y0 + ph - (k / 2) * ph;
+          axes.appendChild(sv("line", { class: "ts-rl-grid", x1: L, x2: W - R, y1: y, y2: y }));
+          axes.appendChild(sv("text", { x: L - 6, y: y + 4, "text-anchor": "end", text: fmtInt((k / 2) * ymax) }));
+        }
+        axes.appendChild(sv("text", { x: L + 4, y: y0 + 12, class: "ts-bc-axlbl", text: lbl }));
+      });
+      const ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096].filter((c) => c <= maxCap);
+      ticks.forEach((c) => {
+        axes.appendChild(sv("text", { x: xp(c), y: H - B + 16, "text-anchor": "middle", text: String(c) }));
+      });
+      axes.appendChild(
+        sv("text", {
+          x: (L + W - R) / 2,
+          y: H - 6,
+          "text-anchor": "middle",
+          text: "Requests decoding together (log), every slot full",
+        }),
+      );
+      curveT.setAttribute("d", pts.map((p, i) => `${i ? "L" : "M"}${xp(p.c)},${top(p.tps)}`).join(" "));
+      curveP.setAttribute("d", pts.map((p, i) => `${i ? "L" : "M"}${xp(p.c)},${bot(p.tpot)}`).join(" "));
+      const xn = xp(Math.max(1, Math.min(maxCap, e.running)));
+      mark.setAttribute("x1", xn);
+      mark.setAttribute("x2", xn);
+      mark.setAttribute("y1", T);
+      mark.setAttribute("y2", H - B);
+      dotT.setAttribute("cx", xn);
+      dotT.setAttribute("cy", top(e.tokens));
+      dotP.setAttribute("cx", xn);
+      dotP.setAttribute("cy", bot(e.tpot));
+
+      const capWhy = e.cap === seqs ? "max_num_seqs" : "the KV cache budget";
+      const rows = [
+        row(
+          "Running requests",
+          `${fmtNum(e.running)} on average (limit ${fmtInt(e.cap)}, set by ${capWhy})`,
+          e.overloaded ? "is-bad" : "",
+        ),
+        row(
+          "Output throughput",
+          `${fmtInt(e.tokens)} tokens/s (${fmtNum(e.served)} requests/s served)`,
+          e.overloaded ? "is-bad" : "",
+        ),
+        row("TPOT (average step)", fmtTime(e.tpot), "is-mem"),
+        row(
+          "TTFT estimate",
+          e.overloaded
+            ? `grows without limit: ${fmtNum(rate - e.served)} more requests/s arrive than finish`
+            : `about ${fmtTime(e.ttft)} with an empty queue (wait for the current step, then your prefill)`,
+          e.overloaded ? "is-bad" : "",
+        ),
+        row(
+          "KV cache in use",
+          `${fmtBytes(e.kvUsed)} of ${fmtBytes(e.budget)} (${fmtNum((100 * e.kvUsed) / e.budget)}%)`,
+        ),
+        row("GPU time spent on prefill", `${fmtNum(100 * e.prefillShare)}% of each second`, "is-cmp"),
+      ];
+      out.appendChild(el("dl", { class: "ts-rl-list" }, rows));
+      out.appendChild(
+        el("p", {
+          class: "ts-rl-note",
+          text: "Best case at 100% of peak; every request the same length; no queueing delay counted below the limit. The dot marks this load on the full-batch curve.",
+        }),
+      );
+    }
+    [mSel, gSel, rIn, pIn, oIn, sIn, uIn, zIn].forEach((inp) => {
+      inp.addEventListener("input", update);
+      inp.addEventListener("change", update);
+    });
+    update();
+  }
+  function initBatchCalcs() {
+    $$(".ts-batchcalc").forEach((b, i) => {
+      try {
+        initBatchCalc(b, i + 1);
+      } catch (e) {
+        console.error("[teach-site] batch calculator failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
      CODE + TABS
      ===================================================================== */
   const KW =
@@ -1753,6 +2127,8 @@
     initFigures();
     initRooflines();
     initKvCalcs();
+    initSlotsAll();
+    initBatchCalcs();
     initCode();
     initTabs();
     initTerms();
