@@ -119,6 +119,20 @@ Use the existing classes (`node`, `edge`, `msg`, `over`, `lblbg`, `arrowhead`) a
 - Renders inputs (GPU, model size in billions, batch, prompt tokens), a log-log roofline with decode and prefill points, and the weights-only estimate (BF16, 2 FLOPs and 2 bytes per parameter).
 - `tflops` is the dense peak, `tbps` memory bandwidth in TB/s, `gb` memory. Every figure must also appear on the page as a verified claim (e.g. in a spec table next to it).
 
+### KV cache calculator (cache size, capacity, decode with KV reads)
+```html
+<div class="ts-kvcalc" data-title="KV cache calculator">
+<script type="application/json">
+{"models": [{"id": "llama-3.1-8b", "label": "Llama 3.1 8B", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [{"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80}],
+ "dtypes": [{"id": "bf16", "label": "BF16 (2 bytes)", "bytes": 2}],
+ "defaults": {"model": "llama-3.1-8b", "gpu": "h100-sxm", "dtype": "bf16", "context": 8192, "batch": 64, "util": 0.92, "reserve": 3}}
+</script>
+</div>
+```
+- Renders a model preset (plus Custom: params in billions, layers, query heads, KV heads, head dimension), GPU, KV data type, tokens per request, batch, `gpu_memory_utilization` and other reserved GB; a memory bar (weights, reserve, KV in use, KV free, unrequested); and KV bytes per token and per request, the KV budget, requests that fit, the decode step including KV reads, and the batch where decode turns compute-bound.
+- Same arithmetic as `examples/llm-serving-2/kv_cache.py`: weights in BF16, attention FLOPs of 4 × layers × query heads × head_dim per cached token. Model shapes and GPU figures must appear on the page as verified claims.
+
 ## 5. Code and tabs
 
 ```html

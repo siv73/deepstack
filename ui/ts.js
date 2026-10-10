@@ -809,6 +809,232 @@
   }
 
   /* =====================================================================
+     KV CACHE CALCULATOR (.ts-kvcalc): cache size, capacity, decode with KV reads.
+     Spec JSON: {"models":[{"id","label","params","layers","q_heads","kv_heads","head_dim"}],
+                 "gpus":[{"id","label","tflops","tbps","gb"}], "dtypes":[{"id","label","bytes"}],
+                 "defaults":{"model","gpu","dtype","context","batch","util","reserve"}}
+     params in billions, tflops dense peak, tbps TB/s, gb memory, reserve GB. Weights in BF16.
+     Same model as examples/llm-serving-2/kv_cache.py.
+     ===================================================================== */
+  function fmtBytes(b) {
+    const sig3 = (x) => Number(x.toPrecision(3)).toLocaleString("en-US");
+    if (b < 1e6) return `${fmtInt(b)} bytes`;
+    if (b < 1e9) return `${sig3(b / 1e6)} MB`;
+    return `${sig3(b / 1e9)} GB`;
+  }
+  function initKvCalc(box, n) {
+    const spec = readJSON($("script[type='application/json']", box));
+    if (!spec?.models?.length || !spec?.gpus?.length) return;
+    const d = spec.defaults || {};
+    const dtypes = spec.dtypes?.length ? spec.dtypes : [{ id: "bf16", label: "BF16 (2 bytes)", bytes: 2 }];
+    const id = (k) => `ts-kv-${n}-${k}`;
+    const title = box.getAttribute("data-title");
+    box.classList.add("ts-fig");
+    box.innerHTML = "";
+    if (title) box.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    function sel(key, label, items, val) {
+      const s = el(
+        "select",
+        { id: id(key) },
+        items.map((x) => el("option", { value: x.id, text: x.label })),
+      );
+      s.value = val;
+      return [s, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), s])];
+    }
+    function num(key, label, val, min, max, step) {
+      const inp = el("input", { id: id(key), type: "number", min, max, step, value: val, inputmode: "decimal" });
+      return [inp, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), inp])];
+    }
+    const custom = { id: "custom", label: "Custom" };
+    const m0 = spec.models.find((m) => m.id === d.model) || spec.models[0];
+    const [mSel, mLab] = sel("model", "Model", spec.models.concat([custom]), m0.id);
+    const [pIn, pLab] = num("params", "Parameters (billions)", m0.params, 0.1, 2000, "any");
+    const [lyIn, lyLab] = num("layers", "Layers", m0.layers, 1, 512, 1);
+    const [qIn, qLab] = num("qheads", "Query heads", m0.q_heads, 1, 1024, 1);
+    const [kIn, kLab] = num("kvheads", "Key/value heads", m0.kv_heads, 1, 1024, 1);
+    const [hIn, hLab] = num("headdim", "Head dimension", m0.head_dim, 1, 1024, 1);
+    const [gSel, gLab] = sel("gpu", "GPU", spec.gpus, d.gpu || spec.gpus[0].id);
+    const [tSel, tLab] = sel("dtype", "KV cache data type", dtypes, d.dtype || dtypes[0].id);
+    const [cIn, cLab] = num("context", "Tokens per request (context)", d.context || 8192, 1, 2000000, 1);
+    const [bIn, bLab] = num("batch", "Requests decoding together", d.batch || 64, 1, 100000, 1);
+    const [uIn, uLab] = num("util", "gpu_memory_utilization", d.util || 0.92, 0.05, 1, 0.01);
+    const [rIn, rLab] = num("reserve", "Other reserved memory (GB)", d.reserve ?? 3, 0, 1000, "any");
+    box.appendChild(
+      el("div", { class: "ts-rl-form" }, [mLab, pLab, lyLab, qLab, kLab, hLab, gLab, tLab, cLab, bLab, uLab, rLab]),
+    );
+    const shapeIns = [pIn, lyIn, qIn, kIn, hIn];
+    mSel.addEventListener("change", () => {
+      const m = spec.models.find((x) => x.id === mSel.value);
+      if (m) {
+        pIn.value = m.params;
+        lyIn.value = m.layers;
+        qIn.value = m.q_heads;
+        kIn.value = m.kv_heads;
+        hIn.value = m.head_dim;
+      }
+      update();
+    });
+    shapeIns.forEach((x) => {
+      x.addEventListener("input", () => {
+        mSel.value = "custom";
+      });
+    });
+
+    // memory bar: one GPU's memory, split into weights, reserve, KV in use, KV free, unrequested
+    const W = 560,
+      BH = 30;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${BH + 4}`,
+      role: "img",
+      class: "ts-kv-chart",
+      "aria-label":
+        "How one GPU's memory splits into weights, reserve, KV cache in use, free KV cache, and memory vLLM leaves unrequested",
+    });
+    const segDefs = [
+      ["w", "Weights"],
+      ["r", "Other reserved"],
+      ["u", "KV cache in use"],
+      ["f", "KV cache free"],
+      ["x", "Not requested (1 − utilization)"],
+    ];
+    const segs = {};
+    segDefs.forEach(([k]) => {
+      segs[k] = sv("rect", { class: `ts-kv-seg is-${k}`, y: 2, height: BH });
+      svg.appendChild(segs[k]);
+    });
+    svg.appendChild(sv("rect", { class: "ts-kv-frame", x: 1, y: 2, width: W - 2, height: BH }));
+    box.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    box.appendChild(
+      el(
+        "ul",
+        { class: "ts-kv-legend" },
+        segDefs.map(([k, t]) => el("li", {}, [el("span", { class: `ts-kv-sw is-${k}` }), el("span", { text: t })])),
+      ),
+    );
+    const out = el("div", { class: "ts-rl-out", "aria-live": "polite" });
+    box.appendChild(out);
+    function row(k, v, cls) {
+      return el("div", { class: `ts-rl-row${cls ? ` ${cls}` : ""}` }, [el("dt", { text: k }), el("dd", { text: v })]);
+    }
+    const pos = (inp, lo, def) => Math.max(lo, +inp.value || def);
+
+    function update() {
+      const g = spec.gpus.find((x) => x.id === gSel.value) || spec.gpus[0];
+      const dt = dtypes.find((x) => x.id === tSel.value) || dtypes[0];
+      const P = pos(pIn, 0.1, 8) * 1e9;
+      const L = Math.round(pos(lyIn, 1, 32)),
+        Hq = Math.round(pos(qIn, 1, 32)),
+        Hkv = Math.min(Hq, Math.round(pos(kIn, 1, 8))),
+        hd = Math.round(pos(hIn, 1, 128));
+      const ctx = Math.round(pos(cIn, 1, 8192)),
+        batch = Math.round(pos(bIn, 1, 64));
+      const util = Math.min(1, pos(uIn, 0.01, 0.92)),
+        reserve = Math.max(0, +rIn.value || 0) * 1e9;
+      const F = g.tflops * 1e12,
+        BW = g.tbps * 1e12,
+        mem = g.gb * 1e9,
+        ridge = F / BW;
+      const perTok = 2 * L * Hkv * hd * dt.bytes;
+      const perReq = perTok * ctx;
+      const weights = 2 * P;
+      const budget = mem * util - weights - reserve;
+      const fit = budget > 0 ? Math.floor(budget / perReq) : 0;
+      const attnF = 4 * L * Hq * hd * ctx; // FLOPs per request per step for attention over the cache
+      const flops = batch * (2 * P + attnF);
+      const bytes = weights + batch * perReq;
+      const cS = flops / F,
+        mS = bytes / BW,
+        t = Math.max(cS, mS);
+      const bound = cS > mS ? "compute" : "memory";
+      const perReqF = 2 * P + attnF;
+      const cross = perReqF > ridge * perReq ? Math.ceil((ridge * weights) / (perReqF - ridge * perReq)) : null;
+
+      // bar
+      const sc = (b) => (Math.max(0, b) / mem) * (W - 2);
+      const used = Math.min(Math.max(0, budget), batch * perReq);
+      const parts = {
+        w: Math.min(weights, mem),
+        r: Math.min(reserve, Math.max(0, mem - weights)),
+        u: used,
+        f: Math.max(0, budget) - used,
+        x: mem * (1 - util),
+      };
+      let x = 1;
+      segDefs.forEach(([k]) => {
+        const w = Math.min(sc(parts[k]), W - 1 - x);
+        segs[k].setAttribute("x", x);
+        segs[k].setAttribute("width", Math.max(0, w));
+        x += Math.max(0, w);
+      });
+
+      out.innerHTML = "";
+      const rows = [
+        row("KV per token", `2 × ${L} layers × ${Hkv} KV heads × ${hd} × ${dt.bytes} bytes = ${fmtInt(perTok)} bytes`),
+        row("KV per request", `${fmtInt(ctx)} tokens → ${fmtBytes(perReq)}`),
+      ];
+      if (budget <= 0) {
+        rows.push(
+          row(
+            "KV budget",
+            `${fmtNum(util, "")} × ${fmtBytes(g.gb * 1e9)} − ${fmtBytes(weights)} weights − ${fmtBytes(reserve)} reserve: nothing left. The weights do not fit on one GPU at this setting.`,
+            "is-bad",
+          ),
+        );
+      } else {
+        rows.push(
+          row(
+            "KV budget",
+            `${fmtNum(util, "")} × ${fmtBytes(g.gb * 1e9)} − ${fmtBytes(weights)} weights − ${fmtBytes(reserve)} reserve = ${fmtBytes(budget)}`,
+          ),
+          row(
+            "Requests that fit",
+            `${fmtInt(budget / perTok)} tokens of cache → ${fmtInt(fit)} request(s) of ${fmtInt(ctx)} tokens`,
+            fit < 1 ? "is-bad" : "",
+          ),
+        );
+        rows.push(
+          row(
+            "Decode step",
+            `${fmtInt(batch)} request(s): reads ${fmtBytes(weights)} weights + ${fmtBytes(batch * perReq)} KV (${fmtNum((100 * batch * perReq) / bytes)}% KV) → ${fmtNum(flops / bytes)} FLOPs/byte, ${bound}-bound, ${fmtTime(t)} per step, ${fmtInt(batch / t)} tokens/s`,
+            bound === "memory" ? "is-mem" : "is-cmp",
+          ),
+        );
+        if (batch > fit)
+          rows.push(row("Warning", `Only ${fmtInt(fit)} request(s) of this length fit in the cache budget.`, "is-bad"));
+      }
+      rows.push(
+        row(
+          "Compute-bound from",
+          cross === null
+            ? `never at ${fmtInt(ctx)} tokens: each request adds KV reads as fast as it adds work (weights only, Part 1: about ${fmtInt(Math.ceil(ridge))})`
+            : `a batch of ${fmtInt(cross)} (weights only, Part 1: about ${fmtInt(Math.ceil(ridge))})`,
+        ),
+      );
+      out.appendChild(el("dl", { class: "ts-rl-list" }, rows));
+      out.appendChild(
+        el("p", {
+          class: "ts-rl-note",
+          text: "Best case at 100% of peak. Weights in BF16 (2 bytes per parameter). vLLM measures the reserve at startup; 3 GB is a stand-in.",
+        }),
+      );
+    }
+    [gSel, tSel, cIn, bIn, uIn, rIn].concat(shapeIns).forEach((inp) => {
+      inp.addEventListener("input", update);
+      inp.addEventListener("change", update);
+    });
+    update();
+  }
+  function initKvCalcs() {
+    $$(".ts-kvcalc").forEach((b, i) => {
+      try {
+        initKvCalc(b, i + 1);
+      } catch (e) {
+        console.error("[teach-site] kv calculator failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
      CODE + TABS
      ===================================================================== */
   const KW =
@@ -1526,6 +1752,7 @@
 
     initFigures();
     initRooflines();
+    initKvCalcs();
     initCode();
     initTabs();
     initTerms();

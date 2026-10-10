@@ -1062,6 +1062,63 @@ dfn {
   }
 }
 
+/* ---------- KV cache calculator: memory bar ---------- */
+.ts-fig svg.ts-kv-chart {
+  min-width: 0;
+}
+.ts-kv-frame {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+.ts-kv-seg.is-w,
+.ts-kv-sw.is-w {
+  fill: var(--r2);
+  background: var(--r2);
+}
+.ts-kv-seg.is-r,
+.ts-kv-sw.is-r {
+  fill: var(--r0);
+  background: var(--r0);
+}
+.ts-kv-seg.is-u,
+.ts-kv-sw.is-u {
+  fill: var(--r4);
+  background: var(--r4);
+}
+.ts-kv-seg.is-f,
+.ts-kv-sw.is-f {
+  fill: color-mix(in srgb, var(--r4) 30%, var(--surface));
+  background: color-mix(in srgb, var(--r4) 30%, var(--surface));
+}
+.ts-kv-seg.is-x,
+.ts-kv-sw.is-x {
+  fill: var(--surface-2);
+  background: var(--surface-2);
+}
+.ts-kv-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 8px 0 4px;
+  padding: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.ts-kv-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ts-kv-sw {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+}
+
 /* ---------- Checks: quiz / order / predict / explain ---------- */
 .ts-check {
   margin: 26px 0;

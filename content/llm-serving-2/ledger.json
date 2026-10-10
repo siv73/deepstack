@@ -1,0 +1,1939 @@
+{
+ "verified": "2026-10-10",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "NVIDIA H100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/h100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table and footnote"
+  },
+  {
+   "id": "s2",
+   "title": "NVIDIA H200 GPU: specifications",
+   "url": "https://www.nvidia.com/en-in/data-center/h200/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Specifications table and footnote"
+  },
+  {
+   "id": "s3",
+   "title": "NVIDIA Ampere Architecture In-Depth (NVIDIA Technical Blog)",
+   "url": "https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-10",
+   "locator": "Tables 1 to 3"
+  },
+  {
+   "id": "s4",
+   "title": "Hugging Face Transformers v5.19.0 docs: How caching works",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/cache_explanation.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Introduction; Attention matrices; Cache storage implementation"
+  },
+  {
+   "id": "s5",
+   "title": "Hugging Face Transformers v5.19.0 docs: Optimizing LLMs for Speed and Memory",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/llm_tutorial_optimization.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "Section 1, Lower Precision"
+  },
+  {
+   "id": "s6",
+   "title": "Hugging Face Transformers v5.19.0 source: shared config docstring for num_key_value_heads",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/src/transformers/utils/auto_docstring.py",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-10",
+   "locator": "num_key_value_heads"
+  },
+  {
+   "id": "s7",
+   "title": "Meta llama-models reference code: Llama 3 attention and Llama 3.1 model arguments",
+   "url": "https://github.com/meta-llama/llama-models/blob/0e0b8c519242d5833d8c11bffc1232b77ad7f301/models/llama3/model.py",
+   "kind": "primary",
+   "publisher": "Meta",
+   "accessed": "2026-10-10",
+   "locator": "models/llama3/model.py Attention.__init__; models/sku_list.py llama3_1_base_models"
+  },
+  {
+   "id": "s8",
+   "title": "Llama Team, Meta: The Llama 3 Herd of Models (arXiv:2407.21783)",
+   "url": "https://ar5iv.labs.arxiv.org/html/2407.21783",
+   "kind": "primary",
+   "publisher": "Meta / arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Section 3.2, Table 3"
+  },
+  {
+   "id": "s9",
+   "title": "Meta Llama 3.1 model card",
+   "url": "https://github.com/meta-llama/llama-models/blob/0e0b8c519242d5833d8c11bffc1232b77ad7f301/models/llama3_1/MODEL_CARD.md",
+   "kind": "primary",
+   "publisher": "Meta",
+   "accessed": "2026-10-10",
+   "locator": "Model information table; family note"
+  },
+  {
+   "id": "s10",
+   "title": "Shazeer: Fast Transformer Decoding: One Write-Head is All You Need (arXiv:1911.02150)",
+   "url": "https://ar5iv.arxiv.org/html/1911.02150",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Abstract; Section 3"
+  },
+  {
+   "id": "s11",
+   "title": "Ainslie et al.: GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints (arXiv:2305.13245)",
+   "url": "https://arxiv.org/html/2305.13245v3",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Abstract; Sections 1, 2.1, 2.2, 3.1"
+  },
+  {
+   "id": "s12",
+   "title": "Kwon et al.: Efficient Memory Management for Large Language Model Serving with PagedAttention (vLLM, SOSP 2023)",
+   "url": "https://ar5iv.labs.arxiv.org/html/2309.06180",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-10",
+   "locator": "Sections 1 and 3"
+  },
+  {
+   "id": "s13",
+   "title": "vLLM v0.31.0 source: CacheConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/cache.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "CacheConfig fields"
+  },
+  {
+   "id": "s14",
+   "title": "vLLM v0.31.0 source: request_memory",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/worker/utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "request_memory()"
+  },
+  {
+   "id": "s15",
+   "title": "vLLM v0.31.0 source: Worker.determine_available_memory",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/worker/gpu_worker.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "determine_available_memory()"
+  },
+  {
+   "id": "s16",
+   "title": "vLLM v0.31.0 source: memory_profiling",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/utils/mem_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "memory_profiling() docstring and result"
+  },
+  {
+   "id": "s17",
+   "title": "vLLM v0.31.0 source: KV cache capacity and startup checks",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/core/kv_cache_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "update_kv_cache_capacity(); KV memory check error"
+  },
+  {
+   "id": "s18",
+   "title": "vLLM v0.31.0 docs: Optimization and Tuning",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/configuration/optimization.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "Preemption"
+  },
+  {
+   "id": "s19",
+   "title": "vLLM v0.31.0 docs: Metrics (design)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/design/metrics.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "v1 Metrics"
+  },
+  {
+   "id": "s21",
+   "title": "vLLM v0.31.0 source: environment variables",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/envs.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS"
+  },
+  {
+   "id": "s20",
+   "title": "vLLM v0.12.0 source: CacheConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.12.0/vllm/config/cache.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-10",
+   "locator": "CacheConfig.gpu_memory_utilization"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Hugging Face's guide to caching describes the KV cache as stored key-value pairs from the attention layers of tokens already processed, reused for later tokens so they need not be recomputed.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T13:11",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "The same guide contrasts the two: without a cache every step recomputes all previous keys and values, while with a cache each step computes only the current token's.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Attention matrices: with/without caching table",
+     "result": "supported",
+     "at": "2026-10-10T13:11",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Attention matrices: with/without caching table",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "Hugging Face's caching guide writes attention as softmax(QKᵀ/√d_head) × V, where the query, key and value matrices are projections of the input with shape (batch, heads, tokens, d_head).",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Attention matrices: scaled dot-product formula",
+     "result": "supported",
+     "at": "2026-10-10T13:11",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Attention matrices: scaled dot-product formula",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "because of the causal mask a token cannot look at later tokens, so once processed its keys and values never change and can be cached and reused.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Attention matrices: causal mask paragraph",
+     "result": "supported",
+     "at": "2026-10-10T13:11",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Attention matrices: causal mask paragraph",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "at inference only the newest token's query is needed; at each step its new key and value are appended to the cached ones.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Attention matrices: last token's query; store and append",
+     "result": "supported",
+     "at": "2026-10-10T13:11",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Attention matrices: last token's query; store and append",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "attention is computed separately in each layer, so the cache is kept per layer.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Attention matrices: per-layer caching",
+     "result": "supported",
+     "at": "2026-10-10T13:11",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Attention matrices: per-layer caching",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "Transformers stores the cache as a list of layers, each holding key and value tensors of shape [batch_size, num_heads, seq_len, head_dim]; in the simplest layer type the seq_len dimension grows with each new token.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Cache storage implementation: DynamicLayer",
+     "result": "supported",
+     "at": "2026-10-10T13:11",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Cache storage implementation: DynamicLayer",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "The vLLM paper notes that the KV cache grows and shrinks as the model generates tokens, and that its lifetime and length are not known in advance.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Section 1 (Introduction)",
+     "result": "supported",
+     "at": "2026-10-10T13:20",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Section 1 (Introduction)",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "Shazeer's paper on multi-query attention (MQA) has all query heads share a single set of keys and values.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Abstract; Section 3 Multi-Query Attention",
+     "result": "supported",
+     "at": "2026-10-10T13:15",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Abstract; Section 3 Multi-Query Attention",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "It argues that incremental decoding is slowed by repeatedly loading the large key and value tensors from memory.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Abstract; Section 2.4 performance analysis",
+     "result": "supported",
+     "at": "2026-10-10T13:15",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Abstract; Section 2.4 performance analysis",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Ainslie et al.'s grouped-query attention (GQA) divides the query heads into groups, and each group shares one key head and one value head.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Section 2.2 Grouped-query attention",
+     "result": "supported",
+     "at": "2026-10-10T13:13",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Section 2.2 Grouped-query attention",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "With one group GQA equals MQA; with one group per query head it equals ordinary multi-head attention (MHA).",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Section 2.2 Grouped-query attention",
+     "result": "supported",
+     "at": "2026-10-10T13:13",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Section 2.2 Grouped-query attention",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "The GQA paper reports that MQA can lower quality, and that an existing multi-head model can be converted and further trained with about 5% of its original pre-training compute.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Section 1; Sections 2.1 and 3.1 (uptraining, alpha = 0.05)",
+     "result": "supported",
+     "at": "2026-10-10T13:31",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Section 1; Sections 2.1 and 3.1 (uptraining, alpha = 0.05)",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "In Hugging Face model configs this is the num_key_value_heads field: equal to num_attention_heads means MHA, 1 means MQA, anything in between is GQA.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "num_key_value_heads description",
+     "result": "supported",
+     "at": "2026-10-10T13:19",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "num_key_value_heads description",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "Meta's reference Llama 3 code allocates, in every attention layer, a key cache and a value cache of shape (max_batch_size, max_seq_len, key/value heads on that GPU, head_dim), with head_dim equal to dim divided by n_heads.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "models/llama3/model.py Attention.__init__ (cache_k, cache_v, head_dim)",
+     "result": "supported",
+     "at": "2026-10-10T13:16",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "models/llama3/model.py Attention.__init__ (cache_k, cache_v, head_dim)",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "Llama 3.1 8B has 32 layers, a model dimension of 4,096, 32 attention heads and 8 key/value heads.",
+   "sources": [
+    "s7",
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "models/sku_list.py llama3_1_8b arch_args",
+     "result": "supported",
+     "at": "2026-10-10T13:16",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 3.2, Table 3",
+     "result": "supported",
+     "at": "2026-10-10T13:18",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "models/sku_list.py llama3_1_8b arch_args",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 3.2, Table 3",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "Llama 3.1 70B has 80 layers, a model dimension of 8,192, 64 attention heads and 8 key/value heads.",
+   "sources": [
+    "s7",
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "models/sku_list.py llama3_1_70b arch_args",
+     "result": "supported",
+     "at": "2026-10-10T13:16",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 3.2, Table 3",
+     "result": "supported",
+     "at": "2026-10-10T13:18",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "models/sku_list.py llama3_1_70b arch_args",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 3.2, Table 3",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "The vLLM paper works the same formula for OPT-13B: 2 (key and value) × 5,120 (hidden size) × 40 layers × 2 bytes, about 800 KB per token, and up to about 1.6 GB for one 2,048-token request.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Section 3 (Memory Challenges in LLM Serving)",
+     "result": "supported",
+     "at": "2026-10-10T13:20",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Section 3 (Memory Challenges in LLM Serving)",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "Meta's Llama 3 paper says the models use GQA with 8 key-value heads to speed up inference and shrink the key-value cache during decoding.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Section 3.2 Model Architecture",
+     "result": "supported",
+     "at": "2026-10-10T13:18",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Section 3.2 Model Architecture",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "Meta's Llama 3.1 model card states that every model in the family uses GQA and supports a 128k context length.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Model information table (Context length, GQA) and family note",
+     "result": "supported",
+     "at": "2026-10-10T13:17",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Model information table (Context length, GQA) and family note",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "This page follows vLLM v0.31.0, the same release as Part 1.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "repository tree at tag v0.31.0",
+     "result": "supported",
+     "at": "2026-10-10T13:07",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "repository tree at tag v0.31.0",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "In vLLM v0.31.0, gpu_memory_utilization is the fraction of GPU memory the model executor may use, 0.92 by default, and it is a per-instance limit.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "CacheConfig.gpu_memory_utilization",
+     "result": "supported",
+     "at": "2026-10-10T13:07",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "CacheConfig.gpu_memory_utilization",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "at startup vLLM requests total GPU memory × gpu_memory_utilization, and refuses to start if less than that is free.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "request_memory()",
+     "result": "supported",
+     "at": "2026-10-10T13:08",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "request_memory()",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "it then runs a profiling forward pass with dummy inputs and gives the KV cache whatever is left of that request after non-KV memory: the weights, the peak activation memory, memory used outside PyTorch and, by default, an estimate of CUDA graph memory.",
+   "sources": [
+    "s15",
+    "s16",
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "determine_available_memory()",
+     "result": "supported",
+     "at": "2026-10-10T13:08",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "memory_profiling() docstring",
+     "result": "supported",
+     "at": "2026-10-10T13:09",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS default",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "determine_available_memory()",
+     "result": "supported",
+     "at": "2026-10-10T13:45",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "memory_profiling() docstring",
+     "result": "supported",
+     "at": "2026-10-10T13:45",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS default",
+     "result": "supported",
+     "at": "2026-10-10T13:45",
+     "method": "git: fresh read of exact lines at release tag"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "it then logs the cache size in tokens and the maximum concurrency for requests of max_model_len tokens.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "update_kv_cache_capacity()",
+     "result": "supported",
+     "at": "2026-10-10T13:09",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "update_kv_cache_capacity()",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "vLLM's tuning guide says it pre-allocates the cache using this percentage of memory, so raising it gives more KV cache space.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Preemption: increase gpu_memory_utilization",
+     "result": "supported",
+     "at": "2026-10-10T13:10",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Preemption: increase gpu_memory_utilization",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "1,979 teraFLOPS, 3.35 TB/s, 80 GB",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "1,671 teraFLOPS, 3.9 TB/s, 94 GB",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 NVL",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 NVL",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "1,979 teraFLOPS, 4.8 TB/s, 141 GB",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "NVIDIA prints BF16 Tensor Core figures with sparsity; dense work gets half, as the A100's 312 dense and 624 sparse BF16 teraFLOPS show.",
+   "sources": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications footnote: with sparsity",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Specifications footnote: with sparsity",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "A100 BF16 312 dense / 624 with sparsity (Tables 1 to 3)",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications footnote: with sparsity",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Specifications footnote: with sparsity",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "A100 BF16 312 dense / 624 with sparsity (Tables 1 to 3)",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "If one request of max_model_len tokens would need more KV memory than is available, vLLM refuses to start and suggests raising gpu_memory_utilization or lowering max_model_len.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "KV cache memory check: ValueError message",
+     "result": "supported",
+     "at": "2026-10-10T13:09",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "KV cache memory check: ValueError message",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Setting kv_cache_memory_bytes fixes the cache size per GPU directly and ignores gpu_memory_utilization.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "CacheConfig.kv_cache_memory_bytes",
+     "result": "supported",
+     "at": "2026-10-10T13:07",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "CacheConfig.kv_cache_memory_bytes",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "vLLM's cache_dtype setting can store the cache in 8-bit fp8 instead of the model's data type",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "CacheConfig.cache_dtype",
+     "result": "supported",
+     "at": "2026-10-10T13:07",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "CacheConfig.cache_dtype",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "Its kv_offloading_size setting enables offloading KV cache to CPU memory, using a buffer of that size.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "CacheConfig.kv_offloading_size",
+     "result": "supported",
+     "at": "2026-10-10T13:07",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "CacheConfig.kv_offloading_size",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "The GQA paper notes that decoder inference is limited by memory bandwidth spent loading the weights and all attention keys and values at every decoding step.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Section 1 (Introduction)",
+     "result": "supported",
+     "at": "2026-10-10T13:13",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Section 1 (Introduction)",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "vLLM's tuning guide says that when KV cache space runs out, vLLM can preempt requests to free space and recompute them once space is available again, which hurts end-to-end latency.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T13:10",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "In vLLM V1 the default preemption mode is RECOMPUTE rather than SWAP.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Preemption: default mode in V1",
+     "result": "supported",
+     "at": "2026-10-10T13:10",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Preemption: default mode in V1",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "vLLM exports vllm:kv_cache_usage_perc, a gauge of how full the KV cache is (0 to 1), next to vllm:num_requests_running.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "v1 Metrics list",
+     "result": "supported",
+     "at": "2026-10-10T13:10",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "v1 Metrics list",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "the tuning guide's suggestions include raising gpu_memory_utilization, lowering max_num_seqs or max_num_batched_tokens, and spreading the model over more GPUs with tensor or pipeline parallelism.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Preemption: suggested actions",
+     "result": "supported",
+     "at": "2026-10-10T13:10",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Preemption: suggested actions",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "80 GB on an H100 SXM and 141 GB on an H200",
+   "sources": [
+    "s1",
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:21",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "In vLLM v0.31.0, enable_prefix_caching is on by default.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "CacheConfig.enable_prefix_caching",
+     "result": "supported",
+     "at": "2026-10-10T13:07",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "CacheConfig.enable_prefix_caching",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "MQA can lower quality; GQA keeps more of it.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Abstract; Section 1; Section 5 Conclusion",
+     "result": "supported",
+     "at": "2026-10-10T13:31",
+     "method": "WebFetch: section-located read"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Abstract; Section 1; Section 5 Conclusion",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "WebFetch: fresh SUPPORTED/CONTRADICTED/NOT FOUND check of page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "Meta's reference code splits the key/value heads across GPUs, so each GPU caches only its share.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "models/llama3/model.py Attention.__init__ (n_local_kv_heads)",
+     "result": "supported",
+     "at": "2026-10-10T13:16",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "models/llama3/model.py Attention.__init__ (n_local_kv_heads)",
+     "result": "supported",
+     "at": "2026-10-10T13:36",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "vLLM's tuning guide warns that more tensor parallelism can add synchronization overhead.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Preemption: increase tensor_parallel_size",
+     "result": "supported",
+     "at": "2026-10-10T13:10",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Preemption: increase tensor_parallel_size",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "vLLM v0.12.0 defaulted to 0.9.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "CacheConfig.gpu_memory_utilization default",
+     "result": "supported",
+     "at": "2026-10-10T13:27",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "CacheConfig.gpu_memory_utilization default",
+     "result": "supported",
+     "at": "2026-10-10T13:35",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "In bfloat16 each number takes 2 bytes, which is why Hugging Face's rule of thumb puts X billion parameters at about 2 × X GB.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Section 1, Lower Precision: rule of thumb",
+     "result": "supported",
+     "at": "2026-10-10T13:37",
+     "method": "git: verbatim source at release tag"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Section 1, Lower Precision: rule of thumb",
+     "result": "supported",
+     "at": "2026-10-10T13:38",
+     "method": "git: fresh read of exact lines at release tag"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T13:44",
+     "method": "independent reviewer (strict mode)"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Exact parameter counts of the released Llama 3.1 checkpoints",
+   "reason": "Not read from a primary source in this session. Like Part 1, the page uses the nominal 8 and 70 billion; the released checkpoints are slightly larger, so real weight bytes are a little higher."
+  },
+  {
+   "text": "Llama 3.1 layer and head counts read from the official Hugging Face config.json files (meta-llama/Llama-3.1-8B and -70B)",
+   "reason": "The repositories are gated and the files could not be fetched from this session. The same values come from Meta's own reference code and the Llama 3 paper, which agree."
+  },
+  {
+   "text": "Llama 2 7B as a real multi-head (MHA) example",
+   "reason": "Meta's sku_list.py lists 8 key/value heads for Llama 2 7B, which conflicts with Llama 2 7B being multi-head. With primary sources in conflict, the page uses a hypothetical MHA variant of the 8B model instead."
+  },
+  {
+   "text": "vLLM's exact per-block page size formula in kv_cache_interface.py",
+   "reason": "At v0.31.0 the formula is spread across generic state-size properties; paging is Part 4. The page uses the per-token formula from Meta's code and the vLLM paper."
+  },
+  {
+   "text": "The exact non-KV memory vLLM reserves on an H100 for Llama 3.1 8B",
+   "reason": "vLLM measures it at startup and it varies with version, CUDA graphs and settings. The page uses 3 GB as a labelled stand-in."
+  },
+  {
+   "text": "The total memory the driver reports for an 80 GB H100",
+   "reason": "No primary source found; the page uses NVIDIA's listed capacity as a stand-in for the total vLLM multiplies."
+  }
+ ]
+}

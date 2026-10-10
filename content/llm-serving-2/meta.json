@@ -1,0 +1,16 @@
+{
+ "slug": "llm-serving-2",
+ "title": "LLM inference serving, Part 2: the KV cache",
+ "tldr": "What the KV cache stores, how big it gets, and why it, not compute, caps how many requests one GPU can serve: why attention's keys and values can be stored and what skipping the cache costs, how one request's cache fills across prefill and decode, MHA vs MQA vs GQA, the bytes-per-token formula worked for Llama 3.1 8B and 70B, how vLLM v0.31.0 sizes the cache pool with gpu_memory_utilization, a KV sizing calculator and a tested estimator, why decode must also read every request's cache and stays memory-bound at long contexts, what breaks when the cache fills, where the Redis-session analogy breaks, and an interview drill.",
+ "category": "AI systems",
+ "created": "2026-10-10",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "LLM inference serving, Part 1: prefill vs decode", "slug": "llm-serving-1"}
+ ],
+ "related": [
+  {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3", "why": "how a server decides which requests share each decode step, now that each one has a cache cost"},
+  {"label": "LLM inference serving, Part 4: PagedAttention", "why": "how the cache pool is split into pages so requests of unknown length do not waste memory"},
+  {"label": "LLM inference serving, Part 1: prefill vs decode", "slug": "llm-serving-1", "why": "the weights-only roofline this page corrects"}
+ ]
+}
