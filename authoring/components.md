@@ -200,6 +200,23 @@ Use the existing classes (`node`, `edge`, `msg`, `over`, `lblbg`, `arrowhead`) a
 - Inputs: model, GPU, token budget, decoding streams and their cached tokens, long-prompt length and rate, chat answer length, and TTFT, TPOT and per-token gap targets (SLOs in seconds in the JSON, milliseconds in the form). Outputs: one bar per step carrying the long prompt against the gap target; decode-only step, longest step, long-prompt TTFT, ITL mean and p99, share of late tokens, throughput and goodput.
 - Same arithmetic as `examples/llm-serving-5/chunk_budget.py`; `test_scheduling.py` runs the JS functions under node and compares.
 
+### Quantization and speculation calculator (weight scheme, KV data type, one speculative round)
+```html
+<div class="ts-quantcalc" data-title="Quantization and speculation calculator">
+<script type="application/json">
+{"models": [{"id": "llama-3.1-8b", "label": "Llama 3.1 8B", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [{"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80, "fp8_tflops": 1979, "int8_tops": 1979}],
+ "schemes": [{"id": "fp8", "label": "FP8 W8A8", "bytes": 1, "math": "fp8"}],
+ "kv": [{"id": "fp8", "label": "FP8, 1 byte", "bytes": 1}],
+ "defaults": {"model": "llama-3.1-8b", "gpu": "h100-sxm", "scheme": "fp8", "kv": "fp8", "batch": 32, "context": 4096,
+              "k": 4, "alpha": 0.7, "c": 0.05, "util": 0.92, "reserve": 3}}
+</script>
+</div>
+```
+- GPU figures are dense (half NVIDIA's with-sparsity numbers); `fp8_tflops: null` means no FP8 Tensor Cores, and an FP8 scheme then runs weight-only with BF16 math. `math` is `bf16`, `fp8` or `int8`.
+- Outputs: a memory bar, weights, KV per token, requests that fit, the plain decode step, expected tokens per target pass (and the draft acceptance rate vLLM would report), the verify pass's cost, throughput with speculation, and TPOT against the gap between streamed outputs.
+- Same arithmetic as `examples/llm-serving-6/quant.py` and `spec.py`; `test_quant_spec.py` runs the JS functions under node and compares.
+
 ## 5. Code and tabs
 
 ```html

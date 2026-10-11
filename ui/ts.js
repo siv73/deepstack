@@ -1992,6 +1992,240 @@
   }
 
   /* =====================================================================
+     QUANTIZATION + SPECULATION CALCULATOR (.ts-quantcalc): memory fit, capacity and decode speed
+     for a weight scheme and a KV data type, then one speculative round on the same roofline.
+     Spec JSON: {"models":[{"id","label","params","layers","q_heads","kv_heads","head_dim"}],
+                 "gpus":[{"id","label","tflops","tbps","gb","fp8_tflops","int8_tops"}],   (dense; fp8 null = none)
+                 "schemes":[{"id","label","bytes","math"}], "kv":[{"id","label","bytes"}],
+                 "defaults":{"model","gpu","scheme","kv","batch","context","k","alpha","c","util","reserve"}}
+     Same arithmetic as examples/llm-serving-6/quant.py and spec.py (a test runs both and compares).
+     ===================================================================== */
+  function quantStep(g, m, s, kvBytes, batch, ctx, tokens) {
+    const P = m.params * 1e9,
+      bf = g.tflops * 1e12;
+    let peak = bf,
+      math = "bf16";
+    if (s.math === "fp8" && g.fp8_tflops) {
+      peak = g.fp8_tflops * 1e12;
+      math = "fp8";
+    } else if (s.math === "int8") {
+      peak = g.int8_tops * 1e12;
+      math = "int8";
+    }
+    const lin = (batch * tokens * 2 * P) / peak;
+    const attn = (batch * tokens * 4 * m.layers * m.q_heads * m.head_dim * ctx) / bf;
+    const kvTok = 2 * m.layers * m.kv_heads * m.head_dim * kvBytes;
+    const mem = (P * s.bytes + batch * ctx * kvTok) / (g.tbps * 1e12);
+    return { seconds: Math.max(lin + attn, mem), bound: lin + attn > mem ? "compute" : "memory", math };
+  }
+  function quantEstimate(g, m, s, kv, x) {
+    const P = m.params * 1e9,
+      weights = P * s.bytes,
+      kvTok = 2 * m.layers * m.kv_heads * m.head_dim * kv.bytes;
+    const budget = g.gb * 1e9 * x.util - weights - x.reserve * 1e9;
+    const fit = budget > 0 ? Math.floor(budget / (x.context * kvTok)) : 0;
+    const plain = quantStep(g, m, s, kv.bytes, x.batch, x.context, 1);
+    const verify = quantStep(g, m, s, kv.bytes, x.batch, x.context, x.k + 1);
+    const e = x.alpha === 1 ? x.k + 1 : (1 - x.alpha ** (x.k + 1)) / (1 - x.alpha);
+    const round = x.k * x.c * plain.seconds + verify.seconds;
+    return {
+      weights,
+      kvTok,
+      budget,
+      fit,
+      plain,
+      tokensPerS: x.batch / plain.seconds,
+      e,
+      rate: (e - 1) / x.k,
+      verifyRatio: verify.seconds / plain.seconds,
+      verifyBound: verify.bound,
+      specTokensPerS: (x.batch * e) / round,
+      speedup: ((x.batch * e) / round) * (plain.seconds / x.batch),
+      tpot: round / e,
+      gap: round,
+    };
+  }
+  function initQuantCalc(box, n) {
+    const spec = readJSON($("script[type='application/json']", box));
+    if (!spec?.models?.length || !spec?.gpus?.length || !spec?.schemes?.length || !spec?.kv?.length) return;
+    const d = spec.defaults || {};
+    const id = (k) => `ts-qc-${n}-${k}`;
+    const title = box.getAttribute("data-title");
+    box.classList.add("ts-fig");
+    box.innerHTML = "";
+    if (title) box.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    function sel(key, label, items, val) {
+      const s = el(
+        "select",
+        { id: id(key) },
+        items.map((x) => el("option", { value: x.id, text: x.label })),
+      );
+      s.value = val;
+      return [s, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), s])];
+    }
+    function num(key, label, val, min, max, step) {
+      const inp = el("input", { id: id(key), type: "number", min, max, step, value: val, inputmode: "decimal" });
+      return [inp, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), inp])];
+    }
+    const [mSel, mLab] = sel("model", "Model", spec.models, d.model || spec.models[0].id);
+    const [gSel, gLab] = sel("gpu", "GPU", spec.gpus, d.gpu || spec.gpus[0].id);
+    const [sSel, sLab] = sel("scheme", "Weights", spec.schemes, d.scheme || spec.schemes[0].id);
+    const [kSel, kLab] = sel("kv", "KV cache data type", spec.kv, d.kv || spec.kv[0].id);
+    const fields = [
+      ["batch", "Requests decoding together", d.batch ?? 32, 1, 1e5, 1],
+      ["context", "Tokens per request (context)", d.context ?? 4096, 1, 2e6, 1],
+      ["k", "Draft tokens per round (k)", d.k ?? 4, 1, 64, 1],
+      ["alpha", "Acceptance rate α (0 to 1)", d.alpha ?? 0.7, 0, 1, 0.01],
+      ["c", "Draft step cost c (fraction of a target step)", d.c ?? 0.05, 0, 2, 0.01],
+      ["util", "gpu_memory_utilization", d.util ?? 0.92, 0.05, 1, 0.01],
+      ["reserve", "Other reserved memory (GB)", d.reserve ?? 3, 0, 1000, "any"],
+    ].map(([k, label, v, lo, hi, st]) => [k, ...num(k, label, v, lo, hi, st)]);
+    box.appendChild(el("div", { class: "ts-rl-form" }, [mLab, gLab, sLab, kLab, ...fields.map((f) => f[2])]));
+    const inp = Object.fromEntries(fields.map((f) => [f[0], f[1]]));
+
+    const W = 560,
+      BH = 30;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${BH + 4}`,
+      role: "img",
+      class: "ts-kv-chart",
+      "aria-label":
+        "How one GPU's memory splits into weights, reserve, KV cache in use, free KV cache, and memory left unrequested",
+    });
+    const segDefs = [
+      ["w", "Weights"],
+      ["r", "Other reserved"],
+      ["u", "KV cache in use"],
+      ["f", "KV cache free"],
+      ["x", "Not requested (1 − utilization)"],
+    ];
+    const segs = {};
+    segDefs.forEach(([k]) => {
+      segs[k] = sv("rect", { class: `ts-kv-seg is-${k}`, y: 2, height: BH });
+      svg.appendChild(segs[k]);
+    });
+    svg.appendChild(sv("rect", { class: "ts-kv-frame", x: 1, y: 2, width: W - 2, height: BH }));
+    box.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    box.appendChild(
+      el(
+        "ul",
+        { class: "ts-kv-legend" },
+        segDefs.map(([k, t]) => el("li", {}, [el("span", { class: `ts-kv-sw is-${k}` }), el("span", { text: t })])),
+      ),
+    );
+    const out = el("div", { class: "ts-rl-out", "aria-live": "polite" });
+    box.appendChild(out);
+    const row = (k, v, cls) =>
+      el("div", { class: `ts-rl-row${cls ? ` ${cls}` : ""}` }, [el("dt", { text: k }), el("dd", { text: v })]);
+    const val = (k, lo, hi, def) => {
+      const v = +inp[k].value;
+      return Math.min(hi, Math.max(lo, Number.isFinite(v) && inp[k].value !== "" ? v : def));
+    };
+
+    function update() {
+      const g = spec.gpus.find((x) => x.id === gSel.value) || spec.gpus[0];
+      const m = spec.models.find((x) => x.id === mSel.value) || spec.models[0];
+      const s = spec.schemes.find((x) => x.id === sSel.value) || spec.schemes[0];
+      const kv = spec.kv.find((x) => x.id === kSel.value) || spec.kv[0];
+      const x = {
+        batch: Math.round(val("batch", 1, 1e5, 32)),
+        context: Math.round(val("context", 1, 2e6, 4096)),
+        k: Math.round(val("k", 1, 64, 4)),
+        alpha: val("alpha", 0, 1, 0.7),
+        c: val("c", 0, 2, 0.05),
+        util: val("util", 0.05, 1, 0.92),
+        reserve: val("reserve", 0, 1000, 3),
+      };
+      const e = quantEstimate(g, m, s, kv, x);
+      const mem = g.gb * 1e9;
+      const sc = (b) => (Math.max(0, b) / mem) * (W - 2);
+      const used = Math.min(Math.max(0, e.budget), x.batch * x.context * e.kvTok);
+      const parts = {
+        w: Math.min(e.weights, mem),
+        r: Math.min(x.reserve * 1e9, Math.max(0, mem - e.weights)),
+        u: used,
+        f: Math.max(0, e.budget) - used,
+        x: mem * (1 - x.util),
+      };
+      let pos = 1;
+      segDefs.forEach(([k]) => {
+        const w = Math.min(sc(parts[k]), W - 1 - pos);
+        segs[k].setAttribute("x", pos);
+        segs[k].setAttribute("width", Math.max(0, w));
+        pos += Math.max(0, w);
+      });
+      out.innerHTML = "";
+      const rows = [
+        row("Weights", `${fmtNum(m.params, "")}B parameters × ${fmtNum(s.bytes, "")} bytes = ${fmtBytes(e.weights)}`),
+        row("KV per token", `${fmtInt(e.kvTok)} bytes (${kv.label})`),
+      ];
+      if (e.budget <= 0) {
+        rows.push(row("Memory fit", "The weights do not fit on one GPU at this setting.", "is-bad"));
+      } else {
+        rows.push(
+          row(
+            "Memory fit",
+            `${fmtBytes(e.budget)} left for the KV cache → ${fmtInt(e.fit)} request(s) of ${fmtInt(x.context)} tokens`,
+            e.fit < 1 ? "is-bad" : "",
+          ),
+        );
+        if (x.batch > e.fit)
+          rows.push(row("Warning", `Only ${fmtInt(e.fit)} request(s) of this length fit; lower the batch.`, "is-bad"));
+      }
+      if (s.math === "fp8" && e.plain.math !== "fp8")
+        rows.push(
+          row("Note", "This GPU has no FP8 Tensor Cores: FP8 weights run weight-only, with BF16 math.", "is-bad"),
+        );
+      rows.push(
+        row(
+          "Decode, no speculation",
+          `${fmtTime(e.plain.seconds)} per step, ${e.plain.bound}-bound, ${fmtInt(e.tokensPerS)} tokens/s`,
+          e.plain.bound === "memory" ? "is-mem" : "is-cmp",
+        ),
+        row(
+          "Tokens per target pass",
+          `${fmtNum(e.e, "")} expected (vLLM would report a draft acceptance rate of ${fmtNum(100 * e.rate, "")}%)`,
+        ),
+        row(
+          "Verify pass",
+          `${fmtNum(e.verifyRatio, "")}× a plain step (${e.verifyBound}-bound): ${x.k + 1} positions per request`,
+          e.verifyBound === "memory" ? "is-mem" : "is-cmp",
+        ),
+        row(
+          "Decode with speculation",
+          `${fmtInt(e.specTokensPerS)} tokens/s, ${fmtNum(e.speedup, "")}× ${e.speedup >= 1 ? "faster" : "slower"}`,
+          e.speedup < 1 ? "is-bad" : "",
+        ),
+        row(
+          "TPOT vs gap between outputs",
+          `TPOT ${fmtTime(e.tpot)}; each streamed output (about ${fmtNum(e.e, "")} tokens) arrives ${fmtTime(e.gap)} apart`,
+        ),
+      );
+      out.appendChild(el("dl", { class: "ts-rl-list" }, rows));
+      out.appendChild(
+        el("p", {
+          class: "ts-rl-note",
+          text: "Best case at 100% of peak. Every parameter is treated as quantized; real checkpoints keep a few layers in 16 bits. α is taken as the same at every draft position; the drafter's own memory is not counted.",
+        }),
+      );
+    }
+    [mSel, gSel, sSel, kSel, ...fields.map((f) => f[1])].forEach((i) => {
+      i.addEventListener("input", update);
+      i.addEventListener("change", update);
+    });
+    update();
+  }
+  function initQuantCalcs() {
+    $$(".ts-quantcalc").forEach((b, i) => {
+      try {
+        initQuantCalc(b, i + 1);
+      } catch (e) {
+        console.error("[teach-site] quantization calculator failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
      CODE + TABS
      ===================================================================== */
   const KW =
@@ -2715,6 +2949,7 @@
     initBlocksAll();
     initFragCalcs();
     initChunkCalcs();
+    initQuantCalcs();
     initCode();
     initTabs();
     initTerms();

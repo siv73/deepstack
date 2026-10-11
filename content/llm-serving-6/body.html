@@ -1,0 +1,416 @@
+<section class="ts-part" id="two-levers" data-rung="1" data-min="4">
+<h2>Why a token costs what it costs, and the two ways to cut it</h2>
+<p class="ts-problem">Your 8B chat service on one H100 decodes one request at about 200 tokens per second. The GPU's math units sit mostly idle. Buying a faster GPU of the same memory speed would barely help.</p>
+<p><a href="../llm-serving-1/index.html">Part 1</a> showed why. Every decode step reads all the model's weights from GPU memory to produce one token per request. At 2 bytes per parameter, that is 16 GB of reading per step for an 8B model. Memory speed, not arithmetic, sets the pace. <span class="ts-claim" data-claim="c1" data-src="s32">Hugging Face's docs say the main options for faster generation are quantizing the model or using hardware with more memory bandwidth.</span></p>
+<p>If each step is "read everything, then emit one token", there are only two ways to make each token cheaper:</p>
+<ol class="ts-steps">
+<li>Read fewer bytes per step. Store each weight in fewer bits. That is <dfn data-def="Storing numbers with fewer bits than they were trained in, accepting a small rounding error, to cut memory and the bytes read per step.">quantization</dfn>.</li>
+<li>Get more tokens out of each read. Let a cheap model guess several next tokens, and have the big model check all the guesses in one pass. That is <dfn data-def="A cheap draft proposes several next tokens; the big model checks them all in one pass and keeps the ones it agrees with, so one weight read can yield several tokens.">speculative decoding</dfn>.</li>
+</ol>
+<p>A delivery van makes the same comparison. The trip time is fixed by the road, not the engine. You either pack lighter boxes so one van does the job (quantization), or you deliver several parcels per trip instead of one (speculation).</p>
+<p>Both levers attack the same bottleneck from different sides. That is also why they combine: smaller weights make each check cheaper, and speculation makes each check yield more.</p>
+<p class="ts-takeaway">Decode is limited by bytes read per token, so either shrink the bytes (quantization) or raise the tokens per read (speculative decoding).</p>
+<div class="ts-quiz" data-answer="b" data-claims="c1">
+<p class="q">A team's 8B model decodes at batch 1 on an H100. Which change would speed up each token the most?</p>
+<ol>
+<li data-why="Decode at batch 1 is memory-bound, so extra arithmetic speed sits idle.">A GPU with twice the FLOPs and the same memory bandwidth</li>
+<li>Storing the weights in 8 bits instead of 16</li>
+<li data-why="More CPU cores do not change how fast the GPU reads its own memory.">Moving the API server to a bigger CPU</li>
+</ol>
+<p class="ts-why">Halving the bytes per weight halves the bytes each step reads, which is what limits decode at batch 1.</p>
+</div>
+</section>
+
+<section class="ts-part" id="bytes-per-param" data-rung="1" data-min="5">
+<h2>What "8-bit" and "4-bit" mean in bytes</h2>
+<p class="ts-bridge">Last part: fewer bytes per weight means faster decode. Still unsolved: what exactly gets smaller, and what stays at 16 bits?</p>
+<p class="ts-problem">A vendor says "INT4 Llama, runs on a 24 GB card". Is that the weights, the cache, or the math? Each answer changes your memory plan.</p>
+<p>A quantized weight is a small integer or small float plus a shared <dfn data-def="A multiplier stored next to a group of quantized numbers; value ≈ stored number × scale.">scale</dfn>. To use it, the GPU multiplies back by the scale. The bytes per parameter:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Format</th><th>Bytes per weight</th><th>8B model's weights</th></tr></thead>
+<tbody>
+<tr><td>BF16 (no quantization)</td><td>2</td><td>16 GB</td></tr>
+<tr><td>FP8 or INT8</td><td>1</td><td>8 GB</td></tr>
+<tr><td>INT4</td><td>0.5</td><td>4 GB, plus scales</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c2" data-src="s5">vLLM's docs describe two FP8 layouts: E4M3, with 4 exponent and 3 mantissa bits, reaching ±448, and E5M2, with 5 exponent and 2 mantissa bits, reaching ±57,344 at lower precision.</span> <span class="ts-claim" data-claim="c3" data-src="s23">In GPTQ, storing one scale per group of 128 weights adds about 0.15 bits per weight.</span></p>
+<p>There are two kinds of scheme, and the name tells you which:</p>
+<ol class="ts-steps">
+<li><dfn data-def="Only the weights are stored in low precision; they are expanded back to 16 bits for each multiply. Written WxA16, for example W4A16.">Weight-only</dfn> (W4A16, W8A16): smaller weights, but the multiply still runs in 16 bits. <span class="ts-claim" data-claim="c4" data-src="s27">Hugging Face's guide explains that such weights are dequantized to BF16 for each matrix multiply.</span></li>
+<li><dfn data-def="Both the weights and the activations entering each multiply are in low precision, so the multiply itself runs on 8-bit Tensor Cores. Written W8A8.">Weight and activation</dfn> (W8A8): the multiply itself runs in 8 bits, on Tensor Cores built for it.</li>
+</ol>
+<p>The KV cache is a third, separate choice. A "4-bit model" can still keep a 16-bit cache.</p>
+<p>Snowflake makes the same trade with storage. <span class="ts-claim" data-claim="c5" data-src="s29">Snowflake stores each micro-partition by column, compresses each column on its own, and chooses the compression algorithm itself.</span> Fewer bytes on disk means less to scan, the same reason quantized weights decode faster. The comparison breaks on one point: Snowflake's compression gives back exactly what you stored. Quantization rounds, so the model you serve is not exactly the model you trained.</p>
+<p class="ts-takeaway">Quantization names three separate choices: weight bytes, the precision of the multiply, and the KV cache's bytes.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The 70B Llama 3.1 model in INT4 weight-only. Roughly how many GB of weights, and does it fit on one 80 GB H100?</p>
+<div class="ts-reveal"><p>70 billion × 0.5 bytes is about 35 GB, plus small scales. It fits, with roughly 35 GB left for the KV cache after vLLM's usual reserves. In BF16 the same model needs 140 GB and does not fit.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="gptq-awq" data-rung="2" data-min="5">
+<h2>How to round weights without breaking the model</h2>
+<p class="ts-bridge">Last part: what the formats cost in bytes. Still unsolved: rounding 8 billion numbers to 16 levels each sounds like it should ruin the model. Why doesn't it?</p>
+<p class="ts-problem">Plain rounding to the nearest 4-bit level is called <dfn data-def="Round-to-nearest: quantize each weight to its closest level, with no data and no correction. The baseline every method is compared against.">RTN</dfn>. <span class="ts-claim" data-claim="c64" data-src="s23">In the GPTQ paper's table, 4-bit RTN takes OPT-125M's WikiText2 perplexity from 27.65 to 37.28.</span> Two published methods do much better.</p>
+<p><dfn data-def="Perplexity: how surprised a model is by real text, on average. Lower is better; quantization usually raises it a little.">Perplexity</dfn> is the usual first quality measure. Lower is better.</p>
+<p><strong>GPTQ: fix the error as you go.</strong></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c6" data-src="s23">GPTQ quantizes one linear layer at a time, choosing quantized weights that keep the layer's output on a small calibration set close to the original.</span></li>
+<li><span class="ts-claim" data-claim="c7" data-src="s23">Within a layer it quantizes columns in a fixed order and, after each, adjusts the not-yet-quantized weights to cancel the error, using second-order (inverse Hessian) information.</span></li>
+<li><span class="ts-claim" data-claim="c8" data-src="s23">Its calibration set is 128 random 2,048-token segments from the C4 dataset, and it quantizes weights only.</span></li>
+</ol>
+<p><strong>AWQ: protect the weights that matter.</strong></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c9" data-src="s24">AWQ observes that protecting about 1% of salient weights sharply cuts quantization error, and that salient channels are found from activation sizes, not weight sizes.</span></li>
+<li><span class="ts-claim" data-claim="c10" data-src="s24">Instead of keeping those channels in higher precision, it multiplies them by a scale above 1 and divides their inputs by the same scale, which shrinks their relative rounding error.</span></li>
+<li><span class="ts-claim" data-claim="c11" data-src="s24">AWQ uses no backpropagation or weight reconstruction, and it quantizes weights only, in groups of 128 by default, keeping activations in 16 bits.</span></li>
+</ol>
+<p>Both are post-training: no retraining, minutes to hours of GPU time. <span class="ts-claim" data-claim="c12" data-src="s23">GPTQ reports quantizing a 175B-parameter model in about four GPU hours.</span></p>
+<p class="ts-takeaway">GPTQ corrects rounding error column by column; AWQ shields the few channels that large activations make important.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c9 c10">
+<p class="q">AWQ finds that 1% of channels matter most. Why doesn't it simply keep those channels in FP16?</p>
+<ol>
+<li>Mixed precision inside one matrix is hard to run fast; scaling keeps every weight in the same format</li>
+<li data-why="AWQ picks channels by activation size; storage cost of 1% would be small anyway.">FP16 channels would double the model size</li>
+<li data-why="AWQ uses no backpropagation at all; the reason is kernel efficiency, not training.">FP16 channels cannot be trained with backpropagation</li>
+</ol>
+<p class="ts-why">A matrix with a few FP16 columns among INT4 ones needs awkward kernels. Scaling the important channels up before rounding protects them while every weight stays INT4.</p>
+</div>
+</section>
+
+<section class="ts-part" id="spec-round" data-rung="2" data-min="6">
+<h2>One speculative round: guess, check, keep a prefix</h2>
+<p class="ts-bridge">Last part: shrinking each read. Still unsolved: getting more than one token out of each read of the big model.</p>
+<p class="ts-problem">At batch 1 the 8B model reads 16 GB to emit one token. Reading 16 GB to score five positions costs about the same, because the math was idle anyway. Can we use those spare four slots?</p>
+<p><span class="ts-claim" data-claim="c13" data-src="s22">Chen et al. note that scoring a short draft continuation with the large model in parallel takes about as long as sampling one token from it.</span> So a small <dfn data-def="The cheap proposer in speculative decoding: a small model, a head on the big model, or a text lookup. Its guesses are checked, never trusted.">draft</dfn> guesses k tokens, and the big <dfn data-def="The model whose output you actually want. In speculative decoding it checks the draft's tokens and has the final say.">target</dfn> model checks them all in one pass.</p>
+<figure class="ts-seq" data-title="One speculative decoding round (k = 4)">
+<script type="application/json">
+{"actors": [
+  {"id": "draft", "label": "Draft", "sub": "small, fast"},
+  {"id": "target", "label": "Target", "sub": "the real model"},
+  {"id": "out", "label": "Output", "sub": "the user's stream"}],
+ "steps": [
+  {"from": "draft", "to": "draft", "label": "Guess 4 tokens: on · the · mat · .", "note": "The draft runs 4 cheap steps, one per guessed token, each with its probability q for the token it picked."},
+  {"from": "draft", "to": "target", "label": "Send all 4 guesses", "note": "The guesses go to the target together. Nothing has reached the user yet."},
+  {"from": "target", "to": "target", "label": "One pass scores 5 positions", "note": "One forward pass reads the weights once and gives the target's probability p at each of the 4 guessed positions, plus the position after them."},
+  {"over": ["draft", "target"], "label": "Accept 'on', 'the'; reject 'mat'", "note": "Each guess is kept with probability min(1, p/q), left to right. The first rejection ends the check; everything after it is thrown away."},
+  {"from": "target", "to": "target", "label": "Resample position 3: 'rug'", "note": "At the rejected position the target samples from what is left of its own distribution after removing the draft's share. That correction is its token, not the draft's."},
+  {"from": "target", "to": "out", "label": "Emit 'on the rug' together", "dashed": true, "note": "Three tokens from one target pass. Had all 4 guesses passed, the target's fifth-position token would be a free bonus, for 5."}]}
+</script>
+</figure>
+<p><span class="ts-claim" data-claim="c14" data-src="s21">Leviathan et al. keep a draft token when the draft's probability for it is at most the target's, and otherwise reject it with probability 1 − p/q.</span> <span class="ts-claim" data-claim="c15" data-src="s21">On rejection they sample a replacement from the normalized positive part of the target's minus the draft's distribution.</span> <span class="ts-claim" data-claim="c16" data-src="s21 s22">Both papers show that tokens produced this way follow the target model's own distribution, so output quality does not change.</span></p>
+<p>A backend comparison: optimistic concurrency control. <span class="ts-claim" data-claim="c17" data-src="s30">In DynamoDB's optimistic locking, a save succeeds only if the item's stored version still matches the one you read; otherwise it fails and you reload and retry.</span> Speculation also works ahead without a lock and validates afterwards. Where it breaks: a failed write is all-or-nothing, while speculation keeps the valid prefix and repairs the first bad token on the spot. The repair is not a retry; it is the special resample that keeps the distribution exact.</p>
+<p class="ts-takeaway">The draft proposes, the target verifies all guesses in one pass, keeps the agreed prefix and adds one token of its own, so output matches the target exactly.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put one round in order.</p>
+<ol><li>The draft guesses k tokens one by one</li><li>The target scores all k positions plus one more in a single pass</li><li>Guesses are accepted left to right until the first rejection</li><li>The target samples a correction at the rejected position, or a bonus token if none was rejected</li><li>The accepted tokens and the target's token stream to the user together</li></ol>
+<p class="ts-why">Guess, verify in one pass, keep the agreed prefix, add the target's own token, emit together.</p>
+</div>
+</section>
+
+<section class="ts-part" id="acceptance-math" data-rung="2" data-min="5">
+<h2>How many tokens a round buys you</h2>
+<p class="ts-bridge">Last part: one round yields between 1 and k + 1 tokens. Still unsolved: how many on average, and what the draft's time costs you.</p>
+<p class="ts-problem">With k = 4 guesses and a 70% chance each guess is accepted, does a round yield 4 tokens? 2.8? Less than 1? The answer decides whether speculation pays.</p>
+<p>Call the chance a guess is accepted the <dfn data-def="α: the average chance that the target accepts one draft token. Depends on the task, the draft and the sampling settings.">acceptance rate α</dfn>. <span class="ts-claim" data-claim="c18" data-src="s21">If every position has the same acceptance chance α, the expected tokens per target pass are (1 − α^(k+1)) / (1 − α).</span></p>
+<p>For k = 4 and α = 0.7: (1 − 0.7⁵) / 0.3 ≈ 2.77 tokens per pass. Each extra guess adds less, because a later guess counts only if every earlier one passed.</p>
+<p>The draft is not free. <span class="ts-claim" data-claim="c19" data-src="s21">The paper's cost coefficient c is the time of one draft run divided by one target run, and it was always under 0.05 in their experiments.</span> <span class="ts-claim" data-claim="c20" data-src="s21">Their expected wall-time improvement is (1 − α^(k+1)) / ((1 − α)(kc + 1)), assuming long generations and enough spare compute that verifying k + 1 tokens takes no longer than one target step.</span> With c = 0.05: 2.77 / 1.2 ≈ 2.3 times faster.</p>
+<p>Watch out for two different "acceptance rates". <span class="ts-claim" data-claim="c21" data-src="s14">vLLM reports a draft acceptance rate (accepted draft tokens ÷ proposed draft tokens) and a mean acceptance length (1 + accepted draft tokens per verification step).</span> The mean acceptance length is the formula's tokens per pass. vLLM's rate is (2.77 − 1) / 4 ≈ 44%, not the 70% per-guess α, because every guess after the first rejection counts as proposed but can never be accepted.</p>
+<p>Where the van comparison stops working: extra parcels per trip are free only while the van has room. Part 1's roofline is that room, and rung 4 shows when it fills up.</p>
+<p class="ts-takeaway">Tokens per pass = (1 − α^(k+1)) / (1 − α); the speed-up divides that by the draft's cost, and vLLM's acceptance rate is a different, lower number.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c18 c21">
+<p class="q">vLLM reports a mean acceptance length of 1.2 with k = 5. What is happening?</p>
+<ol>
+<li data-why="A mean acceptance length near 1 means almost nothing is accepted; 5 guesses per round are wasted, not used.">Speculation is giving about 5 tokens per pass</li>
+<li data-why="Mean acceptance length counts the target's own token, so 1.2 means 0.2 draft tokens accepted per step.">1.2 draft tokens are accepted per step, a healthy rate</li>
+<li>About 0.2 draft tokens are accepted per step; the draft rarely matches and most guesses are wasted</li>
+</ol>
+<p class="ts-why">Mean acceptance length is 1 plus accepted draft tokens per step. At 1.2, each round pays for 5 guesses and keeps 0.2 of them.</p>
+</div>
+<div class="ts-explain" data-points="Decode is limited by reading weights, and checking k+1 positions in one pass costs about one step|Guesses are accepted left to right with probability min(1, p/q), and a rejection triggers a resample from the leftover distribution|The output follows the target's distribution exactly|Gain = expected tokens per pass divided by (k·c + 1)">
+<p class="q">Explain to a teammate why speculative decoding is faster without changing the answers.</p>
+<div class="ts-model"><p>At small batches a decode step is spent reading weights, so scoring several positions in one pass costs about the same as scoring one. A cheap draft guesses k tokens; the target scores them all at once. Each guess is kept with probability min(1, p/q), left to right, and at the first rejection the target samples from the leftover part of its distribution. That rule makes the output follow the target's distribution exactly. The gain is the expected tokens per pass, (1 − α^(k+1)) / (1 − α), divided by the draft's cost, k·c + 1.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="vllm-quant" data-rung="3" data-min="5">
+<h2>Serving a quantized model in vLLM, and which GPUs can</h2>
+<p class="ts-bridge">Last part: the arithmetic of speculation. First, back to quantization: what vLLM v0.31.0 actually runs, and on which GPU generations.</p>
+<p class="ts-problem">You have A100s and H100s. A colleague wants FP8 everywhere. On which of them does FP8 make the multiply faster, and on which does it only save memory?</p>
+<p><span class="ts-claim" data-claim="c22" data-src="s9">If you do not pass --quantization, vLLM reads the quantization_config in the model's config file, and treats the weights as unquantized if there is none.</span> So most of the work is picking the checkpoint. <span class="ts-claim" data-claim="c23" data-src="s8">vLLM v0.31.0's quantization methods include fp8, gptq, awq, their gptq_marlin and awq_marlin kernels, and compressed-tensors.</span></p>
+<p>What runs where, from vLLM's support table:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Format</th><th>Which GPU generations run it in vLLM v0.31.0</th></tr></thead>
+<tbody>
+<tr><td>GPTQ, AWQ (INT4 weight-only)</td><td><span class="ts-claim" data-claim="c24" data-src="s4">Supported on Turing, Ampere, Ada and Hopper; GPTQ also on Volta.</span></td></tr>
+<tr><td>FP8 W8A8</td><td><span class="ts-claim" data-claim="c25" data-src="s5">FP8 math needs compute capability (NVIDIA's GPU generation number) 8.9 or higher (Ada, Hopper, Blackwell); Turing and Ampere run FP8 checkpoints as weight-only W8A16 with Marlin kernels.</span></td></tr>
+<tr><td>INT8 W8A8</td><td><span class="ts-claim" data-claim="c26" data-src="s7">Supported on Turing, Ampere, Ada and Hopper, and not on Blackwell (compute capability 10.0 and above).</span></td></tr>
+</tbody>
+</table></div>
+<p>Why the split: <span class="ts-claim" data-claim="c27" data-src="s3">NVIDIA's A100 table lists BF16 and INT8 Tensor Core rows but no FP8 row.</span> <span class="ts-claim" data-claim="c28" data-src="s1">The H100 SXM lists 3,958 teraFLOPS of FP8 and 3,958 TOPS of INT8 Tensor Core throughput with sparsity, against 1,979 for BF16.</span> Halved to dense as in Part 1, that is 1,979 FP8 teraFLOPS: twice BF16's 989.5.</p>
+<div class="ts-code" data-lang="bash" data-title="Serving FP8 without a pre-quantized checkpoint" data-verified="spec" data-claims="c29 c30">
+<pre><code>vllm serve meta-llama/Llama-3.1-8B-Instruct \
+  --quantization fp8_per_tensor \
+  --kv-cache-dtype fp8</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c29" data-src="s5">With --quantization fp8_per_tensor, vLLM quantizes every linear layer except the final lm_head to FP8 E4M3 at load, without calibration data, and its docs warn the latency gain is limited.</span> <span class="ts-claim" data-claim="c30" data-src="s12">--kv-cache-dtype is the separate flag for the cache.</span></p>
+<div class="ts-interview"><p><strong>"Would you switch the A100 fleet to FP8 for throughput?"</strong> A strong answer says FP8 on Ampere is weight-only: it halves weight memory and bytes read, but the math stays BF16, so the gain shows at small batches and fades as batches grow. On Hopper, W8A8 also doubles the math ceiling. Then it asks for an accuracy check on the product's own tasks before any rollout.</p></div>
+<p class="ts-takeaway">vLLM picks the format from the checkpoint; FP8 speeds the math only on Ada, Hopper and Blackwell, and is weight-only on Ampere.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c25 c27">
+<p class="q">You load an FP8 checkpoint on an A100 in vLLM v0.31.0. What happens?</p>
+<ol>
+<li data-why="vLLM does load FP8 checkpoints on Ampere; it runs them weight-only.">It refuses to start: A100 has no FP8 support</li>
+<li>It runs as weight-only W8A16: 1-byte weights, BF16 math</li>
+<li data-why="The A100 has no FP8 Tensor Cores, so FP8 math cannot run there.">It runs FP8 math at twice the BF16 rate</li>
+</ol>
+<p class="ts-why">Without FP8 Tensor Cores, vLLM uses Marlin kernels that store FP8 weights and multiply in 16 bits.</p>
+</div>
+</section>
+
+<section class="ts-part" id="kv-fp8" data-rung="3" data-min="4">
+<h2>An 8-bit KV cache doubles how many requests fit</h2>
+<p class="ts-bridge">Last part: quantized weights in vLLM. Still unsolved: the KV cache, which at scale is most of the memory.</p>
+<p class="ts-problem"><a href="../llm-serving-2/index.html">Part 2</a>: one H100 holds 50 requests of 8,192 tokens for the 8B model. The cache budget, not the weights, was the limit. What does an 8-bit cache change?</p>
+<p><span class="ts-claim" data-claim="c31" data-src="s11">vLLM v0.31.0's cache data type defaults to "auto", the model's own data type; on CUDA it also accepts fp8 (meaning fp8_e4m3) and fp8_e5m2.</span> The bytes per token halve: Part 2's 131,072 bytes per token become 65,536.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>8B on one H100, 8,192 tokens each</th><th>Cache budget</th><th>Requests that fit</th></tr></thead>
+<tbody>
+<tr><td>BF16 weights, BF16 cache (Part 2)</td><td>54.6 GB</td><td>50</td></tr>
+<tr><td>BF16 weights, FP8 cache</td><td>54.6 GB</td><td>101</td></tr>
+<tr><td>FP8 weights, FP8 cache</td><td>62.6 GB</td><td>116</td></tr>
+<tr><td>INT4 weights, FP8 cache</td><td>66.6 GB</td><td>124</td></tr>
+</tbody>
+</table></div>
+<p>The cache lever is worth far more than the weight lever here, because the weights were already a small share. The weights matter most for big models: the 70B model in FP8 is 70 GB, which leaves under 1 GB of cache on an 80 GB H100.</p>
+<p>Two settings to know. <span class="ts-claim" data-claim="c32" data-src="s10">With plain kv_cache_dtype="fp8", every scale is 1.0; vLLM's docs recommend calibrating scales on a dataset with llm-compressor instead.</span> <span class="ts-claim" data-claim="c33" data-src="s10">--kv-cache-dtype-skip-layers keeps chosen layers, such as sliding-window layers, in the model's own data type.</span></p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c34" data-src="s11">When a quantized KV cache starts, vLLM v0.31.0 logs that it reduces memory but may cause an accuracy drop without a proper scaling factor.</span> Uncalibrated FP8 caches are a quiet default to audit.</p></div>
+<p class="ts-takeaway">An FP8 KV cache halves bytes per token and roughly doubles requests per GPU; calibrate its scales.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The 8B model on an H200 (141 GB) with BF16 weights served 103 requests of 8,192 tokens in Part 2. With an FP8 cache?</p>
+<div class="ts-reveal"><p>Same budget, half the bytes per token: about 206 requests. With FP8 weights as well the budget grows by 8 GB, to about 221.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="vllm-spec" data-rung="3" data-min="5">
+<h2>Turning speculation on in vLLM, and reading its metrics</h2>
+<p class="ts-bridge">Last part: the cache in 8 bits. Back to the other lever: which drafts vLLM offers and how you see whether they work.</p>
+<p class="ts-problem">Your chat product averages 300-token answers at low load. You want lower per-token latency without changing outputs. Which proposer, and how do you prove it helps?</p>
+<p><span class="ts-claim" data-claim="c35" data-src="s12 s13">Speculation is configured with --speculative-config, a JSON object whose common keys are method, model and num_speculative_tokens.</span> <span class="ts-claim" data-claim="c36" data-src="s16">vLLM v0.31.0 accepts methods including ngram, draft_model, eagle, eagle3, mtp, medusa, mlp_speculator and suffix.</span></p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>method</th><th>Where guesses come from</th></tr></thead>
+<tbody>
+<tr><td>ngram</td><td><span class="ts-claim" data-claim="c37" data-src="s13">Matches the latest tokens against the prompt; prompt_lookup_min and prompt_lookup_max set the window, and both default to 5 when neither is set.</span></td></tr>
+<tr><td>draft_model</td><td><span class="ts-claim" data-claim="c62" data-src="s13">A separate smaller model named in model; by default it must share the target's vocabulary.</span></td></tr>
+<tr><td>eagle, eagle3</td><td><span class="ts-claim" data-claim="c38" data-src="s25 s26">A drafter that predicts the target's second-to-top-layer features step by step (EAGLE); EAGLE-3 predicts tokens directly from features fused across several layers.</span></td></tr>
+<tr><td>mtp</td><td><span class="ts-claim" data-claim="c39" data-src="s31">The target model's own multi-token prediction heads, for models trained with them.</span></td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c40" data-src="s13">vLLM's docs say model-based methods give the best latency reduction, while n-gram and suffix decoding give modest speedups without adding work at peak traffic.</span> <span class="ts-claim" data-claim="c41" data-src="s16">The draft_model, eagle, eagle3 and mtp methods keep a KV cache for the drafter; ngram does not.</span></p>
+<div class="ts-code" data-lang="bash" data-title="EAGLE-3 on an 8B model" data-verified="spec" data-claims="c35 c36">
+<pre><code>vllm serve meta-llama/Llama-3.1-8B-Instruct \
+  --speculative-config '{"method": "eagle3",
+    "model": "&lt;EAGLE-3 head for this model&gt;",
+    "num_speculative_tokens": 3}'</code></pre>
+</div>
+<p>To see whether it works: <span class="ts-claim" data-claim="c42" data-src="s18">vLLM exports vllm:spec_decode_num_drafts, vllm:spec_decode_num_draft_tokens and vllm:spec_decode_num_accepted_tokens counters; accepted ÷ draft tokens gives the acceptance rate.</span> The model behind this page's numbers:</p>
+<div class="ts-code" data-lang="python" data-title="spec.py" data-file="spec.py" data-verified="ran"></div>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c43" data-src="s20">vLLM's suffix decoding method requires Snowflake's Arctic Inference package and targets repetitive work such as code editing and agent loops.</span></p></div>
+<p class="ts-takeaway">Pick the proposer by where good guesses come from, then watch accepted ÷ draft tokens to see if it pays.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c37 c40">
+<p class="q">A code-editing assistant mostly rewrites files the user pasted in. Which proposer is a cheap first try?</p>
+<ol>
+<li>ngram: the answer repeats long runs of the prompt, so lookups match often and cost no model</li>
+<li data-why="A draft model works, but it costs memory and a second model to run; for text copied from the prompt a lookup is cheaper.">A separate 1B draft model</li>
+<li data-why="Most models do not ship multi-token prediction heads; mtp only works for models trained with them.">mtp on any model</li>
+</ol>
+<p class="ts-why">When outputs repeat the prompt, a prompt lookup guesses well for free, and vLLM's docs note n-gram methods add no work at peak traffic.</p>
+</div>
+</section>
+
+<section class="ts-part" id="calculator" data-rung="3" data-min="6">
+<h2>Calculator: memory, capacity and speed for both levers</h2>
+<p class="ts-bridge">Last part: the speculation settings. Now put both levers on one roofline and try your own numbers.</p>
+<p class="ts-problem">Your 8B service runs 32 requests of 4,096 tokens on an H100 in BF16. Predict the decode throughput if you move weights and cache to FP8, then add a 4-token draft at α = 0.7. Then check.</p>
+<div class="ts-quantcalc" data-title="Quantization and speculation calculator">
+<script type="application/json">
+{"models": [
+  {"id": "llama-3.1-8b", "label": "Llama 3.1 8B", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128},
+  {"id": "llama-3.1-70b", "label": "Llama 3.1 70B", "params": 70, "layers": 80, "q_heads": 64, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [
+  {"id": "a100-pcie", "label": "A100 80GB PCIe", "tflops": 312, "tbps": 1.935, "gb": 80, "fp8_tflops": null, "int8_tops": 624},
+  {"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80, "fp8_tflops": 1979, "int8_tops": 1979},
+  {"id": "h100-nvl", "label": "H100 NVL", "tflops": 835.5, "tbps": 3.9, "gb": 94, "fp8_tflops": 1670.5, "int8_tops": 1670.5},
+  {"id": "h200-sxm", "label": "H200 SXM", "tflops": 989.5, "tbps": 4.8, "gb": 141, "fp8_tflops": 1979, "int8_tops": 1979}],
+ "schemes": [
+  {"id": "bf16", "label": "BF16 (no quantization)", "bytes": 2, "math": "bf16"},
+  {"id": "fp8", "label": "FP8 W8A8", "bytes": 1, "math": "fp8"},
+  {"id": "int8", "label": "INT8 W8A8", "bytes": 1, "math": "int8"},
+  {"id": "int4", "label": "INT4 weight-only (W4A16)", "bytes": 0.5, "math": "bf16"}],
+ "kv": [
+  {"id": "bf16", "label": "BF16, 2 bytes", "bytes": 2},
+  {"id": "fp8", "label": "FP8, 1 byte", "bytes": 1}],
+ "defaults": {"model": "llama-3.1-8b", "gpu": "h100-sxm", "scheme": "bf16", "kv": "bf16", "batch": 32, "context": 4096,
+              "k": 4, "alpha": 0.7, "c": 0.05, "util": 0.92, "reserve": 3}}
+</script>
+</div>
+<p>GPU figures, dense (half NVIDIA's with-sparsity numbers):</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>GPU</th><th>NVIDIA lists</th><th>Memory, bandwidth</th></tr></thead>
+<tbody>
+<tr><td>A100 80GB PCIe</td><td><span class="ts-claim" data-claim="c44" data-src="s3">With sparsity: BF16 624 teraFLOPS, INT8 1,248 TOPS, no FP8 row; 80 GB at 1,935 GB/s</span></td><td>80 GB, 1,935 GB/s</td></tr>
+<tr><td>H100 SXM</td><td><span class="ts-claim" data-claim="c63" data-src="s1">With sparsity: BF16 1,979; FP8 3,958 teraFLOPS; INT8 3,958 TOPS; 80 GB at 3.35 TB/s</span></td><td>80 GB, 3.35 TB/s</td></tr>
+<tr><td>H100 NVL</td><td><span class="ts-claim" data-claim="c45" data-src="s1">With sparsity: BF16 1,671; FP8 3,341 teraFLOPS; INT8 3,341 TOPS; 94 GB at 3.9 TB/s</span></td><td>94 GB, 3.9 TB/s</td></tr>
+<tr><td>H200 SXM</td><td><span class="ts-claim" data-claim="c46" data-src="s2">With sparsity: BF16 1,979; FP8 3,958 teraFLOPS; INT8 3,958; 141 GB at 4.8 TB/s</span></td><td>141 GB, 4.8 TB/s</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c47" data-src="s28">Model shapes are Meta's: Llama 3.1 8B has 32 layers, 32 query heads, 8 key/value heads and a model width of 4,096; the 70B has 80 layers, 64 query heads, 8 key/value heads and a width of 8,192.</span> The calculator runs the same arithmetic as the tested estimator:</p>
+<div class="ts-code" data-lang="python" data-title="quant.py" data-file="quant.py" data-verified="ran"></div>
+<p>The answer to the opening question: about 3,230 tokens per second in BF16, 6,460 with FP8 weights and cache, and about 14,900 with the draft added. Both levers multiply.</p>
+<p class="ts-takeaway">Quantization shrinks each step's reads; speculation raises tokens per step; at small batches the gains multiply.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In the calculator, pick the 70B model on an H100 with FP8 weights. What happens to capacity, and what fixes it?</p>
+<div class="ts-reveal"><p>70 GB of weights leave about 0.6 GB for the cache: zero requests of 4,096 tokens. INT4 weights free 35 GB (about 53 requests at 4,096 with an FP8 cache); an H200 keeps FP8 weights and, with an FP8 cache, still holds about 84. Part 7 covers splitting one model across GPUs.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="quality-cost" data-rung="4" data-min="6">
+<h2>What quantization costs in quality, and how to measure it</h2>
+<p class="ts-bridge">Last part: the speed and capacity gains. Speculation keeps outputs exact; quantization does not. Still unsolved: how much quality you lose, and how you would know.</p>
+<p class="ts-problem">A team ships an INT4 build because a blog said "4-bit is lossless". Two weeks later, support tickets about wrong arithmetic in answers double.</p>
+<p>Quality loss is measured, never assumed. Three levels, cheapest first:</p>
+<ol class="ts-steps">
+<li><strong>Perplexity on held-out text.</strong> <span class="ts-claim" data-claim="c48" data-src="s23">GPTQ reports perplexity on WikiText2, PTB and C4, with zero-shot tasks such as LAMBADA, ARC and PIQA alongside.</span></li>
+<li><strong>Standard task scores.</strong> <span class="ts-claim" data-claim="c49" data-src="s5">vLLM's FP8 guide evaluates the quantized model with lm_eval on gsm8k and warns that quantized models can be sensitive to a missing bos token.</span></li>
+<li><strong>Your own product's tasks</strong>, compared side by side with the unquantized model.</li>
+</ol>
+<p>What the primary sources report, with their conditions:</p>
+<ul>
+<li><span class="ts-claim" data-claim="c50" data-src="s23">In GPTQ's table, OPT-175B's WikiText2 perplexity is 8.34 in FP16, 8.37 with 4-bit GPTQ and 10.54 with 4-bit RTN; OPT-125M goes from 27.65 to 31.12 with GPTQ.</span></li>
+<li><span class="ts-claim" data-claim="c51" data-src="s23">The GPTQ authors observe that larger models generally appear easier to quantize, with OPT-66B an exception.</span></li>
+<li><span class="ts-claim" data-claim="c52" data-src="s27">Hugging Face's guide cautions that 4-bit quantization can often give different results from 8-bit or full BF16 inference.</span></li>
+</ul>
+<p>So the same "4-bit" is near-free on a 175B model and costly on a small one. Your model, method and task decide.</p>
+<div class="ts-trap"><p><span class="ts-claim" data-claim="c53" data-src="s4">vLLM's support table is marked as subject to change, and points to the quantization source directory for current details.</span> Check support against your exact version, not a blog post.</p></div>
+<div class="ts-interview"><p><strong>"How would you decide whether to ship an INT4 model?"</strong> A strong answer: run perplexity and a standard suite as a smoke test, then the product's own eval set against the BF16 model, with the same prompts and sampling. Define a regression budget before looking. Canary to a slice of traffic and compare task-level metrics. Name the trade: memory and latency against a measured, accepted quality loss.</p></div>
+<p class="ts-takeaway">Quantization's quality cost depends on model size, method and task, so measure it on your own tasks before shipping.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c50 c51">
+<p class="q">GPTQ 4-bit keeps OPT-175B's perplexity at 8.37 against 8.34. What can you conclude about a 1B model in 4-bit?</p>
+<ol>
+<li data-why="The same table shows OPT-125M losing much more: 27.65 to 31.12. Size matters.">It will lose about as little</li>
+<li>Nothing safe: smaller models lose more in the same table, so measure it</li>
+<li data-why="Perplexity on WikiText2 says nothing directly about your product's tasks, in either direction.">It is guaranteed fine for any task if perplexity barely moves</li>
+</ol>
+<p class="ts-why">The same paper shows small models losing much more. Results transfer across neither sizes nor tasks.</p>
+</div>
+</section>
+
+<section class="ts-part" id="quant-at-load" data-rung="4" data-min="5">
+<h2>At high batch, weight-only quantization's edge fades</h2>
+<p class="ts-bridge">Last part: the quality bill. Still unsolved: do the speed gains hold when traffic grows tenfold?</p>
+<p class="ts-problem">Moving the 8B model from FP8 W8A8 to INT4 weights nearly doubles batch-1 decode on an H100: 415 to 824 tokens per second at 1,000 tokens of context. At 400 concurrent requests this page's estimator gives 13%, before the cost of expanding weights. Why does the edge melt?</p>
+<p>Part 1's roofline: decode turns compute-bound once each weight read is shared by enough requests. With weights alone, that crossover batch is:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>H100, 8B model</th><th>Bytes per weight</th><th>Math rate (dense)</th><th>Compute-bound from batch</th></tr></thead>
+<tbody>
+<tr><td>BF16</td><td>2</td><td>989.5 teraFLOPS</td><td>296</td></tr>
+<tr><td>FP8 W8A8</td><td>1</td><td>1,979</td><td>296</td></tr>
+<tr><td>INT4 W4A16</td><td>0.5</td><td>989.5 (BF16 math)</td><td>74</td></tr>
+</tbody>
+</table></div>
+<p>W8A8 halves the bytes and doubles the math, so the crossover stays put and the gain holds at every batch. Weight-only shrinks the bytes but not the math, so on weights alone it hits the compute ceiling four times sooner. Past that point only the KV reads it shares with FP8 are left to save, and INT4 pays to expand every weight. <span class="ts-claim" data-claim="c54" data-src="s27">Hugging Face's guide notes that because weights are dequantized for every multiply, inference time is often not reduced and can increase.</span> <span class="ts-claim" data-claim="c55" data-src="s6">vLLM's INT4 guide pitches it for keeping latency low at low queries per second.</span></p>
+<p>Long contexts delay this, because KV reads keep the step memory-bound (Part 2). The table is the short-context worst case.</p>
+<p><strong>Detect it:</strong> compare tokens per second per GPU against the BF16 or FP8 build at your real batch, not batch 1. <strong>Fix it:</strong> use W8A8 on Hopper for busy pools; keep INT4 for memory-limited or low-traffic pools.</p>
+<div class="ts-interview"><p><strong>"INT4 is smaller than FP8, so why not always INT4?"</strong> A strong answer separates bytes from math: INT4 W4A16 still multiplies in BF16, so its edge over FP8 shrinks as batches grow past about 74 on an H100, while its quality risk stays. FP8 W8A8 on Hopper keeps its 2× all the way up. Pick by memory pressure, traffic level and the measured quality loss.</p></div>
+<p class="ts-takeaway">Weight-only formats help most at small batches; W8A8 keeps its gain at high batch because it speeds the math too.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">On an A100 (no FP8 Tensor Cores), an FP8 checkpoint's decode crossover batch moves from 162 in BF16 to about what?</p>
+<ol>
+<li data-why="That would need FP8 math at twice the rate, which the A100 does not have.">Stays at 162</li>
+<li data-why="Halving bytes with the same math halves the crossover, not doubles it.">About 324</li>
+<li>About 81: half the bytes, same BF16 math</li>
+</ol>
+<p class="ts-why">Weight-only FP8 halves bytes per step while the math rate stays BF16, so the step turns compute-bound at half the batch.</p>
+</div>
+</section>
+
+<section class="ts-part" id="spec-at-load" data-rung="4" data-min="6">
+<h2>At high batch, speculation turns into extra work</h2>
+<p class="ts-bridge">Last part: weight-only formats lose their edge at high batch. Speculation has a sharper version of the same problem.</p>
+<p class="ts-problem">In this page's estimator, with α = 0.5 and k = 4, short 500-token chats run 1.6 times faster at batch 1. At 256 concurrent requests this page's estimator says 0.82 times: slower than no speculation.</p>
+<p>The verify pass scores k + 1 positions per request. At batch 1 that is free: the step was waiting on memory. At batch 256 it is 1,280 positions, past Part 1's crossover, so the pass costs real compute. Rejected guesses become pure waste. <span class="ts-claim" data-claim="c56" data-src="s21">Leviathan et al. show that speculation can raise the total arithmetic performed, because work on rejected guesses is wasted.</span> <span class="ts-claim" data-claim="c57" data-src="s15">vLLM's dynamic speculation docs say verification multiplies the effective batch by k, and past a critical batch speculation hurts TPOT.</span></p>
+<p><span class="ts-claim" data-claim="c58" data-src="s13">vLLM's docs present speculative decoding for reducing inter-token latency in memory-bound workloads at medium to low request rates.</span> At 10 times the load, the first thing to break is the verify pass's compute, then everyone's TPOT.</p>
+<p><strong>The metric trap.</strong> Part 1 warned that <a href="../llm-serving-1/index.html#itl-throughput">ITL and TPOT diverge</a> when one streamed output carries several tokens. <span class="ts-claim" data-claim="c59" data-src="s17">vLLM's metrics docs say vllm:inter_token_latency_seconds records one sample per streamed output while TPOT is per request, so they differ under speculative decoding.</span> With speculation, TPOT drops while each gap between outputs grows: in this page's model (8B, BF16, 1,000-token context, k = 4, α = 0.7), 2.1 ms TPOT but 5.8 ms between bursts at batch 1. A dashboard on ITL alone can show a regression that is really a win.</p>
+<p><strong>Detect it:</strong> track TPOT and the acceptance rate together, by load level. <strong>Fix it:</strong> <span class="ts-claim" data-claim="c60" data-src="s15">vLLM's num_speculative_tokens_per_batch_size takes ranges of batch sizes and a k for each, including 0 to switch speculation off at high concurrency.</span></p>
+<div class="ts-interview"><p><strong>"Speculative decoding helped in the benchmark and hurt in production. Why?"</strong> A strong answer names batch size: benchmarks at low concurrency see a memory-bound verify, production at high concurrency pays k + 1 positions of compute per request. Low acceptance on real traffic makes it worse. The fix is k scaled down with batch, or a proposer that adds no model work.</p></div>
+<p class="ts-takeaway">Speculation spends idle compute; once the batch fills the GPU, the verify pass and rejected guesses cost real time, so shrink k as load rises.</p>
+<div class="ts-predict" data-claims="c57 c60">
+<p class="q">Your EAGLE setup uses k = 3. Traffic swings between 10 and 300 concurrent requests. What do you configure, and what do you watch?</p>
+<div class="ts-reveal"><p>A batch-size schedule with num_speculative_tokens_per_batch_size: k = 3 at low concurrency, smaller in the middle, 0 at the top. Watch TPOT by load band and accepted ÷ draft tokens; judge stream smoothness with ITL, knowing it counts bursts, not tokens.</p></div>
+</div>
+<div class="ts-explain" data-points="The verify pass handles k+1 positions per request, free only while the step is memory-bound|At high batch it crosses the roofline and rejected guesses waste compute|ITL counts gaps between bursts while TPOT averages per token, so they diverge|Fix with a batch-size schedule for k, or a proposer that adds no model work">
+<p class="q">Explain why the same speculative setup can speed up a quiet server and slow down a busy one, and what you would monitor.</p>
+<div class="ts-model"><p>Each round verifies k + 1 positions per request. On a quiet server the step is memory-bound, so those positions cost almost nothing and accepted guesses are free tokens. On a busy server the batch times k + 1 positions crosses the compute ceiling, so verification takes real time and every rejected guess is waste. I would watch TPOT and the acceptance rate by load band, and read ITL knowing it measures gaps between bursts. The fix is a k that shrinks with batch size, down to zero.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="choosing" data-rung="5" data-min="5">
+<h2>Choosing a lever</h2>
+<p class="ts-bridge">Last part: both levers lose ground under load. Still unsolved: which to pull, for which service.</p>
+<p class="ts-problem">Three services: a 70B assistant that does not fit one GPU, a busy 8B chat pool at 200 concurrent requests, and a low-traffic coding agent. They want different answers.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Lever</th><th>Pick it when</th><th>What it buys</th><th>What you give up</th></tr></thead>
+<tbody>
+<tr><td>FP8 W8A8 weights</td><td>Hopper or newer, any traffic level</td><td>Half the weight memory; 2× the math ceiling</td><td>A measured accuracy loss; no math gain on Ampere</td></tr>
+<tr><td>INT4 weight-only (GPTQ, AWQ)</td><td>Weights barely fit; low traffic</td><td>A quarter of the weight memory; fastest at small batch</td><td>Larger quality risk, gain fades past small batches</td></tr>
+<tr><td>FP8 KV cache</td><td>The cache limits concurrency or context</td><td>About 2× requests or context per GPU</td><td>Accuracy risk without calibrated scales</td></tr>
+<tr><td>Speculation with a draft, EAGLE or MTP</td><td>Latency-sensitive, low to medium load</td><td>Lower TPOT, identical outputs</td><td>Draft memory and KV, wasted work at high batch</td></tr>
+<tr><td>ngram or suffix</td><td>Outputs repeat the prompt or earlier outputs</td><td>Cheap gains on repetitive text</td><td>Little gain on novel text</td></tr>
+</tbody>
+</table></div>
+<p>For the three services: the 70B assistant gets FP8 on H200s or INT4 on H100s, chosen by measured quality. The busy pool gets FP8 weights and cache, and speculation only through a batch-size schedule. The coding agent gets ngram or suffix speculation first, since its output repeats its input.</p>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c61" data-src="s28">Meta itself publishes an FP8-quantized version of Llama 3.1 405B alongside the original weights.</span></p></div>
+<div class="ts-note" data-label="Beyond senior"><p>Staff-level questions sit above this: a fleet-wide quality bar and eval process every quantized build must pass, and pricing tiers that map to precision. This series stays with the engine.</p></div>
+<p class="ts-takeaway">Use W8A8 and an FP8 cache for busy Hopper pools, INT4 when memory is the wall, and speculation for latency at low to medium load.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c25 c31 c32">
+<p class="q">A busy 8B pool on H100s, cache-limited at 8,192 tokens, with a strict quality bar. First lever?</p>
+<ol>
+<li data-why="INT4 frees only 12 GB more than BF16 here and gains little at high batch, at a higher quality risk.">INT4 AWQ weights</li>
+<li>An FP8 KV cache with calibrated scales, then FP8 W8A8 weights after an eval</li>
+<li data-why="At high concurrency speculation adds verify compute and can slow TPOT.">EAGLE with k = 5</li>
+</ol>
+<p class="ts-why">The cache is the limit, so halving its bytes roughly doubles capacity. FP8 W8A8 on Hopper adds memory and math headroom that holds at high batch.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="8">
+<h2>Interview drill: designs where token cost is the crux</h2>
+<p class="ts-bridge">Last part: the options and their costs. Still unsolved: defending a choice under pressure.</p>
+<p class="ts-problem">Three prompts. Commit to an answer before you open each reference.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. Serve a 70B model for an internal assistant on 80 GB H100s, one GPU per replica, 4,096-token conversations, under 30 concurrent users per replica. Design it.</p>
+<div class="ts-reveal"><p>BF16 is 140 GB and does not fit; FP8 is 70 GB and leaves almost no cache. INT4 weight-only (AWQ or GPTQ) is 35 GB, and an FP8 cache fits about 53 conversations of 4,096 tokens: enough. At under 30 users the batch stays below INT4's crossover, so its speed gain holds. Trade-off: the largest quality risk of the options, so gate on an eval against the BF16 model. The alternative is H200s with FP8 weights, at higher cost per GPU.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. A product team wants speculative decoding to cut TPOT on a pool that peaks at 250 concurrent requests and idles at 20. What do you agree to, and what do you insist on?</p>
+<div class="ts-reveal"><p>Agree to EAGLE with a batch-size schedule: a few draft tokens at low concurrency, zero at the peak. Insist on load tests at several concurrency levels and on dashboards for TPOT, the acceptance rate and ITL, read knowing ITL measures bursts. Give up the drafter's memory and some throughput at peak if the schedule is wrong.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">3. Finance wants to halve GPU count for an 8B chat service by switching to INT4. You have H100s at high utilization. Respond.</p>
+<div class="ts-reveal"><p>At high batch, INT4 weight-only still multiplies in BF16, so its throughput edge over FP8 shrinks to about 13% at 400 requests of 1,000 tokens in this page's model, before dequantization costs, while quality risk rises. Offer FP8 weights and an FP8 cache instead: W8A8 keeps its 2× ceiling at high batch and the cache change roughly doubles concurrency. State what is given up: a measured accuracy loss, checked on the product's own tasks.</p></div>
+</div>
+<p class="ts-takeaway">Every answer sizes memory first, checks the batch against the roofline, and names the quality cost.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c16 c58">
+<p class="q">Final check. Which statement is true of speculative decoding with vLLM's default (standard) rejection sampling?</p>
+<ol>
+<li>It leaves the output distribution unchanged and helps most at low to medium load</li>
+<li data-why="Rejection sampling keeps the target's distribution; quality does not trade against speed.">It trades a small quality loss for speed, like quantization</li>
+<li data-why="At high concurrency verification costs real compute and can slow TPOT.">It speeds up decode at every batch size</li>
+</ol>
+<p class="ts-why">Rejection sampling keeps the target's distribution; the speed-up depends on spare compute, which shrinks as batches grow.</p>
+</div>
+<div class="ts-explain" data-points="Decode is memory-bound, so reading fewer bytes or getting more tokens per read both help|Quantization changes the model and its quality must be measured; speculation keeps outputs exact|Weight-only formats and speculation both lose their edge at high batch; W8A8 does not|An FP8 KV cache roughly doubles requests per GPU when the cache is the limit">
+<p class="q">Explain to a new teammate how you would make each token cheaper for an LLM service, and when each technique stops paying.</p>
+<div class="ts-model"><p>Decode reads the weights and cache every step, so I would either read fewer bytes or get more tokens per read. Quantization reads fewer bytes: an FP8 cache roughly doubles concurrency, FP8 W8A8 weights halve weight reads and double the math ceiling on Hopper, and INT4 weight-only shrinks memory most but loses its edge past small batches. Quantization changes the model, so I measure quality on our own tasks. Speculative decoding gets more tokens per read with identical outputs, but at high batch the verify pass and rejected guesses cost real compute, so k must shrink with load.</p></div>
+</div>
+</section>

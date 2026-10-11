@@ -1,0 +1,2561 @@
+{
+ "verified": "2026-10-11",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "NVIDIA H100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/h100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": "Specifications table and sparsity footnote"
+  },
+  {
+   "id": "s2",
+   "title": "NVIDIA H200 GPU: specifications",
+   "url": "https://www.nvidia.com/en-in/data-center/h200/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": "Specifications table, H200 SXM column, footnote 2"
+  },
+  {
+   "id": "s3",
+   "title": "NVIDIA A100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/a100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": "Specifications table, A100 80GB PCIe column"
+  },
+  {
+   "id": "s4",
+   "title": "vLLM v0.31.0 docs: Quantization (supported formats and hardware)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/quantization/README.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Supported Hardware table and notes"
+  },
+  {
+   "id": "s5",
+   "title": "vLLM v0.31.0 docs: FP8 W8A8",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/quantization/llm_compressor/fp8.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Introduction; notes; Evaluating Accuracy; Online Dynamic Quantization"
+  },
+  {
+   "id": "s6",
+   "title": "vLLM v0.31.0 docs: INT4 W4A16",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/quantization/llm_compressor/int4.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Introduction"
+  },
+  {
+   "id": "s7",
+   "title": "vLLM v0.31.0 docs: INT8 W8A8",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/quantization/llm_compressor/int8_w8a8.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Note and Blackwell warning"
+  },
+  {
+   "id": "s8",
+   "title": "vLLM v0.31.0 source: QuantizationMethods",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/model_executor/layers/quantization/__init__.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "QuantizationMethods Literal"
+  },
+  {
+   "id": "s9",
+   "title": "vLLM v0.31.0 source: ModelConfig.quantization",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/model.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "ModelConfig.quantization docstring"
+  },
+  {
+   "id": "s10",
+   "title": "vLLM v0.31.0 docs: Quantized KV Cache",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/quantization/quantized_kvcache.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Scale Calibration Approaches; Skipping Specific Layers"
+  },
+  {
+   "id": "s11",
+   "title": "vLLM v0.31.0 source: CacheConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/cache.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "CacheDType; cache_dtype docstring; _validate_cache_dtype"
+  },
+  {
+   "id": "s12",
+   "title": "vLLM v0.31.0 source: EngineArgs CLI flags",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/engine/arg_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "add_cli_args: --kv-cache-dtype, --quantization, --speculative-config"
+  },
+  {
+   "id": "s13",
+   "title": "vLLM v0.31.0 docs: Speculative Decoding",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/speculative_decoding/README.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Intro; vLLM Speculation Methods; --speculative-config schema; N-gram keys; Cross-Vocabulary Draft Models"
+  },
+  {
+   "id": "s14",
+   "title": "vLLM v0.31.0 docs: Per-Request Acceptance Metrics",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/speculative_decoding/acceptance_metrics.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Response Format field table"
+  },
+  {
+   "id": "s15",
+   "title": "vLLM v0.31.0 docs: Dynamic Speculative Decoding",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/speculative_decoding/dynamic_speculative_decoding.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Why is Dynamic SD needed?; --speculative-config schema"
+  },
+  {
+   "id": "s16",
+   "title": "vLLM v0.31.0 source: SpeculativeConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/speculative.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "SpeculativeMethod Literal; use_eagle(); uses_draft_kv_cache()"
+  },
+  {
+   "id": "s17",
+   "title": "vLLM v0.31.0 docs: Metrics (design)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/design/metrics.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "v1 Metrics: inter_token_latency vs request_time_per_output_token paragraph"
+  },
+  {
+   "id": "s18",
+   "title": "vLLM v0.31.0 source: speculative decoding metrics",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/spec_decode/metrics.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "SpecDecodingProm docstring and counters"
+  },
+  {
+   "id": "s20",
+   "title": "vLLM v0.31.0 docs: Suffix Decoding",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/speculative_decoding/suffix.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Introduction; Install Arctic Inference tip"
+  },
+  {
+   "id": "s21",
+   "title": "Leviathan, Kalman, Matias: Fast Inference from Transformers via Speculative Decoding (arXiv:2211.17192v2)",
+   "url": "https://arxiv.org/html/2211.17192v2",
+   "kind": "primary",
+   "publisher": "Google Research (arXiv)",
+   "accessed": "2026-10-11",
+   "locator": "Sections 2.3, 3.1, 3.3, 3.4"
+  },
+  {
+   "id": "s22",
+   "title": "Chen et al.: Accelerating Large Language Model Decoding with Speculative Sampling (arXiv:2302.01318)",
+   "url": "https://arxiv.org/abs/2302.01318",
+   "kind": "primary",
+   "publisher": "DeepMind (arXiv)",
+   "accessed": "2026-10-11",
+   "locator": "Abstract"
+  },
+  {
+   "id": "s23",
+   "title": "Frantar et al.: GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers (arXiv:2210.17323)",
+   "url": "https://arxiv.org/pdf/2210.17323",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-11",
+   "locator": "Abstract; Sections 3, 4, 5; Table 3"
+  },
+  {
+   "id": "s24",
+   "title": "Lin et al.: AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration (arXiv:2306.00978)",
+   "url": "https://arxiv.org/pdf/2306.00978",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-11",
+   "locator": "Abstract; Sections 3.1, 3.2, 5.1"
+  },
+  {
+   "id": "s25",
+   "title": "Li et al.: EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty (arXiv:2401.15077)",
+   "url": "https://arxiv.org/abs/2401.15077",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-11",
+   "locator": "Abstract"
+  },
+  {
+   "id": "s26",
+   "title": "Li et al.: EAGLE-3: Scaling up Inference Acceleration of Large Language Models via Training-Time Test (arXiv:2503.01840)",
+   "url": "https://arxiv.org/abs/2503.01840",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-11",
+   "locator": "Abstract"
+  },
+  {
+   "id": "s27",
+   "title": "Hugging Face Transformers v5.19.0 docs: Optimizing LLMs for Speed and Memory",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/llm_tutorial_optimization.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-11",
+   "locator": "Introduction; Section 1, Lower Precision"
+  },
+  {
+   "id": "s28",
+   "title": "Meta llama-models reference code: model list (sku_list.py)",
+   "url": "https://github.com/meta-llama/llama-models/blob/0e0b8c519242d5833d8c11bffc1232b77ad7f301/models/sku_list.py",
+   "kind": "primary",
+   "publisher": "Meta",
+   "accessed": "2026-10-11",
+   "locator": "llama3_1_base_models arch_args; Llama-3.1-405B-FP8 entry"
+  },
+  {
+   "id": "s29",
+   "title": "Snowflake docs: Micro-partitions and data clustering",
+   "url": "https://docs.snowflake.com/en/user-guide/tables-clustering-micropartitions",
+   "kind": "primary",
+   "publisher": "Snowflake",
+   "accessed": "2026-10-11",
+   "locator": "What are micro-partitions?"
+  },
+  {
+   "id": "s30",
+   "title": "AWS docs: DynamoDB and optimistic locking with version number",
+   "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBMapper.OptimisticLocking.html",
+   "kind": "primary",
+   "publisher": "Amazon Web Services",
+   "accessed": "2026-10-11",
+   "locator": "Optimistic locking with version number"
+  },
+  {
+   "id": "s32",
+   "title": "Hugging Face Transformers v5.19.0 docs: Chat basics (conversations)",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/conversations.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-11",
+   "locator": "Performance and memory usage"
+  },
+  {
+   "id": "s31",
+   "title": "vLLM v0.31.0 docs: MTP (Multi-Token Prediction)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/speculative_decoding/mtp.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Introduction"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Hugging Face's docs say the main options for faster generation are quantizing the model or using hardware with more memory bandwidth.",
+   "sources": [
+    "s32"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s32",
+     "locator": "Performance and memory usage",
+     "result": "supported",
+     "at": "2026-10-11T18:20",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s32",
+     "locator": "Performance and memory usage",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s32",
+     "locator": "Performance and memory usage",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "vLLM's docs describe two FP8 layouts: E4M3, with 4 exponent and 3 mantissa bits, reaching ±448, and E5M2, with 5 exponent and 2 mantissa bits, reaching ±57,344 at lower precision.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "FP8 types: E4M3 and E5M2",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "FP8 types: E4M3 and E5M2",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "FP8 types: E4M3 and E5M2",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "In GPTQ, storing one scale per group of 128 weights adds about 0.15 bits per weight.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Section 5, Additional Tricks; Table 7",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Section 5, Additional Tricks; Table 7",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Section 5, Additional Tricks; Table 7",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "Hugging Face's guide explains that such weights are dequantized to BF16 for each matrix multiply.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: dequantize steps",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: dequantize steps",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: dequantize steps",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "Snowflake stores each micro-partition by column, compresses each column on its own, and chooses the compression algorithm itself.",
+   "sources": [
+    "s29"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s29",
+     "locator": "Benefits of Micro-partitioning",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s29",
+     "locator": "Benefits of Micro-partitioning",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s29",
+     "locator": "Benefits of Micro-partitioning",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "GPTQ quantizes one linear layer at a time, choosing quantized weights that keep the layer's output on a small calibration set close to the original.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Section 3, Eq. 1",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Section 3, Eq. 1",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Section 3, Eq. 1",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "Within a layer it quantizes columns in a fixed order and, after each, adjusts the not-yet-quantized weights to cancel the error, using second-order (inverse Hessian) information.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Section 4, Steps 1-3; Section 3 (OBQ)",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Section 4, Steps 1-3; Section 3 (OBQ)",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Section 4, Steps 1-3; Section 3 (OBQ)",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "Its calibration set is 128 random 2,048-token segments from the C4 dataset, and it quantizes weights only.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Section 5, Setup; Section 6 limitations",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Section 5, Setup; Section 6 limitations",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Section 5, Setup; Section 6 limitations",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "AWQ observes that protecting about 1% of salient weights sharply cuts quantization error, and that salient channels are found from activation sizes, not weight sizes.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "Abstract; Section 3.1",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "Abstract; Section 3.1",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "Abstract; Section 3.1",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Instead of keeping those channels in higher precision, it multiplies them by a scale above 1 and divides their inputs by the same scale, which shrinks their relative rounding error.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "Section 3.2, Eqs. 2-3",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "Section 3.2, Eqs. 2-3",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "Section 3.2, Eqs. 2-3",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "AWQ uses no backpropagation or weight reconstruction, and it quantizes weights only, in groups of 128 by default, keeping activations in 16 bits.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "Abstract; Section 5.1",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "Abstract; Section 5.1",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "Abstract; Section 5.1",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "GPTQ reports quantizing a 175B-parameter model in about four GPU hours.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "Chen et al. note that scoring a short draft continuation with the large model in parallel takes about as long as sampling one token from it.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "Leviathan et al. keep a draft token when the draft's probability for it is at most the target's, and otherwise reject it with probability 1 − p/q.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Section 2.3",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "On rejection they sample a replacement from the normalized positive part of the target's minus the draft's distribution.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Section 2.3, Algorithm 1",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Section 2.3, Algorithm 1",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Section 2.3, Algorithm 1",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "Both papers show that tokens produced this way follow the target model's own distribution, so output quality does not change.",
+   "sources": [
+    "s21",
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Section 2.3 / Abstract",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "Section 2.3 / Abstract",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Section 2.3 / Abstract",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "Section 2.3 / Abstract",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Section 2.3 / Abstract",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "Section 2.3 / Abstract",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "In DynamoDB's optimistic locking, a save succeeds only if the item's stored version still matches the one you read; otherwise it fails and you reload and retry.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "Optimistic locking with version number",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "Optimistic locking with version number",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "Optimistic locking with version number",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "If every position has the same acceptance chance α, the expected tokens per target pass are (1 − α^(k+1)) / (1 − α).",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Section 3.1, Eq. 1",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Section 3.1, Eq. 1",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Section 3.1, Eq. 1",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "The paper's cost coefficient c is the time of one draft run divided by one target run, and it was always under 0.05 in their experiments.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Section 3.3, Def. 3.7",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Section 3.3, Def. 3.7",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Section 3.3, Def. 3.7",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "Their expected wall-time improvement is (1 − α^(k+1)) / ((1 − α)(kc + 1)), assuming long generations and enough spare compute that verifying k + 1 tokens takes no longer than one target step.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Section 3.3, Theorem 3.8",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Section 3.3, Theorem 3.8",
+     "result": "supported",
+     "at": "2026-10-11T19:20",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard; re-run on the wording revised after the reviewer's note"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Section 3.3, Theorem 3.8",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "vLLM reports a draft acceptance rate (accepted draft tokens ÷ proposed draft tokens) and a mean acceptance length (1 + accepted draft tokens per verification step).",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Response Format field table",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Response Format field table",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Response Format field table",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "If you do not pass --quantization, vLLM reads the quantization_config in the model's config file, and treats the weights as unquantized if there is none.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "ModelConfig.quantization docstring",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "ModelConfig.quantization docstring",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "ModelConfig.quantization docstring",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "vLLM v0.31.0's quantization methods include fp8, gptq, awq, their gptq_marlin and awq_marlin kernels, and compressed-tensors.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "QuantizationMethods Literal",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "QuantizationMethods Literal",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "QuantizationMethods Literal",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Supported on Turing, Ampere, Ada and Hopper; GPTQ also on Volta.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Supported Hardware table: AWQ, GPTQ rows",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Supported Hardware table: AWQ, GPTQ rows",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Supported Hardware table: AWQ, GPTQ rows",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "FP8 math needs compute capability (NVIDIA's GPU generation number) 8.9 or higher (Ada, Hopper, Blackwell); Turing and Ampere run FP8 checkpoints as weight-only W8A16 with Marlin kernels.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Introduction and first note",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Introduction and first note",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Introduction and first note",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "Supported on Turing, Ampere, Ada and Hopper, and not on Blackwell (compute capability 10.0 and above).",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Note and Blackwell GPU Limitation warning",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Note and Blackwell GPU Limitation warning",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Note and Blackwell GPU Limitation warning",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "NVIDIA's A100 table lists BF16 and INT8 Tensor Core rows but no FP8 row.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Specifications table",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "The H100 SXM lists 3,958 teraFLOPS of FP8 and 3,958 TOPS of INT8 Tensor Core throughput with sparsity, against 1,979 for BF16.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "With --quantization fp8_per_tensor, vLLM quantizes every linear layer except the final lm_head to FP8 E4M3 at load, without calibration data, and its docs warn the latency gain is limited.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Online Dynamic Quantization",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Online Dynamic Quantization",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Online Dynamic Quantization",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "--kv-cache-dtype is the separate flag for the cache.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "cache_group --kv-cache-dtype",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "cache_group --kv-cache-dtype",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "cache_group --kv-cache-dtype",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "vLLM v0.31.0's cache data type defaults to \"auto\", the model's own data type; on CUDA it also accepts fp8 (meaning fp8_e4m3) and fp8_e5m2.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "CacheDType; cache_dtype docstring",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "CacheDType; cache_dtype docstring",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "CacheDType; cache_dtype docstring",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "With plain kv_cache_dtype=\"fp8\", every scale is 1.0; vLLM's docs recommend calibrating scales on a dataset with llm-compressor instead.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Scale Calibration Approaches 1 and 2",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Scale Calibration Approaches 1 and 2",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Scale Calibration Approaches 1 and 2",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "--kv-cache-dtype-skip-layers keeps chosen layers, such as sliding-window layers, in the model's own data type.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Skipping Specific Layers from KV-Cache Quantization",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Skipping Specific Layers from KV-Cache Quantization",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "Skipping Specific Layers from KV-Cache Quantization",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "When a quantized KV cache starts, vLLM v0.31.0 logs that it reduces memory but may cause an accuracy drop without a proper scaling factor.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "_validate_cache_dtype log message",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "_validate_cache_dtype log message",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "_validate_cache_dtype log message",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "Speculation is configured with --speculative-config, a JSON object whose common keys are method, model and num_speculative_tokens.",
+   "sources": [
+    "s12",
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "--speculative-config schema, Common keys",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "--speculative-config schema, Common keys",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "--speculative-config schema, Common keys",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "--speculative-config schema, Common keys",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "--speculative-config schema, Common keys",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "--speculative-config schema, Common keys",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "vLLM v0.31.0 accepts methods including ngram, draft_model, eagle, eagle3, mtp, medusa, mlp_speculator and suffix.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "SpeculativeMethod and EagleModelTypes Literals",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "SpeculativeMethod and EagleModelTypes Literals",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "SpeculativeMethod and EagleModelTypes Literals",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "Matches the latest tokens against the prompt; prompt_lookup_min and prompt_lookup_max set the window, and both default to 5 when neither is set.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Method-specific keys: N-gram",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Method-specific keys: N-gram",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "Method-specific keys: N-gram",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "A drafter that predicts the target's second-to-top-layer features step by step (EAGLE); EAGLE-3 predicts tokens directly from features fused across several layers.",
+   "sources": [
+    "s25",
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "The target model's own multi-token prediction heads, for models trained with them.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "vLLM's docs say model-based methods give the best latency reduction, while n-gram and suffix decoding give modest speedups without adding work at peak traffic.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "vLLM Speculation Methods",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "vLLM Speculation Methods",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "vLLM Speculation Methods",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "The draft_model, eagle, eagle3 and mtp methods keep a KV cache for the drafter; ngram does not.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "use_eagle(); uses_draft_model(); uses_draft_kv_cache()",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "use_eagle(); uses_draft_model(); uses_draft_kv_cache()",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "use_eagle(); uses_draft_model(); uses_draft_kv_cache()",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "vLLM exports vllm:spec_decode_num_drafts, vllm:spec_decode_num_draft_tokens and vllm:spec_decode_num_accepted_tokens counters; accepted ÷ draft tokens gives the acceptance rate.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "SpecDecodingProm counters and docstring",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "SpecDecodingProm counters and docstring",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "SpecDecodingProm counters and docstring",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "vLLM's suffix decoding method requires Snowflake's Arctic Inference package and targets repetitive work such as code editing and agent loops.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Introduction; Install Arctic Inference tip",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Introduction; Install Arctic Inference tip",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Introduction; Install Arctic Inference tip",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "With sparsity: BF16 624 teraFLOPS, INT8 1,248 TOPS, no FP8 row; 80 GB at 1,935 GB/s",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Specifications table, A100 80GB PCIe column",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Specifications table, A100 80GB PCIe column",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Specifications table, A100 80GB PCIe column",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "With sparsity: BF16 1,671; FP8 3,341 teraFLOPS; INT8 3,341 TOPS; 94 GB at 3.9 TB/s",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 NVL column",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 NVL column",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Specifications table, H100 NVL column",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "With sparsity: BF16 1,979; FP8 3,958 teraFLOPS; INT8 3,958; 141 GB at 4.8 TB/s",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Specifications table, H200 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "Model shapes are Meta's: Llama 3.1 8B has 32 layers, 32 query heads, 8 key/value heads and a model width of 4,096; the 70B has 80 layers, 64 query heads, 8 key/value heads and a width of 8,192.",
+   "sources": [
+    "s28"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s28",
+     "locator": "llama3_1_base_models arch_args (dim, n_layers, n_heads, n_kv_heads)",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s28",
+     "locator": "llama3_1_base_models arch_args (dim, n_layers, n_heads, n_kv_heads)",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s28",
+     "locator": "llama3_1_base_models arch_args (dim, n_layers, n_heads, n_kv_heads)",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "GPTQ reports perplexity on WikiText2, PTB and C4, with zero-shot tasks such as LAMBADA, ARC and PIQA alongside.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Section 5; Appendix A",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Section 5; Appendix A",
+     "result": "supported",
+     "at": "2026-10-11T19:20",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard; re-run on the wording revised after the reviewer's note"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Section 5; Appendix A",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "vLLM's FP8 guide evaluates the quantized model with lm_eval on gsm8k and warns that quantized models can be sensitive to a missing bos token.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "3. Evaluating Accuracy",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "3. Evaluating Accuracy",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "3. Evaluating Accuracy",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "In GPTQ's table, OPT-175B's WikiText2 perplexity is 8.34 in FP16, 8.37 with 4-bit GPTQ and 10.54 with 4-bit RTN; OPT-125M goes from 27.65 to 31.12 with GPTQ.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Table 3",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Table 3",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Table 3",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "The GPTQ authors observe that larger models generally appear easier to quantize, with OPT-66B an exception.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Section 5, Language Generation",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Section 5, Language Generation",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Section 5, Language Generation",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "Hugging Face's guide cautions that 4-bit quantization can often give different results from 8-bit or full BF16 inference.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: 4-bit results",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: 4-bit results",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: 4-bit results",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "vLLM's support table is marked as subject to change, and points to the quantization source directory for current details.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Supported Hardware notes",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Supported Hardware notes",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Supported Hardware notes",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "Hugging Face's guide notes that because weights are dequantized for every multiply, inference time is often not reduced and can increase.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: inference time",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: inference time",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "Section 1, Lower Precision: inference time",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "vLLM's INT4 guide pitches it for keeping latency low at low queries per second.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "Leviathan et al. show that speculation can raise the total arithmetic performed, because work on rejected guesses is wasted.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Section 3.4, Theorem 3.11",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Section 3.4, Theorem 3.11",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Section 3.4, Theorem 3.11",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "vLLM's dynamic speculation docs say verification multiplies the effective batch by k, and past a critical batch speculation hurts TPOT.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Why is Dynamic SD needed?",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Why is Dynamic SD needed?",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Why is Dynamic SD needed?",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "vLLM's docs present speculative decoding for reducing inter-token latency in memory-bound workloads at medium to low request rates.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "vLLM's metrics docs say vllm:inter_token_latency_seconds records one sample per streamed output while TPOT is per request, so they differ under speculative decoding.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "v1 Metrics paragraph on ITL and TPOT",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "v1 Metrics paragraph on ITL and TPOT",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "v1 Metrics paragraph on ITL and TPOT",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "vLLM's num_speculative_tokens_per_batch_size takes ranges of batch sizes and a k for each, including 0 to switch speculation off at high concurrency.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "--speculative-config schema",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "--speculative-config schema",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "--speculative-config schema",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "Meta itself publishes an FP8-quantized version of Llama 3.1 405B alongside the original weights.",
+   "sources": [
+    "s28"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s28",
+     "locator": "Llama 3.1 405B FP8 entries",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s28",
+     "locator": "Llama 3.1 405B FP8 entries",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s28",
+     "locator": "Llama 3.1 405B FP8 entries",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "A separate smaller model named in model; by default it must share the target's vocabulary.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Cross-Vocabulary Draft Models (TLI)",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "raw source file at tag v0.31.0, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Cross-Vocabulary Draft Models (TLI)",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "Cross-Vocabulary Draft Models (TLI)",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "With sparsity: BF16 1,979; FP8 3,958 teraFLOPS; INT8 3,958 TOPS; 80 GB at 3.35 TB/s",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Specifications table, H100 SXM column",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "In the GPTQ paper's table, 4-bit RTN takes OPT-125M's WikiText2 perplexity from 27.65 to 37.28.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Table 3",
+     "result": "supported",
+     "at": "2026-10-11T16:30",
+     "method": "WebFetch of the source page, locator-seeking prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Table 3",
+     "result": "supported",
+     "at": "2026-10-11T18:40",
+     "method": "new WebFetch call, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with the page wording and NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Table 3",
+     "result": "supported",
+     "at": "2026-10-11T19:05",
+     "method": "independent reviewer (strict mode): verbatim GitHub reads, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Meta's FP8 inference recipe for Llama 3.1 405B (which layers stay in BF16, row-wise scaling, throughput gain)",
+   "reason": "Only in Section 6.2 of the Llama 3 Herd paper, which the fetched copy truncated before; not confirmed twice."
+  },
+  {
+   "text": "Leviathan et al.'s measured T5-XXL acceptance rates and per-task speedups",
+   "reason": "Section 4 tables were not in the fetched content; the page keeps only the abstract-level 2X-3X figure out and teaches the formulas instead."
+  },
+  {
+   "text": "vLLM's '2x memory, up to 1.6x throughput with minimal accuracy impact' FP8 figure",
+   "reason": "Vendor headline without stated model, hardware or workload; the page reports measured results with their conditions only."
+  },
+  {
+   "text": "A blanket statement that INT4 or FP8 is lossless",
+   "reason": "No primary source supports it; GPTQ's own table shows small models losing much more than large ones."
+  },
+  {
+   "text": "Exact numeric INT4 compute-capability thresholds from vLLM's INT4 and INT8 notes",
+   "reason": "The notes say '> 8.0' and '> 7.5' while naming Ampere (8.0) and Turing (7.5) as supported; the page uses the named generations instead."
+  }
+ ]
+}

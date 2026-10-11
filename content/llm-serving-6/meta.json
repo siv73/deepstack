@@ -1,0 +1,18 @@
+{
+ "slug": "llm-serving-6",
+ "title": "LLM inference serving, Part 6: quantization and speculative decoding",
+ "tldr": "Why decode's memory-bound step leaves two levers: read fewer bytes per token or get more tokens per read. Bytes per parameter for BF16, FP8, INT8 and INT4, weight-only versus weight-and-activation schemes, GPTQ and AWQ at the mechanism level, what vLLM v0.31.0 runs on Ampere and Hopper and NVIDIA's FP8 figures halved to dense, an FP8 KV cache doubling Part 2's capacity, how quality loss is measured and what GPTQ and Hugging Face report, speculative decoding's draft-and-verify round with rejection sampling that keeps the output distribution, expected tokens per pass and vLLM's acceptance metrics, the ngram, draft_model, EAGLE and MTP proposers, why weight-only formats and speculation lose their edge at high batch, the ITL versus TPOT trap, Snowflake compression and optimistic-locking analogies and where they break, a step-through round, a calculator, a tested estimator and an interview drill.",
+ "category": "AI systems",
+ "created": "2026-10-11",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "LLM inference serving, Part 1: prefill vs decode", "slug": "llm-serving-1"},
+  {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2"}
+ ],
+ "related": [
+  {"label": "Next: Part 7 — Scaling Out", "slug": "llm-serving-7", "why": "splitting one model across GPUs when even quantized weights do not fit, and separating prefill from decode"},
+  {"label": "LLM inference serving, Part 5: scheduling under load", "slug": "llm-serving-5", "why": "the scheduler that decides how big each batch, and so each verify pass, gets"},
+  {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2", "why": "the capacity math this page halves with an FP8 cache"},
+  {"label": "LLM inference serving, Part 1: prefill vs decode", "slug": "llm-serving-1", "why": "the roofline and the ITL versus TPOT warning used throughout"}
+ ]
+}
