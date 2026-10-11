@@ -104,12 +104,12 @@
   },
   {
    "id": "s12",
-   "title": "Agrawal et al.: Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve (arXiv:2403.02310, OSDI 2024)",
+   "title": "Agrawal et al.: Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve (arXiv:2403.02310v3)",
    "url": "https://arxiv.org/html/2403.02310v3",
    "kind": "primary",
    "publisher": "arXiv",
    "accessed": "2026-10-11",
-   "locator": "Abstract; Sections 4.1 to 4.3"
+   "locator": "Abstract; Sections 4.2 and 4.3"
   },
   {
    "id": "s13",
@@ -1227,21 +1227,39 @@
   },
   {
    "id": "c40",
-   "text": "Sarathi-Serve (OSDI 2024) splits a prefill into near-equal-sized chunks and builds batches that add new prefill work without pausing the decodes already running, which it calls stall-free batching.",
+   "text": "Sarathi-Serve splits a prefill into near-equal-sized chunks and builds batches that add new requests without pausing the decodes already running, which it calls stall-free batching.",
    "sources": [
     "s12"
    ],
    "status": "verified",
-   "checks": []
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Abstract; Section 4.2",
+     "result": "supported",
+     "at": "2026-10-11T14:40",
+     "method": "WebFetch with NOT IN CONTENT guard (content through Section 5.2)"
+    }
+   ]
   },
   {
    "id": "c41",
-   "text": "Sarathi-Serve picks its token budget from the latency target for the time between tokens: the largest chunk whose step still meets it.",
+   "text": "Sarathi-Serve sets its token budget to the most tokens a batch can hold without breaking the target for time between tokens, and also weighs the overhead of smaller chunks when choosing it.",
    "sources": [
     "s12"
    ],
    "status": "verified",
-   "checks": []
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Section 4.3",
+     "result": "supported",
+     "at": "2026-10-11T14:40",
+     "method": "WebFetch with NOT IN CONTENT guard (content through Section 5.2)"
+    }
+   ]
   },
   {
    "id": "c43",
