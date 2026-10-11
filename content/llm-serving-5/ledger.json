@@ -178,7 +178,7 @@
      "source": "s1",
      "locator": "SchedulerPolicy Literal; policy field docstring",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -213,7 +213,7 @@
      "source": "s1",
      "locator": "policy docstring; PriorityRequestQueue",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -247,7 +247,7 @@
      "source": "s10",
      "locator": "priority Field description",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -274,7 +274,7 @@
      "source": "s4",
      "locator": "_set_default_chunked_prefill_and_prefix_caching_args; is_chunked_prefill_supported",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag after rewording; exact-phrase match"
     },
     {
@@ -282,7 +282,7 @@
      "source": "s4",
      "locator": "_set_default_chunked_prefill_and_prefix_caching_args; is_chunked_prefill_supported",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -316,7 +316,7 @@
      "source": "s6",
      "locator": "Chunked Prefill",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read: Supported by the docs; reviewer noted the code serves running requests in admission order, now stated as c34"
     }
    ]
@@ -350,7 +350,7 @@
      "source": "s6",
      "locator": "Performance Tuning with Chunked Prefill",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -376,7 +376,7 @@
      "source": "s1",
      "locator": "verify_max_model_len()",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag after rewording; exact-phrase match"
     },
     {
@@ -384,7 +384,7 @@
      "source": "s1",
      "locator": "verify_max_model_len()",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read: Supported; wording tightened to 'fits in one step's budget'"
     }
    ]
@@ -411,7 +411,7 @@
      "source": "s16",
      "locator": "VllmConfig.performance_mode",
      "result": "supported",
-     "at": "2026-10-11T14:15",
+     "at": "2026-10-11T13:55",
      "method": "raw source file at tag, read verbatim"
     },
     {
@@ -419,7 +419,7 @@
      "source": "s4",
      "locator": "get_batch_defaults(), >= 70 GiB non-A100 branch",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag after rewording; exact-phrase match"
     },
     {
@@ -427,7 +427,7 @@
      "source": "s16",
      "locator": "VllmConfig.performance_mode",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag; exact-phrase match"
     },
     {
@@ -435,7 +435,7 @@
      "source": "s4",
      "locator": "get_batch_defaults(), >= 70 GiB non-A100 branch",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read: Supported; condition (memory, not A100, balanced mode) added"
     }
    ]
@@ -470,7 +470,7 @@
      "source": "s1",
      "locator": "long_prefill_token_threshold docstring; schedule() threshold block",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -504,7 +504,7 @@
      "source": "s2",
      "locator": "schedule(): comment above long_prefill_token_threshold",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -530,7 +530,7 @@
      "source": "s2",
      "locator": "schedule(): waiting loop, allocate_slots(full_sequence_must_fit) failure breaks",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag after rewording; exact-phrase match"
     },
     {
@@ -538,7 +538,7 @@
      "source": "s2",
      "locator": "schedule(): waiting loop, allocate_slots(full_sequence_must_fit) failure breaks",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read: Supported; default reserve-full-ISL check named"
     }
    ]
@@ -572,7 +572,7 @@
      "source": "s2",
      "locator": "schedule(): PRIORITY branches in running-loop preemption only; waiting loop breaks on allocation failure",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -606,7 +606,7 @@
      "source": "s2",
      "locator": "schedule(): running-loop preemption victim selection",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -640,7 +640,7 @@
      "source": "s2",
      "locator": "_preempt_request()",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -674,7 +674,7 @@
      "source": "s2",
      "locator": "schedule(): 'if not preempted_reqs' before waiting loop",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -708,7 +708,7 @@
      "source": "s1",
      "locator": "watermark field docstring",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -743,7 +743,7 @@
      "source": "s1",
      "locator": "max_num_queued_reqs docstring; check_admission()",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -777,7 +777,7 @@
      "source": "s1",
      "locator": "max_num_queued_tokens docstring",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -812,7 +812,7 @@
      "source": "s1",
      "locator": "max_num_queued_tokens docstring note; check_admission() docstring",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -846,7 +846,7 @@
      "source": "s1",
      "locator": "max_num_queued_reqs docstring",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -880,7 +880,7 @@
      "source": "s8",
      "locator": "gauge_scheduler_running, gauge_scheduler_waiting, gauge_waiting_by_reason",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -914,7 +914,7 @@
      "source": "s8",
      "locator": "histogram_queue_time_request",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -948,7 +948,7 @@
      "source": "s8",
      "locator": "gauge_kv_cache_usage, counter_num_preempted_reqs, histogram_request_num_preemptions",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -982,7 +982,7 @@
      "source": "s8",
      "locator": "inter_token_latency, time_to_first_token, iteration_tokens_total histograms",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -1008,7 +1008,7 @@
      "source": "s8",
      "locator": "labelnames = ['model_name', 'engine']",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag after rewording; exact-phrase match"
     },
     {
@@ -1016,7 +1016,7 @@
      "source": "s8",
      "locator": "labelnames = ['model_name', 'engine']",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read: Overstated 'only'; reworded to name extra labels"
     }
    ]
@@ -1050,7 +1050,7 @@
      "source": "s9",
      "locator": "calculate_metrics() goodput; --goodput help",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -1084,7 +1084,7 @@
      "source": "s9",
      "locator": "calculate_metrics() tpot; --goodput help",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -1118,7 +1118,7 @@
      "source": "s11",
      "locator": "Chunked prefill",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -1152,7 +1152,7 @@
      "source": "s14",
      "locator": "llama3_1_base_models arch_args",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -1178,7 +1178,7 @@
      "source": "s2",
      "locator": "schedule(): NOTE(woosuk) on the scheduling algorithm",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag after rewording; exact-phrase match"
     },
     {
@@ -1186,7 +1186,7 @@
      "source": "s2",
      "locator": "schedule(): NOTE(woosuk) on the scheduling algorithm",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read: Supported; 'tries to assign' wording adopted"
     }
    ]
@@ -1212,7 +1212,7 @@
      "source": "s2",
      "locator": "schedule(): running loop over self.running in order; admitted requests appended",
      "result": "supported",
-     "at": "2026-10-11T14:25",
+     "at": "2026-10-11T14:00",
      "method": "fresh download at the tag; exact-phrase match"
     },
     {
@@ -1220,7 +1220,7 @@
      "source": "s2",
      "locator": "schedule(): running loop over self.running in order; admitted requests appended",
      "result": "supported",
-     "at": "2026-10-11T14:05",
+     "at": "2026-10-11T13:50",
      "method": "independent reviewer, verbatim source read"
     }
    ]
@@ -1238,8 +1238,16 @@
      "source": "s12",
      "locator": "Abstract; Section 4.2",
      "result": "supported",
-     "at": "2026-10-11T14:40",
+     "at": "2026-10-11T14:05",
      "method": "WebFetch with NOT IN CONTENT guard (content through Section 5.2)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Abstract; Section 4.2",
+     "result": "supported",
+     "at": "2026-10-11T14:23",
+     "method": "fresh WebFetch with NOT IN CONTENT guard"
     }
    ]
   },
@@ -1256,8 +1264,16 @@
      "source": "s12",
      "locator": "Section 4.3",
      "result": "supported",
-     "at": "2026-10-11T14:40",
+     "at": "2026-10-11T14:05",
      "method": "WebFetch with NOT IN CONTENT guard (content through Section 5.2)"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Section 4.3",
+     "result": "supported",
+     "at": "2026-10-11T14:23",
+     "method": "fresh WebFetch with NOT IN CONTENT guard"
     }
    ]
   },
@@ -1276,6 +1292,14 @@
      "result": "supported",
      "at": "2026-10-11T12:10",
      "method": "browser: verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Section 1",
+     "result": "supported",
+     "at": "2026-10-11T14:24",
+     "method": "fresh WebFetch of the arXiv PDF of the same version (v3), NOT IN CONTENT guard"
     }
    ]
   },
@@ -1294,17 +1318,50 @@
      "result": "supported",
      "at": "2026-10-11T12:10",
      "method": "browser: verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Section 1; Section 2.3",
+     "result": "supported",
+     "at": "2026-10-11T14:24",
+     "method": "fresh WebFetch of the arXiv PDF of the same version (v3), NOT IN CONTENT guard"
     }
    ]
   },
   {
    "id": "c45",
-   "text": "NVIDIA lists the H100 SXM at 1,979 teraFLOPS of BF16 with sparsity, 3.35 TB/s of memory bandwidth and 80 GB of memory.",
+   "text": "NVIDIA lists the H100 SXM at 1,979 teraFLOPS of BF16 Tensor Core throughput with sparsity, 3.35 TB/s of memory bandwidth and 80 GB of memory.",
    "sources": [
     "s15"
    ],
    "status": "verified",
-   "checks": []
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:05",
+     "method": "WebFetch with NOT IN CONTENT guard; carried over from llm-serving-1 ledger claim c14, identical wording and URL"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-10T12:40",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED prompt; carried over from llm-serving-1 ledger claim c14, identical wording and URL"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "independent reviewer audit",
+     "result": "supported",
+     "at": "2026-10-10T12:55",
+     "method": "independent reviewer (strict mode); carried over from llm-serving-1 ledger claim c14, identical wording and URL"
+    }
+   ]
   },
   {
    "id": "c46",
@@ -1321,6 +1378,14 @@
      "result": "supported",
      "at": "2026-10-11T12:10",
      "method": "browser: verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Section 2.2 (Batching)",
+     "result": "supported",
+     "at": "2026-10-11T14:24",
+     "method": "fresh WebFetch of the arXiv PDF of the same version (v3), NOT IN CONTENT guard"
     }
    ]
   }
