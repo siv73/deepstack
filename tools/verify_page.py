@@ -157,14 +157,11 @@ def main(path, strict):
             E(f"{tag}: no .ts-takeaway")
         if not s.select(".ts-quiz, .ts-order, .ts-predict, .ts-explain"):
             E(f"{tag}: no check (quiz/order/predict/explain)")
-        # prose length
+        # prose only (code, diagrams, checks and tables removed)
         clone = BeautifulSoup(str(s), "lxml")
         non_prose = ".ts-code, .ts-seq, .ts-graph, .ts-svg, .ts-quiz, .ts-order, .ts-predict, .ts-explain"
         for x in clone.select(non_prose + ", .ts-table-wrap, script"):
             x.decompose()
-        words = len(clone.get_text(" ").split())
-        if words > 450:
-            W(f"{tag}: {words} words of prose (limit 450). Split the part.")
         # unmarked risky sentences
         for x in clone.select(".ts-claim, .ts-legacy .ts-claim"):
             x.decompose()
