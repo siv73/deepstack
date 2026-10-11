@@ -186,6 +186,20 @@ Use the existing classes (`node`, `edge`, `msg`, `over`, `lblbg`, `arrowhead`) a
 - Inputs: final request lengths, max length reserved, block size, KV bytes per token, KV budget. Outputs: slots held and wasted by each scheme, bytes, and requests that fit at once with the same mix.
 - Same arithmetic as `examples/llm-serving-4/fragmentation.py`; external fragmentation is not modelled.
 
+### Chunk-budget calculator (chunked prefill: one token budget against a prompt mix)
+```html
+<div class="ts-chunkcalc" data-title="Chunk-budget calculator">
+<script type="application/json">
+{"models": [{"id": "llama-3.1-8b", "label": "Llama 3.1 8B", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [{"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80}],
+ "defaults": {"model": "llama-3.1-8b", "gpu": "h100-sxm", "budget": 8192, "streams": 20, "ctx": 1000, "prompt": 50000,
+              "per_min": 2, "output": 300, "ttft_slo": 2, "tpot_slo": 0.05, "itl_slo": 0.1}}
+</script>
+</div>
+```
+- Inputs: model, GPU, token budget, decoding streams and their cached tokens, long-prompt length and rate, chat answer length, and TTFT, TPOT and per-token gap targets (SLOs in seconds in the JSON, milliseconds in the form). Outputs: one bar per step carrying the long prompt against the gap target; decode-only step, longest step, long-prompt TTFT, ITL mean and p99, share of late tokens, throughput and goodput.
+- Same arithmetic as `examples/llm-serving-5/chunk_budget.py`; `test_scheduling.py` runs the JS functions under node and compares.
+
 ## 5. Code and tabs
 
 ```html

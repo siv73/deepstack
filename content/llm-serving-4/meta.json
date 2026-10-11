@@ -10,8 +10,7 @@
   {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3"}
  ],
  "related": [
-  {"label": "Next: Part 5 (title to be fixed when its scope is set)", "slug": "llm-serving-5", "why": "the next part of this series"},
-  {"label": "Later part: chunked prefill", "why": "splitting long prompts across steps so one prefill cannot stall every decode"},
+  {"label": "Next: Part 5 — Scheduling under load: chunked prefill, SLOs and goodput", "slug": "llm-serving-5", "why": "chunked prefill, goodput, priority and load shedding: what the scheduler does with long prompts and 10 times the traffic"},
   {"label": "Later part: prefill/decode disaggregation", "why": "running prefill and decode on different GPUs, which means moving KV blocks between them"},
   {"label": "Later part: KV offloading and connectors", "why": "moving KV blocks to CPU memory or other machines instead of recomputing them"},
   {"label": "Later part: KV cache quantization", "why": "storing keys and values in fewer bytes per token, so the same pool holds more blocks"},

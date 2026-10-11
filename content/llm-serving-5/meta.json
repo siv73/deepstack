@@ -1,0 +1,19 @@
+{
+ "slug": "llm-serving-5",
+ "title": "LLM inference serving, Part 5: scheduling under load",
+ "tldr": "How an LLM server decides whose work runs in each step when it is overloaded: why one long prompt freezes every stream inside a continuous-batching loop, chunked prefill and Sarathi-Serve's stall-free batching, how vLLM v0.31.0's max_num_batched_tokens trades the worst inter-token gap against long-prompt TTFT (on by default, 8,192 on an H100), head-of-line blocking and long_prefill_token_threshold, SLOs and goodput per DistServe and vllm bench serve, FCFS versus priority scheduling and what priority does not do, queue caps that answer 503, what preemption costs its victim, what breaks first at 10 times the load and the vLLM metrics that show it, a noisy-neighbour tenant, OS time-slicing and API-gateway analogies and where they break, a step-through budget diagram, a chunk-budget calculator, a tested simulator and an interview drill.",
+ "category": "AI systems",
+ "created": "2026-10-11",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "LLM inference serving, Part 1: prefill vs decode", "slug": "llm-serving-1"},
+  {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3"},
+  {"label": "LLM inference serving, Part 4: PagedAttention", "slug": "llm-serving-4"}
+ ],
+ "related": [
+  {"label": "Next: Part 6 — Making Each Token Cheaper", "slug": "llm-serving-6", "why": "quantization and speculative decoding: fewer bytes and fewer steps per token"},
+  {"label": "Later part: Part 7 — multi-GPU serving and prefill/decode disaggregation", "why": "running prefill and decode on different GPUs so they stop sharing steps"},
+  {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3", "why": "the scheduler loop and simulator this page extends"},
+  {"label": "LLM inference serving, Part 4: PagedAttention", "slug": "llm-serving-4", "why": "the KV blocks whose shortage triggers preemption"}
+ ]
+}

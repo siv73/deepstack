@@ -1733,6 +1733,265 @@
   }
 
   /* =====================================================================
+     CHUNK-BUDGET CALCULATOR (.ts-chunkcalc): what one max_num_batched_tokens budget does to a
+     fixed prompt mix with chunked prefill on.
+     Spec JSON: {"models":[{"id","label","params","layers","q_heads","kv_heads","head_dim"}],
+                 "gpus":[{"id","label","tflops","tbps","gb"}],
+                 "defaults":{"model","gpu","budget","streams","ctx","prompt","per_min","output",
+                             "ttft_slo","tpot_slo","itl_slo"}}   (SLOs in seconds)
+     Same arithmetic as examples/llm-serving-5/chunk_budget.py (a test runs both and compares).
+     ===================================================================== */
+  function chunkStepSeconds(g, m, chunks, decodes) {
+    const P = m.params * 1e9,
+      attn = 4 * m.layers * m.q_heads * m.head_dim,
+      kvTok = 2 * m.layers * m.kv_heads * m.head_dim * 2;
+    let tokens = decodes.length,
+      pairs = 0,
+      cached = 0;
+    for (const [o, c] of chunks) {
+      tokens += c;
+      pairs += c * o + (c * (c + 1)) / 2;
+      cached += o;
+    }
+    for (const d of decodes) {
+      pairs += d;
+      cached += d;
+    }
+    const flops = 2 * P * tokens + attn * pairs;
+    return Math.max(flops / (g.tflops * 1e12), (2 * P + cached * kvTok) / (g.tbps * 1e12));
+  }
+  function chunkEstimate(g, m, x) {
+    const decode = chunkStepSeconds(g, m, [], Array(x.streams).fill(x.ctx));
+    const room = x.budget - x.streams;
+    if (room < 1) return { fits: false };
+    const chunks = [];
+    for (let done = 0; done < x.prompt; ) {
+      const c = Math.min(x.prompt - done, room);
+      chunks.push(chunkStepSeconds(g, m, [[done, c]], Array(x.streams).fill(x.ctx + chunks.length)));
+      done += c;
+    }
+    const T = chunks.reduce((a, b) => a + b, 0),
+      worst = Math.max(...chunks);
+    const busy = (x.per_min * T) / 60;
+    if (busy >= 1) return { fits: true, overloaded: true, decode, worst, chunks, ttft: T };
+    const plain = ((1 - busy) * 60) / decode,
+      total = plain + x.per_min * chunks.length;
+    const dist = [[decode, plain], ...chunks.map((s) => [s, x.per_min])].sort((a, b) => a[0] - b[0]);
+    let seen = 0,
+      p99 = decode;
+    for (const [gap, count] of dist) {
+      seen += count;
+      if (seen >= 0.99 * total) {
+        p99 = gap;
+        break;
+      }
+    }
+    const late = (x.per_min * chunks.filter((s) => s > x.itl_slo).length + plain * (decode > x.itl_slo)) / total;
+    const itlMean = 60 / total,
+      chatRate = x.streams / (x.output * itlMean),
+      longRate = x.per_min / 60;
+    const good = chatRate * (itlMean <= x.tpot_slo) + longRate * (T <= x.ttft_slo);
+    return {
+      fits: true,
+      overloaded: false,
+      decode,
+      worst,
+      chunks,
+      ttft: T,
+      itlMean,
+      p99,
+      late,
+      rate: chatRate + longRate,
+      good,
+    };
+  }
+  function initChunkCalc(box, n) {
+    const spec = readJSON($("script[type='application/json']", box));
+    if (!spec?.models?.length || !spec?.gpus?.length) return;
+    const d = spec.defaults || {};
+    const id = (k) => `ts-cc-${n}-${k}`;
+    const title = box.getAttribute("data-title");
+    box.classList.add("ts-fig");
+    box.innerHTML = "";
+    if (title) box.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    function sel(key, label, items, val) {
+      const s = el(
+        "select",
+        { id: id(key) },
+        items.map((x) => el("option", { value: x.id, text: x.label })),
+      );
+      s.value = val;
+      return [s, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), s])];
+    }
+    function num(key, label, val, min, max, step) {
+      const inp = el("input", { id: id(key), type: "number", min, max, step, value: val, inputmode: "decimal" });
+      return [inp, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), inp])];
+    }
+    const [mSel, mLab] = sel("model", "Model", spec.models, d.model || spec.models[0].id);
+    const [gSel, gLab] = sel("gpu", "GPU", spec.gpus, d.gpu || spec.gpus[0].id);
+    const fields = [
+      ["budget", "Token budget (max_num_batched_tokens)", d.budget ?? 8192, 2, 1e7, 1],
+      ["streams", "Streams decoding", d.streams ?? 20, 1, 1e5, 1],
+      ["ctx", "Cached tokens per stream", d.ctx ?? 1000, 1, 1e7, 1],
+      ["prompt", "Long prompt (tokens)", d.prompt ?? 50000, 1, 1e7, 1],
+      ["per_min", "Long prompts per minute", d.per_min ?? 2, 0.001, 1e5, "any"],
+      ["output", "Chat answer length (tokens)", d.output ?? 300, 2, 1e7, 1],
+      ["ttft", "TTFT target (ms)", (d.ttft_slo ?? 2) * 1e3, 1, 1e9, "any"],
+      ["tpot", "TPOT target (ms)", (d.tpot_slo ?? 0.05) * 1e3, 0.01, 1e9, "any"],
+      ["itl", "Gap target per token (ms)", (d.itl_slo ?? 0.1) * 1e3, 0.01, 1e9, "any"],
+    ].map(([k, label, v, lo, hi, st]) => [k, ...num(k, label, v, lo, hi, st)]);
+    box.appendChild(el("div", { class: "ts-rl-form" }, [mLab, gLab, ...fields.map((f) => f[2])]));
+    const inp = Object.fromEntries(fields.map((f) => [f[0], f[1]]));
+
+    // one bar per engine step that carries a chunk of the long prompt; a line for the gap target
+    const W = 560,
+      H = 220,
+      L = 58,
+      R = 16,
+      T = 14,
+      B = 40;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      class: "ts-cc-chart",
+      "aria-label": "Duration of each engine step that carries part of the long prompt, against the gap target",
+    });
+    const axes = sv("g", { class: "ts-rl-axis" });
+    const bars = sv("g");
+    const target = sv("line", { class: "ts-cc-target" });
+    [axes, bars, target].forEach((x) => {
+      svg.appendChild(x);
+    });
+    box.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    const out = el("div", { class: "ts-rl-out", "aria-live": "polite" });
+    box.appendChild(out);
+    const row = (k, v, cls) =>
+      el("div", { class: `ts-rl-row${cls ? ` ${cls}` : ""}` }, [el("dt", { text: k }), el("dd", { text: v })]);
+    const val = (k, lo, def) =>
+      Math.max(lo, Number.isFinite(+inp[k].value) && inp[k].value !== "" ? +inp[k].value : def);
+
+    function update() {
+      const g = spec.gpus.find((x) => x.id === gSel.value) || spec.gpus[0];
+      const m = spec.models.find((x) => x.id === mSel.value) || spec.models[0];
+      const x = {
+        budget: Math.round(val("budget", 2, 8192)),
+        streams: Math.round(val("streams", 1, 20)),
+        ctx: Math.round(val("ctx", 1, 1000)),
+        prompt: Math.round(val("prompt", 1, 50000)),
+        per_min: val("per_min", 0.001, 2),
+        output: Math.round(val("output", 2, 300)),
+        ttft_slo: val("ttft", 0.001, 2000) / 1e3,
+        tpot_slo: val("tpot", 0.001, 50) / 1e3,
+        itl_slo: val("itl", 0.001, 100) / 1e3,
+      };
+      axes.innerHTML = "";
+      bars.innerHTML = "";
+      out.innerHTML = "";
+      if (x.prompt / Math.max(1, x.budget - x.streams) > 20000) {
+        out.appendChild(
+          el("dl", { class: "ts-rl-list" }, [
+            row("Too many steps", "Raise the budget: this prompt would need over 20,000 steps.", "is-bad"),
+          ]),
+        );
+        target.setAttribute("visibility", "hidden");
+        return;
+      }
+      const e = chunkEstimate(g, m, x);
+      if (!e.fits) {
+        target.setAttribute("visibility", "hidden");
+        out.appendChild(
+          el("dl", { class: "ts-rl-list" }, [
+            row(
+              "No room",
+              `${fmtInt(x.streams)} decodes use the whole ${fmtInt(x.budget)}-token budget; no prompt token fits.`,
+              "is-bad",
+            ),
+          ]),
+        );
+        return;
+      }
+      target.removeAttribute("visibility");
+      const ymax = Math.max(e.worst, x.itl_slo, e.decode) * 1.1 * 1e3;
+      const yp = (ms) => T + (H - T - B) * (1 - ms / ymax);
+      for (let k = 0; k <= 2; k++) {
+        const v = (k / 2) * ymax;
+        axes.appendChild(sv("line", { class: "ts-rl-grid", x1: L, x2: W - R, y1: yp(v), y2: yp(v) }));
+        axes.appendChild(sv("text", { x: L - 6, y: yp(v) + 4, "text-anchor": "end", text: fmtNum(v) }));
+      }
+      axes.appendChild(sv("text", { x: L + 4, y: T + 10, class: "ts-bc-axlbl", text: "step (ms)" }));
+      axes.appendChild(
+        sv("text", {
+          x: (L + W - R) / 2,
+          y: H - 8,
+          "text-anchor": "middle",
+          text: `${fmtInt(e.chunks.length)} steps carry the long prompt; each stream waits one step per token`,
+        }),
+      );
+      const bw = (W - L - R) / e.chunks.length;
+      e.chunks.forEach((s, i) => {
+        bars.appendChild(
+          sv("rect", {
+            class: `ts-cc-bar${s > x.itl_slo ? " is-late" : ""}`,
+            x: L + i * bw + Math.min(2, bw * 0.15),
+            width: Math.max(0.5, bw - 2 * Math.min(2, bw * 0.15)),
+            y: yp(s * 1e3),
+            height: H - B - yp(s * 1e3),
+          }),
+        );
+      });
+      target.setAttribute("x1", L);
+      target.setAttribute("x2", W - R);
+      target.setAttribute("y1", yp(x.itl_slo * 1e3));
+      target.setAttribute("y2", yp(x.itl_slo * 1e3));
+      const rows = [
+        row("Decode-only step", fmtTime(e.decode)),
+        row("Longest step (worst gap for every stream)", fmtTime(e.worst), e.worst > x.itl_slo ? "is-bad" : "is-cmp"),
+        row("TTFT of the long prompt (empty queue)", fmtTime(e.ttft), e.ttft > x.ttft_slo ? "is-bad" : ""),
+      ];
+      if (e.overloaded) {
+        rows.push(
+          row(
+            "Overloaded",
+            "Long prompts alone need more than every second of GPU time; queues grow without limit.",
+            "is-bad",
+          ),
+        );
+      } else {
+        rows.push(
+          row("ITL mean / p99", `${fmtTime(e.itlMean)} / ${fmtTime(e.p99)}`),
+          row("Tokens later than the gap target", `${fmtNum(100 * e.late)}%`, e.late > 0 ? "is-bad" : ""),
+          row(
+            "Throughput / goodput",
+            `${fmtNum(e.rate)} / ${fmtNum(e.good)} requests/s (goodput counts TTFT and TPOT targets)`,
+            e.good < e.rate ? "is-bad" : "",
+          ),
+        );
+      }
+      out.appendChild(el("dl", { class: "ts-rl-list" }, rows));
+      out.appendChild(
+        el("p", {
+          class: "ts-rl-note",
+          text: "Best case at 100% of peak, BF16. Each long prompt arrives to an empty queue and runs alone beside the streams; a chat stream's TPOT is the mean gap, so rare stalls barely move it. Watch the worst gap and the late-token share for those.",
+        }),
+      );
+    }
+    [mSel, gSel, ...fields.map((f) => f[1])].forEach((i) => {
+      i.addEventListener("input", update);
+      i.addEventListener("change", update);
+    });
+    update();
+  }
+  function initChunkCalcs() {
+    $$(".ts-chunkcalc").forEach((b, i) => {
+      try {
+        initChunkCalc(b, i + 1);
+      } catch (e) {
+        console.error("[teach-site] chunk-budget calculator failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
      CODE + TABS
      ===================================================================== */
   const KW =
@@ -2455,6 +2714,7 @@
     initBatchCalcs();
     initBlocksAll();
     initFragCalcs();
+    initChunkCalcs();
     initCode();
     initTabs();
     initTerms();

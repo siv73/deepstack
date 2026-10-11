@@ -1,0 +1,405 @@
+<section class="ts-part" id="one-prompt-stalls-everyone" data-rung="1" data-min="5">
+<h2>Why one long prompt freezes twenty other users</h2>
+<p class="ts-problem">Twenty users are streaming chat answers from one H100 running Llama 3.1 8B, each getting a token every 5.6 ms. A customer pastes a 50,000-token contract. In this page's model every one of the twenty streams stops for 1.47 seconds.</p>
+<p>Part 1 named this prefill-decode interference. Part 3 put many requests into each step with continuous batching. Inside that loop, the problem gets sharper: every running request gets its next token only when the current step ends.</p>
+<p>A step lasts as long as its heaviest work. Twenty decodes read the weights once and are done in 5.6 ms. A 50,000-token prefill does 50,000 tokens of arithmetic. If both share one step, the step takes 1,471 ms, and all twenty users wait that long for one token.</p>
+<p>Think of a supermarket with one till. Twenty people are buying one item each. Someone arrives with three full trolleys. If the cashier scans all three trolleys before serving anyone else, twenty people stand still.</p>
+<p><span class="ts-claim" data-claim="c7" data-src="s1">With chunked prefill off, vLLM refuses to start if max_num_batched_tokens is smaller than max_model_len, so even the longest allowed prompt fits in one step's budget.</span> That is exactly the trolley case: the scheduler has to swallow the full prompt at once.</p>
+<p>The user sees it as a stutter, not a slowdown. Average time per token barely moves, because one frozen step hides among hundreds of fast ones. The tail of the gap between tokens, the ITL p99 or maximum from Part 1, is where it shows.</p>
+<p class="ts-takeaway">In a continuous-batching server one step carries everyone, so one huge prefill in a step freezes every stream for the whole step.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Keep the twenty streams, but make the pasted prompt 100,000 tokens instead of 50,000. Does the freeze roughly double, or grow by more than double? Why?</p>
+<div class="ts-reveal"><p>More than double. The weight arithmetic doubles, but attention grows faster: each prompt token attends to every earlier one, so that part grows with the square of the length. Doubling the prompt roughly quadruples the attention work, and the step stretches by more than two times.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="chunked-prefill" data-rung="2" data-min="6">
+<h2>Chunked prefill: cut the trolley into baskets</h2>
+<p class="ts-bridge">Last part: one step carries everyone, so a whole-prompt prefill freezes every stream. Still unsolved: how to keep the streams moving while the long prompt is processed.</p>
+<p class="ts-problem">You cannot make the 50,000 prompt tokens cheaper. You can decide how many of them go into each step.</p>
+<p>Give every step a fixed <dfn data-def="The most tokens one engine step may process, decodes and prompt tokens together. vLLM calls it max_num_batched_tokens.">token budget</dfn>. Each step, every decoding stream takes one token from it first. Whatever budget is left goes to the waiting prompt. A prompt that does not fit gets split, and the rest continues next step. That is <dfn data-def="Splitting a prompt's prefill across several engine steps, each taking only what is left of the token budget after the decodes.">chunked prefill</dfn>.</p>
+<ol class="ts-steps">
+<li>Step starts with a budget of 8,192 tokens.</li>
+<li>The 20 decoding streams take 20 tokens: one each.</li>
+<li>The long prompt takes the other 8,172 tokens as one chunk.</li>
+<li>The step ends; all 20 streams get a token, and the prompt is 8,172 tokens further.</li>
+<li>Repeat until the prompt is done; its last step produces its first token.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c4" data-src="s4 s5">In vLLM v0.31.0, unless you set it yourself, chunked prefill is on for generative models other than encoder-decoder ones.</span> <span class="ts-claim" data-claim="c5" data-src="s6">vLLM's tuning guide says that with it on, the scheduler batches all pending decodes first, fills what is left of the max_num_batched_tokens budget with pending prefills, and chunks any prefill that does not fit.</span> <span class="ts-claim" data-claim="c34" data-src="s2">The v0.31.0 code serves running requests in the order they were admitted, and a prompt still being chunked is one of them, so decodes go first when they were admitted before it.</span> Streams already running when the long prompt arrives, as here, are ahead of it. <span class="ts-claim" data-claim="c29" data-src="s11">Hugging Face's continuous batching guide describes the same fix: a long prompt in one step blocks other requests from generating, so prompts larger than the token budget are split across steps.</span></p>
+<p>The idea comes from research. <span class="ts-claim" data-claim="c40" data-src="s12">Sarathi-Serve (OSDI 2024) splits a prefill into near-equal-sized chunks and builds batches that add new prefill work without pausing the decodes already running, which it calls stall-free batching.</span></p>
+<figure class="ts-svg" data-title="Same work, chunking off vs an 8,192-token budget (widths are time)">
+<svg viewBox="0 0 700 350" role="img" aria-label="Two timelines of the same work. With chunked prefill off, one step of 1,471 ms carries all 50,000 prompt tokens and every stream waits that long for its next token. With an 8,192-token budget, seven steps of 41 to 327 ms carry the prompt in chunks while every stream gets a token each step.">
+<g><line class="life" x1="120" y1="316" x2="680" y2="316"/><line class="life" x1="120" y1="316" x2="120" y2="322"/><text x="120" y="338" text-anchor="middle" class="num">0.0 s</text><line class="life" x1="290" y1="316" x2="290" y2="322"/><text x="290" y="338" text-anchor="middle" class="num">0.5 s</text><line class="life" x1="460" y1="316" x2="460" y2="322"/><text x="460" y="338" text-anchor="middle" class="num">1.0 s</text><line class="life" x1="630" y1="316" x2="630" y2="322"/><text x="630" y="338" text-anchor="middle" class="num">1.5 s</text><text x="10" y="103" class="num">Chunking off</text><text x="10" y="225" class="num">Budget</text><text x="10" y="243" class="num">8,192</text></g>
+<g class="over" data-s="1"><rect x="116" y="30" width="8" height="280" rx="3"/><rect class="lblbg" x="130" y="6" width="330" height="20"/><text x="134" y="21">50,000-token prompt arrives; 20 streams decoding</text></g>
+<g class="node" data-s="2"><rect x="120.0" y="70" width="500.2" height="56" rx="4"/><text x="370.1" y="103" text-anchor="middle">1,471 ms</text><rect x="620.2" y="90" width="2" height="16" rx="1"/><rect x="622.7" y="90" width="2" height="16" rx="1"/><rect x="624.6" y="90" width="2" height="16" rx="1"/><rect x="626.5" y="90" width="2" height="16" rx="1"/></g>
+<g class="node" data-s="3"><rect x="120.0" y="200" width="51.1" height="56" rx="4"/><text x="145.5" y="233" text-anchor="middle">150 ms</text><rect x="171.1" y="200" width="63.1" height="56" rx="4"/><text x="202.6" y="233" text-anchor="middle">186 ms</text><rect x="234.1" y="200" width="75.1" height="56" rx="4"/><text x="271.7" y="233" text-anchor="middle">221 ms</text><rect x="309.3" y="200" width="87.1" height="56" rx="4"/><text x="352.8" y="233" text-anchor="middle">256 ms</text><rect x="396.4" y="200" width="99.2" height="56" rx="4"/><text x="446.0" y="233" text-anchor="middle">292 ms</text><rect x="495.6" y="200" width="111.2" height="56" rx="4"/><text x="551.2" y="233" text-anchor="middle">327 ms</text><rect x="606.8" y="200" width="14.1" height="56" rx="4"/><rect x="620.9" y="220" width="2" height="16" rx="1"/><rect x="623.4" y="220" width="2" height="16" rx="1"/><rect x="625.3" y="220" width="2" height="16" rx="1"/><rect x="627.2" y="220" width="2" height="16" rx="1"/></g>
+<g class="edge" data-s="4"><path d="M120,136 L620.2,136"/><rect class="lblbg" x="180.0" y="142" width="320" height="20"/><text x="340.0" y="157" text-anchor="middle">every stream waits 1,471 ms for one token</text><path d="M495.6,266 L606.8,266"/><rect class="lblbg" x="375.6" y="272" width="250" height="20"/><text x="500.6" y="287" text-anchor="middle">longest gap: 327 ms</text></g>
+<g class="over" data-s="5"><rect x="617.2" y="62" width="6" height="72" rx="3"/><rect x="617.9" y="192" width="6" height="72" rx="3"/><rect class="lblbg" x="410.2" y="40" width="250" height="20"/><text x="535.2" y="55" text-anchor="middle">long prompt's first token: 1.471 s</text><rect class="lblbg" x="410.9" y="170" width="250" height="20"/><text x="535.9" y="185" text-anchor="middle">long prompt's first token: 1.473 s</text></g>
+</svg>
+<ol class="ts-captions">
+<li>At time 0 a 50,000-token prompt arrives while 20 streams are decoding at 5.6 ms per token.</li>
+<li>Chunking off: one step carries 20 decode tokens plus all 50,000 prompt tokens. It takes 1,471 ms.</li>
+<li>Budget 8,192: seven steps carry chunks of 8,172 tokens, the last one 968. Each later chunk costs more, because it attends to every chunk before it.</li>
+<li>Chunking off, every stream waits 1,471 ms for one token. With chunks, the longest wait is the last full chunk: 327 ms.</li>
+<li>The long prompt's first token comes at 1.471 s without chunks and 1.473 s with them. In this model chunking costs it almost nothing.</li>
+</ol>
+</figure>
+<p>The analogy breaks in one place. A cashier's baskets cost the same each. Here a later chunk costs more than an earlier one, because its tokens must attend to all the prompt before them.</p>
+<p class="ts-takeaway">Chunked prefill gives each step a token budget, serves decodes first and feeds the long prompt in chunks, so no stream waits for the whole prefill.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put one chunked-prefill step in order.</p>
+<ol>
+<li>The step starts with the full token budget</li>
+<li>Each decoding stream takes one token from the budget</li>
+<li>The waiting prompt takes what is left as a chunk</li>
+<li>The step runs and every stream gets its next token</li>
+<li>The prompt continues from where it stopped, next step</li>
+</ol>
+<p class="ts-why">Decodes are served first so they are never starved; the prompt only gets what is left, which is what caps the step's length.</p>
+</div>
+</section>
+
+<section class="ts-part" id="the-budget-trade" data-rung="2" data-min="6">
+<h2>The budget is a dial between two kinds of waiting</h2>
+<p class="ts-bridge">Last part: the budget caps how much prompt rides in one step. Still unsolved: how to pick the number.</p>
+<p class="ts-problem">A teammate proposes a budget of 512 "so nobody ever stutters". Another wants 16,384 "for throughput". Who pays in each case?</p>
+<p>The budget sets the longest step a stream can be stuck in. It also sets how many steps the long prompt needs. The simulator runs the same 50,000-token prompt beside 20 streams at each budget:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Budget (tokens)</th><th>Steps for the prompt</th><th>Longest gap for each stream</th><th>Long prompt's TTFT</th></tr></thead>
+<tbody>
+<tr><td>Chunking off</td><td>1</td><td>1,471 ms</td><td>1.471 s</td></tr>
+<tr><td>16,384</td><td>4</td><td>620 ms</td><td>1.472 s</td></tr>
+<tr><td>8,192</td><td>7</td><td>327 ms</td><td>1.473 s</td></tr>
+<tr><td>2,048</td><td>25</td><td>84 ms</td><td>1.479 s</td></tr>
+<tr><td>512</td><td>102</td><td>21 ms</td><td>1.505 s</td></tr>
+<tr><td>256</td><td>212</td><td>10 ms</td><td>1.592 s</td></tr>
+<tr><td>128</td><td>463</td><td>7.9 ms</td><td>3.109 s</td></tr>
+</tbody>
+</table></div>
+<p>Halving the budget roughly halves the worst gap. The long prompt's TTFT barely moves down to 512 tokens: 2% slower. At 256 it is 8% slower, and at 128 it more than doubles. Every step reads all 16 GB of weights. A small chunk has too little arithmetic to hide that read, so the step turns memory-bound and the GPU's compute sits idle.</p>
+<p><span class="ts-claim" data-claim="c6" data-src="s6">vLLM's tuning guide says smaller budgets such as 2048 give better inter-token latency, and larger ones give better time to first token.</span> <span class="ts-claim" data-claim="c8" data-src="s4">On a GPU with at least 70 GiB that is not an A100, such as the H100 or H200, vllm serve in the default balanced performance mode uses max_num_batched_tokens = 8192 and max_num_seqs = 1024.</span> <span class="ts-claim" data-claim="c41" data-src="s12">Sarathi-Serve picks its token budget from the latency target for the time between tokens: the largest chunk whose step still meets it.</span></p>
+<p>This model is best case. Real kernels lose efficiency on small chunks earlier than this model shows, which is the TTFT cost the guide warns about.</p>
+<div class="ts-interview"><p><strong>"How would you choose max_num_batched_tokens?"</strong> A strong answer starts from the ITL target, not throughput: measure the step time at a few budgets with your real decode load, take the largest budget whose prefill-carrying steps stay under the target, then check long-prompt TTFT has not jumped. It names the trade: smaller means smoother streams and more steps per prompt; too small wastes each weight read.</p></div>
+<p class="ts-takeaway">The budget trades the worst gap every stream sees against how many steps a long prompt needs; set it from your inter-token target.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">Your SLO says no token may arrive more than 100 ms after the previous one. With the numbers above, which budget is the largest that meets it?</p>
+<ol>
+<li data-why="8,192 gives a 327 ms worst gap, three times the target.">8,192</li>
+<li>2,048</li>
+<li data-why="512 meets it but gives up chunk size you did not need to give up; 2,048 already fits.">512</li>
+</ol>
+<p class="ts-why">2,048 gives 84 ms, under 100. Going smaller only adds steps for long prompts and moves you toward the memory-bound floor.</p>
+</div>
+</section>
+
+<section class="ts-part" id="head-of-line" data-rung="2" data-min="5">
+<h2>Chunking protects the streams, not the queue</h2>
+<p class="ts-bridge">Last part: the budget caps the worst gap for running streams. Still unsolved: what happens to a request that arrives while the long prompt is being chunked?</p>
+<p class="ts-problem">Ten milliseconds after the contract arrives, someone sends "hi" with a 500-token chat history. Their first token takes 1.47 seconds, at every budget you try.</p>
+<p>Each step, the long prompt takes every token the decodes leave. Nothing is left for the newcomer, so it waits for the whole prefill. That is <dfn data-def="A request at the front of a queue blocking everything behind it, even requests that could be served quickly.">head-of-line blocking</dfn>. A smaller budget does not help: the chat still waits 1.477 s at a budget of 2,048.</p>
+<p><span class="ts-claim" data-claim="c9" data-src="s1 s2">vLLM's long_prefill_token_threshold (default 0, off) caps how many tokens one prefilling request may take in a step; the cap is skipped when that request is the only one waiting or running.</span> <span class="ts-claim" data-claim="c10" data-src="s2">The v0.31.0 source says the cap exists to stop a long prefill from starving other requests of the token budget.</span></p>
+<p>With a budget of 8,192 and a threshold of 2,048, the contract takes 2,048 tokens per step and the chat fits beside it. The chat's TTFT drops from 1.471 s to 69 ms. The contract's TTFT rises only from 1.481 s to 1.488 s, and the worst gap for the streams falls to 86 ms.</p>
+<p><span class="ts-claim" data-claim="c11" data-src="s2">Waiting requests are admitted in queue order; when the request at the head cannot get KV blocks for its whole prompt (the default check), admission stops for that step, and requests behind it do not jump ahead.</span> So a huge prompt at the head of the queue can also block admission on memory, not only on budget.</p>
+<p class="ts-takeaway">The budget bounds how long running streams wait; a per-request prefill cap bounds how long new requests wait behind a long prompt.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c9 c10">
+<p class="q">Streams are smooth, but new chat requests sometimes wait over a second for their first token, always while someone's long document is being prefilled. Which setting targets that?</p>
+<ol>
+<li>Set long_prefill_token_threshold below the budget, so the long prompt leaves room in each step</li>
+<li data-why="A smaller budget shortens steps but the long prompt still takes all of what is left, so the newcomer still waits for the whole prefill.">Halve max_num_batched_tokens</li>
+<li data-why="Running streams are already fine; more slots do not help a request blocked by budget.">Raise max_num_seqs</li>
+</ol>
+<p class="ts-why">The newcomer waits because the long prompt takes every leftover token. Capping that request's share leaves budget for others to be admitted each step.</p>
+</div>
+<div class="ts-explain" data-points="A step carries everyone, so a whole-prompt prefill freezes every stream|Chunked prefill serves decodes first and gives the prompt only what is left of the budget|The budget sets the worst gap; too small makes steps memory-bound and slows long prompts|New requests still wait behind a long prompt unless a per-request prefill cap leaves room">
+<p class="q">In your own words: how does chunked prefill work, what does the budget trade, and what problem does it not solve on its own?</p>
+<div class="ts-model"><p>Every engine step carries all running requests, so a step that includes a whole long prefill freezes every stream until it ends. Chunked prefill gives each step a token budget, serves one token per decoding stream first and gives the prompt only what is left, so the prompt is split across steps. A bigger budget means longer worst gaps for the streams but fewer steps per prompt; a budget too small turns each step memory-bound and slows long prompts. On its own it does not help new requests: the long prompt takes all the leftover budget, so newcomers wait for the whole prefill unless a per-request cap such as long_prefill_token_threshold leaves room.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="slos-and-goodput" data-rung="3" data-min="6">
+<h2>Count the requests users were happy with, not the tokens</h2>
+<p class="ts-bridge">Last part: one knob trades one user's wait against another's. Still unsolved: what number tells you the server as a whole is doing well?</p>
+<p class="ts-problem">At ten times normal traffic your dashboard shows 35 requests per second served, more than ever. Support tickets say chat takes eight seconds to start.</p>
+<p>An <dfn data-def="Service level objective: a latency target you promise per request, such as first token within 1 s.">SLO</dfn> is a per-request promise: first token within 1 s, and an average gap between tokens under 50 ms. <dfn data-def="Requests per second that met every latency target they were given.">Goodput</dfn> counts only requests that kept the promise.</p>
+<p><span class="ts-claim" data-claim="c43" data-src="s13">The DistServe paper defines per-GPU goodput as the highest request rate that can be served while meeting an SLO attainment goal, such as 90% of requests meeting their TTFT and TPOT targets, for each GPU provisioned.</span> <span class="ts-claim" data-claim="c44" data-src="s13">It argues that systems tuned for overall throughput, tokens per second across all users, must over-provision GPUs to meet latency targets.</span></p>
+<p><span class="ts-claim" data-claim="c27" data-src="s9">vLLM's benchmark, vllm bench serve --goodput, takes SLOs for ttft, tpot and e2el in milliseconds, counts a request as good only if it meets every one given, and reports good requests per second of benchmark time.</span> <span class="ts-claim" data-claim="c28" data-src="s9">Its per-request TPOT is (latency minus TTFT) divided by (output tokens minus 1), and its help text points to the DistServe paper for the definition.</span> The simulator uses the vLLM form, with 1 s TTFT and 50 ms TPOT targets chosen for a chat product:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>3,000 chat requests, H100, 8B</th><th>Served (requests/s)</th><th>Goodput (requests/s)</th><th>Met both SLOs</th><th>TTFT p99</th></tr></thead>
+<tbody>
+<tr><td>4 per second (normal)</td><td>4.05</td><td>4.05</td><td>100%</td><td>51 ms</td></tr>
+<tr><td>40 per second (10×)</td><td>34.6</td><td>10.0</td><td>29%</td><td>7.56 s</td></tr>
+</tbody>
+</table></div>
+<p>Throughput rose almost ninefold. Goodput rose 2.5 times, and seven in ten users got a bad experience. The GPU was busy the whole time; it was busy serving people who had already given up.</p>
+<div class="ts-trap"><p>TPOT is a per-request average, so it hides stalls. A 300-token answer that froze once for 327 ms and otherwise ran at 5.6 ms has a TPOT of about 6.6 ms: comfortably "good". Track the worst gap or a high ITL percentile alongside goodput.</p></div>
+<div class="ts-interview"><p><strong>"Our tokens per second doubled after a config change. Ship it?"</strong> A strong answer asks for goodput at the product's SLOs before and after, at the same offered load, and for TTFT and ITL tails. More throughput from bigger batches or bigger budgets often means slower tokens or longer queues for each user.</p></div>
+<p class="ts-takeaway">Goodput counts requests that met their latency targets; at overload throughput keeps rising while goodput collapses.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c27">
+<p class="q">A benchmark with --goodput ttft:1000 tpot:50 reports 20 requests/s served and 12 requests/s goodput. What does the gap mean?</p>
+<ol>
+<li data-why="Failed requests are counted separately; goodput is about latency, not errors.">8 requests per second returned errors</li>
+<li data-why="It counts a request as good only if every given SLO holds, not either.">8 requests per second missed both SLOs</li>
+<li>8 requests per second finished but missed at least one of the two targets</li>
+</ol>
+<p class="ts-why">A request counts as good only when it meets every target given. The other 8 per second completed, but missed the TTFT target, the TPOT target, or both.</p>
+</div>
+</section>
+
+<section class="ts-part" id="fcfs-vs-priority" data-rung="3" data-min="6">
+<h2>First come, first served, or priority</h2>
+<p class="ts-bridge">Last part: goodput tells you how many users were served well. Still unsolved: when not everyone can be served well, who gets served first?</p>
+<p class="ts-problem">Your paid tier and your free tier share one vLLM server. A free-tier batch job floods the queue at 2 a.m., and paid users' first tokens slow down with it.</p>
+<p><span class="ts-claim" data-claim="c1" data-src="s1">vLLM v0.31.0 accepts two scheduling policies: "fcfs", first come, first served, which is the default, and "priority".</span> <span class="ts-claim" data-claim="c2" data-src="s1 s3">Under "priority" a lower value is handled earlier, and arrival time breaks ties; the waiting queue is a heap ordered by those two.</span> <span class="ts-claim" data-claim="c3" data-src="s10">A request's priority field defaults to 0, and any other value raises an error unless the server runs the priority policy.</span> You turn it on with --scheduling-policy priority.</p>
+<p>Know what priority does not do. <span class="ts-claim" data-claim="c13" data-src="s2">In v0.31.0 a priority changes two things: the order of the waiting queue, and which running request is preempted when KV blocks run out. A high-priority arrival does not preempt running requests just to get in.</span> So it shortens the paid user's queue wait, but a long free-tier prefill that is already running still stalls their stream.</p>
+<div class="ts-code" data-lang="bash" data-title="Serve with priority; send a paid request" data-verified="spec" data-claims="c1 c3">
+<pre><code>vllm serve meta-llama/Llama-3.1-8B-Instruct --scheduling-policy priority
+
+# paid tier: 0 (handled first); free tier: 10
+curl localhost:8000/v1/chat/completions -H 'Content-Type: application/json' \
+  -d '{"model": "meta-llama/Llama-3.1-8B-Instruct", "priority": 0,
+       "messages": [{"role": "user", "content": "hi"}]}'</code></pre>
+</div>
+<p>The simulator runs tenant A, chat at 8 requests per second, beside tenant B, sending 32,000-token prompts every 2 seconds on average with priority 1:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Policy</th><th>A's TTFT p99</th><th>A's ITL p99</th><th>A met both SLOs</th></tr></thead>
+<tbody>
+<tr><td>FCFS</td><td>1.99 s</td><td>221 ms</td><td>86%</td></tr>
+<tr><td>Priority (A = 0, B = 1)</td><td>0.91 s</td><td>223 ms</td><td>97%</td></tr>
+</tbody>
+</table></div>
+<p>Priority halves A's TTFT tail and leaves its stutter untouched, exactly as the source predicts.</p>
+<div class="ts-interview"><p><strong>"How do you guarantee paid users a better experience on shared GPUs?"</strong> A strong answer separates queue order from step sharing. Priority scheduling fixes queue order. Stalls inside running steps need a smaller budget or a per-request prefill cap. Real isolation needs separate capacity, and starvation of the low tier needs a limit, or it may never run.</p></div>
+<p class="ts-takeaway">Priority reorders the waiting queue and picks preemption victims; it does not stop a running long prefill from stalling anyone's stream.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c13">
+<p class="q">You switch to the priority policy and give paid users priority 0. Paid users' TTFT improves, but their streams still stutter. Why?</p>
+<ol>
+<li data-why="Priority does work; it is applied to the waiting queue.">Priority is ignored unless max_num_seqs is lowered</li>
+<li>Priority orders the waiting queue, but free-tier prefills already running still share each step with paid decodes</li>
+<li data-why="vLLM does not preempt running requests to admit a higher-priority one; preemption only happens when KV blocks run out.">Paid requests are being preempted by free ones</li>
+</ol>
+<p class="ts-why">Stutter comes from prefill work inside the steps that paid streams are part of. Priority does not remove that work; a smaller budget or a per-request prefill cap does.</p>
+</div>
+</section>
+
+<section class="ts-part" id="admission-control" data-rung="3" data-min="6">
+<h2>Saying no early: queue caps and load shedding</h2>
+<p class="ts-bridge">Last part: priority chooses who goes first. Still unsolved: at ten times the load, everyone waits; what if some requests are never accepted at all?</p>
+<p class="ts-problem">At 40 requests per second, a request accepted now waits 7.5 seconds in the queue. The user gives up at 3 seconds. The GPU later does the work anyway.</p>
+<p><dfn data-def="Refusing new requests at the door when the server cannot serve them within target, so the ones accepted still are.">Load shedding</dfn> refuses work you cannot serve in time, early and cheaply, so the work you accept stays good. <span class="ts-claim" data-claim="c21" data-src="s1">By default vLLM's request queue has no limit.</span> v0.31.0 has two valves:</p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c18" data-src="s1 s7">max_num_queued_reqs caps waiting plus running requests; past it, new requests get HTTP 503 so a client can retry on another instance.</span></li>
+<li><span class="ts-claim" data-claim="c19" data-src="s1">max_num_queued_tokens caps the total prompt tokens of requests still in prefill, also with a 503; its docstring suggests setting it to the TTFT target times prefill throughput.</span></li>
+<li><span class="ts-claim" data-claim="c20" data-src="s1 s7">Both are checked in the API server process, and the token count is conservative: a partly prefilled prompt still counts in full.</span></li>
+</ol>
+<p>The simulator caps waiting plus running at 300 and replays the 10× load:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>40 requests/s</th><th>Rejected</th><th>Served / goodput (req/s)</th><th>TTFT p99</th><th>Preemptions</th></tr></thead>
+<tbody>
+<tr><td>No cap</td><td>0</td><td>34.6 / 10.0</td><td>7.56 s</td><td>148</td></tr>
+<tr><td>Cap of 300</td><td>228 of 3,000 (7.6%)</td><td>35.2 / 35.2</td><td>0.22 s</td><td>0</td></tr>
+</tbody>
+</table></div>
+<p>Turning away 7.6% of requests more than tripled goodput. Without the cap, the scheduler kept admitting until the KV cache was full, then preempted 148 times and recomputed that work.</p>
+<div class="ts-trap"><p>A 503 only helps if clients behave. Retrying immediately against the same instance turns shedding into a retry storm. Clients need backoff with jitter, and the load balancer must send retries elsewhere.</p></div>
+<div class="ts-interview"><p><strong>"Why reject requests when the GPU still has queue room?"</strong> A strong answer: a request served after its deadline costs full GPU time and earns nothing. Rejecting it early is cheap, lets the client retry another replica, and protects the requests already accepted. Size the cap from the latency target: queue depth that drains within the TTFT budget.</p></div>
+<p class="ts-takeaway">An unbounded queue turns overload into late answers for everyone; a cap turns it into fast 503s for a few and on-time answers for the rest.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c19 c20">
+<p class="q">You set max_num_queued_tokens from your TTFT target, and find it rejects slightly earlier than your math predicts during long-document traffic. Why?</p>
+<ol>
+<li>It counts each prefilling prompt in full until prefill ends, even when chunks are already done</li>
+<li data-why="It counts prompt tokens of requests still in prefill, not output tokens.">It also counts the output tokens each request may generate</li>
+<li data-why="The limit is checked in the API server, which does not see per-step progress; that is why it over-counts.">It is checked inside the GPU worker, which lags behind</li>
+</ol>
+<p class="ts-why">The API server does not see chunk progress, so a half-prefilled prompt still counts at its full length. The error is on the safe side: it rejects a little early.</p>
+</div>
+</section>
+
+<section class="ts-part" id="simulator" data-rung="3" data-min="6">
+<h2>A simulator you can run: budget, policy, SLOs</h2>
+<p class="ts-bridge">Last part: caps keep accepted work on time. Still unsolved: where did every number on this page come from?</p>
+<p class="ts-problem">You want to test a budget or a queue cap on your own traffic mix before touching a production server.</p>
+<p>This extends Part 3's simulator. Each step it follows the v0.31.0 loop: running requests first, in order, each taking what it still needs from the budget; then waiting requests in queue order while budget, slots and KV room last. With chunking, a prompt that does not fit takes what is left and continues next step.</p>
+<p><span class="ts-claim" data-claim="c33" data-src="s2">The v0.31.0 scheduler has no separate prefill or decode phase: each step it tries to assign tokens to every request so that its count of computed tokens catches up with its tokens so far.</span> The simulator keeps that shape, so a preempted request simply starts again from zero.</p>
+<div class="ts-tabs">
+<div data-tab="scheduler.py"><div class="ts-code" data-lang="python" data-title="scheduler.py" data-file="scheduler.py" data-verified="ran"></div></div>
+<div data-tab="step.py"><div class="ts-code" data-lang="python" data-title="step.py" data-file="step.py" data-verified="ran"></div></div>
+<div data-tab="slo.py"><div class="ts-code" data-lang="python" data-title="slo.py" data-file="slo.py" data-verified="ran"></div></div>
+<div data-tab="scenarios.py"><div class="ts-code" data-lang="python" data-title="scenarios.py" data-file="scenarios.py" data-verified="ran"></div></div>
+</div>
+<p>Run <code>uv run scenarios.py</code> in the example folder. Every number on this page has a test in <code>test_scheduling.py</code>. The model is best case: 100% of peak, no CPU scheduling time, no kernel inefficiency on small chunks. Trust its ratios more than its milliseconds.</p>
+<div class="ts-interview"><p><strong>"How would you pick scheduler settings before launch?"</strong> A strong answer replays a recorded trace (arrival times, prompt and output lengths per tenant) against a staging server at 1×, 3× and 10× speed, sweeping the budget, prefill cap and queue cap, and reads goodput plus ITL and TTFT tails, not average throughput.</p></div>
+<p class="ts-takeaway">Model the scheduler loop, replay realistic traffic, and judge settings by goodput and latency tails.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In scheduler.py, a running request is preempted to make room. Why does the code put it at the front of the waiting queue rather than the back?</p>
+<div class="ts-reveal"><p>It was already admitted once, so it is older than anything behind it. Under FCFS, putting it at the back would let newer requests overtake it, and a request could be preempted again and again. At the front it gets the next free room.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="calculator" data-rung="3" data-min="5">
+<h2>Try it: the chunk-budget calculator</h2>
+<p class="ts-bridge">Last part: the simulator behind the page. Still unsolved: how does a budget play out with your model, GPU and prompt mix?</p>
+<p class="ts-problem">Your service runs 20 streams per GPU and gets two 50,000-token documents a minute. Is the default budget fine?</p>
+<p>The calculator uses the same step model. Streams decode steadily; long prompts arrive at the rate you set and are chunked by your budget. <span class="ts-claim" data-claim="c31" data-src="s14">Llama 3.1 8B has 32 layers, a model dimension of 4,096, 32 attention heads and 8 key/value heads; Llama 3.1 70B has 80 layers, a dimension of 8,192, 64 attention heads and 8 key/value heads.</span> <span class="ts-claim" data-claim="c45" data-src="s15">NVIDIA lists the H100 SXM at 1,979 teraFLOPS of BF16 with sparsity, 3.35 TB/s of memory bandwidth and 80 GB of memory.</span> Dense work gets half the sparse figure, as Part 1 showed: about 989.5 teraFLOPS.</p>
+<div class="ts-chunkcalc" data-title="Chunk-budget calculator">
+<script type="application/json">
+{"models": [
+  {"id": "llama-3.1-8b", "label": "Llama 3.1 8B", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128},
+  {"id": "llama-3.1-70b", "label": "Llama 3.1 70B (needs 2+ GPUs; shown per GPU-equivalent)", "params": 70, "layers": 80, "q_heads": 64, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [{"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80}],
+ "defaults": {"model": "llama-3.1-8b", "gpu": "h100-sxm", "budget": 8192, "streams": 20, "ctx": 1000, "prompt": 50000,
+              "per_min": 2, "output": 300, "ttft_slo": 2, "tpot_slo": 0.05, "itl_slo": 0.1}}
+</script>
+</div>
+<p>At the defaults: the decode-only step is 5.6 ms, the worst step 327 ms, and the long prompt's TTFT 1.47 s. ITL p99 is 5.6 ms and goodput equals throughput, about 11.5 requests per second. Both look perfect, yet every stream froze for 327 ms twice a minute. Fewer than 1% of gaps were slow, so the p99 cannot see them. Now set the budget to 2,048 and watch the worst step fall to 84 ms.</p>
+<p class="ts-takeaway">Read the worst step, not the p99 or goodput alone: rare long stalls hide under both.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Raise long prompts per minute from 2 to 20 at a budget of 8,192. Predict what happens to ITL p99 and to the worst step.</p>
+<div class="ts-reveal"><p>The worst step stays 327 ms: it depends on the budget, not on how often prompts come. ITL p99 jumps to about 256 ms, because chunk steps are now more than 1% of all steps, so the percentile lands on them. Frequency moves the percentile; the budget moves the worst case.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="preemption-cost" data-rung="4" data-min="5">
+<h2>What preemption costs the request that loses</h2>
+<p class="ts-bridge">Last part: the budget sets worst gaps, and percentiles can hide them. Still unsolved: at high load, KV memory runs out; who pays, and how much?</p>
+<p class="ts-problem">At 10× load the simulator preempted 148 times. One of the victims was 400 tokens into an answer on a 2,000-token prompt.</p>
+<p><span class="ts-claim" data-claim="c14" data-src="s2">When a running request cannot get new KV blocks, v0.31.0 preempts the last request in the running list under FCFS, or the one with the largest priority value, latest arrival first, under the priority policy.</span> <span class="ts-claim" data-claim="c15" data-src="s2">The victim's blocks are freed, its count of computed tokens goes back to zero, and it returns to the waiting queue.</span> <span class="ts-claim" data-claim="c16" data-src="s2">No waiting request is admitted in a step that preempted anything.</span></p>
+<p>The victim pays three times. Its stream stops while it waits. When it runs again it must recompute 2,400 tokens: about 40 ms of GPU time against 4.9 ms for one decode step. And that recompute is a prefill, so it slows every stream it shares a step with: beside 100 decodes, that step takes 42 ms instead of 8.7 ms.</p>
+<p><span class="ts-claim" data-claim="c17" data-src="s1">The watermark setting (default 0.0, off) keeps a fraction of KV blocks free when admitting waiting or preempted requests, to avoid repeated preemption.</span> A cap on queued requests helps more: in the simulator, 300 requests in flight caused no preemptions at all.</p>
+<div class="ts-trap"><p>Under FCFS the victim is the newest running request, so a user who just got their first token is the one frozen. Their TTFT looked fine; their answer stalls a second later. Watch the preemption counter, not only TTFT.</p></div>
+<p class="ts-takeaway">Preemption frees memory by throwing away a request's cache; the victim waits, then recomputes everything, slowing its step-mates too.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c14 c15">
+<p class="q">Under the priority policy with paid users at 0 and free at 10, KV memory runs out while a free user's 5,000-token prefill and a paid user's decode are running. Which one is preempted, and what does it lose?</p>
+<ol>
+<li data-why="The paid request has the lower value, so it is kept.">The paid request; it loses its last token only</li>
+<li data-why="Preemption in v0.31.0 resets the cache; nothing is swapped out by default.">The free request; its cache is copied to CPU memory</li>
+<li>The free request; its blocks are freed and its computed tokens are redone later</li>
+</ol>
+<p class="ts-why">Under the priority policy the victim has the largest priority value, here the free request. Its blocks are freed and its computed-token count reset, so the prefill is redone; with prefix caching on, blocks still in the cache can shorten that.</p>
+</div>
+</section>
+
+<section class="ts-part" id="ten-times-load" data-rung="4" data-min="6">
+<h2>Ten times the load: what breaks first, and where you see it</h2>
+<p class="ts-bridge">Last part: preemption throws work away under memory pressure. Still unsolved: in what order do things fail as load rises, and which metric shows each?</p>
+<p class="ts-problem">Normal traffic is 4 requests per second. A launch brings 40. You have one dashboard and five minutes.</p>
+<ol class="ts-steps">
+<li><strong>Steps get fuller.</strong> More decodes and prefills per step; ITL rises gradually. In the simulator ITL p99 went from 19 ms to 112 ms.</li>
+<li><strong>The queue grows.</strong> The batch hits a limit, so new requests wait. Peak waiting went from 0 to 285 requests, and queue time p99 to 7.5 s.</li>
+<li><strong>KV fills.</strong> KV use went from 6% to 100%.</li>
+<li><strong>Preemption starts.</strong> 148 preemptions; finished work is thrown away and redone.</li>
+<li><strong>Goodput collapses</strong> while throughput looks healthy: 10.0 versus 34.6 requests per second.</li>
+</ol>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Symptom</th><th>vLLM v0.31.0 metric</th></tr></thead>
+<tbody>
+<tr><td>Queue growing</td><td><span class="ts-claim" data-claim="c22" data-src="s8">vllm:num_requests_waiting and vllm:num_requests_running are gauges, and vllm:num_requests_waiting_by_reason splits waiting requests into "capacity" and "deferred".</span></td></tr>
+<tr><td>Time spent queued</td><td><span class="ts-claim" data-claim="c23" data-src="s8">vllm:request_queue_time_seconds is a histogram of time in the waiting phase.</span></td></tr>
+<tr><td>Memory full, work redone</td><td><span class="ts-claim" data-claim="c24" data-src="s8">vllm:kv_cache_usage_perc reports KV usage, where 1 means 100%; vllm:num_preemptions is a running total, and vllm:request_num_preemptions a histogram per request.</span></td></tr>
+<tr><td>Stalls and slow starts</td><td><span class="ts-claim" data-claim="c25" data-src="s8">vllm:inter_token_latency_seconds and vllm:time_to_first_token_seconds are histograms, and vllm:iteration_tokens_total is a histogram of tokens per engine step.</span></td></tr>
+</tbody>
+</table></div>
+<p>Alert on queue time and waiting requests first: they move minutes before goodput collapses. A preemption rate above zero means the KV cache is the binding limit. A tokens-per-step histogram pinned at the budget means prefill pressure, which pairs with ITL spikes.</p>
+<div class="ts-interview"><p><strong>"Your LLM API's p99 TTFT went from 0.1 s to 8 s during a launch. Walk me through it."</strong> A strong answer reads queue time first (is it waiting or computing?), then KV usage and preemptions (memory or compute?), then ITL (are steps overloaded?). Fixes in order: shed load with a queue cap, add replicas, then tune budget and prefill caps.</p></div>
+<p class="ts-takeaway">At overload the queue grows first, then KV fills and preemption starts, and goodput collapses while throughput stays high; alert on queue time and waiting requests.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c22 c23 c24">
+<p class="q">During a spike, vllm:kv_cache_usage_perc sits near 0.4, vllm:num_preemptions is flat, and vllm:request_queue_time_seconds p99 is 6 s. What is the bottleneck?</p>
+<ol>
+<li data-why="KV use at 40% and no preemptions rule out memory as the limit.">The KV cache is full</li>
+<li>Requests wait for scheduling capacity, not memory: compute, or a slot or budget limit, is binding</li>
+<li data-why="A 6 s queue time is time spent before scheduling, not stalls during streaming.">Long prefills are stalling running streams</li>
+</ol>
+<p class="ts-why">Memory has room and nothing is preempted, yet requests sit in the queue: the server is short of compute, or a slot or budget limit binds. vllm:num_requests_waiting_by_reason tells capacity waits apart from deferred ones. Shed load or add replicas.</p>
+</div>
+</section>
+
+<section class="ts-part" id="noisy-neighbour" data-rung="4" data-min="6">
+<h2>The noisy neighbour: one client sending maximum-length prompts</h2>
+<p class="ts-bridge">Last part: the order things break under load. Still unsolved: what if the load comes from one client, and everyone else pays?</p>
+<p class="ts-problem">Tenant B sends 32,000-token prompts every 2 seconds on average. Tenant A is 8 chat requests per second. A's p99 TTFT goes from 57 ms to 1.99 s, and its streams stutter at 221 ms.</p>
+<p>Each of B's prompts is a long prefill that every other request shares steps with, and a long head-of-line wait for anything queued behind it. The simulator tries the fixes:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Fix</th><th>A's TTFT p99</th><th>A's ITL p99</th><th>A met both SLOs</th><th>B's TTFT p99</th></tr></thead>
+<tbody>
+<tr><td>None (FCFS, budget 8,192)</td><td>1.99 s</td><td>221 ms</td><td>86%</td><td>2.25 s</td></tr>
+<tr><td>Priority, B lower</td><td>0.91 s</td><td>223 ms</td><td>97%</td><td>2.52 s</td></tr>
+<tr><td>Prefill cap 2,048</td><td>0.71 s</td><td>141 ms</td><td>98%</td><td>3.03 s</td></tr>
+<tr><td>Budget 2,048 and priority</td><td>0.82 s</td><td>64 ms</td><td>100%</td><td>2.52 s</td></tr>
+<tr><td>Gateway limits B to 0.1 requests/s</td><td>0.88 s</td><td>31 ms</td><td>99.6%</td><td>1.63 s</td></tr>
+<tr><td>B absent</td><td>0.06 s</td><td>28 ms</td><td>100%</td><td>–</td></tr>
+</tbody>
+</table></div>
+<p>No scheduler setting gets A back to normal: each 32,000-token prefill still has to run somewhere. Fairness between tenants needs a layer that knows tenants. <span class="ts-claim" data-claim="c26" data-src="s8">vLLM v0.31.0 labels its metrics by model_name and engine, plus a few labels such as a waiting reason; no label identifies the client.</span> So per-tenant limits and dashboards live in your gateway: tokens per minute per API key, maximum prompt length per plan, and a separate pool for bulk jobs.</p>
+<div class="ts-trap"><p>Rate-limiting by requests per second does not stop this client. One 32,000-token request costs at least as much prefill as 64 typical 500-token chats. Limit tokens per minute, counting prompt tokens, per tenant.</p></div>
+<p class="ts-takeaway">vLLM's scheduler knows priorities, not tenants; per-tenant fairness against a noisy neighbour needs token-based limits in front of it.</p>
+<div class="ts-predict" data-claims="c26">
+<p class="q">You suspect a noisy neighbour. Which vLLM metric tells you which tenant it is?</p>
+<div class="ts-reveal"><p>None. vLLM's metrics carry model_name and engine labels only, so they show that something is wrong (ITL spikes, queue time, large values in the prompt-length histogram) but not who. Per-tenant prompt-token counts have to come from your gateway or request logs.</p></div>
+</div>
+<div class="ts-explain" data-points="Preemption discards the victim's cache, so it waits and recomputes, slowing its step-mates|At 10x load the queue grows first, then KV fills and preemption starts|Queue time and waiting requests are the early alerts; goodput collapses while throughput stays high|vLLM metrics and policies do not know tenants, so fairness needs token limits in a gateway">
+<p class="q">Your shared vLLM service degrades during a big customer's batch import. Explain what breaks, how you would see it, and how you would fix it.</p>
+<div class="ts-model"><p>The import adds long prefills and many requests. Steps fill with prefill, so other users' streams stutter; the queue grows, so TTFT and queue time climb; if KV fills, the newest requests are preempted and their work recomputed. I would see it in vllm:request_queue_time_seconds and vllm:num_requests_waiting first, then vllm:kv_cache_usage_perc and vllm:num_preemptions, with ITL spikes alongside prompt-length spikes. vLLM cannot tell me which tenant, so per-tenant token counts come from the gateway. Fixes: a token-per-minute limit for that customer or a separate pool, a queue cap with 503s, and a smaller budget or prefill cap for the stutter.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="analogies-and-options" data-rung="5" data-min="6">
+<h2>CPU time slices, API gateways, and where both analogies break</h2>
+<p class="ts-bridge">Last part: tenant fairness lives outside the scheduler. Still unsolved: which tool to reach for, and how this maps to systems you already run.</p>
+<p class="ts-problem">An interviewer asks: "This is just CPU scheduling and API rate limiting, right?" Half right.</p>
+<p><strong>OS time slicing.</strong> An operating system gives each runnable thread a short slice of CPU, so one long job cannot freeze interactive ones. Chunked prefill is the same move: the budget is the slice, and the long prompt is the batch job. Where it breaks: a CPU runs one thread per core per slice, while one GPU step runs everyone at once, so a heavy chunk slows everyone in it. And a context switch saves registers and resumes; a preempted request loses its cache and redoes its work.</p>
+<p><strong>API gateway timeouts and shedding.</strong> A gateway caps concurrency, times out slow requests, and returns 503 when full. max_num_queued_reqs is the same valve. Where it breaks: an HTTP request costs roughly the same each time, so request counts work as limits. LLM requests differ in cost by a factor of 100 or more by prompt length, so limits must count tokens.</p>
+<p><span class="ts-claim" data-claim="c46" data-src="s13">The DistServe paper argues that chunked prefill trades TTFT for TPOT and cannot remove the interference between the two phases.</span> Its answer, separate GPUs for prefill and decode, is Part 7.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Option</th><th>Pick it when</th><th>What you give up</th></tr></thead>
+<tbody>
+<tr><td>Lower max_num_batched_tokens</td><td>Streams stutter when long prompts arrive; ITL target missed</td><td>More steps per long prompt; too low wastes each weight read</td></tr>
+<tr><td>long_prefill_token_threshold</td><td>New requests wait behind long prompts</td><td>Slightly slower TTFT for the long prompt</td></tr>
+<tr><td>Priority policy</td><td>Tiers must be ordered in the queue</td><td>Low tier waits longer, can starve; no help for in-step stalls</td></tr>
+<tr><td>max_num_queued_reqs / _tokens</td><td>Overload makes everyone late</td><td>Some clients get 503s and must retry elsewhere</td></tr>
+<tr><td>Gateway token limits per tenant</td><td>One client's traffic hurts others</td><td>That client is throttled; you build and run the gateway</td></tr>
+<tr><td>Separate prefill and decode GPUs</td><td>Long prompts and strict ITL targets together; Part 7</td><td>More hardware and moving KV cache between machines</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Beyond senior"><p>Choosing per-team SLOs, setting tenant quotas across an organisation, and capacity planning across a fleet are staff-level concerns, not covered here.</p></div>
+<p class="ts-takeaway">Chunked prefill is time slicing and queue caps are load shedding, but steps are shared, preemption discards work, and cost scales with tokens, not requests.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">Why does "100 requests per minute per key" fail to protect other tenants of an LLM API, when it works for an ordinary REST API?</p>
+<ol>
+<li>LLM request cost scales with prompt and output tokens, so 100 maximum-length requests can cost as much as thousands of short ones</li>
+<li data-why="Counting requests is easy; the problem is that requests are not equal in cost.">LLM servers cannot count requests</li>
+<li data-why="Priority is a separate mechanism; the limit's unit is the problem.">The limit must be combined with priority scheduling to work at all</li>
+</ol>
+<p class="ts-why">The limit's unit is wrong. Cost depends on tokens: a 32,000-token prompt costs at least as much prefill as 64 500-token ones. Limits must count tokens.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="8">
+<h2>Interview drill: designs where scheduling is the crux</h2>
+<p class="ts-bridge">Last part: the options and their costs. Still unsolved: defending a choice under pressure.</p>
+<p class="ts-problem">Three prompts. Commit to an answer before you open each reference.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. A legal-tech product: users upload 80,000-token contracts and also chat. Contracts can take 10 s to first token; chat needs TTFT under 1 s and no gap above 150 ms. One H100 pool. Design the scheduler settings.</p>
+<div class="ts-reveal"><p>Keep chunked prefill on and pick the budget from the 150 ms gap target: about 2,048 tokens per step meets it with margin in this page's model. Add a per-request prefill cap below the budget so chats are admitted beside a contract instead of behind it. Give chat priority 0 and contracts a higher value, so chats go first in the queue. Trade-off: contracts take more steps and wait longer; they have a 10 s budget to spend. If the contract volume grows until chat SLOs slip anyway, split contracts onto their own pool or separate prefill from decode.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. Your vLLM fleet shows 95% GPU busy, record throughput, and rising complaints. How do you convince the team that the dashboard is lying?</p>
+<div class="ts-reveal"><p>Replace throughput with goodput at the product SLOs, measured with vllm bench serve --goodput or from request logs. Show queue time p99 and waiting requests: at overload they climb while throughput plateaus. Show that the GPU is busy on requests that will miss their target anyway. Propose a queue cap with 503s and client backoff; give up a few percent of requests to get most of goodput back, as the simulator's 7.6% rejected for 3.5 times goodput showed.</p></div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">3. Paid and free users share GPUs. Free traffic sometimes spikes tenfold. Paid users must keep TTFT p99 under 1 s. What do you build, and what does free tier lose?</p>
+<div class="ts-reveal"><p>Priority scheduling inside vLLM for queue order, plus a gateway with per-tenant token-per-minute limits and a separate queue cap per tier, because vLLM's metrics and policies do not know tenants. Preemption under the priority policy falls on free users first. Free users lose: longer waits, preemption and recompute, and 503s during spikes. If paid ITL also matters, cap prefill per request or move free bulk work to its own pool, at the cost of capacity that sits idle when free traffic is low.</p></div>
+</div>
+<p class="ts-takeaway">Every answer names the target (goodput at an SLO), the knob, and who pays for it.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c4 c8">
+<p class="q">Final check. A default vllm serve on an H100 serving Llama 3.1 8B receives a 50,000-token prompt while 20 streams decode. What does the scheduler do?</p>
+<ol>
+<li data-why="Chunked prefill is on by default for generative models in v0.31.0; the prompt is not processed whole.">Runs the whole prompt in one step and freezes the streams for about 1.5 s</li>
+<li data-why="Requests are not rejected by default; there is no queue limit unless you set one.">Rejects it because it exceeds max_num_batched_tokens</li>
+<li>Serves the 20 decodes first each step and feeds the prompt in chunks of the remaining 8,192-token budget</li>
+</ol>
+<p class="ts-why">Chunked prefill is on by default, and vllm serve on an H100 defaults to an 8,192-token budget. Each step the decodes go first and the prompt takes the rest.</p>
+</div>
+<div class="ts-explain" data-points="Goodput, not throughput, is the target: requests meeting TTFT and TPOT targets per second|The budget trades worst stream gap against long-prompt steps; a prefill cap protects queued requests|Priority orders the queue and picks preemption victims, but does not stop in-step stalls|Queue caps shed load early; tenant fairness needs token limits outside vLLM">
+<p class="q">Explain to a new teammate how you would run a shared vLLM service so that it degrades gracefully under load.</p>
+<div class="ts-model"><p>Pick goodput at product SLOs as the target, not throughput. Keep chunked prefill on and set the token budget from the inter-token target, with a per-request prefill cap so new requests are not stuck behind long prompts. Use the priority policy if tiers exist, knowing it orders the queue and chooses preemption victims but does not stop stalls inside a step. Cap queued requests so overload produces fast 503s instead of late answers, and limit tokens per tenant in the gateway, because vLLM does not know tenants. Alert on queue time, waiting requests, KV usage and preemptions.</p></div>
+</div>
+</section>

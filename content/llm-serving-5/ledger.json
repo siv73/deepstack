@@ -1,0 +1,1311 @@
+{
+ "verified": "2026-10-11",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "vLLM v0.31.0 source: SchedulerConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/scheduler.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "SchedulerConfig fields: policy, enable_chunked_prefill, long_prefill_token_threshold, max_num_queued_reqs, max_num_queued_tokens, watermark; verify_max_model_len()"
+  },
+  {
+   "id": "s2",
+   "title": "vLLM v0.31.0 source: Scheduler.schedule() and _preempt_request()",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/core/sched/scheduler.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "schedule(): NOTE on the scheduling algorithm, long_prefill_token_threshold, running loop, preemption, waiting loop; _preempt_request()"
+  },
+  {
+   "id": "s3",
+   "title": "vLLM v0.31.0 source: request queues",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/core/sched/request_queue.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "PriorityRequestQueue docstring and heap"
+  },
+  {
+   "id": "s4",
+   "title": "vLLM v0.31.0 source: EngineArgs batch and chunked-prefill defaults",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/engine/arg_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "get_batch_defaults(); _set_default_chunked_prefill_and_prefix_caching_args()"
+  },
+  {
+   "id": "s5",
+   "title": "vLLM v0.31.0 source: ModelConfig.is_chunked_prefill_supported",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/model.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "is_chunked_prefill_supported (generative models branch)"
+  },
+  {
+   "id": "s6",
+   "title": "vLLM v0.31.0 docs: Optimization and Tuning",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/configuration/optimization.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "Chunked Prefill; Performance Tuning with Chunked Prefill"
+  },
+  {
+   "id": "s7",
+   "title": "vLLM v0.31.0 source: AsyncLLM.check_admission()",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/engine/async_llm.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "check_admission() docstring and body"
+  },
+  {
+   "id": "s8",
+   "title": "vLLM v0.31.0 source: Prometheus metric definitions",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/metrics/loggers.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "PrometheusStatLogger: labelnames, gauges, counters, histograms"
+  },
+  {
+   "id": "s9",
+   "title": "vLLM v0.31.0 source: vllm bench serve goodput",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/benchmarks/serve.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "calculate_metrics() goodput block; --goodput argument help"
+  },
+  {
+   "id": "s10",
+   "title": "vLLM v0.31.0 source: chat completion request protocol",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/entrypoints/openai/chat_completion/protocol.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "ChatCompletionRequest.priority field"
+  },
+  {
+   "id": "s11",
+   "title": "Hugging Face Transformers v5.19.0 docs: Continuous batching architecture",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/continuous_batching_architecture.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-11",
+   "locator": "Chunked prefill; Scheduler: FIFO"
+  },
+  {
+   "id": "s12",
+   "title": "Agrawal et al.: Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve (arXiv:2403.02310, OSDI 2024)",
+   "url": "https://arxiv.org/html/2403.02310v3",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-11",
+   "locator": "Abstract; Sections 4.1 to 4.3"
+  },
+  {
+   "id": "s13",
+   "title": "Zhong et al.: DistServe: Disaggregating Prefill and Decoding for Goodput-optimized LLM Serving (arXiv:2401.09670v3)",
+   "url": "https://arxiv.org/html/2401.09670v3",
+   "kind": "primary",
+   "publisher": "arXiv",
+   "accessed": "2026-10-11",
+   "locator": "Sections 1, 2 and 2.2"
+  },
+  {
+   "id": "s14",
+   "title": "Meta llama-models reference code: Llama 3.1 model arguments",
+   "url": "https://github.com/meta-llama/llama-models/blob/0e0b8c519242d5833d8c11bffc1232b77ad7f301/models/sku_list.py",
+   "kind": "primary",
+   "publisher": "Meta",
+   "accessed": "2026-10-11",
+   "locator": "llama3_1_base_models: 8B and 70B arch_args"
+  },
+  {
+   "id": "s16",
+   "title": "vLLM v0.31.0 source: VllmConfig.performance_mode",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/vllm.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": "VllmConfig.performance_mode default"
+  },
+  {
+   "id": "s15",
+   "title": "NVIDIA H100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/h100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": "Specifications table, H100 SXM column"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "vLLM v0.31.0 accepts two scheduling policies: \"fcfs\", first come, first served, which is the default, and \"priority\".",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "SchedulerPolicy Literal; policy field docstring",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "SchedulerPolicy Literal; policy field docstring",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "SchedulerPolicy Literal; policy field docstring",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "Under \"priority\" a lower value is handled earlier, and arrival time breaks ties; the waiting queue is a heap ordered by those two.",
+   "sources": [
+    "s1",
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "policy docstring; PriorityRequestQueue",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "policy docstring; PriorityRequestQueue",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "policy docstring; PriorityRequestQueue",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "A request's priority field defaults to 0, and any other value raises an error unless the server runs the priority policy.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "priority Field description",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "priority Field description",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "priority Field description",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "In vLLM v0.31.0, unless you set it yourself, chunked prefill is on for generative models other than encoder-decoder ones.",
+   "sources": [
+    "s4",
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "_set_default_chunked_prefill_and_prefix_caching_args; is_chunked_prefill_supported",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "_set_default_chunked_prefill_and_prefix_caching_args; is_chunked_prefill_supported",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag after rewording; exact-phrase match"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "_set_default_chunked_prefill_and_prefix_caching_args; is_chunked_prefill_supported",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "vLLM's tuning guide says that with it on, the scheduler batches all pending decodes first, fills what is left of the max_num_batched_tokens budget with pending prefills, and chunks any prefill that does not fit.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read: Supported by the docs; reviewer noted the code serves running requests in admission order, now stated as c34"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "vLLM's tuning guide says smaller budgets such as 2048 give better inter-token latency, and larger ones give better time to first token.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Performance Tuning with Chunked Prefill",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "With chunked prefill off, vLLM refuses to start if max_num_batched_tokens is smaller than max_model_len, so even the longest allowed prompt fits in one step's budget.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "verify_max_model_len()",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "verify_max_model_len()",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag after rewording; exact-phrase match"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "verify_max_model_len()",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read: Supported; wording tightened to 'fits in one step's budget'"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "On a GPU with at least 70 GiB that is not an A100, such as the H100 or H200, vllm serve in the default balanced performance mode uses max_num_batched_tokens = 8192 and max_num_seqs = 1024.",
+   "sources": [
+    "s4",
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "get_batch_defaults(), >= 70 GiB non-A100 branch",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "VllmConfig.performance_mode",
+     "result": "supported",
+     "at": "2026-10-11T14:15",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "get_batch_defaults(), >= 70 GiB non-A100 branch",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag after rewording; exact-phrase match"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "VllmConfig.performance_mode",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag; exact-phrase match"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "get_batch_defaults(), >= 70 GiB non-A100 branch",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read: Supported; condition (memory, not A100, balanced mode) added"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "vLLM's long_prefill_token_threshold (default 0, off) caps how many tokens one prefilling request may take in a step; the cap is skipped when that request is the only one waiting or running.",
+   "sources": [
+    "s1",
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "long_prefill_token_threshold docstring; schedule() threshold block",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "long_prefill_token_threshold docstring; schedule() threshold block",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "long_prefill_token_threshold docstring; schedule() threshold block",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "The v0.31.0 source says the cap exists to stop a long prefill from starving other requests of the token budget.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "schedule(): comment above long_prefill_token_threshold",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "schedule(): comment above long_prefill_token_threshold",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "schedule(): comment above long_prefill_token_threshold",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Waiting requests are admitted in queue order; when the request at the head cannot get KV blocks for its whole prompt (the default check), admission stops for that step, and requests behind it do not jump ahead.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "schedule(): waiting loop, allocate_slots(full_sequence_must_fit) failure breaks",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "schedule(): waiting loop, allocate_slots(full_sequence_must_fit) failure breaks",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag after rewording; exact-phrase match"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "schedule(): waiting loop, allocate_slots(full_sequence_must_fit) failure breaks",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read: Supported; default reserve-full-ISL check named"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "In v0.31.0 a priority changes two things: the order of the waiting queue, and which running request is preempted when KV blocks run out. A high-priority arrival does not preempt running requests just to get in.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "schedule(): PRIORITY branches in running-loop preemption only; waiting loop breaks on allocation failure",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "schedule(): PRIORITY branches in running-loop preemption only; waiting loop breaks on allocation failure",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "schedule(): PRIORITY branches in running-loop preemption only; waiting loop breaks on allocation failure",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "When a running request cannot get new KV blocks, v0.31.0 preempts the last request in the running list under FCFS, or the one with the largest priority value, latest arrival first, under the priority policy.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "schedule(): running-loop preemption victim selection",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "schedule(): running-loop preemption victim selection",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "schedule(): running-loop preemption victim selection",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The victim's blocks are freed, its count of computed tokens goes back to zero, and it returns to the waiting queue.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "_preempt_request()",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "_preempt_request()",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "_preempt_request()",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "No waiting request is admitted in a step that preempted anything.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "schedule(): 'if not preempted_reqs' before waiting loop",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "schedule(): 'if not preempted_reqs' before waiting loop",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "schedule(): 'if not preempted_reqs' before waiting loop",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "The watermark setting (default 0.0, off) keeps a fraction of KV blocks free when admitting waiting or preempted requests, to avoid repeated preemption.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "watermark field docstring",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "watermark field docstring",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "watermark field docstring",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "max_num_queued_reqs caps waiting plus running requests; past it, new requests get HTTP 503 so a client can retry on another instance.",
+   "sources": [
+    "s1",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "max_num_queued_reqs docstring; check_admission()",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "max_num_queued_reqs docstring; check_admission()",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "max_num_queued_reqs docstring; check_admission()",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "max_num_queued_tokens caps the total prompt tokens of requests still in prefill, also with a 503; its docstring suggests setting it to the TTFT target times prefill throughput.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "max_num_queued_tokens docstring",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "max_num_queued_tokens docstring",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "max_num_queued_tokens docstring",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "Both are checked in the API server process, and the token count is conservative: a partly prefilled prompt still counts in full.",
+   "sources": [
+    "s1",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "max_num_queued_tokens docstring note; check_admission() docstring",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "max_num_queued_tokens docstring note; check_admission() docstring",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "max_num_queued_tokens docstring note; check_admission() docstring",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "By default vLLM's request queue has no limit.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "max_num_queued_reqs docstring",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "max_num_queued_reqs docstring",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "max_num_queued_reqs docstring",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "vllm:num_requests_waiting and vllm:num_requests_running are gauges, and vllm:num_requests_waiting_by_reason splits waiting requests into \"capacity\" and \"deferred\".",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "gauge_scheduler_running, gauge_scheduler_waiting, gauge_waiting_by_reason",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "gauge_scheduler_running, gauge_scheduler_waiting, gauge_waiting_by_reason",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "gauge_scheduler_running, gauge_scheduler_waiting, gauge_waiting_by_reason",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "vllm:request_queue_time_seconds is a histogram of time in the waiting phase.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "histogram_queue_time_request",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "histogram_queue_time_request",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "histogram_queue_time_request",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "vllm:kv_cache_usage_perc reports KV usage, where 1 means 100%; vllm:num_preemptions is a running total, and vllm:request_num_preemptions a histogram per request.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "gauge_kv_cache_usage, counter_num_preempted_reqs, histogram_request_num_preemptions",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "gauge_kv_cache_usage, counter_num_preempted_reqs, histogram_request_num_preemptions",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "gauge_kv_cache_usage, counter_num_preempted_reqs, histogram_request_num_preemptions",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "vllm:inter_token_latency_seconds and vllm:time_to_first_token_seconds are histograms, and vllm:iteration_tokens_total is a histogram of tokens per engine step.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "inter_token_latency, time_to_first_token, iteration_tokens_total histograms",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "inter_token_latency, time_to_first_token, iteration_tokens_total histograms",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "inter_token_latency, time_to_first_token, iteration_tokens_total histograms",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "vLLM v0.31.0 labels its metrics by model_name and engine, plus a few labels such as a waiting reason; no label identifies the client.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "labelnames = ['model_name', 'engine']",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "labelnames = ['model_name', 'engine']",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag after rewording; exact-phrase match"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "labelnames = ['model_name', 'engine']",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read: Overstated 'only'; reworded to name extra labels"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "vLLM's benchmark, vllm bench serve --goodput, takes SLOs for ttft, tpot and e2el in milliseconds, counts a request as good only if it meets every one given, and reports good requests per second of benchmark time.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "calculate_metrics() goodput; --goodput help",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "calculate_metrics() goodput; --goodput help",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "calculate_metrics() goodput; --goodput help",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "Its per-request TPOT is (latency minus TTFT) divided by (output tokens minus 1), and its help text points to the DistServe paper for the definition.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "calculate_metrics() tpot; --goodput help",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "calculate_metrics() tpot; --goodput help",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "calculate_metrics() tpot; --goodput help",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "Hugging Face's continuous batching guide describes the same fix: a long prompt in one step blocks other requests from generating, so prompts larger than the token budget are split across steps.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Chunked prefill",
+     "result": "supported",
+     "at": "2026-10-11T11:05",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Chunked prefill",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "Chunked prefill",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "Llama 3.1 8B has 32 layers, a model dimension of 4,096, 32 attention heads and 8 key/value heads; Llama 3.1 70B has 80 layers, a dimension of 8,192, 64 attention heads and 8 key/value heads.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "llama3_1_base_models arch_args",
+     "result": "supported",
+     "at": "2026-10-11T11:20",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "llama3_1_base_models arch_args",
+     "result": "supported",
+     "at": "2026-10-11T13:40",
+     "method": "fresh download of the file at the tag; exact-phrase match against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "llama3_1_base_models arch_args",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "The v0.31.0 scheduler has no separate prefill or decode phase: each step it tries to assign tokens to every request so that its count of computed tokens catches up with its tokens so far.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "schedule(): NOTE(woosuk) on the scheduling algorithm",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "schedule(): NOTE(woosuk) on the scheduling algorithm",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag after rewording; exact-phrase match"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "schedule(): NOTE(woosuk) on the scheduling algorithm",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read: Supported; 'tries to assign' wording adopted"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "The v0.31.0 code serves running requests in the order they were admitted, and a prompt still being chunked is one of them, so decodes go first when they were admitted before it.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "schedule(): running loop over self.running in order; admitted requests appended",
+     "result": "supported",
+     "at": "2026-10-11T10:40",
+     "method": "raw source file at tag, read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "schedule(): running loop over self.running in order; admitted requests appended",
+     "result": "supported",
+     "at": "2026-10-11T14:25",
+     "method": "fresh download at the tag; exact-phrase match"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "schedule(): running loop over self.running in order; admitted requests appended",
+     "result": "supported",
+     "at": "2026-10-11T14:05",
+     "method": "independent reviewer, verbatim source read"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "Sarathi-Serve (OSDI 2024) splits a prefill into near-equal-sized chunks and builds batches that add new prefill work without pausing the decodes already running, which it calls stall-free batching.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": []
+  },
+  {
+   "id": "c41",
+   "text": "Sarathi-Serve picks its token budget from the latency target for the time between tokens: the largest chunk whose step still meets it.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": []
+  },
+  {
+   "id": "c43",
+   "text": "The DistServe paper defines per-GPU goodput as the highest request rate that can be served while meeting an SLO attainment goal, such as 90% of requests meeting their TTFT and TPOT targets, for each GPU provisioned.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Section 1 (Introduction)",
+     "result": "supported",
+     "at": "2026-10-11T12:10",
+     "method": "browser: verbatim section text"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "It argues that systems tuned for overall throughput, tokens per second across all users, must over-provision GPUs to meet latency targets.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Section 1 (Introduction)",
+     "result": "supported",
+     "at": "2026-10-11T12:10",
+     "method": "browser: verbatim section text"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "NVIDIA lists the H100 SXM at 1,979 teraFLOPS of BF16 with sparsity, 3.35 TB/s of memory bandwidth and 80 GB of memory.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": []
+  },
+  {
+   "id": "c46",
+   "text": "The DistServe paper argues that chunked prefill trades TTFT for TPOT and cannot remove the interference between the two phases.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Section 2.2 (Batching)",
+     "result": "supported",
+     "at": "2026-10-11T12:10",
+     "method": "browser: verbatim section text"
+    }
+   ]
+  }
+ ],
+ "cut": []
+}

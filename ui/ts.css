@@ -1047,7 +1047,8 @@ dfn {
   color: var(--r2-ink);
 }
 .ts-rl-row.is-bad dd {
-  color: var(--bad);
+  /* the ink shade keeps 4.5:1 contrast on the row's surface-2 background */
+  color: var(--r4-ink);
   font-weight: 700;
 }
 .ts-rl-note {
@@ -1215,6 +1216,22 @@ dfn {
 }
 .ts-bc-axlbl {
   font-weight: 700;
+}
+
+/* ---------- Chunk-budget calculator ---------- */
+.ts-fig svg.ts-cc-chart {
+  min-width: 0;
+}
+.ts-cc-bar {
+  fill: var(--r2);
+}
+.ts-cc-bar.is-late {
+  fill: var(--r4);
+}
+.ts-cc-target {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
 }
 
 /* ---------- Block pool (paged KV cache, stepped) ---------- */
