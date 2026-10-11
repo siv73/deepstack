@@ -12,7 +12,7 @@
  "related": [
   {"label": "Next: Part 4 — PagedAttention", "slug": "llm-serving-4", "why": "how vLLM splits the KV cache into pages so a batch is not capped by memory reserved for tokens that never come"},
   {"label": "Later part: chunked prefill", "why": "splitting long prompts across steps so one prefill cannot stall every decode"},
-  {"label": "Later part: prefill/decode disaggregation", "why": "running prefill and decode on different GPUs so they stop slowing each other"},
+  {"label": "Part 7: scaling out and prefill/decode disaggregation", "slug": "llm-serving-7", "why": "running prefill and decode on different GPUs so they stop slowing each other"},
   {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2", "why": "the step-time model and the cache budget this page's simulator uses"}
  ]
 }

@@ -1,0 +1,24 @@
+{
+ "slug": "llm-serving-7",
+ "title": "LLM inference serving, Part 7: scaling out",
+ "tldr": "The capstone: serving one model on many GPUs and many requests through a fleet. Why a 70B model needs more than one 80 GB GPU, tensor vs pipeline vs data parallelism (what each splits, what it sends between GPUs, and what it does to TTFT, ITL and throughput), Megatron-style column and row splits with two all-reduces per layer, NVLink vs PCIe and network figures from NVIDIA, the vLLM v0.31.0 flags and logs, disaggregated prefill and decode with KV connectors (experimental in vLLM) and what DistServe, Splitwise and Mooncake argue, the request path from gateway to prefix-aware router to replicas, streaming over SSE and how a disconnect frees KV memory, autoscaling on queue time and KV usage instead of GPU utilization, cold starts, a tested capacity planner that picks a TP size and sizes colocated and disaggregated fleets, failures at 10 times the load, why LLM replicas are stateful and where the sharding and read-replica analogies break, an interview drill, and a final quiz over all seven parts.",
+ "category": "AI systems",
+ "created": "2026-10-11",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {"label": "LLM inference serving, Part 1: prefill vs decode", "slug": "llm-serving-1"},
+  {"label": "LLM inference serving, Part 2: the KV cache", "slug": "llm-serving-2"},
+  {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3"},
+  {"label": "LLM inference serving, Part 4: PagedAttention", "slug": "llm-serving-4"},
+  {"label": "LLM inference serving, Part 5: scheduling under load", "slug": "llm-serving-5"},
+  {"label": "LLM inference serving, Part 6: quantization and speculative decoding", "slug": "llm-serving-6"}
+ ],
+ "related": [
+  {"label": "Part 1: prefill vs decode", "slug": "llm-serving-1", "why": "the two phases, the roofline, and the TTFT and ITL metrics every design on this page is judged by"},
+  {"label": "Part 2: the KV cache", "slug": "llm-serving-2", "why": "the per-token memory that decides how many requests fit and what disaggregation has to move"},
+  {"label": "Part 3: batching", "slug": "llm-serving-3", "why": "continuous batching, the reason one replica's capacity is a batch, not a request"},
+  {"label": "Part 4: PagedAttention", "slug": "llm-serving-4", "why": "KV blocks and prefix caching, the state that makes replicas stateful"},
+  {"label": "Part 5: scheduling under load", "slug": "llm-serving-5", "why": "chunked prefill, goodput and queue caps, the single-replica version of this page's planner"},
+  {"label": "Part 6: quantization and speculative decoding", "slug": "llm-serving-6", "why": "FP8 weights and KV cache, which halve the GPUs a replica needs"}
+ ]
+}

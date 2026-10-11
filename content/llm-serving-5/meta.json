@@ -12,7 +12,7 @@
  ],
  "related": [
   {"label": "Next: Part 6 — Making Each Token Cheaper", "slug": "llm-serving-6", "why": "quantization and speculative decoding: fewer bytes and fewer steps per token"},
-  {"label": "Later part: Part 7 — multi-GPU serving and prefill/decode disaggregation", "why": "running prefill and decode on different GPUs so they stop sharing steps"},
+  {"label": "Part 7: scaling out and prefill/decode disaggregation", "slug": "llm-serving-7", "why": "running prefill and decode on different GPUs so they stop sharing steps"},
   {"label": "LLM inference serving, Part 3: batching", "slug": "llm-serving-3", "why": "the scheduler loop and simulator this page extends"},
   {"label": "LLM inference serving, Part 4: PagedAttention", "slug": "llm-serving-4", "why": "the KV blocks whose shortage triggers preemption"}
  ]

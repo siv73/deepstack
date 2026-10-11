@@ -1,0 +1,2807 @@
+{
+ "verified": "2026-10-11",
+ "volatility": "fast-moving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "vLLM v0.31.0 docs: Parallelism and Scaling",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/serving/parallelism_scaling.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s2",
+   "title": "vLLM v0.31.0 docs: Data Parallel Deployment",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/serving/data_parallel_deployment.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s3",
+   "title": "vLLM v0.31.0 docs: Disaggregated Prefilling (experimental)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/disagg_prefill.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s4",
+   "title": "vLLM v0.31.0 docs: NixlConnector Usage Guide",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/nixl_connector_usage.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s5",
+   "title": "vLLM v0.31.0 source: KVTransferConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/kv_transfer.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s6",
+   "title": "vLLM v0.31.0 source: EngineArgs CLI flags",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/engine/arg_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s7",
+   "title": "vLLM v0.31.0 source: ParallelConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/parallel.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s8",
+   "title": "vLLM v0.31.0 source: Llama model (attention and MLP layers)",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/model_executor/models/llama.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s9",
+   "title": "vLLM v0.31.0 source: ColumnParallelLinear and RowParallelLinear",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/model_executor/layers/linear.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s10",
+   "title": "vLLM v0.31.0 source: VllmConfig.max_concurrent_batches",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/vllm.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s11",
+   "title": "vLLM v0.31.0 source: with_cancellation",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/entrypoints/serve/utils/api_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s12",
+   "title": "vLLM v0.31.0 source: AsyncLLM.generate()",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/engine/async_llm.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s13",
+   "title": "vLLM v0.31.0 source: Scheduler.finish_requests() and _free_request()",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/core/sched/scheduler.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s14",
+   "title": "vLLM v0.31.0 source: chat completion streaming",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/entrypoints/openai/chat_completion/serving.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s15",
+   "title": "vLLM v0.31.0 source: API server arguments",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/entrypoints/launchers/cli_args.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s16",
+   "title": "vLLM v0.31.0 source: Prometheus metric definitions",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/metrics/loggers.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s17",
+   "title": "vLLM v0.31.0 source: NixlConnector metrics",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/distributed/kv_transfer/kv_connector/v1/nixl/stats.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s18",
+   "title": "vLLM v0.31.0 source: ORCA load-report headers",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/entrypoints/serve/utils/orca_metrics.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s19",
+   "title": "vLLM v0.31.0 source: KVEventsConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/kv_events.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s20",
+   "title": "vLLM v0.31.0 docs: llm-d integration",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/deployment/integrations/llm-d.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s21",
+   "title": "vLLM v0.31.0 source: default model loader",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/model_executor/model_loader/default_loader.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s22",
+   "title": "vLLM v0.31.0 docs: Sleep Mode",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/features/sleep_mode.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s23",
+   "title": "vLLM v0.31.0 tests: NIXL toy proxy server",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/tests/v1/kv_connector/nixl_integration/toy_proxy_server.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s24",
+   "title": "vLLM production stack: router routing logic (commit 4e076e8)",
+   "url": "https://github.com/vllm-project/production-stack/blob/4e076e8de3698a3729b575e3a5ade65ffbb929cf/src/vllm_router/routers/routing_logic.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s25",
+   "title": "NVIDIA H100 Tensor Core GPU: specifications",
+   "url": "https://www.nvidia.com/en-us/data-center/h100/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s26",
+   "title": "NVIDIA H200 GPU: specifications",
+   "url": "https://www.nvidia.com/en-in/data-center/h200/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s27",
+   "title": "NVIDIA Hopper Architecture In-Depth (NVIDIA Technical Blog)",
+   "url": "https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s28",
+   "title": "NVIDIA DGX H100/H200 User Guide: Introduction to the DGX H100",
+   "url": "https://docs.nvidia.com/dgx/dgxh100-user-guide/introduction-to-dgxh100.html",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s29",
+   "title": "NVIDIA nccl-tests: Performance reported by NCCL tests (commit afd59ab)",
+   "url": "https://github.com/NVIDIA/nccl-tests/blob/afd59abab774a6a4b492eb344bd0c845a0b7bb4d/doc/PERFORMANCE.md",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s30",
+   "title": "Qin et al.: Mooncake: Trading More Storage for Less Computation (USENIX FAST '25), PDF in the authors' repository",
+   "url": "https://github.com/kvcache-ai/Mooncake/blob/559f83cb73eb870d208a8d4f333b1a24ee992f26/FAST25-release/Mooncake-FAST25.pdf",
+   "kind": "primary",
+   "publisher": "Moonshot AI and Tsinghua University",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s31",
+   "title": "Hugging Face Transformers v5.19.0 docs: Tensor parallelism for inference",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/perf_infer_gpu_multi.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s32",
+   "title": "Hugging Face Transformers v5.19.0 docs: Parallelism methods",
+   "url": "https://github.com/huggingface/transformers/blob/v5.19.0/docs/source/en/perf_train_gpu_many.md",
+   "kind": "primary",
+   "publisher": "Hugging Face",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s33",
+   "title": "NVIDIA Megatron-LM source: tensor_parallel/layers.py (commit a8a5977)",
+   "url": "https://github.com/NVIDIA/Megatron-LM/blob/a8a5977f7611e9a8aac205eabd2f9b43f786bc8f/megatron/core/tensor_parallel/layers.py",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s34",
+   "title": "DistServe repository README (LLMServe, commit 82831f1)",
+   "url": "https://github.com/LLMServe/DistServe/blob/82831f1604cc6b10bebd360f6c437a07790dde9f/README.md",
+   "kind": "primary",
+   "publisher": "DistServe authors",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s35",
+   "title": "SplitwiseSim repository README (commit 8f99e7d)",
+   "url": "https://github.com/Mutinifni/splitwise-sim/blob/8f99e7dc9b407f4ce2488d03dd44c0b8b946dab0/README.md",
+   "kind": "primary",
+   "publisher": "Splitwise authors",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s36",
+   "title": "Zhong et al.: DistServe: Disaggregating Prefill and Decoding for Goodput-optimized LLM Serving (arXiv:2401.09670v3)",
+   "url": "https://arxiv.org/html/2401.09670v3",
+   "kind": "primary",
+   "publisher": "OSDI 2024 authors",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s37",
+   "title": "NVML API Reference: nvmlUtilization_t",
+   "url": "https://docs.nvidia.com/deploy/nvml-api/api/structnvmlUtilization__t.html",
+   "kind": "primary",
+   "publisher": "NVIDIA",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s38",
+   "title": "vLLM v0.31.0 source: CacheConfig",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/config/cache.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s39",
+   "title": "Meta llama-models reference code: Llama 3.1 model arguments (sku_list.py)",
+   "url": "https://github.com/meta-llama/llama-models/blob/0e0b8c519242d5833d8c11bffc1232b77ad7f301/models/sku_list.py",
+   "kind": "primary",
+   "publisher": "Meta",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s40",
+   "title": "vLLM v0.31.0 source: KV cache startup checks",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/core/kv_cache_utils.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s41",
+   "title": "vLLM v0.31.0 docs: Optimization and Tuning",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/docs/configuration/optimization.md",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s42",
+   "title": "vLLM v0.31.0 source: chat completion API router",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/entrypoints/openai/chat_completion/api_router.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  },
+  {
+   "id": "s43",
+   "title": "vLLM v0.31.0 source: EngineCore initialisation",
+   "url": "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/v1/engine/core.py",
+   "kind": "primary",
+   "publisher": "vLLM project",
+   "accessed": "2026-10-11",
+   "locator": ""
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Llama 3.1 70B has 80 layers, a model dimension of 8,192, 64 attention heads and 8 key/value heads.",
+   "sources": [
+    "s39"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s39",
+     "locator": "llama3_1_70b arch_args",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s39",
+     "locator": "llama3_1_70b arch_args",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s39",
+     "locator": "llama3_1_70b arch_args",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "NVIDIA lists the H100 SXM with 80 GB of memory, 3.35 TB/s of memory bandwidth, and NVLink at 900 GB/s next to PCIe Gen5 at 128 GB/s.",
+   "sources": [
+    "s25"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-11T17:02",
+     "method": "fresh WebFetch, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "Specifications table, H100 SXM",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "vLLM's guide says: if the model fits on one GPU, distributed inference is probably unnecessary; if it fits on one node, use tensor parallelism across that node's GPUs; if it needs several nodes, use tensor parallelism within each node and pipeline parallelism across nodes.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Distributed inference strategies for a single-model replica",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Distributed inference strategies for a single-model replica",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Distributed inference strategies for a single-model replica",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard; wording or locator corrected after review, then re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "vLLM's data-parallel guide notes that each replica has its own independent KV cache, so where a prompt is sent decides how much prefix caching can reuse.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Introduction (load balancing paragraph)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Introduction (load balancing paragraph)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Introduction (load balancing paragraph)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "Prefix caching is on by default in vLLM v0.31.0.",
+   "sources": [
+    "s38"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s38",
+     "locator": "CacheConfig.enable_prefix_caching",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s38",
+     "locator": "CacheConfig.enable_prefix_caching",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s38",
+     "locator": "CacheConfig.enable_prefix_caching",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "vLLM's docs say its tensor parallelism includes Megatron-LM's tensor-parallel algorithm.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Single-node deployment",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Single-node deployment",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Single-node deployment",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "A column-parallel layer splits the weight matrix A along its second dimension, A = [A_1, ..., A_p]; a row-parallel layer splits A along its first dimension and the input X along its second.",
+   "sources": [
+    "s9",
+    "s33"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "ColumnParallelLinear and RowParallelLinear docstrings",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s33",
+     "locator": "ColumnParallelLinear and RowParallelLinear docstrings",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "ColumnParallelLinear and RowParallelLinear docstrings",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s33",
+     "locator": "ColumnParallelLinear and RowParallelLinear docstrings",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "ColumnParallelLinear and RowParallelLinear docstrings",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s33",
+     "locator": "ColumnParallelLinear and RowParallelLinear docstrings",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "In vLLM's Llama code, each layer's attention output projection (o_proj) and MLP down projection (down_proj) are row-parallel, and a row-parallel layer all-reduces its output across the tensor-parallel GPUs when there is more than one.",
+   "sources": [
+    "s8",
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "LlamaMLP.down_proj, LlamaAttention.o_proj; RowParallelLinear.forward",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "LlamaMLP.down_proj, LlamaAttention.o_proj; RowParallelLinear.forward",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "LlamaMLP.down_proj, LlamaAttention.o_proj; RowParallelLinear.forward",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "LlamaMLP.down_proj, LlamaAttention.o_proj; RowParallelLinear.forward",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "LlamaMLP.down_proj, LlamaAttention.o_proj; RowParallelLinear.forward",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "LlamaMLP.down_proj, LlamaAttention.o_proj; RowParallelLinear.forward",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "vLLM splits the key/value heads across the tensor-parallel GPUs when there are at least as many heads as GPUs, and copies them when there are fewer.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "LlamaAttention.__init__",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "LlamaAttention.__init__",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "LlamaAttention.__init__",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Hugging Face's guide says tensor parallelism needs fast communication inside a node, because GPUs exchange partial results at each layer.",
+   "sources": [
+    "s31"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s31",
+     "locator": "Tensor parallelism for inference (introduction)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s31",
+     "locator": "Tensor parallelism for inference (introduction)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s31",
+     "locator": "Tensor parallelism for inference (introduction)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "NVIDIA's Hopper write-up gives H100 18 fourth-generation NVLink links at 25 GB/s each direction, 900 GB/s in total, and calls that 7 times the bandwidth of PCIe Gen 5.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "Fourth-generation NVLink and NVLink Network",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "Fourth-generation NVLink and NVLink Network",
+     "result": "supported",
+     "at": "2026-10-11T17:02",
+     "method": "fresh WebFetch, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s27",
+     "locator": "Fourth-generation NVLink and NVLink Network",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "NCCL's test documentation gives the best-case time of an all-reduce of S bytes over n GPUs as S/B × 2(n−1)/n, where B is each GPU's bandwidth.",
+   "sources": [
+    "s29"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s29",
+     "locator": "Bus bandwidth: AllReduce",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s29",
+     "locator": "Bus bandwidth: AllReduce",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s29",
+     "locator": "Bus bandwidth: AllReduce",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "Hugging Face's parallelism guide describes pipeline parallelism as splitting the model's layers across GPUs and passing micro-batches from one GPU to the next, so that GPUs work at the same time instead of waiting.",
+   "sources": [
+    "s32"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s32",
+     "locator": "Pipeline parallelism",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s32",
+     "locator": "Pipeline parallelism",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s32",
+     "locator": "Pipeline parallelism",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "vLLM keeps at least as many batches in flight as there are pipeline stages; its code notes that a pipeline needs that many to stay full.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "VllmConfig.max_concurrent_batches",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "VllmConfig.max_concurrent_batches",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "VllmConfig.max_concurrent_batches",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard; wording or locator corrected after review, then re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "vLLM's guide also suggests pipeline parallelism when the GPU count does not split the model evenly, and for GPUs without NVLink, such as the L40S, where it gives higher throughput and less communication than tensor parallelism.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Edge case: uneven GPU splits",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Edge case: uneven GPU splits",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Edge case: uneven GPU splits",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "In vLLM's data parallelism the weights are copied to separate instances that each process their own batches.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "For mixture-of-experts models, --enable-expert-parallel switches the expert layers from tensor to expert parallelism, and data-parallel ranks serving such models must synchronize in every forward pass.",
+   "sources": [
+    "s7",
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "ParallelConfig.enable_expert_parallel; Data Parallel Deployment introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "ParallelConfig.enable_expert_parallel; Data Parallel Deployment introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "ParallelConfig.enable_expert_parallel; Data Parallel Deployment introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "ParallelConfig.enable_expert_parallel; Data Parallel Deployment introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "ParallelConfig.enable_expert_parallel; Data Parallel Deployment introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard; wording or locator corrected after review, then re-checked in pass 2"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "ParallelConfig.enable_expert_parallel; Data Parallel Deployment introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard; wording or locator corrected after review, then re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "vLLM's disaggregated mode runs two instances, one for prefill and one for decode, and a connector moves the prefill's KV cache to the decode instance.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Development",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Development",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Development",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "vLLM's example proxy sends a request first to a prefill instance with max_tokens set to 1 and a do_remote_decode flag, then to a decode instance, choosing each in round-robin order.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "send_request_to_service; handle_completions",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "send_request_to_service; handle_completions",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "send_request_to_service; handle_completions",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "With NixlConnector, the decode instance reads the KV blocks from the prefill instance, and the prefill instance holds them for a lease, 30 seconds by default, which heartbeats extend while the request waits on the decoder.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Environment Variables (kv_lease_duration); Bidirectional KV Transfer",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Environment Variables (kv_lease_duration); Bidirectional KV Transfer",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Environment Variables (kv_lease_duration); Bidirectional KV Transfer",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Mooncake streams each layer's KV cache to the decoding node while prefill continues, overlapping the transfer with compute.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "Section 3 (workflow step 3, KVCache Transfer)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "PDF from the authors' repository, text extracted with pdftotext and read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "Section 3 (workflow step 3, KVCache Transfer)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "Section 3 (workflow step 3, KVCache Transfer)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "vLLM's chat endpoint streams Server-Sent Events and ends the stream with a data: [DONE] line.",
+   "sources": [
+    "s14",
+    "s42"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "chat_completion_stream_generator; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s42",
+     "locator": "chat_completion_stream_generator; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "chat_completion_stream_generator; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s42",
+     "locator": "chat_completion_stream_generator; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "chat_completion_stream_generator; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s42",
+     "locator": "chat_completion_stream_generator; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "In vLLM v0.31.0 the flags are --tensor-parallel-size (-tp), --pipeline-parallel-size (-pp) and --data-parallel-size (-dp), each defaulting to 1.",
+   "sources": [
+    "s6",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "EngineArgs.add_cli_args; ParallelConfig fields",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "EngineArgs.add_cli_args; ParallelConfig fields",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "EngineArgs.add_cli_args; ParallelConfig fields",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "EngineArgs.add_cli_args; ParallelConfig fields",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "EngineArgs.add_cli_args; ParallelConfig fields",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "EngineArgs.add_cli_args; ParallelConfig fields",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "The data-parallel guide's example of --data-parallel-size=4 with --tensor-parallel-size=2 uses 8 GPUs, and it runs behind a single API endpoint.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "vLLM logs the GPU KV cache size in tokens and the maximum concurrency for requests of max_model_len tokens, and its guide says to add GPUs or nodes if these are below what you need.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Distributed inference strategies for a single-model replica (log lines)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Distributed inference strategies for a single-model replica (log lines)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Distributed inference strategies for a single-model replica (log lines)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "The internal data-parallel balancer picks a rank from each engine's running and waiting queues; the docs say it could later add KV-cache-aware logic, which it does not use yet.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "--max-num-seqs applies per data-parallel rank, but --max-num-queued-reqs and --max-num-queued-tokens apply to the whole server.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Internal Load Balancing",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "vLLM's docs label disaggregated prefilling experimental and subject to change.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Title and note",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Title and note",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Title and note",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "The docs give two reasons to use it: tuning TTFT and ITL separately, with different parallel settings for each phase, and controlling tail ITL; they add that it does not improve throughput.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Why disaggregated prefilling?",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Why disaggregated prefilling?",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Why disaggregated prefilling?",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "They note that chunked prefill with a well-chosen chunk size can reach the same tail-ITL goal, but that the right size is hard to find in practice.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Why disaggregated prefilling?",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Why disaggregated prefilling?",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Why disaggregated prefilling?",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "Connectors in v0.31.0 include NixlConnector, MooncakeConnector, LMCacheConnectorV1, OffloadingConnector, MultiConnector and ExampleConnector.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Usage example",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Usage example",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Usage example",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "An instance's kv_role is kv_producer, kv_consumer or kv_both, and kv_load_failure_policy is fail by default, with recompute as the alternative.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "KVTransferConfig.kv_role, kv_load_failure_policy",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "KVTransferConfig.kv_role, kv_load_failure_policy",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "KVTransferConfig.kv_role, kv_load_failure_policy",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "They say vLLM relies on third-party connectors for production-level disaggregated prefilling.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Third-party contributions",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Third-party contributions",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Third-party contributions",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "DistServe's authors argue that colocating the two phases causes prefill-decode interference and ties both phases to one resource and parallelism plan.",
+   "sources": [
+    "s34"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s34",
+     "locator": "README introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s34",
+     "locator": "README introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s34",
+     "locator": "README introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "Splitwise splits the phases of LLM inference across different machines.",
+   "sources": [
+    "s35"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s35",
+     "locator": "README introduction",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s35",
+     "locator": "README introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s35",
+     "locator": "README introduction",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "The DistServe paper argues that chunked prefill trades TTFT for TPOT and cannot remove the interference between the two phases.",
+   "sources": [
+    "s36"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s36",
+     "locator": "Section 2.2 (Batching)",
+     "result": "supported",
+     "at": "2026-10-11T12:10",
+     "method": "carried over from llm-serving-5 ledger c46: browser: verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s36",
+     "locator": "Section 2.2 (Batching)",
+     "result": "supported",
+     "at": "2026-10-11T14:24",
+     "method": "carried over from llm-serving-5 ledger c46: fresh WebFetch of the arXiv PDF of the same version (v3), NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "The vLLM production-stack router offers routing modes including roundrobin, session, prefixaware, kvaware, loadaware and disaggregated_prefill.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "class RoutingLogic",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "class RoutingLogic",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "class RoutingLogic",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "A hash ring maps a session key to a replica; requests without a key go to the replica with the lowest request rate.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "class SessionRouter",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "class SessionRouter",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "class SessionRouter",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "It sends a request to the replica holding the longest matching prompt prefix the router has seen, and its code notes that it ignores cache eviction.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "class PrefixAwareRouter",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "class PrefixAwareRouter",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "class PrefixAwareRouter",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard; wording or locator corrected after review, then re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "vLLM's llm-d page says round-robin breaks cache locality across replicas, and describes llm-d routing each request by vLLM's KV-cache events to the replica that already holds its prefix.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "What llm-d adds to vLLM",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "What llm-d adds to vLLM",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "What llm-d adds to vLLM",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "vLLM publishes block-stored and block-removed KV cache events over ZeroMQ when enable_kv_cache_events is set in --kv-events-config.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "KVEventsConfig",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "KVEventsConfig",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "KVEventsConfig",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "On a non-streaming chat response, a request that sends the endpoint-load-metrics-format header gets an endpoint-load-metrics header back with kv_cache_usage_perc and num_requests_waiting.",
+   "sources": [
+    "s18",
+    "s42"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "get_named_metrics_from_prometheus; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s42",
+     "locator": "get_named_metrics_from_prometheus; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "get_named_metrics_from_prometheus; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s42",
+     "locator": "get_named_metrics_from_prometheus; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "get_named_metrics_from_prometheus; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s42",
+     "locator": "get_named_metrics_from_prometheus; create_chat_completion",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "If the client disconnects, vLLM cancels the request's handler and the engine aborts the request.",
+   "sources": [
+    "s11",
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "with_cancellation; AsyncLLM.generate",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "with_cancellation; AsyncLLM.generate",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "with_cancellation; AsyncLLM.generate",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "with_cancellation; AsyncLLM.generate",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "with_cancellation; AsyncLLM.generate",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "with_cancellation; AsyncLLM.generate",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "Aborting frees the request's KV blocks, unless a KV connector asks to hold them for a transfer still pending.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "finish_requests; _free_request",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "finish_requests; _free_request",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "finish_requests; _free_request",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "--sse-keep-alive-interval, off by default, sends a comment line when a stream is idle, so proxies with read timeouts do not close it while the request waits in the queue or in prefill.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "FrontendArgs.sse_keep_alive_interval",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "FrontendArgs.sse_keep_alive_interval",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "FrontendArgs.sse_keep_alive_interval",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "NVML reports GPU utilization as the percent of time over the sample period during which one or more kernels was executing on the GPU.",
+   "sources": [
+    "s37"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s37",
+     "locator": "nvmlUtilization_t::gpu",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s37",
+     "locator": "nvmlUtilization_t::gpu",
+     "result": "supported",
+     "at": "2026-10-11T17:02",
+     "method": "fresh WebFetch, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s37",
+     "locator": "nvmlUtilization_t::gpu",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "vLLM's llm-d page describes scaling vLLM pools on queue depth and true demand rather than raw GPU utilization.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "What llm-d adds to vLLM",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "What llm-d adds to vLLM",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "What llm-d adds to vLLM",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "vLLM exports vllm:num_requests_waiting, vllm:kv_cache_usage_perc, where 1 means 100%, and vllm:request_queue_time_seconds, a histogram of time spent waiting.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "PrometheusStatLogger metric definitions",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "PrometheusStatLogger metric definitions",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "PrometheusStatLogger metric definitions",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "At startup vLLM logs how long loading the weights took and, separately, how long engine setup took: profiling, creating the KV cache and warming up.",
+   "sources": [
+    "s21",
+    "s43"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "DefaultModelLoader.load_weights; EngineCore._initialize_kv_caches",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 1,
+     "source": "s43",
+     "locator": "DefaultModelLoader.load_weights; EngineCore._initialize_kv_caches",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "DefaultModelLoader.load_weights; EngineCore._initialize_kv_caches",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 2,
+     "source": "s43",
+     "locator": "DefaultModelLoader.load_weights; EngineCore._initialize_kv_caches",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "DefaultModelLoader.load_weights; EngineCore._initialize_kv_caches",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s43",
+     "locator": "DefaultModelLoader.load_weights; EngineCore._initialize_kv_caches",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "vLLM's sleep mode frees most of a model's GPU memory without stopping the server; level 1 moves the weights to CPU memory, so waking up avoids a full reload.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "Sleep Mode (introduction, Sleep levels)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "Sleep Mode (introduction, Sleep levels)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "Sleep Mode (introduction, Sleep levels)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "The DistServe paper defines per-GPU goodput as the highest request rate that can be served while meeting an SLO attainment goal, such as 90% of requests meeting their TTFT and TPOT targets, for each GPU provisioned.",
+   "sources": [
+    "s36"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s36",
+     "locator": "Section 1 (Introduction)",
+     "result": "supported",
+     "at": "2026-10-11T12:10",
+     "method": "carried over from llm-serving-5 ledger c43: browser: verbatim section text"
+    },
+    {
+     "pass": 2,
+     "source": "s36",
+     "locator": "Section 1",
+     "result": "supported",
+     "at": "2026-10-11T14:24",
+     "method": "carried over from llm-serving-5 ledger c43: fresh WebFetch of the arXiv PDF of the same version (v3), NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "NVIDIA lists the H200 SXM with 141 GB of memory at 4.8 TB/s and NVLink at 900 GB/s.",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-11T17:02",
+     "method": "fresh WebFetch, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "Specifications table, H200 SXM",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "NVIDIA lists both the H100 SXM and the H200 SXM at 1,979 teraFLOPS of BF16 and 3,958 teraFLOPS of FP8 Tensor Core throughput, with sparsity.",
+   "sources": [
+    "s25",
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s25",
+     "locator": "Specifications tables, FP8 and BFLOAT16 Tensor Core rows",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "Specifications tables, FP8 and BFLOAT16 Tensor Core rows",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s25",
+     "locator": "Specifications tables, FP8 and BFLOAT16 Tensor Core rows",
+     "result": "supported",
+     "at": "2026-10-11T17:02",
+     "method": "fresh WebFetch, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "Specifications tables, FP8 and BFLOAT16 Tensor Core rows",
+     "result": "supported",
+     "at": "2026-10-11T17:02",
+     "method": "fresh WebFetch, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s25",
+     "locator": "Specifications tables, FP8 and BFLOAT16 Tensor Core rows",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s26",
+     "locator": "Specifications tables, FP8 and BFLOAT16 Tensor Core rows",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "A DGX H100 has 8 GPUs and 8 single-port ConnectX-7 InfiniBand cards at up to 400 Gb/s each.",
+   "sources": [
+    "s28"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s28",
+     "locator": "Hardware Overview: DGX H100/H200 Component Descriptions",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "WebFetch with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 2,
+     "source": "s28",
+     "locator": "Hardware Overview: DGX H100/H200 Component Descriptions",
+     "result": "supported",
+     "at": "2026-10-11T17:02",
+     "method": "fresh WebFetch, neutral SUPPORTED/CONTRADICTED prompt with NOT IN CONTENT guard"
+    },
+    {
+     "pass": 3,
+     "source": "s28",
+     "locator": "Hardware Overview: DGX H100/H200 Component Descriptions",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "If one request of max_model_len tokens would need more KV memory than is available, vLLM refuses to start and suggests raising gpu_memory_utilization or lowering max_model_len.",
+   "sources": [
+    "s40"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s40",
+     "locator": "_check_enough_kv_cache_memory",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s40",
+     "locator": "_check_enough_kv_cache_memory",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s40",
+     "locator": "_check_enough_kv_cache_memory",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "vLLM's tuning guide says it preempts requests to free KV space and recomputes them later, which can hurt end-to-end latency, and lists raising gpu_memory_utilization or tensor_parallel_size among the fixes.",
+   "sources": [
+    "s41"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s41",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s41",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s41",
+     "locator": "Preemption",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "Mooncake's paper notes that system prompts are used by almost every request, and that the hottest KV blocks should be copied to several nodes to avoid congested fetches.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "Section 1 (Introduction); Section 4.2 (Cache Load Balancing)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "PDF from the authors' repository, text extracted with pdftotext and read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "Section 1 (Introduction); Section 4.2 (Cache Load Balancing)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "Section 1 (Introduction); Section 4.2 (Cache Load Balancing)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard; wording or locator corrected after review, then re-checked in pass 2"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "Mooncake's scheduler estimates TTFT on each prefill instance from its prefix match and its queue, picks the shortest, and returns HTTP 429 when no instance can meet the SLO.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "Section 4.1 (Prefill Global Scheduling)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "PDF from the authors' repository, text extracted with pdftotext and read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "Section 4.1 (Prefill Global Scheduling)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "Section 4.1 (Prefill Global Scheduling)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "The production-stack loadaware mode scores each replica by its matched share of the prompt minus a weighted relative load, so an idle replica without the cache can win over a busy one with it.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "class LoadAwareRouter",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "class LoadAwareRouter",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "class LoadAwareRouter",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "NixlConnector exports vllm:nixl_xfer_time_seconds, vllm:nixl_num_failed_transfers and vllm:nixl_num_kv_expired_reqs, the last counted on the prefill instance.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "NixlPromMetrics",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "NixlPromMetrics",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "NixlPromMetrics",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "Hugging Face's guide notes that in tensor parallelism each GPU computes its slice and the results are synchronized to rebuild the full result.",
+   "sources": [
+    "s32"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s32",
+     "locator": "Tensor parallelism",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s32",
+     "locator": "Tensor parallelism",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s32",
+     "locator": "Tensor parallelism",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "vLLM's guide says that if NCCL's logs show NET/Socket instead of NET/IB/GDRDMA, cross-node traffic is running over plain TCP, which is not efficient for tensor parallelism.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Enabling GPUDirect RDMA (tip)",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Enabling GPUDirect RDMA (tip)",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Enabling GPUDirect RDMA (tip)",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "Mooncake is the serving platform behind Moonshot AI's Kimi; its FAST '25 paper reports that the architecture let Kimi handle 115% more requests on A800 clusters and 107% more on H800 clusters than its previous systems.",
+   "sources": [
+    "s30"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s30",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "PDF from the authors' repository, text extracted with pdftotext and read verbatim"
+    },
+    {
+     "pass": 2,
+     "source": "s30",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s30",
+     "locator": "Abstract",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "vLLM exports vllm:num_preemptions as a running count.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "PrometheusStatLogger metric definitions",
+     "result": "supported",
+     "at": "2026-10-11T16:40",
+     "method": "raw source file at tag/commit, read verbatim (git sparse checkout)"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "PrometheusStatLogger metric definitions",
+     "result": "supported",
+     "at": "2026-10-11T17:00",
+     "method": "fresh download of the file at the pinned tag/commit; exact-phrase match of the evidence, judged against the page wording"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "PrometheusStatLogger metric definitions",
+     "result": "supported",
+     "at": "2026-10-11T17:45",
+     "method": "independent reviewer (strict mode): verbatim downloads at the pinned tag/commit, WebFetch with NOT IN CONTENT guard"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Quotations and figures read directly from the Megatron-LM paper (arXiv:1909.08053)",
+   "reason": "arxiv.org could not be reached in this session; the page cites the same algorithm through vLLM's docs, which name it, and the Megatron-LM and vLLM source that implement it."
+  },
+  {
+   "text": "DistServe's and Splitwise's headline gains (requests served, SLO tightness, cost and power)",
+   "reason": "The papers could not be re-read this session; the page keeps only claims verified earlier in the series or stated in the authors' repositories."
+  },
+  {
+   "text": "llm-d's benchmark figures listed on vLLM's integration page (throughput and TTFT gains from prefix-aware routing and disaggregation)",
+   "reason": "Headline results without the workload and hardware needed to interpret them."
+  },
+  {
+   "text": "A measured latency for one NCCL all-reduce on H100 NVLink",
+   "reason": "No primary source found; the planner exposes it as an input that defaults to zero and says so."
+  },
+  {
+   "text": "The number of KV connector types vLLM supports",
+   "reason": "The docs' count depends on how connector variants are counted; the page names the main connectors instead."
+  },
+  {
+   "text": "Re-reading the DistServe paper for the two claims carried over from Part 5",
+   "reason": "arxiv.org was not reachable; those two claims keep their Part 5 checks (verbatim browser read and a fresh fetch of the same arXiv version) and were not re-audited by this page's reviewer."
+  }
+ ]
+}

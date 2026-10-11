@@ -1,0 +1,565 @@
+<section class="ts-part" id="one-gpu-limit" data-rung="1" data-min="4">
+<h2>Why one GPU stops being enough</h2>
+<p class="ts-problem">Your team must serve Llama 3.1 70B. <a href="../llm-serving-1/index.html">Part 1</a> worked out that its BF16 weights alone take 140 GB. One H100 holds 80 GB. No setting makes 140 fit in 80.</p>
+<p><span class="ts-claim" data-claim="c2" data-src="s25">NVIDIA lists the H100 SXM with 80 GB of memory, 3.35 TB/s of memory bandwidth, and NVLink at 900 GB/s next to PCIe Gen5 at 128 GB/s.</span> Remember the last two numbers. Once a model spans GPUs, how fast GPUs talk to each other starts to matter as much as how fast each one computes.</p>
+<p>There are three ways to put more GPUs to work:</p>
+<ol class="ts-steps">
+<li>Split every layer's weight matrices across GPUs. All of them work on every token, and they swap partial results inside every layer. That is <dfn data-def="Splitting each layer's weight matrices across several GPUs, which all work on every token and combine partial results inside every layer.">tensor parallelism</dfn> (TP).</li>
+<li>Give each GPU a run of consecutive layers. A token's activations pass from GPU to GPU, like an assembly line. That is <dfn data-def="Giving each GPU (or group) a run of consecutive layers; activations pass from one stage to the next, like an assembly line.">pipeline parallelism</dfn> (PP).</li>
+<li>Run whole copies of the model on separate GPUs, each serving its own requests. Part 2 of this page names these copies.</li>
+</ol>
+<p>A translation agency faces the same choice with a book too big for one translator. Four translators can each take a quarter of every sentence and stitch the sentences together (tensor). They can take chapters in turn, passing the draft along (pipeline). Or the agency can hire more teams, each with its own book (copies).</p>
+<p><span class="ts-claim" data-claim="c3" data-src="s1">vLLM's guide says: if the model fits on one GPU, distributed inference is probably unnecessary; if it fits on one node, use tensor parallelism across that node's GPUs; if it needs several nodes, use tensor parallelism within each node and pipeline parallelism across nodes.</span></p>
+<p class="ts-takeaway">When the weights do not fit, split each layer (tensor), split the stack of layers (pipeline), and add whole copies for more traffic.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c2 c3">
+<p class="q">The 70B model in BF16 must run on one 8-GPU H100 node with NVLink. Following vLLM's guide, how should one copy of the model be spread?</p>
+<ol>
+<li data-why="Pipeline parallelism across GPUs in one node is the guide's fallback for uneven splits or GPUs without NVLink, not the default inside a node.">Pipeline parallelism over the node's GPUs</li>
+<li>Tensor parallelism within the node</li>
+<li data-why="A copy still has to hold all 140 GB; adding copies adds traffic capacity, not room for one model.">Several copies, one per GPU</li>
+</ol>
+<p class="ts-why">The weights fit in one node, so the guide says tensor parallelism within that node. Copies come after one copy fits.</p>
+</div>
+</section>
+
+<section class="ts-part" id="stateful-replicas" data-rung="1" data-min="5">
+<h2>Why an LLM copy is not a stateless web server</h2>
+<p class="ts-bridge">Last part: split a layer, split the layers, or add copies. Still unsolved: can a load balancer treat the copies like ordinary pods?</p>
+<p class="ts-problem">Your FastAPI service runs 12 identical pods behind round-robin. Any pod can answer any request, because the state lives in the database. You put four copies of a chat model behind the same balancer, and turn 5 of a long conversation is slower than it was on one copy.</p>
+<p>Call each full copy a <dfn data-def="One complete, independently running copy of the model (on one GPU or one tensor/pipeline-parallel group) that serves its own requests. vLLM calls running several of them data parallelism.">replica</dfn>. The weights in every replica are identical and never change while serving, so for the weights, any replica will do.</p>
+<p>The KV cache is different. Each replica keeps the cache of the requests it is running, and, with prefix caching, the blocks of prompts it finished recently (<a href="../llm-serving-4/index.html">Part 4</a>). <span class="ts-claim" data-claim="c5" data-src="s38">Prefix caching is on by default in vLLM v0.31.0.</span> <span class="ts-claim" data-claim="c4" data-src="s2">vLLM's data-parallel guide notes that each replica has its own independent KV cache, so where a prompt is sent decides how much prefix caching can reuse.</span></p>
+<p>Turn 5 of a chat resends turns 1 to 4 as its prompt. The replica that served turn 4 may still hold those blocks. Round-robin sends turn 5 somewhere else, which recomputes the whole history from scratch.</p>
+<p>Backend comparisons, mapped:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Backend idea</th><th>LLM serving version</th></tr></thead>
+<tbody>
+<tr><td>Read replicas: full copies, any one answers</td><td>Replicas: full copies of the weights, any one can answer</td></tr>
+<tr><td>Sharding: each node owns part of the data</td><td>Tensor and pipeline parallelism: each GPU owns part of the weights</td></tr>
+<tr><td>A local in-process cache on each pod</td><td>Each replica's KV cache: lose it and you lose speed, not correctness</td></tr>
+</tbody>
+</table></div>
+<p>So an LLM replica is stateful in the way a pod with a warm local cache is: the cache is not the source of truth, but routing that ignores it pays for it on every request.</p>
+<p class="ts-takeaway">Replicas share identical weights but each holds its own KV cache, so the router's choice of replica changes how much work a request costs.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c4 c5">
+<p class="q">Four replicas sit behind round-robin. Long chats get slower per turn than on a single replica, even though no replica is busy. Why?</p>
+<ol>
+<li data-why="The weights are identical on every replica; nothing about them differs between turns.">Each replica holds different weights, so later turns run a different model</li>
+<li data-why="Replicas do not talk to each other while serving dense models; there is no cross-replica sync step.">Replicas must synchronize after every turn</li>
+<li>Each turn lands on a replica that does not hold the earlier turns' cached blocks, so the history is recomputed</li>
+</ol>
+<p class="ts-why">Each replica's KV cache and prefix cache are its own. Round-robin scatters a conversation, so most turns miss the cache.</p>
+</div>
+<div class="ts-explain" data-points="When the weights do not fit one GPU, split layers across GPUs (tensor) or split the stack of layers (pipeline)|Add whole replicas to serve more traffic|Replicas share weights but each holds its own KV and prefix cache|So routing decides cache reuse; the cache is soft state, losing it costs speed not correctness">
+<p class="q">Explain to a teammate who runs stateless APIs how you would serve a model too big for one GPU, and why the load balancer in front cannot be plain round-robin.</p>
+<div class="ts-model"><p>If the weights do not fit on one GPU, I split each layer across GPUs in a node with tensor parallelism, and add pipeline stages across nodes only if one node is not enough. That makes one replica. For more traffic I add replicas. Every replica has the same weights, but each keeps its own KV cache and prefix cache, so a conversation sent to a different replica each turn recomputes its history. The cache is soft state like a local cache: losing it costs time, not correctness, so the balancer should prefer the replica that holds the prefix.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="tensor-parallel" data-rung="2" data-min="6">
+<h2>How four GPUs share one layer</h2>
+<p class="ts-bridge">Last part: replicas hold their own caches. Still unsolved: inside one replica of the 70B model, how do four GPUs act as one?</p>
+<p class="ts-problem">With four GPUs, each H100 holds 35 GB of the 70B model's weights. Yet every token needs every weight in every layer.</p>
+<p><span class="ts-claim" data-claim="c6" data-src="s1">vLLM's docs say its tensor parallelism includes Megatron-LM's tensor-parallel algorithm.</span> One layer, step by step:</p>
+<ol class="ts-steps">
+<li>The first matrix of a block is split by columns. Each GPU computes a quarter of the output from the full input, without talking.</li>
+<li>The next matrix is split by rows, to match. Each GPU multiplies its quarter and ends up with a partial sum of the full result.</li>
+<li>The GPUs add their partial sums so that each holds the full result. That collective step is an <dfn data-def="A collective operation where every GPU contributes a tensor and every GPU ends up with the element-wise sum of all of them.">all-reduce</dfn>.</li>
+<li>Attention splits the same way by heads: each GPU runs its share of the query heads and stores its share of the KV cache. Every layer repeats these steps.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c7" data-src="s9 s33">A column-parallel layer splits the weight matrix A along its second dimension, A = [A_1, ..., A_p]; a row-parallel layer splits A along its first dimension and the input X along its second.</span> <span class="ts-claim" data-claim="c8" data-src="s8 s9">In vLLM's Llama code, each layer's attention output projection (o_proj) and MLP down projection (down_proj) are row-parallel, and a row-parallel layer all-reduces its output across the tensor-parallel GPUs when there is more than one.</span> <span class="ts-claim" data-claim="c9" data-src="s8">vLLM splits the key/value heads across the tensor-parallel GPUs when there are at least as many heads as GPUs, and copies them when there are fewer.</span></p>
+<p><span class="ts-claim" data-claim="c1" data-src="s39">Llama 3.1 70B has 80 layers, a model dimension of 8,192, 64 attention heads and 8 key/value heads.</span> That is 160 all-reduces per forward pass, each carrying one 8,192-value BF16 vector (16 KB) per token in the step.</p>
+<p><span class="ts-claim" data-claim="c10" data-src="s31">Hugging Face's guide says tensor parallelism needs fast communication inside a node, because GPUs exchange partial results at each layer.</span> <span class="ts-claim" data-claim="c11" data-src="s27">NVIDIA's Hopper write-up gives H100 18 fourth-generation NVLink links at 25 GB/s each direction, 900 GB/s in total, and calls that 7 times the bandwidth of PCIe Gen 5.</span> This page therefore counts 450 GB/s each way per GPU.</p>
+<p><span class="ts-claim" data-claim="c12" data-src="s29">NCCL's test documentation gives the best-case time of an all-reduce of S bytes over n GPUs as S/B × 2(n−1)/n, where B is each GPU's bandwidth.</span> In this page's tested model, a decode step at TP=4 with 133 requests spends about 1.2 ms in all-reduces out of 18.6 ms. A prefill step of 8,192 tokens spends about 72 ms in them.</p>
+<p class="ts-takeaway">Tensor parallelism cuts every GPU's share of weight reads and math, and pays with two all-reduces per layer, which is why it lives on NVLink inside one node.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Same 70B model, decode only. You move from TP=4 to TP=8 on the same NVLink node. Predict what happens to one decode step's time, and to the share of it spent in all-reduces.</p>
+<div class="ts-reveal"><p>The step gets shorter: each GPU now reads one eighth of the weights. The all-reduce share grows: 160 all-reduces still happen per step, the ring factor 2(n−1)/n rises from 1.5 to 1.75, and the compute and reads they sit between shrink by half. More GPUs per replica buy lower ITL at a falling efficiency per GPU.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="pipeline-and-replicas" data-rung="2" data-min="5">
+<h2>Splitting the stack of layers, and copying the whole model</h2>
+<p class="ts-bridge">Last part: tensor parallelism talks inside every layer. Still unsolved: what the other two options send between GPUs, and what each does to TTFT, ITL and throughput.</p>
+<p class="ts-problem">A model's BF16 weights come to 800 GB, more than one 8-GPU node's 640 GB. Tensor parallelism across two nodes would run two all-reduces per layer over a link much slower than NVLink. You need a split that talks less.</p>
+<p>Pipeline parallelism gives each node a run of layers. Only the activations at the boundary cross between stages, once per stage per step. <span class="ts-claim" data-claim="c13" data-src="s32">Hugging Face's parallelism guide describes pipeline parallelism as splitting the model's layers across GPUs and passing micro-batches from one GPU to the next, so that GPUs work at the same time instead of waiting.</span> One request still walks through every stage in order, so pipelining does not shorten its own step. It keeps every stage busy with different batches. <span class="ts-claim" data-claim="c14" data-src="s10">vLLM keeps at least as many batches in flight as there are pipeline stages; its code notes that a pipeline needs that many to stay full.</span></p>
+<p><span class="ts-claim" data-claim="c15" data-src="s1">vLLM's guide also suggests pipeline parallelism when the GPU count does not split the model evenly, and for GPUs without NVLink, such as the L40S, where it gives higher throughput and less communication than tensor parallelism.</span></p>
+<p>Replicas are the third option. <span class="ts-claim" data-claim="c16" data-src="s2">In vLLM's data parallelism the weights are copied to separate instances that each process their own batches.</span> For dense models the copies never talk. <span class="ts-claim" data-claim="c17" data-src="s7 s2">For mixture-of-experts models, --enable-expert-parallel switches the expert layers from tensor to expert parallelism, and data-parallel ranks serving such models must synchronize in every forward pass.</span> This page stays with dense models.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Option</th><th>Splits</th><th>Sends between GPUs</th><th>TTFT and ITL of one request</th><th>Throughput</th></tr></thead>
+<tbody>
+<tr><td>Tensor (TP)</td><td>Every weight matrix, every layer</td><td>2 all-reduces per layer, every step</td><td>Both drop: each GPU does a fraction of each step</td><td>Up, at a falling efficiency per GPU</td></tr>
+<tr><td>Pipeline (PP)</td><td>The stack of layers into stages</td><td>Activations at each stage boundary</td><td>Not shortened; a little longer from the hand-offs</td><td>Up, if enough batches keep every stage busy</td></tr>
+<tr><td>Replicas (data parallel)</td><td>Nothing: whole copies</td><td>Nothing, for dense models</td><td>Unchanged; queueing time falls</td><td>Up roughly in proportion to copies</td></tr>
+</tbody>
+</table></div>
+<p class="ts-takeaway">Tensor parallelism cuts each request's latency, pipeline parallelism lets a model span nodes with little talking, and replicas add throughput with no talking at all.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c13 c14 c16">
+<p class="q">An 8B model fits easily on one H100. Traffic triples. Your ITL is fine; requests wait in the queue. What do you add?</p>
+<ol>
+<li>Replicas, each on its own GPU</li>
+<li data-why="Tensor parallelism shortens each step, but ITL is already fine and the all-reduces cost efficiency; extra copies remove the queue more cheaply.">Tensor parallelism across 4 GPUs for the one copy</li>
+<li data-why="Pipeline stages do not make any single request faster and add hand-offs; they exist for models that do not fit.">Pipeline parallelism across 2 GPUs</li>
+</ol>
+<p class="ts-why">The problem is waiting, not step time. Copies serve independent requests with no communication, so throughput rises in proportion.</p>
+</div>
+</section>
+
+<section class="ts-part" id="request-path" data-rung="2" data-min="6">
+<h2>One request through a production fleet</h2>
+<p class="ts-bridge">Last part: what TP, PP and replicas each buy. Still unsolved: how a request finds a replica, and how it moves when prefill and decode run on different machines.</p>
+<p class="ts-problem">A user sends turn 5 of a chat with a 2,000-token history. Twenty prefill and decode replicas could serve it. Which one gets it, and how does the answer stream back token by token?</p>
+<p>Some fleets run prefill and decode on separate replicas, so that long prompts never stall anyone's token stream. That design is <dfn data-def="Running prefill and decode on separate instances (pools) and moving each request's KV cache from the prefill instance to the decode instance.">disaggregated prefill/decode</dfn>. <span class="ts-claim" data-claim="c18" data-src="s3">vLLM's disaggregated mode runs two instances, one for prefill and one for decode, and a connector moves the prefill's KV cache to the decode instance.</span></p>
+<figure class="ts-seq" data-title="One chat turn through a disaggregated fleet">
+<script type="application/json">
+{
+ "actors": [
+  {
+   "id": "client",
+   "label": "Client",
+   "sub": "chat app"
+  },
+  {
+   "id": "gw",
+   "label": "API gateway",
+   "sub": "stateless"
+  },
+  {
+   "id": "router",
+   "label": "Router",
+   "sub": "prefix-aware"
+  },
+  {
+   "id": "prefill",
+   "label": "Prefill pool",
+   "sub": "replica P1"
+  },
+  {
+   "id": "decode",
+   "label": "Decode pool",
+   "sub": "replica D2"
+  }
+ ],
+ "steps": [
+  {
+   "from": "client",
+   "to": "gw",
+   "label": "POST chat request, stream: true",
+   "note": "The client opens one HTTP request with streaming on. It stays open until the last token."
+  },
+  {
+   "from": "gw",
+   "to": "router",
+   "label": "checked request + deadline",
+   "note": "The gateway authenticates, applies rate limits and attaches a deadline. It holds no model state, so it scales like any stateless service."
+  },
+  {
+   "from": "router",
+   "to": "prefill",
+   "label": "prompt, max_tokens 1",
+   "note": "The router matches the prompt prefix and picks the prefill replica most likely to hold turns 1 to 4 in its prefix cache. It asks for prefill only."
+  },
+  {
+   "over": [
+    "prefill"
+   ],
+   "label": "computes the prompt's KV cache",
+   "note": "The prefill replica runs the prompt through the model and keeps the resulting KV blocks for the decoder."
+  },
+  {
+   "from": "prefill",
+   "to": "router",
+   "label": "done: where the KV blocks are",
+   "dashed": true,
+   "note": "It answers with where those blocks live instead of streaming an answer."
+  },
+  {
+   "from": "router",
+   "to": "decode",
+   "label": "same request + KV location",
+   "note": "The router picks a decode replica with room in its KV cache and sends it the same request plus the KV location."
+  },
+  {
+   "from": "decode",
+   "to": "prefill",
+   "label": "pulls the KV blocks",
+   "note": "The decode replica pulls the KV blocks straight from the prefill replica, then starts decoding."
+  },
+  {
+   "from": "decode",
+   "to": "router",
+   "label": "one SSE event per token",
+   "dashed": true,
+   "note": "Each new token goes back as one Server-Sent Event. ITL is now set only by decode steps; no prefill shares them."
+  },
+  {
+   "from": "router",
+   "to": "client",
+   "label": "streamed through the gateway, then [DONE]",
+   "dashed": true,
+   "note": "The stream passes back through the gateway and ends with a [DONE] line. Closing the connection early cancels the request."
+  }
+ ]
+}
+</script>
+</figure>
+<p>The pieces, backed by sources: <span class="ts-claim" data-claim="c19" data-src="s23">vLLM's example proxy sends a request first to a prefill instance with max_tokens set to 1 and a do_remote_decode flag, then to a decode instance, choosing each in round-robin order.</span> <span class="ts-claim" data-claim="c20" data-src="s4">With NixlConnector, the decode instance reads the KV blocks from the prefill instance, and the prefill instance holds them for a lease, 30 seconds by default, which heartbeats extend while the request waits on the decoder.</span> <span class="ts-claim" data-claim="c21" data-src="s30">Mooncake streams each layer's KV cache to the decoding node while prefill continues, overlapping the transfer with compute.</span> <span class="ts-claim" data-claim="c22" data-src="s14">vLLM's chat endpoint streams Server-Sent Events and ends the stream with a data: [DONE] line.</span></p>
+<p>Where the backend comparison breaks: a read replica can lag its primary, but model replicas never diverge, because the weights do not change. And a database shard talks to others once per query, while a tensor-parallel GPU talks to its group 160 times per token.</p>
+<p class="ts-takeaway">A production request passes a stateless gateway, a router that chooses by cache and load, and replicas; in a disaggregated fleet its KV cache moves once, from prefill to decode.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the disaggregated path in order.</p>
+<ol>
+<li>The gateway checks the request and attaches a deadline</li>
+<li>The router picks a prefill replica by prefix and load</li>
+<li>Prefill computes the prompt's KV cache and reports where it is</li>
+<li>A decode replica pulls the KV blocks</li>
+<li>Tokens stream back as Server-Sent Events, ending with [DONE]</li>
+</ol>
+<p class="ts-why">Prefill must finish before its cache can move, and decoding cannot start until the cache has arrived.</p>
+</div>
+<div class="ts-explain" data-points="Tensor parallelism splits every layer and pays two all-reduces per layer, so it needs NVLink|Pipeline parallelism splits layers into stages, talks little, and does not cut one request's latency|Replicas add throughput with no communication for dense models|Disaggregation runs prefill and decode on different replicas and moves the KV cache once">
+<p class="q">In your own words: what does each of tensor parallelism, pipeline parallelism, replicas and disaggregation split, and what does each have to send?</p>
+<div class="ts-model"><p>Tensor parallelism splits every weight matrix, so the GPUs must all-reduce twice per layer on every step; that needs NVLink inside a node, and it cuts both TTFT and ITL. Pipeline parallelism gives stages consecutive layers and only passes activations at the boundaries, so it spans nodes cheaply but does not make one request faster. Replicas copy the whole model and send nothing between copies, so they add throughput. Disaggregation runs prefill and decode on different replicas and sends each request's KV cache once, from the prefill replica to the decode replica.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="vllm-parallel" data-rung="3" data-min="5">
+<h2>Setting TP, PP and replicas in vLLM</h2>
+<p class="ts-bridge">Last part: the request path end to end. Still unsolved: the exact switches, and how to tell from the logs that a layout has room.</p>
+<p class="ts-problem">You have one 8-GPU H100 node and the 70B model, which needs at least four of its GPUs. Do you run one TP=8 replica, or two TP=4 replicas, and how do you start them?</p>
+<p><span class="ts-claim" data-claim="c23" data-src="s6 s7">In vLLM v0.31.0 the flags are --tensor-parallel-size (-tp), --pipeline-parallel-size (-pp) and --data-parallel-size (-dp), each defaulting to 1.</span> <span class="ts-claim" data-claim="c24" data-src="s2">The data-parallel guide's example of --data-parallel-size=4 with --tensor-parallel-size=2 uses 8 GPUs, and it runs behind a single API endpoint.</span></p>
+<div class="ts-code" data-lang="bash" data-title="One node, two choices" data-verified="spec" data-claims="c23 c24">
+<pre><code># one replica over all 8 GPUs: lowest ITL, one KV pool
+vllm serve $MODEL --tensor-parallel-size 8
+
+# two replicas of 4 GPUs each, one endpoint: more requests in flight per GPU
+vllm serve $MODEL -tp 4 -dp 2</code></pre>
+</div>
+<p>Then read the startup log. <span class="ts-claim" data-claim="c25" data-src="s1">vLLM logs the GPU KV cache size in tokens and the maximum concurrency for requests of max_model_len tokens, and its guide says to add GPUs or nodes if these are below what you need.</span></p>
+<p>Two behaviours of the built-in replicas matter in production. <span class="ts-claim" data-claim="c26" data-src="s2">The internal data-parallel balancer picks a rank from each engine's running and waiting queues; the docs say it could later add KV-cache-aware logic, which it does not use yet.</span> <span class="ts-claim" data-claim="c27" data-src="s2">--max-num-seqs applies per data-parallel rank, but --max-num-queued-reqs and --max-num-queued-tokens apply to the whole server.</span></p>
+<div class="ts-trap"><p>Copying a single-replica config to -dp 4 and leaving --max-num-queued-reqs at the old value. The cap now covers four ranks together, so the server starts answering 503 while each rank still has room. Size it as roughly ranks × max-num-seqs plus the queue you want.</p></div>
+<div class="ts-interview"><p><strong>"One TP=8 replica or two TP=4 replicas for a 70B model on one node?"</strong> A strong answer runs the numbers instead of picking a favourite. In this page's tested model, a TP=4 replica's KV pool holds 188 requests of 2,300 tokens and a TP=8 replica's holds 563, because the fixed weight share shrinks per GPU. TP=8 gives lower ITL per request; two TP=4 replicas avoid the larger all-reduce share and keep serving when one replica restarts. Then name the deciding target: if ITL is already met at TP=4, two replicas usually serve more per GPU.</p></div>
+<p class="ts-takeaway">Choose TP for fit and latency, add replicas with -dp or separate servers for traffic, and check the KV cache size and concurrency lines in the startup log.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c27">
+<p class="q">You go from one replica to -dp 4 with --max-num-seqs 256 and --max-num-queued-reqs 256. Under load, what happens?</p>
+<ol>
+<li data-why="The queued-request cap is not per rank; that is the trap.">Each rank admits up to 256 queued requests, so 1,024 in total</li>
+<li>The server rejects new requests once about 256 are in flight across all ranks, while ranks still have room</li>
+<li data-why="max-num-seqs is per rank, so each rank can run up to 256; nothing is capped at 64.">Each rank is limited to 64 running requests</li>
+</ol>
+<p class="ts-why">max-num-seqs is per rank, but the queued caps count across the whole server.</p>
+</div>
+</section>
+
+<section class="ts-part" id="vllm-disagg" data-rung="3" data-min="6">
+<h2>Running prefill and decode apart in vLLM</h2>
+<p class="ts-bridge">Last part: the parallelism flags. Still unsolved: what vLLM actually offers for separate prefill and decode pools, and how mature it is.</p>
+<p class="ts-problem">A team reads that disaggregation is how large providers serve. They want it on Monday. What will vLLM v0.31.0 give them, and what will it not?</p>
+<div class="ts-note" data-label="Experimental in vLLM v0.31.0"><p><span class="ts-claim" data-claim="c28" data-src="s3">vLLM's docs label disaggregated prefilling experimental and subject to change.</span> <span class="ts-claim" data-claim="c33" data-src="s3">They say vLLM relies on third-party connectors for production-level disaggregated prefilling.</span></p></div>
+<p><span class="ts-claim" data-claim="c29" data-src="s3">The docs give two reasons to use it: tuning TTFT and ITL separately, with different parallel settings for each phase, and controlling tail ITL; they add that it does not improve throughput.</span> <span class="ts-claim" data-claim="c30" data-src="s3">They note that chunked prefill with a well-chosen chunk size can reach the same tail-ITL goal, but that the right size is hard to find in practice.</span></p>
+<p>The moving part is a <dfn data-def="A plug-in that moves KV cache blocks between a vLLM instance and somewhere else: another instance, CPU memory, or a shared store.">KV connector</dfn>. <span class="ts-claim" data-claim="c31" data-src="s3">Connectors in v0.31.0 include NixlConnector, MooncakeConnector, LMCacheConnectorV1, OffloadingConnector, MultiConnector and ExampleConnector.</span> <span class="ts-claim" data-claim="c32" data-src="s5">An instance's kv_role is kv_producer, kv_consumer or kv_both, and kv_load_failure_policy is fail by default, with recompute as the alternative.</span></p>
+<div class="ts-code" data-lang="bash" data-title="A prefill instance and a decode instance (NIXL)" data-verified="spec" data-claims="c31 c32 c19">
+<pre><code>vllm serve $MODEL --port 8100 \
+  --kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_producer"}'
+vllm serve $MODEL --port 8200 \
+  --kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_consumer"}'
+# a proxy then sends each request to :8100 (max_tokens 1), then to :8200</code></pre>
+</div>
+<p>The research behind it: <span class="ts-claim" data-claim="c34" data-src="s34">DistServe's authors argue that colocating the two phases causes prefill-decode interference and ties both phases to one resource and parallelism plan.</span> <span class="ts-claim" data-claim="c36" data-src="s36">The DistServe paper argues that chunked prefill trades TTFT for TPOT and cannot remove the interference between the two phases.</span> <span class="ts-claim" data-claim="c35" data-src="s35">Splitwise splits the phases of LLM inference across different machines.</span> Note the disagreement: DistServe says chunking cannot remove interference; vLLM's docs say a good chunk size can, if you can find it.</p>
+<p class="ts-takeaway">In vLLM v0.31.0, disaggregation is two instances joined by an experimental KV connector, sold on latency control, not on throughput.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c29 c30">
+<p class="q">Which reason for disaggregating does vLLM's own documentation give?</p>
+<ol>
+<li data-why="The docs say the opposite: it does not improve throughput.">It raises throughput per GPU</li>
+<li data-why="It moves the KV cache, which costs memory bandwidth and network; it does not shrink the cache.">It reduces the KV cache each request needs</li>
+<li>It lets TTFT and ITL be tuned separately and keeps tail ITL under control</li>
+</ol>
+<p class="ts-why">The docs name separate tuning and tail ITL, and state plainly that throughput does not improve.</p>
+</div>
+</section>
+
+<section class="ts-part" id="routing-streaming" data-rung="3" data-min="6">
+<h2>Routing by cache, streaming, and letting go</h2>
+<p class="ts-bridge">Last part: the disaggregation machinery. Still unsolved: which replica a router should pick, and what happens to memory when a user closes the tab.</p>
+<p class="ts-problem">Ten replicas serve a support bot with one 3,000-token system prompt. Users often close the tab mid-answer. Round-robin spreads both the cache hits and the abandoned work evenly, which helps neither.</p>
+<p><span class="ts-claim" data-claim="c37" data-src="s24">The vLLM production-stack router offers routing modes including roundrobin, session, prefixaware, kvaware, loadaware and disaggregated_prefill.</span></p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Mode</th><th>How it picks</th><th>Good at</th></tr></thead>
+<tbody>
+<tr><td>Round-robin</td><td>Next in turn</td><td>Even load when prompts share nothing</td></tr>
+<tr><td>Session</td><td><span class="ts-claim" data-claim="c38" data-src="s24">A hash ring maps a session key to a replica; requests without a key go to the replica with the lowest request rate.</span></td><td>Multi-turn chat with a known user or conversation id</td></tr>
+<tr><td>Prefix-aware</td><td><span class="ts-claim" data-claim="c39" data-src="s24">It sends a request to the replica holding the longest matching prompt prefix the router has seen, and its code notes that it ignores cache eviction.</span></td><td>Shared system prompts and few-shot templates</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c40" data-src="s20">vLLM's llm-d page says round-robin breaks cache locality across replicas, and describes llm-d routing each request by vLLM's KV-cache events to the replica that already holds its prefix.</span> <span class="ts-claim" data-claim="c41" data-src="s19">vLLM publishes block-stored and block-removed KV cache events over ZeroMQ when enable_kv_cache_events is set in --kv-events-config.</span> <span class="ts-claim" data-claim="c42" data-src="s18">On a non-streaming chat response, a request that sends the endpoint-load-metrics-format header gets an endpoint-load-metrics header back with kv_cache_usage_perc and num_requests_waiting.</span></p>
+<p>Streaming and letting go. <span class="ts-claim" data-claim="c43" data-src="s11 s12">If the client disconnects, vLLM cancels the request's handler and the engine aborts the request.</span> <span class="ts-claim" data-claim="c44" data-src="s13">Aborting frees the request's KV blocks, unless a KV connector asks to hold them for a transfer still pending.</span> <span class="ts-claim" data-claim="c45" data-src="s15">--sse-keep-alive-interval, off by default, sends a comment line when a stream is idle, so proxies with read timeouts do not close it while the request waits in the queue or in prefill.</span></p>
+<div class="ts-interview"><p><strong>"Your gateway times out at 60 s, but answers take 90 s. What happens to GPU memory?"</strong> A strong answer traces it: the gateway closes the client side, and unless it also closes the upstream connection, vLLM keeps decoding for nobody and holds the request's KV blocks. Make the gateway close upstream on timeout so vLLM sees the disconnect and aborts, cap max_tokens to fit the deadline, and turn on SSE keep-alives if the timeout is an idle-read timeout during long prefills.</p></div>
+<p class="ts-takeaway">Route by where the prefix lives and by load, stream over SSE, and make every timeout reach vLLM as a disconnect so the request's KV blocks are freed.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c38 c39">
+<p class="q">A chat product sends a conversation id with every request. The system prompt differs per customer. What is the simplest way to keep each conversation's history warm in one replica's cache?</p>
+<ol>
+<li>Session routing on the conversation id</li>
+<li data-why="Round-robin scatters each conversation across replicas, which is the cache-locality problem.">Round-robin with more replicas</li>
+<li data-why="Prefix matching also works and can reuse a customer's shared system prompt across conversations, but it needs the router to track prompt text; a known session key keeps each conversation together with a plain hash.">Prefix-aware routing that tracks every prompt's text</li>
+</ol>
+<p class="ts-why">Each conversation's history is its own prefix, so pinning a conversation to one replica keeps its blocks warm with a plain hash ring.</p>
+</div>
+</section>
+
+<section class="ts-part" id="capacity-planner" data-rung="3" data-min="7">
+<h2>Sizing the fleet: GPUs per replica, then replicas</h2>
+<p class="ts-bridge">Last part: routing and cancellation. Still unsolved: how many GPUs to ask for, colocated or split.</p>
+<p class="ts-problem">Product asks for 66.7 requests per second of chat, 2,000-token prompts and 300-token answers, TTFT under 1 s and ITL under 100 ms. Finance asks for a GPU count by Friday.</p>
+<p>The planner below is Parts 1 to 6 assembled. It never uses GPU utilization:</p>
+<ol class="ts-steps">
+<li>Fit: for each TP size, weights per GPU = weights ÷ TP; what is left of 92% of memory, minus a reserve, is the KV pool (Part 2). Keep TP sizes that hold at least one request.</li>
+<li>Step time: a TP group runs like one GPU with TP times the speed, plus the all-reduces (this page), using Part 5's step model.</li>
+<li>Colocated capacity: try chunk budgets and batch sizes; keep the highest request rate whose ITL and TTFT meet the targets (Part 5).</li>
+<li>Split capacity: size a prefill pool by prompt tokens per second, a decode pool by the batch that meets ITL, and add the KV transfer to TTFT.</li>
+<li>Replicas = target rate ÷ (planned peak utilization × capacity per replica), rounded up. The 20% headroom stands in for queueing, which this model does not simulate.</li>
+</ol>
+<div class="ts-tabs">
+<div data-tab="tp.py"><div class="ts-code" data-lang="python" data-title="tp.py" data-file="tp.py" data-verified="ran"></div></div>
+<div data-tab="replica.py"><div class="ts-code" data-lang="python" data-title="replica.py" data-file="replica.py" data-verified="ran"></div></div>
+<div data-tab="plan.py"><div class="ts-code" data-lang="python" data-title="plan.py" data-file="plan.py" data-verified="ran"></div></div>
+</div>
+<p>The hardware figures it uses: <span class="ts-claim" data-claim="c52" data-src="s26">NVIDIA lists the H200 SXM with 141 GB of memory at 4.8 TB/s and NVLink at 900 GB/s.</span> <span class="ts-claim" data-claim="c53" data-src="s25 s26">NVIDIA lists both the H100 SXM and the H200 SXM at 1,979 teraFLOPS of BF16 and 3,958 teraFLOPS of FP8 Tensor Core throughput, with sparsity.</span> The planner halves those to dense, as Part 1 did. <span class="ts-claim" data-claim="c54" data-src="s28">A DGX H100 has 8 GPUs and 8 single-port ConnectX-7 InfiniBand cards at up to 400 Gb/s each.</span> That is about 50 GB/s each way per GPU across nodes, a ninth of NVLink.</p>
+<div class="ts-capcalc" data-title="Capacity planner">
+<script type="application/json">
+{"models": [{"id": "llama-3.1-70b", "label": "Llama 3.1 70B", "params": 70, "layers": 80, "q_heads": 64, "kv_heads": 8, "head_dim": 128},
+            {"id": "llama-3.1-8b", "label": "Llama 3.1 8B", "params": 8, "layers": 32, "q_heads": 32, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [{"id": "h100-sxm", "label": "H100 SXM (80 GB)", "tflops": 989.5, "tbps": 3.35, "gb": 80, "fp8_tflops": 1979, "nvlink_each_way": 450},
+          {"id": "h200-sxm", "label": "H200 SXM (141 GB)", "tflops": 989.5, "tbps": 4.8, "gb": 141, "fp8_tflops": 1979, "nvlink_each_way": 450}],
+ "dtypes": [{"id": "bf16", "label": "BF16 weights and KV cache", "bytes": 2, "math": "bf16"},
+            {"id": "fp8", "label": "FP8 weights (W8A8) and FP8 KV cache", "bytes": 1, "math": "fp8"}],
+ "links": [{"id": "nvlink", "label": "NVLink, same node (450 GB/s each way)", "each_way": 450},
+           {"id": "network", "label": "Network, across nodes (400 Gb/s per GPU)", "each_way": 50}],
+ "defaults": {"model": "llama-3.1-70b", "gpu": "h100-sxm", "dtype": "bf16", "tp": "auto", "prompt": 2000, "output": 300,
+              "ttft": 1.0, "itl": 0.1, "rate": 66.7, "headroom": 0.8, "link": "nvlink", "fixed_us": 0, "util": 0.92, "reserve": 3}}
+</script>
+</div>
+<p>For Friday's question the planner says: TP=4 colocated, 9 replicas, 36 GPUs; split pools need 8 prefill and 3 decode replicas, 44 GPUs. TP=2 technically fits but holds one request, so it would need hundreds of replicas. With FP8 weights and cache, TP=2 holds 188 requests and the colocated fleet drops to 18 GPUs.</p>
+<div class="ts-interview"><p><strong>"How many GPUs for this load?"</strong> A strong answer is a chain of stated assumptions: request mix, SLOs, the fit per TP size, per-replica capacity under both SLOs, headroom for queueing, then replicas. It ends with what would change the number most (here, FP8 halves it) and with a load test, because the model is a best case at 100% of peak.</p></div>
+<p class="ts-takeaway">Plan from memory fit to per-replica capacity under the SLOs to replicas with headroom, and treat the result as a lower bound to load-test.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In the planner, keep everything at the defaults but switch the KV transfer link to the network. Predict which numbers move, and by roughly how much.</p>
+<div class="ts-reveal"><p>Only the split design changes, and barely. One 2,000-token prompt's cache is 655 MB in BF16; across 4 GPUs at 50 GB/s each way it takes about 3.3 ms instead of 0.36 ms, against roughly 370 ms of prefill. TTFT rises a few milliseconds and the GPU counts stay the same. For this model, transfer is a rounding error next to prefill.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="autoscaling" data-rung="4" data-min="6">
+<h2>Scaling on the right signal when traffic jumps 10 times</h2>
+<p class="ts-bridge">Last part: a planned fleet size. Still unsolved: what tells you, live, that the fleet is too small, and how fast new replicas arrive.</p>
+<p class="ts-problem">A launch sends 10 times the usual chat traffic within an hour. The autoscaler adds replicas when GPU utilization passes 80%. It already read 95% at normal load, so it scaled out once, early, and then had nothing left to react to.</p>
+<p>This is Part 1's trap at fleet scale. <span class="ts-claim" data-claim="c46" data-src="s37">NVML reports GPU utilization as the percent of time over the sample period during which one or more kernels was executing on the GPU.</span> A busy decode loop always has a kernel running, so the number sits near 100% whether the replica is coasting or drowning.</p>
+<p>Scale on what users feel, or on what predicts it. <span class="ts-claim" data-claim="c48" data-src="s16">vLLM exports vllm:num_requests_waiting, vllm:kv_cache_usage_perc, where 1 means 100%, and vllm:request_queue_time_seconds, a histogram of time spent waiting.</span> <span class="ts-claim" data-claim="c47" data-src="s20">vLLM's llm-d page describes scaling vLLM pools on queue depth and true demand rather than raw GPU utilization.</span></p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Signal</th><th>What a rise means</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td>Queue time p95</td><td>Requests wait before their prefill: TTFT is about to break</td><td>Scale out; this is the main trigger</td></tr>
+<tr><td>Waiting requests</td><td>Arrivals outpace admission; leads queue time</td><td>Scale out early on a steady rise</td></tr>
+<tr><td>KV cache usage near 1</td><td>The batch is memory-capped; preemptions follow</td><td>Scale out, or add KV room with FP8 or more TP</td></tr>
+<tr><td>GPU utilization</td><td>A kernel was running</td><td>None; do not scale on it</td></tr>
+</tbody>
+</table></div>
+<p>New replicas are slow to arrive. <span class="ts-claim" data-claim="c49" data-src="s21 s43">At startup vLLM logs how long loading the weights took and, separately, how long engine setup took: profiling, creating the KV cache and warming up.</span> Reading 140 GB of weights alone takes 140 GB divided by your storage's read speed, before any of that. So trigger early, keep headroom, and shed load meanwhile with Part 5's queue caps. <span class="ts-claim" data-claim="c58" data-src="s30">Mooncake's scheduler estimates TTFT on each prefill instance from its prefix match and its queue, picks the shortest, and returns HTTP 429 when no instance can meet the SLO.</span> <span class="ts-claim" data-claim="c50" data-src="s22">vLLM's sleep mode frees most of a model's GPU memory without stopping the server; level 1 moves the weights to CPU memory, so waking up avoids a full reload.</span></p>
+<p>Size scale-out steps with goodput, not raw throughput. <span class="ts-claim" data-claim="c51" data-src="s36">The DistServe paper defines per-GPU goodput as the highest request rate that can be served while meeting an SLO attainment goal, such as 90% of requests meeting their TTFT and TPOT targets, for each GPU provisioned.</span> The planner's per-replica capacity is that number, at a best case.</p>
+<p class="ts-takeaway">Scale on queue time, waiting requests and KV usage, start early because a replica takes minutes to load, and never trust GPU utilization as headroom.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c46 c48">
+<p class="q">At 10 times the load, which signal should page you and add replicas first?</p>
+<ol>
+<li data-why="NVML's utilization only measures time with a kernel running; it reads near 100% at normal load too.">GPU utilization above 90%</li>
+<li>Queue time p95 climbing while ITL stays flat</li>
+<li data-why="Average throughput keeps rising until the batch saturates, so it lags the user-visible problem.">Average output tokens per second</li>
+</ol>
+<p class="ts-why">Queue time is the part of TTFT that grows when the fleet is too small, and it rises before throughput flattens.</p>
+</div>
+</section>
+
+<section class="ts-part" id="failures-at-10x" data-rung="4" data-min="7">
+<h2>Four ways a fleet fails at 10 times the load</h2>
+<p class="ts-bridge">Last part: what to scale on. Still unsolved: what breaks even while scaling works, and how you would know.</p>
+<p class="ts-problem">The fleet scaled to 40 replicas. TTFT p99 is still bad, but only for some users. The dashboard averages hide which replica, which prefix or which link is at fault.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>Users see</th><th>Detect</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>KV memory runs out on a replica</td><td>Streams pause and restart; long answers slow</td><td>KV usage at 1 and a rising preemption count on that replica</td><td>Lower --max-num-seqs, FP8 KV cache, more TP, or more replicas</td></tr>
+<tr><td>A hot prefix lands on one replica</td><td>Slow TTFT for one product or tenant, others fine</td><td>Queue time on one replica far above its siblings</td><td>Load-aware routing; copy the hot prefix to several replicas</td></tr>
+<tr><td>KV transfers stall between pools</td><td>TTFT spikes or errors on the split path only</td><td>Transfer time histogram, failed and expired transfers</td><td>Fix the link; choose fail or recompute on purpose</td></tr>
+<tr><td>One slow GPU in a TP group</td><td>One replica's ITL p99 above its siblings at equal load</td><td>Compare ITL across replicas; check NCCL's transport</td><td>Drain and replace that replica's node</td></tr>
+</tbody>
+</table></div>
+<p><strong>Memory.</strong> <span class="ts-claim" data-claim="c55" data-src="s40">If one request of max_model_len tokens would need more KV memory than is available, vLLM refuses to start and suggests raising gpu_memory_utilization or lowering max_model_len.</span> At runtime it does not crash for lack of KV room. <span class="ts-claim" data-claim="c56" data-src="s41">vLLM's tuning guide says it preempts requests to free KV space and recomputes them later, which can hurt end-to-end latency, and lists raising gpu_memory_utilization or tensor_parallel_size among the fixes.</span> <span class="ts-claim" data-claim="c64" data-src="s16">vLLM exports vllm:num_preemptions as a running count.</span></p>
+<p><strong>Hot prefix.</strong> <span class="ts-claim" data-claim="c57" data-src="s30">Mooncake's paper notes that system prompts are used by almost every request, and that the hottest KV blocks should be copied to several nodes to avoid congested fetches.</span> <span class="ts-claim" data-claim="c59" data-src="s24">The production-stack loadaware mode scores each replica by its matched share of the prompt minus a weighted relative load, so an idle replica without the cache can win over a busy one with it.</span></p>
+<div class="ts-trap"><p>Pure prefix routing has no brake. The production-stack prefixaware mode sends a request to a replica that already matched the prefix, and its code says it does not track eviction. A system prompt shared by every request therefore keeps going to the first replica that saw it, however long its queue grows.</p></div>
+<p><strong>Transfers.</strong> <span class="ts-claim" data-claim="c60" data-src="s17">NixlConnector exports vllm:nixl_xfer_time_seconds, vllm:nixl_num_failed_transfers and vllm:nixl_num_kv_expired_reqs, the last counted on the prefill instance.</span> Blocks waiting for a stuck decoder also hold prefill KV memory until their lease runs out.</p>
+<p><strong>Stragglers.</strong> <span class="ts-claim" data-claim="c61" data-src="s32">Hugging Face's guide notes that in tensor parallelism each GPU computes its slice and the results are synchronized to rebuild the full result.</span> An all-reduce finishes when its slowest member does, 160 times per step for the 70B model, so one throttled GPU sets the pace of the whole replica. <span class="ts-claim" data-claim="c62" data-src="s1">vLLM's guide says that if NCCL's logs show NET/Socket instead of NET/IB/GDRDMA, cross-node traffic is running over plain TCP, which is not efficient for tensor parallelism.</span></p>
+<p class="ts-takeaway">Watch every signal per replica, not averaged: hot prefixes, stuck transfers and slow GPUs each hit one replica while the fleet average looks fine.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In one TP=4 replica, one GPU's clocks drop to 70% because of cooling. The other three are fine. Predict that replica's ITL compared with its siblings.</p>
+<div class="ts-reveal"><p>Its ITL rises for every request on it, roughly as if all four GPUs had slowed: each of the 160 all-reduces per step waits for the slow GPU's share of the layer before anyone continues. Averages across 40 replicas barely move, which is why you compare ITL per replica at equal load and replace the outlier.</p></div>
+</div>
+<div class="ts-explain" data-points="GPU utilization is not headroom; scale on queue time, waiting requests and KV usage|Replicas take minutes to load, so scale early and shed load meanwhile|Hot prefixes need load-aware routing or copies of the prefix|A slow GPU slows its whole TP group; compare replicas to find it|Stuck KV transfers hold memory until a lease expires">
+<p class="q">Explain what breaks first when an LLM fleet sees 10 times its load, and how you would detect and fix each failure.</p>
+<div class="ts-model"><p>First, queues grow: TTFT rises while ITL stays flat. Utilization does not show it, so the autoscaler must watch queue time, waiting requests and KV usage, and start early because new replicas take minutes to load weights and warm up. Then individual replicas fail in ways averages hide: KV memory fills and preemptions start; a hot shared prefix piles onto one replica under prefix-only routing; KV transfers stall and hold prefill memory until the lease expires; and one slow GPU slows every all-reduce in its TP group. Each shows up only when you compare replicas, and each has a fix: more KV room, load-aware routing, a transfer failure policy, and replacing the slow node.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="when-split-pays" data-rung="5" data-min="6">
+<h2>When to split prefill from decode, and when not to</h2>
+<p class="ts-bridge">Last part: failures and their signals. Still unsolved: given all of it, when is disaggregation worth its machinery?</p>
+<p class="ts-problem">An architecture review proposes separate prefill and decode pools for every model the company serves. Your planner says the 70B chat fleet would need 44 GPUs split against 36 colocated.</p>
+<p>The planner's verdict is consistent: at every mix it was tested on, a colocated replica with a well-chosen chunk budget never needs more GPUs than split pools. Colocated replicas fill the spare compute of memory-bound decode steps with prefill chunks; split pools give that away. That matches vLLM's own note, quoted earlier on this page, that disaggregation does not improve throughput.</p>
+<p>The costs grow as models and prompts shrink. Shipping a token's KV cache over a 50 GB/s network link takes 4.6% of the time its prefill math takes for the 70B model, but 16% for the 8B model, which has more KV bytes per FLOP. At 20 requests per second the 8B model needs 1 GPU colocated but 2 split, because each pool needs at least one replica. Short prompts leave little interference to remove in the first place.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Option</th><th>Pick it when</th><th>Cost you accept</th></tr></thead>
+<tbody>
+<tr><td>One GPU per replica</td><td>The weights and a useful KV pool fit</td><td>Nothing; add replicas for traffic</td></tr>
+<tr><td>Tensor parallelism in a node</td><td>The weights do not fit, or ITL must drop</td><td>Two all-reduces per layer; efficiency per GPU falls as TP grows</td></tr>
+<tr><td>Pipeline parallelism across nodes</td><td>The model needs more than one node, or GPUs lack NVLink</td><td>No latency gain per request; stages must be kept busy</td></tr>
+<tr><td>Colocated, chunked prefill</td><td>Default for most fleets; prompt mix is stable enough to tune one budget</td><td>A budget that trades ITL against TTFT and must be re-tuned when the mix changes</td></tr>
+<tr><td>Disaggregated pools</td><td>Tail ITL must hold under very mixed prompt lengths, or the phases need different TP or hardware</td><td>More GPUs, an experimental connector, a second failure path</td></tr>
+</tbody>
+</table></div>
+<div class="ts-case"><p><span class="ts-claim" data-claim="c63" data-src="s30">Mooncake is the serving platform behind Moonshot AI's Kimi; its FAST '25 paper reports that the architecture let Kimi handle 115% more requests on A800 clusters and 107% more on H800 clusters than its previous systems.</span> Its gains come with a large KV cache pool and cache-aware scheduling on long contexts, not from splitting the phases alone.</p></div>
+<div class="ts-interview"><p><strong>"Should we disaggregate?"</strong> A strong answer asks for the prompt-length distribution and the ITL target first. It says what the split buys (ITL isolated from prefill, separate tuning) and what it costs (more GPUs in a best-case model, an experimental connector in vLLM, a transfer path that can stall), and proposes measuring the colocated fleet's ITL p99 under the real mix before paying for it.</p></div>
+<p class="ts-takeaway">Default to colocated replicas with chunked prefill; split prefill from decode when tail ITL must survive a wide prompt mix or the phases need different hardware, and expect to pay GPUs for it.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c29 c30">
+<p class="q">An 8B model serves 20 requests per second of 500-token prompts and 200-token answers, with TTFT under 0.5 s and ITL under 50 ms, both already met on one GPU. A colleague proposes disaggregation. What is the best response?</p>
+<ol>
+<li data-why="vLLM's docs state disaggregation does not improve throughput, and here it would double the GPU count.">Do it: separate pools raise throughput</li>
+<li data-why="Transfer is a larger share for small models, but the deciding problem is that there is nothing to fix and the GPU count doubles.">Do it, but over the network instead of NVLink</li>
+<li>Keep it colocated: the target is met, prompts are short, and split pools would double the GPU count</li>
+</ol>
+<p class="ts-why">Disaggregation buys latency control, not throughput. With short prompts and the target already met, it only adds GPUs and moving parts.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="9">
+<h2>Interview drill: three serving designs end to end</h2>
+<p class="ts-bridge">Last part: when to split and when not to. Still unsolved: putting all seven parts into one answer under interview pressure.</p>
+<p class="ts-problem">Three prompts. For each, state assumptions, estimate, draw the architecture and name what you give up, before opening the reference. The numbers come from this page's tested planner.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">1. Serve a 70B model to 2,000 concurrent chat users at TTFT p95 under 1 s and ITL p99 under 100 ms, on H100 nodes.</p>
+<div class="ts-reveal">
+<p><strong>Assumptions.</strong> Each user sends a message every 30 s, so 66.7 requests per second. Prompts average 2,000 tokens with history, answers 300. BF16 to start.</p>
+<p><strong>Estimate.</strong> 140 GB of weights: TP=4 is the smallest useful size (188 requests fit; TP=2 fits one). Colocated TP=4 replicas sustain about 9.7 requests per second each under both targets, so 9 replicas at 80% planned peak: 36 GPUs, five 8-GPU nodes with room for a spare replica. FP8 weights and cache cut it to 18 GPUs on TP=2.</p>
+<p><strong>Architecture.</strong> Stateless gateway with auth, limits and a deadline; router with session affinity on the conversation id and a load-aware fallback; vLLM replicas with chunked prefill; SSE streaming with disconnects passed through; autoscaling on queue time and waiting requests with one spare replica.</p>
+<p><strong>Given up.</strong> No disaggregation: it would cost 44 GPUs for ITL isolation the target does not need. 20% headroom is paid in idle capacity. FP8 needs an accuracy check on our own tasks before it replaces BF16.</p>
+</div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">2. Long-document question answering: 16,000-token prompts, 200-token answers, 10 requests per second, TTFT p95 under 3 s, ITL p99 under 50 ms, 70B in FP8.</p>
+<div class="ts-reveal">
+<p><strong>Assumptions.</strong> Prompt lengths vary around 16,000; documents repeat across users. Each KV transfer would be 2.6 GB in FP8.</p>
+<p><strong>Estimate.</strong> Colocated TP=2 replicas meet both targets only with a small chunk budget (512 tokens), at about 1.2 requests per second each: 22 GPUs. Split pools need 26 GPUs; even over the network the transfer adds about 26 ms against a TTFT budget of 3 s.</p>
+<p><strong>Architecture.</strong> Start colocated with a small chunk budget and prefix-aware routing by document id, so repeated documents hit the cache. Measure ITL p99 under the real length mix. If the tail breaks on the longest documents, move to split pools with NIXL and a recompute failure policy.</p>
+<p><strong>Given up.</strong> Colocated: TTFT is spent to protect ITL, and the budget must be re-tuned when lengths shift. Split: about 18% more GPUs, an experimental connector and a second failure path.</p>
+</div>
+</div>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">3. An 8B support bot at 100 requests per second, 500-token prompts with a shared system prompt, 200-token answers, TTFT under 0.5 s, ITL under 50 ms.</p>
+<div class="ts-reveal">
+<p><strong>Assumptions.</strong> One H100 per replica, BF16, the system prompt is most of each prompt.</p>
+<p><strong>Estimate.</strong> The model fits on one GPU with a large KV pool. Two single-GPU replicas carry the load in the planner; split pools would need three. Add a third replica as a spare.</p>
+<p><strong>Architecture.</strong> No TP, no split. Load-aware prefix routing, so the shared system prompt stays cached without piling onto one replica. Scale on queue time.</p>
+<p><strong>Given up.</strong> Lowest possible ITL from TP, which the target does not need. The router carries more logic than round-robin.</p>
+</div>
+</div>
+<p class="ts-takeaway">Every strong answer goes fit, per-replica capacity under the SLOs, replicas with headroom, then routing, scaling and failure handling, and names what it chose not to buy.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">In prompt 1, the interviewer cuts the ITL target to 30 ms. Which first move does the page's reasoning support?</p>
+<ol>
+<li>Re-run the per-replica capacity: lower chunk budgets or more TP for colocated, and price split pools against it</li>
+<li data-why="More requests per step make each decode step longer, so ITL rises, not falls.">Raise --max-num-seqs so more requests share each step</li>
+<li data-why="Scaling signals react to queueing; they cannot make one step shorter.">Lower the autoscaling threshold</li>
+</ol>
+<p class="ts-why">ITL is a per-step property of a replica. Only the replica's layout and chunk budget, or a split that removes prefill from decode steps, change it.</p>
+</div>
+</section>
+
+<section class="ts-part" id="series-complete" data-rung="5" data-min="10">
+<h2>Series complete: the whole serving stack in one review</h2>
+<p class="ts-bridge">Last part: three designs. Still unsolved: nothing new. This part checks that all seven parts hold together.</p>
+<p class="ts-problem">You started this series knowing that an LLM call takes a prompt and streams text back. Here is what each part added, and one check per part.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Part</th><th>The idea to keep</th></tr></thead>
+<tbody>
+<tr><td><a href="../llm-serving-1/index.html">1. Prefill vs decode</a></td><td>Prefill is compute-bound, decode is memory-bound; TTFT and ITL measure them</td></tr>
+<tr><td><a href="../llm-serving-2/index.html">2. The KV cache</a></td><td>Per-token cache memory, not math, caps how many requests fit</td></tr>
+<tr><td><a href="../llm-serving-3/index.html">3. Batching</a></td><td>Continuous batching shares each weight read across requests, step by step</td></tr>
+<tr><td><a href="../llm-serving-4/index.html">4. PagedAttention</a></td><td>Fixed-size KV blocks end fragmentation and make prefix sharing cheap</td></tr>
+<tr><td><a href="../llm-serving-5/index.html">5. Scheduling under load</a></td><td>A chunk budget trades ITL against TTFT; goodput counts only requests that meet SLOs</td></tr>
+<tr><td><a href="../llm-serving-6/index.html">6. Cheaper tokens</a></td><td>Quantization reads fewer bytes; speculation gets more tokens per read</td></tr>
+<tr><td><a href="#one-gpu-limit">7. Scaling out</a></td><td>TP, PP and replicas split differently; routing, scaling and splitting phases are fleet decisions</td></tr>
+</tbody>
+</table></div>
+<p class="ts-takeaway">One replica is a memory budget run by a scheduler; a fleet is many of them behind a router that knows where each cache lives.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">Part 1. Why does decode at batch 1 leave most of a GPU's arithmetic idle?</p>
+<ol>
+<li data-why="Decode does use the GPU's math units; they just finish long before the data arrives.">Decode runs on the CPU</li>
+<li>Each step reads every weight to produce one token per request, so memory bandwidth, not math, sets the pace</li>
+<li data-why="The attention cost per token grows with context, but at batch 1 the weight reads dominate.">Attention is too expensive to batch</li>
+</ol>
+<p class="ts-why">Low arithmetic per byte read puts decode on the memory side of the roofline.</p>
+</div>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">Part 2. A replica is memory-capped at 50 concurrent long requests. Which change raises that number without new GPUs?</p>
+<ol>
+<li>Storing the KV cache in FP8 instead of BF16</li>
+<li data-why="More FLOP/s does not create memory; the cap is bytes of cache.">A GPU with faster Tensor Cores and the same memory</li>
+<li data-why="Higher priority changes order, not how many requests fit.">Raising the requests' priority</li>
+</ol>
+<p class="ts-why">Halving bytes per cached token roughly doubles the requests that fit in the same pool.</p>
+</div>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">Part 3. Under static batching, short answers in a batch with one long answer cause what?</p>
+<ol>
+<li data-why="Static batching does not preempt; it waits.">Preemption of the long answer</li>
+<li data-why="The KV cache size is unchanged by the batch policy.">A larger KV cache per request</li>
+<li>Finished slots sit idle until the longest request ends, and new requests wait</li>
+</ol>
+<p class="ts-why">Continuous batching fixes this by admitting and retiring requests every step.</p>
+</div>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">Part 4. With vLLM's prefix caching on paged KV blocks, why can two requests with the same system prompt share KV memory?</p>
+<ol>
+<li data-why="The weights are always shared; the question is about per-request cache.">Because they share the weights</li>
+<li>Their identical full leading blocks hash the same, so both block tables point at the same physical blocks</li>
+<li data-why="Sharing is read-only reuse of blocks, not merged requests.">Because the scheduler merges them into one request</li>
+</ol>
+<p class="ts-why">Blocks are identified by their content and position, so a shared prefix maps to shared blocks.</p>
+</div>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">Part 5. Raising the chunk budget from 2,048 to 8,192 tokens does what to a colocated replica?</p>
+<ol>
+<li>Long prompts finish prefill sooner, and steps that carry a chunk get longer, so the worst ITL rises</li>
+<li data-why="The budget changes step contents, not how much memory each request needs.">The KV cache holds more requests</li>
+<li data-why="Bigger chunks make the worst gaps longer, not shorter.">ITL p99 falls</li>
+</ol>
+<p class="ts-why">The budget is the dial between TTFT for long prompts and the largest gap between tokens.</p>
+</div>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">Part 6. Why does speculative decoding help less at high concurrency?</p>
+<ol>
+<li data-why="Standard rejection sampling keeps the target model's output distribution at any batch size.">It changes the output distribution at high batch</li>
+<li data-why="The draft model is small; its memory is not the limit described.">The draft model stops fitting in memory</li>
+<li>Verifying several positions per request uses compute that a large batch already needs, so the step stops being memory-bound</li>
+</ol>
+<p class="ts-why">Speculation spends spare compute; a big batch leaves less of it.</p>
+</div>
+<div class="ts-quiz" data-answer="b" data-claims="c4 c8 c29">
+<p class="q">Part 7. Which statement is true?</p>
+<ol>
+<li data-why="vLLM's docs say disaggregation does not improve throughput.">Splitting prefill from decode raises throughput per GPU</li>
+<li>Tensor parallelism pays two all-reduces per layer, while dense replicas send nothing to each other but each keep their own KV cache</li>
+<li data-why="Replicas do not share caches; each has its own, which is why routing matters.">Replicas share one KV cache, so routing does not matter</li>
+</ol>
+<p class="ts-why">Tensor parallelism trades communication for per-step speed; replicas trade cache locality for independence.</p>
+</div>
+<div class="ts-explain" data-points="Prefill is compute-bound and decode memory-bound, measured by TTFT and ITL|The KV cache caps concurrency; paged blocks and batching use it fully|Scheduling with a chunk budget, goodput and queue caps protects the SLOs|Quantization and speculation make each token cheaper|Across GPUs: TP and PP to fit, replicas for traffic, cache-aware routing, scaling on queue time">
+<p class="q">Final explain-back: in five minutes, walk an interviewer from one request on one GPU to a fleet serving thousands of users.</p>
+<div class="ts-model"><p>A request has two phases: prefill reads the prompt in one compute-bound pass and sets TTFT; decode makes one token per step, limited by reading the weights and KV cache, which sets ITL. The KV cache grows with every token and caps how many requests fit, so servers batch continuously, store the cache in fixed-size blocks, and share prefixes. A scheduler with a chunk budget and queue caps keeps TTFT and ITL inside their targets, and goodput counts only requests that meet them. Quantization and speculation make each token cheaper. When one GPU is not enough, tensor parallelism splits each layer inside a node, pipeline parallelism spans nodes, and replicas add throughput; a router sends each request where its cache lives without overloading one replica, the fleet scales on queue time and KV usage, and prefill and decode are split only when tail ITL demands it.</p></div>
+</div>
+<p>All seven parts: <a href="../llm-serving-1/index.html">1. Prefill vs decode</a> · <a href="../llm-serving-2/index.html">2. The KV cache</a> · <a href="../llm-serving-3/index.html">3. Batching</a> · <a href="../llm-serving-4/index.html">4. PagedAttention</a> · <a href="../llm-serving-5/index.html">5. Scheduling under load</a> · <a href="../llm-serving-6/index.html">6. Quantization and speculative decoding</a> · <a href="#one-gpu-limit">7. Scaling out (this page)</a>. This is the last part of the series.</p>
+</section>

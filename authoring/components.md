@@ -217,6 +217,23 @@ Use the existing classes (`node`, `edge`, `msg`, `over`, `lblbg`, `arrowhead`) a
 - Outputs: a memory bar, weights, KV per token, requests that fit, the plain decode step, expected tokens per target pass (and the draft acceptance rate vLLM would report), the verify pass's cost, throughput with speculation, and TPOT against the gap between streamed outputs.
 - Same arithmetic as `examples/llm-serving-6/quant.py` and `spec.py`; `test_quant_spec.py` runs the JS functions under node and compares.
 
+### Capacity planner (TP size, replicas, colocated vs disaggregated)
+```html
+<div class="ts-capcalc" data-title="Capacity planner">
+<script type="application/json">
+{"models": [{"id": "llama-3.1-70b", "label": "Llama 3.1 70B", "params": 70, "layers": 80, "q_heads": 64, "kv_heads": 8, "head_dim": 128}],
+ "gpus": [{"id": "h100-sxm", "label": "H100 SXM", "tflops": 989.5, "tbps": 3.35, "gb": 80, "fp8_tflops": 1979, "nvlink_each_way": 450}],
+ "dtypes": [{"id": "bf16", "label": "BF16", "bytes": 2, "math": "bf16"}, {"id": "fp8", "label": "FP8 W8A8 + FP8 KV", "bytes": 1, "math": "fp8"}],
+ "links": [{"id": "nvlink", "label": "NVLink", "each_way": 450}, {"id": "network", "label": "Network", "each_way": 50}],
+ "defaults": {"model": "llama-3.1-70b", "gpu": "h100-sxm", "dtype": "bf16", "tp": "auto", "prompt": 2000, "output": 300,
+              "ttft": 1.0, "itl": 0.1, "rate": 66.7, "headroom": 0.8, "link": "nvlink", "fixed_us": 0, "util": 0.92, "reserve": 3}}
+</script>
+</div>
+```
+- Inputs: model, weight/KV data type, GPU, TP size (or "auto" to try 1, 2, 4 and 8), KV transfer link, prompt and output tokens, TTFT and ITL targets (seconds in the JSON, milliseconds in the form), target requests per second, planned peak utilization, fixed cost per all-reduce. Outputs: a table per TP size (requests that fit, colocated and disaggregated GPU counts) and the best of each design, with ITL, TTFT, KV transfer size and time.
+- GPU figures are dense; `nvlink_each_way` and link `each_way` are GB/s per GPU in one direction.
+- Same arithmetic as `examples/llm-serving-7/tp.py`, `replica.py` and `plan.py`; `test_planner.py` runs the JS functions under node and compares.
+
 ## 5. Code and tabs
 
 ```html

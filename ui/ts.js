@@ -2226,6 +2226,355 @@
   }
 
   /* =====================================================================
+     CAPACITY PLANNER (.ts-capcalc): TP size, per-replica capacity under TTFT and ITL targets,
+     and replicas for a target rate, colocated vs disaggregated prefill/decode.
+     Spec JSON: {"models":[{"id","label","params","layers","q_heads","kv_heads","head_dim"}],
+                 "gpus":[{"id","label","tflops","tbps","gb","fp8_tflops","nvlink_each_way"}],  (dense; GB/s)
+                 "dtypes":[{"id","label","bytes","math"}], "links":[{"id","label","each_way"}],  (GB/s per GPU)
+                 "defaults":{"model","gpu","dtype","tp","prompt","output","ttft","itl","rate",
+                             "headroom","link","fixed_us","util","reserve"}}
+     Same arithmetic as examples/llm-serving-7/tp.py, replica.py and plan.py (a test runs both).
+     ===================================================================== */
+  function capAllReduce(g, m, tp, tokens, fixedUs) {
+    if (tp === 1) return 0;
+    const size = tokens * m.q_heads * m.head_dim * 2;
+    const ring = (((2 * (tp - 1)) / tp) * size) / (g.nvlink_each_way * 1e9);
+    return 2 * m.layers * (fixedUs * 1e-6 + ring);
+  }
+  function capStep(g, m, d, tp, chunks, nDec, decCtx, fixedUs) {
+    const P = m.params * 1e9,
+      bf = g.tflops * 1e12;
+    const lin = d.math === "fp8" && g.fp8_tflops ? g.fp8_tflops * 1e12 : bf;
+    const attn = 4 * m.layers * m.q_heads * m.head_dim;
+    let tokens = nDec,
+      pairs = nDec * decCtx,
+      cached = nDec * decCtx;
+    for (const [o, c] of chunks) {
+      tokens += c;
+      pairs += c * o + (c * (c + 1)) / 2;
+      cached += o;
+    }
+    const compute = (2 * P * tokens) / (tp * lin) + (attn * pairs) / (tp * bf);
+    const read = P * d.bytes + cached * 2 * m.layers * m.kv_heads * m.head_dim * d.bytes;
+    return Math.max(compute, read / (tp * g.tbps * 1e12)) + capAllReduce(g, m, tp, tokens, fixedUs);
+  }
+  function capFit(g, m, d, tp, tokens, x) {
+    const perGpu = g.gb * 1e9 * x.util - x.reserve * 1e9 - (m.params * 1e9 * d.bytes) / tp;
+    const budget = perGpu > 0 ? tp * perGpu : 0;
+    return { budget, fit: Math.floor(budget / (tokens * 2 * m.layers * m.kv_heads * m.head_dim * d.bytes)) };
+  }
+  function capChunks(prompt, room) {
+    if (prompt <= room) {
+      const whole = Math.floor(room / prompt),
+        rest = room % prompt;
+      const out = Array.from({ length: whole }, () => [0, prompt]);
+      if (rest) out.push([0, rest]);
+      return out;
+    }
+    return [[Math.floor(prompt / 2) - Math.floor(room / 2), room]];
+  }
+  function capColocated(g, m, d, tp, x) {
+    const cap = capFit(g, m, d, tp, x.prompt + x.output, x).fit,
+      ctx = x.prompt + Math.floor(x.output / 2);
+    let best = null;
+    for (const budget of [256, 512, 1024, 2048, 4096, 8192]) {
+      for (let n = 1; n <= Math.min(cap, budget - 1); n++) {
+        const room = budget - n;
+        const f = (n * x.prompt) / ((x.output - 1) * room);
+        if (f > 1) break;
+        const sDec = capStep(g, m, d, tp, [], n, ctx, x.fixed_us);
+        const sMix = capStep(g, m, d, tp, capChunks(x.prompt, room), n, ctx, x.fixed_us);
+        const sAvg = f * sMix + (1 - f) * sDec;
+        const itl = f > 0.01 ? sMix : sDec;
+        const ttft = sAvg / 2 + Math.ceil(x.prompt / room) * sMix;
+        const rate = n / ((x.output - 1) * sAvg);
+        if (itl <= x.itl && ttft <= x.ttft && (best === null || rate > best.rate))
+          best = { rate, running: n, budget, itl, ttft };
+      }
+    }
+    return best;
+  }
+  function capDecode(g, m, d, tp, x) {
+    const cap = capFit(g, m, d, tp, x.prompt + x.output, x).fit,
+      ctx = x.prompt + Math.floor(x.output / 2);
+    let best = null;
+    for (let n = 1; n <= cap; n++) {
+      const s = capStep(g, m, d, tp, [], n, ctx, x.fixed_us);
+      if (s > x.itl) break;
+      best = { rate: n / ((x.output - 1) * s), running: n, itl: s };
+    }
+    return best;
+  }
+  function capPrefill(g, m, d, tp, x, link) {
+    const s = capStep(g, m, d, tp, capChunks(x.prompt, 8192), 0, 0, x.fixed_us);
+    const kv = x.prompt * 2 * m.layers * m.kv_heads * m.head_dim * d.bytes;
+    return {
+      rate: 8192 / (x.prompt * s),
+      step: s,
+      latency: Math.ceil(x.prompt / 8192) * s,
+      transfer: kv / (tp * link.each_way * 1e9),
+      kvBytes: kv,
+    };
+  }
+  function capPlan(g, m, d, link, x, sizes) {
+    const need = (r) => Math.ceil(x.rate / (x.headroom * r));
+    const rows = [];
+    for (const tp of sizes) {
+      const f = capFit(g, m, d, tp, x.prompt + x.output, x);
+      if (m.q_heads % tp || m.kv_heads % tp || f.fit < 1) continue;
+      const row = { tp, fit: f.fit, kvBudget: f.budget, colocated: null, disaggregated: null };
+      const col = capColocated(g, m, d, tp, x);
+      if (col) row.colocated = { ...col, replicas: need(col.rate), gpus: tp * need(col.rate) };
+      const pre = capPrefill(g, m, d, tp, x, link);
+      const dec = capDecode(g, m, d, tp, x);
+      if (dec) {
+        const ttft = pre.step / 2 + pre.latency + pre.transfer + dec.itl;
+        if (ttft <= x.ttft) {
+          const p = need(pre.rate),
+            q = need(dec.rate);
+          row.disaggregated = {
+            prefill: pre,
+            decode: dec,
+            ttft,
+            prefill_replicas: p,
+            decode_replicas: q,
+            gpus: tp * (p + q),
+          };
+        }
+      }
+      rows.push(row);
+    }
+    const best = (k) =>
+      rows
+        .filter((r) => r[k])
+        .reduce(
+          (a, r) => (a === null || r[k].gpus < a[k].gpus || (r[k].gpus === a[k].gpus && r.tp < a.tp) ? r : a),
+          null,
+        );
+    return { rows, colocated: best("colocated"), disaggregated: best("disaggregated") };
+  }
+  function initCapCalc(box, n) {
+    const spec = readJSON($("script[type='application/json']", box));
+    if (!spec?.models?.length || !spec?.gpus?.length || !spec?.dtypes?.length || !spec?.links?.length) return;
+    const d0 = spec.defaults || {};
+    const id = (k) => `ts-cc-${n}-${k}`;
+    const title = box.getAttribute("data-title");
+    box.classList.add("ts-fig");
+    box.innerHTML = "";
+    if (title) box.appendChild(el("p", { class: "ts-fig-title", text: title }));
+    function sel(key, label, items, val) {
+      const s = el(
+        "select",
+        { id: id(key) },
+        items.map((x) => el("option", { value: x.id, text: x.label })),
+      );
+      s.value = val;
+      return [s, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), s])];
+    }
+    function num(key, label, val, min, max, step) {
+      const inp = el("input", { id: id(key), type: "number", min, max, step, value: val, inputmode: "decimal" });
+      return [inp, el("label", { class: "ts-rl-field", for: id(key) }, [el("span", { text: label }), inp])];
+    }
+    const tpItems = [
+      { id: "auto", label: "Try 1, 2, 4 and 8" },
+      ...[1, 2, 4, 8].map((t) => ({ id: String(t), label: String(t) })),
+    ];
+    const [mSel, mLab] = sel("model", "Model", spec.models, d0.model || spec.models[0].id);
+    const [dSel, dLab] = sel("dtype", "Weights and KV cache", spec.dtypes, d0.dtype || spec.dtypes[0].id);
+    const [gSel, gLab] = sel("gpu", "GPU", spec.gpus, d0.gpu || spec.gpus[0].id);
+    const [tSel, tLab] = sel("tp", "Tensor-parallel size", tpItems, String(d0.tp ?? "auto"));
+    const [lSel, lLab] = sel("link", "KV transfer link", spec.links, d0.link || spec.links[0].id);
+    const fields = [
+      ["prompt", "Prompt tokens (average)", d0.prompt ?? 2000, 64, 200000, 1],
+      ["output", "Output tokens (average)", d0.output ?? 300, 2, 100000, 1],
+      ["ttft", "TTFT target (ms)", (d0.ttft ?? 1) * 1000, 1, 600000, 1],
+      ["itl", "ITL target (ms)", (d0.itl ?? 0.1) * 1000, 1, 10000, 1],
+      ["rate", "Target requests per second", d0.rate ?? 20, 0.01, 1e6, "any"],
+      ["headroom", "Planned peak utilization (0 to 1)", d0.headroom ?? 0.8, 0.05, 1, 0.05],
+      ["fixed_us", "Fixed cost per all-reduce (µs)", d0.fixed_us ?? 0, 0, 1000, "any"],
+    ].map(([k, label, v, lo, hi, st]) => [k, lo, hi, v, ...num(k, label, v, lo, hi, st)]);
+    box.appendChild(el("div", { class: "ts-rl-form" }, [mLab, dLab, gLab, tLab, lLab, ...fields.map((f) => f[5])]));
+    const W = 420,
+      L = 52,
+      R = 136;
+    const svg = sv("svg", {
+      viewBox: `0 0 ${W} 60`,
+      role: "img",
+      class: "ts-fc-chart",
+      "aria-label":
+        "GPUs needed at each tensor-parallel size: colocated replicas versus separate prefill and decode pools",
+    });
+    box.appendChild(el("div", { class: "ts-fig-canvas" }, [svg]));
+    box.appendChild(
+      el("ul", { class: "ts-kv-legend" }, [
+        el("li", {}, [el("span", { class: "ts-fc-sw is-used" }), el("span", { text: "Colocated replicas" })]),
+        el("li", {}, [el("span", { class: "ts-fc-sw is-waste" }), el("span", { text: "Prefill + decode pools" })]),
+      ]),
+    );
+    function drawBars(rows) {
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      const vals = rows.flatMap((r) => [r.colocated?.gpus, r.disaggregated?.gpus]).filter((v) => v);
+      const cap = vals.length ? 4 * Math.min(...vals) : 1;
+      const H = Math.max(40, rows.length * 56 + 8);
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      rows.forEach((r, i) => {
+        const y = 8 + i * 56;
+        svg.appendChild(
+          sv("text", { class: "ts-fc-lbl", x: L - 8, y: y + 26, "text-anchor": "end", text: `TP ${r.tp}` }),
+        );
+        [
+          ["is-used", r.colocated],
+          ["is-waste", r.disaggregated],
+        ].forEach(([cls, d], j) => {
+          const by = y + j * 24;
+          const v = d ? d.gpus : 0;
+          const w = d ? (Math.min(v, cap) / cap) * (W - L - R) : 0;
+          if (d)
+            svg.appendChild(
+              sv("rect", { class: `ts-fc-bar ${cls}`, x: L, y: by, width: Math.max(2, w), height: 20, rx: 3 }),
+            );
+          const txt = !d ? "misses a target" : v > cap ? `${fmtInt(v)} (off scale)` : `${fmtInt(v)} GPUs`;
+          svg.appendChild(sv("text", { class: "ts-fc-lbl", x: L + w + 6, y: by + 15, text: txt }));
+        });
+      });
+    }
+    const out = el("div", { class: "ts-rl-out", "aria-live": "polite" });
+    box.appendChild(out);
+    const row = (k, v, cls) =>
+      el("div", { class: `ts-rl-row${cls ? ` ${cls}` : ""}` }, [el("dt", { text: k }), el("dd", { text: v })]);
+    const val = (f) => {
+      const v = +f[4].value;
+      return Math.min(f[2], Math.max(f[1], Number.isFinite(v) && f[4].value !== "" ? v : f[3]));
+    };
+    const byKey = Object.fromEntries(fields.map((f) => [f[0], f]));
+
+    function update() {
+      const g = spec.gpus.find((x) => x.id === gSel.value) || spec.gpus[0];
+      const m = spec.models.find((x) => x.id === mSel.value) || spec.models[0];
+      const d = spec.dtypes.find((x) => x.id === dSel.value) || spec.dtypes[0];
+      const link = spec.links.find((x) => x.id === lSel.value) || spec.links[0];
+      const x = {
+        prompt: Math.round(val(byKey.prompt)),
+        output: Math.round(val(byKey.output)),
+        ttft: val(byKey.ttft) / 1000,
+        itl: val(byKey.itl) / 1000,
+        rate: val(byKey.rate),
+        headroom: val(byKey.headroom),
+        fixed_us: val(byKey.fixed_us),
+        util: d0.util ?? 0.92,
+        reserve: d0.reserve ?? 3,
+      };
+      const sizes = tSel.value === "auto" ? [1, 2, 4, 8] : [+tSel.value];
+      const p = capPlan(g, m, d, link, x, sizes);
+      out.innerHTML = "";
+      drawBars(p.rows);
+      const weights = m.params * 1e9 * d.bytes;
+      const rows = [row("Weights", `${fmtBytes(weights)} in total; one GPU holds ${fmtBytes(g.gb * 1e9)}`)];
+      if (!p.rows.length) {
+        rows.push(
+          row(
+            "Fit",
+            "No tried TP size holds the weights plus one full request. Try more GPUs per replica or FP8.",
+            "is-bad",
+          ),
+        );
+        out.appendChild(el("dl", { class: "ts-rl-list" }, rows));
+        return;
+      }
+      const cell = (t) => el("td", { text: t });
+      const head = el("thead", {}, [
+        el(
+          "tr",
+          {},
+          ["TP", "Requests that fit", "Colocated", "Prefill + decode pools"].map((t) => el("th", { text: t })),
+        ),
+      ]);
+      const body = el(
+        "tbody",
+        {},
+        p.rows.map((r) => {
+          const c = r.colocated,
+            s = r.disaggregated;
+          return el("tr", {}, [
+            cell(`${r.tp} GPU${r.tp > 1 ? "s" : ""}`),
+            cell(fmtInt(r.fit)),
+            cell(
+              c
+                ? `${fmtNum(c.rate, "")} req/s each → ${fmtInt(c.replicas)} × ${r.tp} = ${fmtInt(c.gpus)} GPUs`
+                : "misses a target",
+            ),
+            cell(
+              s
+                ? `${fmtInt(s.prefill_replicas)} + ${fmtInt(s.decode_replicas)} replicas = ${fmtInt(s.gpus)} GPUs`
+                : "misses a target",
+            ),
+          ]);
+        }),
+      );
+      out.appendChild(el("div", { class: "ts-table-wrap" }, [el("table", { class: "ts-table" }, [head, body])]));
+      const bc = p.colocated,
+        bd = p.disaggregated;
+      if (bc) {
+        const c = bc.colocated;
+        rows.push(
+          row(
+            "Colocated",
+            `TP ${bc.tp}, ${fmtInt(c.replicas)} replica(s), ${fmtInt(c.gpus)} GPUs. Each runs ${fmtInt(c.running)} requests with a ${fmtInt(c.budget)}-token budget: ITL p99 about ${fmtTime(c.itl)}, TTFT about ${fmtTime(c.ttft)} before queueing.`,
+          ),
+        );
+      } else rows.push(row("Colocated", "No TP size meets both targets in this model.", "is-bad"));
+      if (bd) {
+        const s = bd.disaggregated;
+        rows.push(
+          row(
+            "Disaggregated",
+            `TP ${bd.tp}, ${fmtInt(s.prefill_replicas)} prefill + ${fmtInt(s.decode_replicas)} decode replica(s), ${fmtInt(s.gpus)} GPUs. Decode runs ${fmtInt(s.decode.running)} requests at ITL ${fmtTime(s.decode.itl)}; TTFT about ${fmtTime(s.ttft)} before queueing.`,
+          ),
+          row(
+            "KV transfer",
+            `${fmtBytes(s.prefill.kvBytes)} per request, ${fmtTime(s.prefill.transfer)} over ${link.label} (prefill itself: ${fmtTime(s.prefill.latency)})`,
+          ),
+        );
+      } else rows.push(row("Disaggregated", "No TP size meets both targets in this model.", "is-bad"));
+      if (bc && bd) {
+        const diff = bd.disaggregated.gpus - bc.colocated.gpus;
+        rows.push(
+          row(
+            "Difference",
+            diff > 0
+              ? `Splitting costs ${fmtInt(diff)} more GPU(s) here: you buy isolation of ITL from prefill, not throughput.`
+              : diff < 0
+                ? `Splitting saves ${fmtInt(-diff)} GPU(s) here.`
+                : "Same GPU count either way.",
+            diff > 0 ? "is-bad" : "",
+          ),
+        );
+      }
+      out.appendChild(el("dl", { class: "ts-rl-list" }, rows));
+      out.appendChild(
+        el("p", {
+          class: "ts-rl-note",
+          text: "Best case at 100% of peak, every request the same length. A TP group runs as one GPU with TP times the speed, plus two ring all-reduces per layer over NVLink, added rather than overlapped. Queueing is covered only by the planned utilization; measure TTFT and ITL percentiles with vllm bench serve before you buy.",
+        }),
+      );
+    }
+    [mSel, dSel, gSel, tSel, lSel, ...fields.map((f) => f[4])].forEach((i) => {
+      i.addEventListener("input", update);
+      i.addEventListener("change", update);
+    });
+    update();
+  }
+  function initCapCalcs() {
+    $$(".ts-capcalc").forEach((b, i) => {
+      try {
+        initCapCalc(b, i + 1);
+      } catch (e) {
+        console.error("[teach-site] capacity planner failed", e);
+      }
+    });
+  }
+
+  /* =====================================================================
      CODE + TABS
      ===================================================================== */
   const KW =
@@ -2950,6 +3299,7 @@
     initFragCalcs();
     initChunkCalcs();
     initQuantCalcs();
+    initCapCalcs();
     initCode();
     initTabs();
     initTerms();
