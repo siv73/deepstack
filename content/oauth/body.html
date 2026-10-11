@@ -1,13 +1,38 @@
-<section class="ts-part" id="why-not-passwords" data-rung="1" data-min="4">
+<section class="ts-part" id="why-not-passwords" data-rung="1" data-min="8">
 <h2>Why the app shouldn't get your password</h2>
 <p class="ts-problem">PrintNest, a photo-printing site, wants 40 photos from your photo cloud. The old way: you type your photo-cloud password into PrintNest.</p>
-<p>That one step goes wrong in three ways:</p>
+
+<h3>Introduction</h3>
+<p>Many applications need data that is stored on some other service. A printing site needs your photos. A calendar app needs your contacts. An invoicing tool needs your bank statements. In each case one program (the app) must read data that belongs to you and lives on another program (the service).</p>
+<p>The question this whole page answers is: how can the app get that data without becoming you? Let us first see what goes wrong with the simplest answer, which is to hand over your password.</p>
+
+<h3>The problem with sharing a password</h3>
+<p>Suppose you give your photo-cloud password to PrintNest. That one step goes wrong in three ways:</p>
+<ol>
+<li><b>Too much power.</b> PrintNest can now do anything you can: read your email, delete every photo, change your password. You wanted to share 40 photos. You have shared your whole account.</li>
+<li><b>No clean way to take it back.</b> To cut PrintNest off, you must change your password, which also breaks every other app that stored it.</li>
+<li><b>One more place to leak from.</b> PrintNest now stores a password it can leak. If PrintNest's database is stolen, your photo-cloud account is stolen with it.</li>
+</ol>
+
+<h3>Solved example: counting the damage</h3>
+<p><b>Given:</b> you use five apps that read your photo cloud: PrintNest, a collage maker, a backup tool, a frame shop and a slideshow app. All five store your password. You decide to stop using PrintNest.</p>
+<p><b>Step 1.</b> PrintNest knows your password. The only way to make that password useless to PrintNest is to change it.</p>
+<p><b>Step 2.</b> After the change, all five apps hold the old password. All five stop working, not only PrintNest.</p>
+<p><b>Step 3.</b> You must type the new password into the four apps you still want. Each of those four now stores the new password, so the risk is back where it started.</p>
+<p><b>Result:</b> stopping one app cost you five broken apps and four re-logins, and PrintNest could still have read everything until the moment you changed the password. We want a design where stopping PrintNest touches PrintNest only.</p>
+
+<h3>The idea: give a limited key, not the house keys</h3>
+<p>Think of a valet key for a car. It starts the car but won't open the boot, and you can cancel it without changing the locks. PrintNest needs a valet key, not your house keys.</p>
+<p>The mapping is direct:</p>
 <ul>
-<li>PrintNest can now do anything you can: read your email, delete every photo, change your password.</li>
-<li>To cut PrintNest off, you must change your password, which also breaks every other app that stored it.</li>
-<li>PrintNest now stores a password it can leak.</li>
+<li>The car owner = you.</li>
+<li>The valet = PrintNest.</li>
+<li>The valet key = a limited key that allows only "read photos".</li>
+<li>The car company that cuts the valet key = your photo cloud's own login page.</li>
 </ul>
-<p>Think of a valet key. It starts the car but won't open the boot, and you can cancel it without changing the locks. PrintNest needs a valet key, not your house keys.</p>
+<p>Where the comparison stops working: a valet key is a physical object, so copying it takes effort. The digital key in OAuth is a string of characters. Anyone who copies the string can use it. Part 2 returns to this weakness.</p>
+
+<h3>Working: how the limited key is handed over</h3>
 <ol class="ts-steps">
 <li>PrintNest sends you to your photo cloud's own login page.</li>
 <li>You log in there. PrintNest never sees the password.</li>
@@ -15,7 +40,31 @@
 <li>The photo cloud hands PrintNest a limited key.</li>
 <li>PrintNest uses the key. You can cancel it any time.</li>
 </ol>
+<p><b>Why each step is needed.</b></p>
+<ul>
+<li><b>Step 1</b> moves the login away from PrintNest. If PrintNest showed its own login form, you would be typing the password into PrintNest again.</li>
+<li><b>Step 2</b> means the password is typed only into the service that already knows it. No new party learns it.</li>
+<li><b>Step 3</b> lets you decide the limit. Without it, the service would not know what PrintNest is allowed to do.</li>
+<li><b>Step 4</b> gives PrintNest something to show on every request. Without a key, the service could not tell PrintNest's requests from a stranger's.</li>
+<li><b>Step 5</b> is the reason for the whole design. Each app has its own key, so cancelling one key stops one app.</li>
+</ul>
+
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><b>OAuth 2.0</b> is a set of rules by which an app gets limited, cancellable access to a user's data on another service, with the user's approval, without the app ever learning the user's password.</p>
+</div>
 <p>This hand-over is OAuth 2.0. <span class="ts-claim" data-claim="c1" data-src="s1">The spec names four roles: the resource owner (you), the client (the app), the authorization server (issues the keys) and the resource server (hosts the data).</span> This page uses plain names: you, PrintNest, the login server and the Photos API.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Official name</th><th>Name on this page</th><th>Its job</th></tr></thead>
+<tbody>
+<tr><td>Resource owner</td><td>You</td><td>Owns the photos and gives approval</td></tr>
+<tr><td>Client</td><td>PrintNest</td><td>Wants to use the photos</td></tr>
+<tr><td>Authorization server</td><td>Login server</td><td>Checks who you are and hands out keys</td></tr>
+<tr><td>Resource server</td><td>Photos API</td><td>Holds the photos and checks the key on every request</td></tr>
+</tbody>
+</table></div>
+
+<h3>Diagram: who does what</h3>
 <figure class="ts-graph" data-title="Who does what">
 <script type="application/json">
 {"nodes": [
@@ -33,6 +82,27 @@
  "PrintNest calls the Photos API with the key. The API checks the key, not your password."]}
 </script>
 </figure>
+<p><b>Explanation of the diagram.</b> The four boxes are the four roles. In step 1 the only arrow from you goes to the login server: your password travels to one place only. In step 2 the dashed arrow (a reply) carries the limited key from the login server to PrintNest. In step 3 PrintNest calls the Photos API and attaches the key. Notice that there is no arrow from you to PrintNest carrying a password. That missing arrow is the point of OAuth.</p>
+
+<h3>Advantages over sharing the password</h3>
+<ol>
+<li>The app gets only what you approved, for example "read photos", not "delete photos".</li>
+<li>Each app has its own key, so you can stop one app without touching the others.</li>
+<li>The password stays with the one service that needed it, so a breach at PrintNest does not leak it.</li>
+</ol>
+
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "OAuth is a way to log in", because most people first meet it as a "Sign in with Google" button.</p>
+<p><b>Why it is wrong:</b> OAuth answers a different question: what may this app do with your data? Knowing <em>who</em> you are is a separate job, added on top by another standard. Part 13 shows the difference and why mixing them up causes bugs.</p>
+</div>
+
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Sharing a password gives full, permanent, shared access.</li>
+<li>OAuth gives each app its own limited key, issued after you log in at the service itself.</li>
+<li>Four roles: you, the app, the login server, the API.</li>
+</ul>
+</div>
 <p class="ts-takeaway">OAuth lets an app act for you with a limited, cancellable key, and the app never sees your password.</p>
 <div class="ts-quiz" data-answer="b" data-kind="reasoning">
 <p class="q">You want to stop PrintNest but keep your other apps working. With OAuth, what do you do?</p>
@@ -49,20 +119,64 @@
 </div>
 </section>
 
-<section class="ts-part" id="tokens" data-rung="1" data-min="4">
+<section class="ts-part" id="tokens" data-rung="1" data-min="8">
 <h2>The key is a token, and whoever holds it can use it</h2>
 <p class="ts-bridge">Last part: the app gets a limited key instead of your password. Still unsolved: what is that key, and how does the API check it?</p>
 <p class="ts-problem">PrintNest now sends 40 requests for 40 photos. The Photos API must decide, 40 times, whether each request is allowed.</p>
+
+<h3>Introduction</h3>
+<p>The API cannot ask you each time. You are not at the keyboard; PrintNest is running on its own servers. So every request must carry proof that you approved it. That proof is the "limited key" from Part 1. In this part we give it its proper name and see how it travels.</p>
+
+<h3>An everyday comparison</h3>
 <p>Think of a hotel key card. The front desk checks your ID once and programs a card for room 412 until Friday. The door never asks your name. It only checks the card.</p>
+<ul>
+<li>The front desk = the login server (checks who you are, once).</li>
+<li>The key card = the key PrintNest receives.</li>
+<li>"Room 412 until Friday" = what the key allows and for how long.</li>
+<li>The door lock = the Photos API (checks the card on every visit).</li>
+</ul>
+
+<h3>Definitions</h3>
+<div class="ts-note" data-label="Definition">
 <p>The card is an <dfn data-def="The limited key the login server gives the app. The API checks it on every request.">access token</dfn>. <span class="ts-claim" data-claim="c2" data-src="s1">An access token is a string that represents an authorization issued to the client.</span> What it allows is its <dfn data-def="The list of permissions a token carries, such as 'read photos'. The API refuses anything outside it.">scope</dfn>, for example "read photos" but not "delete photos".</p>
+</div>
+<p>Two words in that definition need attention. "String" means the token is plain text: a long run of characters. "Authorization" means a permission: who approved what, for which app. So the token is a permission written down as text.</p>
+
+<h3>Bearer tokens: the weakness</h3>
 <p>The door-card comparison has a sharp edge. <span class="ts-claim" data-claim="c3" data-src="s4">Whoever holds a bearer token can use it; they don't have to prove they own any key.</span> A copied card opens the door just as well.</p>
+<p>The word "bearer" means "the one carrying it". A bearer cheque can be cashed by whoever holds it; the bank does not ask whose it is. A bearer token works the same way. This is simple to build, and it is also the biggest risk in OAuth. Part 11 deals with stolen tokens.</p>
+
+<h3>Working: how a token travels with a request</h3>
 <p><span class="ts-claim" data-claim="c4" data-src="s4">Clients send the token in the Authorization header using the Bearer scheme: Authorization: Bearer followed by the token.</span></p>
 <div class="ts-code" data-lang="http" data-title="One of PrintNest's 40 requests" data-verified="spec" data-claims="c4">
 <pre><code>GET /v1/photos?album=holiday HTTP/1.1
 Host: photos.example.com
 Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
-<p><span class="ts-claim" data-claim="c5" data-src="s4">The spec says bearer tokens should not be passed in page URLs, because URLs end up in places like browser history and logs.</span></p>
+<p><b>Explanation of the request, line by line.</b></p>
+<ol>
+<li><code>GET /v1/photos?album=holiday</code>: PrintNest asks for the photos in one album. Nothing secret is in this line.</li>
+<li><code>Host: photos.example.com</code>: which server the request is for.</li>
+<li><code>Authorization: Bearer eyJ...</code>: the header name, then the word <code>Bearer</code>, a space, and the token itself. The API reads this line, checks the token, and only then looks at the album.</li>
+</ol>
+
+<h3>Solved example: one token, 40 checks</h3>
+<p><b>Given:</b> PrintNest holds one token with scope "read photos". It sends 40 requests for photos and then, by a bug, one request to delete a photo.</p>
+<p><b>Step 1.</b> Each of the 40 read requests carries the same token in the Authorization header.</p>
+<p><b>Step 2.</b> For each one, the API checks that the token is genuine and still valid, and that "read photos" is in its scope. All 40 pass.</p>
+<p><b>Step 3.</b> The delete request carries the same token. The API checks the scope, finds no "delete photos", and refuses.</p>
+<p><b>Result:</b> 41 checks, 40 accepted, 1 refused. You were asked once; the API checked 41 times. That is the division of work: approval once at the login server, checking every time at the API.</p>
+
+<h3>Where not to put a token</h3>
+<p><span class="ts-claim" data-claim="c5" data-src="s4">The spec says bearer tokens should not be passed in page URLs, because URLs end up in places like browser history and logs.</span> Since a bearer token works for whoever holds it, every copy written to a log file is a copy someone else can use.</p>
+
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Access token = a permission written as a string; scope = what it allows.</li>
+<li>A bearer token works for anyone holding it.</li>
+<li>Send it in the Authorization header, never in the URL.</li>
+</ul>
+</div>
 <p class="ts-takeaway">An access token is a key card with a scope: the API checks the card, not you, and anyone holding the card can use it.</p>
 <div class="ts-quiz" data-answer="c" data-claims="c5">
 <p class="q">A teammate proposes <code>GET /photos?access_token=eyJ...</code> because it's easier to test. What's the real problem?</p>
@@ -74,15 +188,28 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <p class="ts-why">A bearer token works for whoever holds it, so every place it gets written down is a place it can be stolen from.</p>
 </div>
 </section>
-
-<section class="ts-part" id="code-flow" data-rung="2" data-min="6">
+<section class="ts-part" id="code-flow" data-rung="2" data-min="10">
 <h2>The login dance, step by step</h2>
 <p class="ts-bridge">Last part: the key is a bearer token the API checks on every request. Still unsolved: how does the token get from the login server to PrintNest safely?</p>
 <div class="ts-predict" data-kind="reasoning">
 <p class="q">You log in on the login server's site, in your browser. PrintNest runs on its own servers. How would you get the token from the login server to PrintNest without exposing it?</p>
 <div class="ts-reveal"><p>Split it into two hops. Your browser carries only a short-lived, one-time <em>code</em> back to PrintNest. PrintNest's server then trades that code for the token by calling the login server directly, server to server. The token never passes through the browser.</p></div>
 </div>
-<p class="ts-problem">This two-hop design is the authorization code flow. Step through it below; every later part adds to this picture.</p>
+<p class="ts-problem">This two-hop design is the authorization code flow. Every later part adds to this picture, so it is worth going through slowly.</p>
+
+<h3>Introduction</h3>
+<p>Three programs take part, and they are in three different places. Your browser runs on your laptop. PrintNest runs on PrintNest's servers. The login server runs at the photo cloud. Your browser can talk to both servers, and the two servers can talk to each other directly. The flow uses both kinds of path, for different jobs.</p>
+
+<h3>Terms used in the flow</h3>
+<p>Four new terms appear in the diagram. Each is defined here before it is used.</p>
+<ol>
+<li><dfn data-def="A string the login server gives each registered app, so it knows which app is asking. It is not a secret.">client ID</dfn>: PrintNest's name at the login server, given when PrintNest registered. It is printed in URLs, so it is not a secret.</li>
+<li><dfn data-def="The address on the app's own site where the login server sends the browser back after login. Also called the callback URL.">redirect URI</dfn>: the address on PrintNest's site where your browser is sent back after you log in, for example <code>https://photos.example.com/callback</code>. PrintNest registers it in advance.</li>
+<li><dfn data-def="A random value the app makes before the login and expects back unchanged, to prove the callback belongs to the login it started.">state</dfn>: a random value PrintNest makes before sending you away. The login server returns it unchanged. If the value that comes back matches the one PrintNest made, PrintNest knows this callback belongs to the login it started.</li>
+<li><dfn data-def="A short-lived, one-time string the login server sends back through the browser. The app trades it for a token.">authorization code</dfn> (here, simply "the code"): a short-lived, one-time string the login server sends back through your browser. On its own it gives no access; PrintNest must trade it for a token.</li>
+</ol>
+
+<h3>Diagram: the authorization code flow</h3>
 <figure class="ts-seq" data-title="Authorization code flow with PKCE">
 <script type="application/json">
 {"actors": [
@@ -103,7 +230,55 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
  {"from": "api", "to": "app", "label": "40 photos", "dashed": true, "note": "The API checks the token and returns only what the scope allows."}]}
 </script>
 </figure>
+
+<h3>Explanation of the diagram, step by step</h3>
+<ol>
+<li><b>Click Import photos.</b> The flow always starts from the app, because the app is the one that needs access.</li>
+<li><b>Make a secret and its hash.</b> PrintNest creates a random secret and stores it on its own server. It will send only a hash (a one-way scrambled form) of it. Part 5 explains this in full; for now, remember that the secret stays at PrintNest.</li>
+<li><b>Redirect to the login server.</b> PrintNest does not call the login server itself here. It replies to your browser with "go to this address instead". The address carries the client ID, the redirect URI, the scope, the state and the hash.</li>
+<li><b>You log in and approve.</b> This is the only step where your password is typed, and it is typed on the login server's page. The login server also shows you what PrintNest asked for, so you approve with full knowledge.</li>
+<li><b>Redirect back with code and state.</b> The login server now sends your browser to PrintNest's redirect URI, adding the code and the same state value to the address.</li>
+<li><b>Browser delivers code and state.</b> Your browser loads PrintNest's callback page. PrintNest first compares the state with the one it saved in step 3. If they differ, it stops here.</li>
+<li><b>Code plus the secret.</b> PrintNest's server calls the login server directly. The code and the secret travel in this direct call, not through any browser.</li>
+<li><b>Access token.</b> The login server checks the code and the secret and returns the token in the reply to this direct call.</li>
+<li><b>Get photos plus token.</b> PrintNest uses the token as in Part 2.</li>
+<li><b>Photos.</b> The API returns only what the scope allows.</li>
+</ol>
+<p><b>Why the steps are in this order.</b> Steps 3 to 6 go through your browser because only your browser can show you a login page. Steps 7 and 8 avoid your browser because they carry the valuable item, the token. Part 4 explains this split in detail.</p>
+
+<h3>The exact parameter names</h3>
 <p>The parameters have exact names you'll see in every library. <span class="ts-claim" data-claim="c6" data-src="s1">The authorization request carries response_type=code and client_id, and usually redirect_uri, scope and state.</span> <span class="ts-claim" data-claim="c7" data-src="s3">PKCE adds two parameters to that request: code_challenge and code_challenge_method.</span></p>
+
+<h3>Solved example: the address PrintNest builds in step 3</h3>
+<p><b>Given:</b> PrintNest's client ID is <code>photo-app</code>, its redirect URI is <code>https://photos.example.com/callback</code>, it wants the scope <code>photos.read</code>, its state value is <code>Qx7...</code> (shortened here), and the hash of its secret is <code>YMU4z7-lwFN16O0dmZC4Ib7dj3vxWKHvPgrThxB62w4</code>.</p>
+<div class="ts-code" data-lang="http" data-title="Step 3: where PrintNest sends your browser" data-verified="spec" data-claims="c6 c7">
+<pre><code>https://login.example.com/authorize
+  ?response_type=code
+  &amp;client_id=photo-app
+  &amp;redirect_uri=https%3A%2F%2Fphotos.example.com%2Fcallback
+  &amp;scope=photos.read
+  &amp;state=Qx7...
+  &amp;code_challenge=YMU4z7-lwFN16O0dmZC4Ib7dj3vxWKHvPgrThxB62w4
+  &amp;code_challenge_method=S256</code></pre>
+</div>
+<p><b>Explanation, parameter by parameter.</b></p>
+<ul>
+<li><code>response_type=code</code> asks for a code, not a token, in the redirect back. This one word selects the two-hop design.</li>
+<li><code>client_id=photo-app</code> tells the login server which app is asking, so it can show "PrintNest wants to read your photos".</li>
+<li><code>redirect_uri</code> says where to send your browser back. It is URL-encoded (<code>:</code> becomes <code>%3A</code>, <code>/</code> becomes <code>%2F</code>) because it sits inside another URL.</li>
+<li><code>scope=photos.read</code> is the permission PrintNest asks for. You see it on the approval screen.</li>
+<li><code>state</code> is PrintNest's random value, saved in its session, checked in step 6.</li>
+<li><code>code_challenge</code> and <code>code_challenge_method=S256</code> carry the hash of the secret and the way it was made. Part 5 works this hash out by hand.</li>
+</ul>
+<p><b>Result:</b> after you approve, your browser is sent to <code>https://photos.example.com/callback?code=...&amp;state=Qx7...</code>. PrintNest reads <code>state</code> first, then <code>code</code>.</p>
+
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Front half (steps 3 to 6) goes through the browser; it carries only a code and the state.</li>
+<li>Back half (steps 7 and 8) is a direct server call; it carries the secret and the token.</li>
+<li>The state proves the callback belongs to this login.</li>
+</ul>
+</div>
 <p class="ts-takeaway">The browser carries only a one-time code; the token itself travels server to server.</p>
 <div class="ts-order" data-kind="reasoning">
 <p class="q">Put the core of the flow in order.</p>
@@ -118,18 +293,64 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="why-code" data-rung="2" data-min="4">
+<section class="ts-part" id="why-code" data-rung="2" data-min="7">
 <h2>Why a code first, and not the token straight away</h2>
 <p class="ts-bridge">Last part: the browser carries a code, and the token moves server to server. Still unsolved: why not skip the code?</p>
 <p class="ts-problem">Every redirect is a URL your browser visits, so everything in it passes through your machine and whatever is watching it. Treat anything in a redirect URL as half-leaked.</p>
+
+<h3>Introduction</h3>
+<p>The flow in Part 3 has an extra hop. It would be simpler for the login server to put the token straight into the redirect. To see why that is not done, we must look at the two kinds of path a message can take.</p>
+
+<h3>Definitions: the two channels</h3>
 <p>So OAuth uses two channels. The <dfn data-def="Messages that travel through the user's browser as redirects. Visible to the browser and anything watching it.">front channel</dfn> is the browser redirect: useful, but leaky. The <dfn data-def="A direct HTTPS call from the app's server to the login server. The browser never sees it.">back channel</dfn> is a direct server-to-server call. Valuable things go on the back channel.</p>
+<p>Places a front-channel URL can end up:</p>
+<ol>
+<li>The browser's history, readable by anyone using that laptop.</li>
+<li>Browser extensions, which can read the addresses you visit.</li>
+<li>Server access logs at the receiving site and any proxy in between.</li>
+<li>Another app on a phone that has registered to open the same kind of link.</li>
+</ol>
+<p>A back-channel call is an HTTPS request from one server to another. None of the four places above sees it.</p>
+
+<h3>Rule: keep the front-channel item worth little</h3>
 <p>The code on the front channel is built to be worth little:</p>
 <ul>
 <li><span class="ts-claim" data-claim="c9" data-src="s1">The spec says the code must expire shortly after it is issued and recommends a maximum lifetime of 10 minutes.</span></li>
 <li><span class="ts-claim" data-claim="c10" data-src="s1">The client must not use an authorization code more than once.</span> <span class="ts-claim" data-claim="c67" data-src="s1">If a code is used more than once, the login server must deny the request.</span></li>
 </ul>
+<p>Short life limits how long a leaked code is dangerous. Single use means that once PrintNest has spent it, a copy is dead.</p>
+
+<h3>Solved example: one leaked code, three attackers</h3>
+<p><b>Given:</b> the login server issues a code at 10:00:00. PrintNest redeems it at 10:00:02. The code is also written into your browser history.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Attacker tries the code at</th><th>What the login server sees</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>10:30:00, from browser history</td><td>The code is past its lifetime</td><td>Rejected: expired</td></tr>
+<tr><td>10:00:05, from a proxy log</td><td>The code was already used at 10:00:02</td><td>Rejected: second use</td></tr>
+<tr><td>10:00:01, before PrintNest</td><td>A fresh, unused code</td><td>Not stopped by these two rules</td></tr>
+</tbody>
+</table></div>
+<p><b>Result:</b> the two rules handle the late attackers. The third row, an attacker who is faster than PrintNest, is the gap that PKCE closes in Part 5.</p>
+
+<h3>Comparison: code in the redirect vs token in the redirect</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Point</th><th>Code in the redirect</th><th>Token in the redirect</th></tr></thead>
+<tbody>
+<tr><td>Can it call the API on its own?</td><td>No, it must first be traded</td><td>Yes, immediately</td></tr>
+<tr><td>How long is a leaked copy useful?</td><td>Until expiry or first use, whichever comes first</td><td>Until the token expires</td></tr>
+<tr><td>Can the trade be bound to the real app?</td><td>Yes, on the back channel (Part 5)</td><td>No back-channel step exists</td></tr>
+</tbody>
+</table></div>
+
 <div class="ts-legacy">
 <p>The implicit grant skipped the code and put the access token straight into the redirect. <span class="ts-claim" data-claim="c11" data-src="s2">RFC 9700 says clients should not use the implicit grant (response type token), because access tokens returned in the redirect can leak and be replayed.</span> <span class="ts-claim" data-claim="c12" data-src="s2">RFC 9700 was published in January 2025 as a Best Current Practice.</span></p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Front channel = through the browser = treat as leaked.</li>
+<li>The code is short-lived and single-use, so a leaked copy is worth little.</li>
+<li>Putting the token in the redirect (implicit grant) is discouraged.</li>
+</ul>
 </div>
 <p class="ts-takeaway">The front channel carries only a short-lived, single-use code; anything valuable moves on the back channel.</p>
 <div class="ts-quiz" data-answer="a" data-claims="c9 c67">
@@ -143,22 +364,54 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="pkce" data-rung="2" data-min="5">
+<section class="ts-part" id="pkce" data-rung="2" data-min="10">
 <h2>PKCE: making a stolen code worthless</h2>
 <p class="ts-bridge">Last part: codes are short-lived and single-use. Still unsolved: what if an attacker grabs the code in the first few seconds and redeems it first?</p>
 <p class="ts-problem"><span class="ts-claim" data-claim="c60" data-src="s3">PKCE was designed against an attack where a malicious app on the same device intercepts the code meant for the real app.</span> The thief can redeem the code well inside the 10-minute window.</p>
+
+<h3>Introduction</h3>
+<p>Part 4 left one gap: an attacker who gets the code and uses it before PrintNest does. Short life and single use do not help, because the attacker is first. We need the login server to ask, at the moment of the trade, "are you the same app that started this login?"</p>
+<p>The difficulty is that the start (step 3) went through the browser, where everything is visible. So PrintNest cannot send a secret there. It needs a way to commit to a secret in public without revealing it.</p>
+
+<h3>An everyday comparison</h3>
 <p>Think of a cloakroom ticket torn in half. You keep one half. The coat comes back only to someone holding the matching half.</p>
-<p>That is <dfn data-def="Proof Key for Code Exchange. The app proves at the token step that it is the same app that started the login.">PKCE</dfn>:</p>
+<p>Where the comparison stops working: anyone who sees the cloakroom's half could forge a matching half. PKCE avoids that by using a hash: seeing the public half does not let you build the private half.</p>
+
+<h3>Definitions</h3>
+<div class="ts-note" data-label="Definition">
+<p>That is <dfn data-def="Proof Key for Code Exchange. The app proves at the token step that it is the same app that started the login.">PKCE</dfn> (Proof Key for Code Exchange): a method by which the app commits to a random secret when the login starts, and proves it holds that secret when it trades the code.</p>
+</div>
+<p>Two terms come with it. The <b>code verifier</b> is the random secret PrintNest keeps. The <b>code challenge</b> is the hash of the verifier, which is sent in the redirect. A <b>hash</b> here is SHA-256, a function that turns any input into a fixed-size output and cannot be run backwards.</p>
+
+<h3>Working</h3>
 <ol class="ts-steps">
 <li><span class="ts-claim" data-claim="c13" data-src="s3">The app makes a code_verifier: a random string of 43 to 128 characters drawn from letters, digits and the symbols - . _ ~.</span></li>
 <li><span class="ts-claim" data-claim="c14" data-src="s3">With the S256 method, the code_challenge is BASE64URL(SHA256(code_verifier)).</span> Only this hash goes in the redirect.</li>
 <li>The login server stores the hash alongside the code.</li>
 <li><span class="ts-claim" data-claim="c15" data-src="s3">At the token endpoint the server transforms the code_verifier and compares it with the stored challenge; if they differ, it returns an invalid_grant error.</span></li>
 </ol>
+<p><b>Why each step is needed.</b></p>
+<ul>
+<li><b>Step 1:</b> the verifier must be long and random so nobody can guess it.</li>
+<li><b>Step 2:</b> only the hash is sent, because the redirect is public. A hash cannot be turned back into the verifier.</li>
+<li><b>Step 3:</b> the server ties the hash to this one code, so the code is only valid together with the matching verifier.</li>
+<li><b>Step 4:</b> at the trade, the app reveals the verifier on the back channel, where nobody else sees it. The server repeats the hashing and compares.</li>
+</ul>
+
+<h3>Solved example: computing a challenge by hand</h3>
+<p><b>Given:</b> PrintNest's verifier is <code>printnest-demo-verifier-0123456789abcdefghi</code>. (A real one is random; this one is readable so you can follow it.)</p>
+<p><b>Step 1. Check the verifier.</b> It has 43 characters, all letters, digits or hyphens. It is valid.</p>
+<p><b>Step 2. Hash it with SHA-256.</b> The output is 32 bytes, written in hexadecimal as <code>60c538cf…107adb0e</code>.</p>
+<p><b>Step 3. Encode the 32 bytes with base64url.</b> Base64url writes every 3 bytes as 4 characters, using only letters, digits, <code>-</code> and <code>_</code>, so it is safe inside a URL. 32 bytes give 44 characters, the last being a <code>=</code> pad. PKCE drops the pad.</p>
+<p><b>Result:</b> the code challenge is <code>YMU4z7-lwFN16O0dmZC4Ib7dj3vxWKHvPgrThxB62w4</code> (43 characters). This is the value that appeared in the address in Part 3.</p>
+<p><b>Now the attack.</b> A thief has the code but not the verifier. They send a guess, <code>attacker-guess-0000000000000000000000000000</code>. The login server hashes it and gets <code>rtCvDrjz9YjfXEuR11scJVP10HWyGica368JiOx_rPM</code>. This does not equal the stored <code>YMU4z7…</code>, so the server answers invalid_grant. PrintNest, which sends the real verifier, gets the matching value and receives the token. The page's test suite computes all four values above and checks that this page shows them.</p>
+
 <div class="ts-predict" data-claims="c15">
 <p class="q">An attacker steals the code and races PrintNest to the token endpoint. They send the code but make up a verifier. What happens?</p>
 <div class="ts-reveal"><p>The login server hashes the made-up verifier. The result doesn't match the stored challenge, so the request fails with invalid_grant. The attacker can't reverse the hash to find the real verifier, and the real one never left PrintNest.</p></div>
 </div>
+
+<h3>Rules from the current best practice</h3>
 <p><span class="ts-claim" data-claim="c63" data-src="s2">RFC 9700 notes that PKCE was designed to protect native apps, but its advice now applies to all kinds of clients, including web applications.</span></p>
 <ul>
 <li><span class="ts-claim" data-claim="c16" data-src="s2">RFC 9700 says public clients must use PKCE and recommends it for confidential clients too.</span></li>
@@ -168,28 +421,82 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <div class="ts-legacy">
 <p><span class="ts-claim" data-claim="c61" data-src="s3">If code_challenge_method is left out, it defaults to plain, where the challenge is the verifier itself.</span> Old code sometimes relies on that. Always send S256.</p>
 </div>
+
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "PKCE is only for mobile apps; our web app has a client secret, so it doesn't need it."</p>
+<p><b>Why people hold it:</b> PKCE was first written for apps on phones, which cannot keep a secret.</p>
+<p><b>Why it is wrong:</b> a client secret proves which app is calling, not which login the code came from. An attacker who injects a stolen code into the real web app's callback gets the real app to redeem it. PKCE ties each code to the one browser session that started it. That is why the current best practice recommends it for every kind of client.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Verifier: long, random, and never leaves the app until the back-channel trade.</li>
+<li>Challenge = base64url(SHA-256(verifier)), sent in the redirect.</li>
+<li>Wrong verifier at the trade = invalid_grant.</li>
+<li>Always S256, never plain.</li>
+</ul>
+</div>
 <p class="ts-takeaway">PKCE binds the code to a secret only the real app holds, so a stolen code can't be redeemed.</p>
 <div class="ts-explain" data-points="The app keeps a random verifier and sends only its hash in the redirect|At the token step the app must show the original verifier|The server hashes and compares; a thief with only the code fails|The hash can't be reversed, and the verifier never goes through the browser">
 <p class="q">Explain PKCE to a teammate who thinks "the code is short-lived, so we don't need it".</p>
 <div class="ts-model"><p>Short-lived isn't enough, because an attacker who intercepts the redirect can redeem the code within seconds. With PKCE the app creates a random verifier, keeps it, and sends only its SHA-256 hash in the redirect. To trade the code for a token, the app must present the original verifier. The server hashes it and compares. A thief who has the code but not the verifier fails, and the verifier never travelled through the browser.</p></div>
 </div>
 </section>
-
-<section class="ts-part" id="refresh" data-rung="2" data-min="5">
+<section class="ts-part" id="refresh" data-rung="2" data-min="9">
 <h2>Short-lived tokens, and how to renew them</h2>
 <p class="ts-bridge">Last part: PKCE makes a stolen code worthless. Still unsolved: a stolen access token still works until it expires. How long should that be?</p>
-<p class="ts-problem">Make the access token last a year and a stolen one works for a year. Make it last 10 minutes and you must log in again every 10 minutes. Neither is acceptable.</p>
+<p class="ts-problem">Make the access token last a year and a stolen one works for a year. Make it expire after ten minutes and you are sent to the login page again every ten minutes. Neither is acceptable.</p>
+
+<h3>Introduction</h3>
+<p>Two needs pull in opposite directions. Security wants a short life, so a stolen token dies quickly. Convenience wants a long life, so you are not asked to log in again and again. One token cannot satisfy both. The answer is to use two tokens with two different jobs.</p>
+
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
 <p>The fix is a second, longer-lived key that is used in only one place. That is a <dfn data-def="A longer-lived credential the app uses only to get fresh access tokens from the login server.">refresh token</dfn>.</p>
+</div>
 <ul>
 <li><span class="ts-claim" data-claim="c20" data-src="s1">Refresh tokens are used only with the authorization server and are never sent to resource servers.</span></li>
 <li><span class="ts-claim" data-claim="c21" data-src="s1">The client exchanges a refresh token at the token endpoint with grant_type=refresh_token, and the server may issue a new refresh token at the same time.</span></li>
 </ul>
+<p>So the access token is shown everywhere but lives briefly; the refresh token lives long but is shown to one server only. A thief who reads API logs finds only access tokens, which die soon.</p>
+
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>At login, PrintNest receives an access token and a refresh token.</li>
+<li>PrintNest calls the API with the access token until it expires.</li>
+<li>PrintNest sends the refresh token to the login server, on the back channel.</li>
+<li>The login server returns a fresh access token (and possibly a new refresh token).</li>
+<li>PrintNest carries on. You are not asked to log in.</li>
+</ol>
+<p><b>Why each step is needed.</b> Step 2 keeps the frequently used token cheap to lose. Step 3 goes to the login server only, so the long-lived token is exposed to the fewest places. Step 4 gives the login server a regular chance to say no: if you cancelled PrintNest, the next refresh fails and access stops.</p>
+
+<h3>Two kinds of client</h3>
 <p>How much to trust the app depends on where it runs. <span class="ts-claim" data-claim="c19" data-src="s1">The spec splits clients into confidential clients, which can keep a secret (typically server-side apps), and public clients, which can't (native apps and apps running in the browser).</span></p>
+<p>Why a phone app cannot keep a secret: the app file is installed on millions of phones. Anyone can unpack it and read every string inside. A secret shipped to everyone is not a secret.</p>
 <p>A refresh token sitting on a phone is a juicy target, so public clients get an extra rule:</p>
 <ul>
-<li><span class="ts-claim" data-claim="c22" data-src="s2">For public clients, RFC 9700 requires refresh tokens to be sender-constrained or rotated.</span></li>
+<li><span class="ts-claim" data-claim="c22" data-src="s2">For public clients, RFC 9700 requires refresh tokens to be sender-constrained or rotated.</span> <dfn data-def="Bound to a key held by the app, so the token works only when the app also proves it holds that key.">Sender-constrained</dfn> means the token works only together with proof of a key the app holds.</li>
 <li><span class="ts-claim" data-claim="c23" data-src="s2">Rotation means every refresh returns a new refresh token and invalidates the previous one.</span> <span class="ts-claim" data-claim="c62" data-src="s2">If an old refresh token is used again, which happens when both a thief and the real app hold it, the login server can detect the reuse and revoke the active refresh token.</span></li>
 </ul>
+
+<h3>Solved example: rotation catches a thief</h3>
+<p><b>Given:</b> PrintNest's phone app holds refresh token R1. Malware copies R1 at 09:00. Rotation is on.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Time</th><th>Who</th><th>Sends</th><th>Login server does</th></tr></thead>
+<tbody>
+<tr><td>09:10</td><td>Real app</td><td>R1</td><td>Valid. Returns a new access token and R2. Marks R1 as used.</td></tr>
+<tr><td>09:15</td><td>Thief</td><td>R1</td><td>R1 was already used. Reuse detected. Revokes R2 as well.</td></tr>
+<tr><td>09:20</td><td>Real app</td><td>R2</td><td>R2 is revoked. Refuses. The app asks you to log in again.</td></tr>
+</tbody>
+</table></div>
+<p><b>Result:</b> the thief got nothing. The real user had to log in once more, which is a small cost. The login server can also record the reuse as a security event. If the thief had used R1 first, the order would be reversed, but the outcome is the same: the second use of R1 triggers the revocation.</p>
+
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Access token: short life, sent to the API.</li>
+<li>Refresh token: long life, sent only to the login server.</li>
+<li>Public clients (phone and browser apps) cannot keep secrets; their refresh tokens must be rotated or sender-constrained.</li>
+</ul>
+</div>
 <p class="ts-takeaway">Access tokens stay short-lived; a refresh token, shown only to the login server, renews them without a new login.</p>
 <div class="ts-quiz" data-answer="b" data-claims="c22 c19">
 <p class="q">The PrintNest phone app stores a refresh token on the device. What does RFC 9700 require for it?</p>
@@ -202,24 +509,67 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="build-client" data-rung="3" data-min="6">
+<section class="ts-part" id="build-client" data-rung="3" data-min="12">
 <h2>Build it: the client side in Python</h2>
 <p class="ts-bridge">Last part: short access tokens plus refresh tokens. Still unsolved: what does correct client code look like?</p>
-<p class="ts-problem">The client is about 30 lines. Most real bugs come from three shortcuts: skipping the state check, sending PKCE as plain, and keeping the verifier somewhere the browser can see.</p>
+<p class="ts-problem">The client fits in about 50 lines. Most real bugs come from three shortcuts: skipping the state check, sending PKCE as plain, and keeping the verifier somewhere the browser can see.</p>
+
+<h3>Introduction</h3>
+<p>We now write PrintNest's side of Part 3 as a program. It has four functions. <code>challenge_for</code> does the hashing from Part 5. <code>make_pkce</code> makes a verifier and its challenge. <code>start_login</code> builds the address for step 3. <code>on_callback</code> handles steps 6 to 8. The program uses only Python's standard library, so every line is visible.</p>
+
+<h3>Program</h3>
 <div class="ts-code" data-lang="python" data-title="client.py (standard library only)" data-verified="ran" data-file="client.py"></div>
+
+<h3>Explanation of the program</h3>
+<ol>
+<li><b>Constants.</b> <code>AUTHZ_ENDPOINT</code> is where your browser is sent to log in. <code>TOKEN_ENDPOINT</code> is where the back-channel trade happens. <code>CLIENT_ID</code> and <code>REDIRECT_URI</code> are the values PrintNest registered.</li>
+<li><b><code>challenge_for(verifier)</code></b> does exactly the three steps of the solved example in Part 5: SHA-256 gives 32 bytes, base64url encodes them, and <code>.rstrip(b"=")</code> removes the padding.</li>
+<li><b><code>make_pkce()</code></b> calls <code>secrets.token_urlsafe(64)</code>: 64 random bytes, encoded as 86 URL-safe characters. That is inside the allowed 43 to 128 and uses only allowed characters. The <code>secrets</code> module is used, not <code>random</code>, because <code>random</code> is predictable and must not be used for security values.</li>
+<li><b><code>start_login(session)</code></b> makes a fresh state (32 random bytes, 43 characters) and a fresh PKCE pair for every login. It saves the state and the verifier in <code>session</code>. In a real web app this is a server-side session found through a cookie, so neither value is ever placed in a URL. Then it builds the address with <code>urlencode</code>, which also does the <code>%3A</code> and <code>%2F</code> encoding.</li>
+<li><b><code>on_callback(session, params)</code></b> first compares the returned state with the saved one using <code>secrets.compare_digest</code>, a comparison whose timing does not reveal how many characters matched. <code>session.pop</code> removes the state so it cannot be used twice. On a mismatch it raises an error <em>before</em> any network call.</li>
+<li><b>The token request.</b> It sends a form body to the token endpoint with the five fields described below, and returns the JSON reply.</li>
+</ol>
 <p><span class="ts-claim" data-claim="c8" data-src="s1 s3">The token request sends grant_type=authorization_code and the code, plus the redirect_uri if the first request had one, and with PKCE the code_verifier; a client that doesn't authenticate also sends its client_id.</span> A server-side PrintNest would authenticate itself here, because it is a confidential client.</p>
+
+<h3>Testing the program</h3>
 <p>This code was run against a small stand-in login server that checks S256. Four results:</p>
-<ul>
-<li>Normal login: token issued.</li>
-<li>Same code sent twice: rejected with invalid_grant.</li>
-<li>Stolen code with a made-up verifier: rejected with invalid_grant.</li>
-<li>Callback with a state PrintNest never issued: rejected before any network call.</li>
-</ul>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Test case</th><th>What it does</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Normal login</td><td>Correct state, code and verifier</td><td>Token issued</td></tr>
+<tr><td>Replay</td><td>Same code sent twice</td><td>Second attempt rejected with invalid_grant</td></tr>
+<tr><td>Stolen code</td><td>Right code, made-up verifier</td><td>Rejected with invalid_grant</td></tr>
+<tr><td>Forged callback</td><td>A state PrintNest never issued</td><td>Rejected before any network call</td></tr>
+</tbody>
+</table></div>
+
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Item</th><th>Common tutorial shortcut</th><th>What production code does</th></tr></thead>
+<tbody>
+<tr><td>State</td><td>A fixed value, or none</td><td>Fresh random value per login, checked first</td></tr>
+<tr><td>PKCE method</td><td>Left out, so it falls back to plain</td><td>S256 always</td></tr>
+<tr><td>Verifier storage</td><td>A hidden form field or the URL</td><td>Server-side session, deleted after one use</td></tr>
+<tr><td>Client authentication</td><td>None</td><td>A server-side app authenticates as a confidential client</td></tr>
+</tbody>
+</table></div>
+
 <div class="ts-trap">
 <p><span class="ts-claim" data-claim="c64" data-src="s2">Login servers must compare the redirect URI you send with the registered one character for character, apart from the port of a localhost redirect for native apps.</span> <code>https://photos.example.com/callback</code> and <code>https://photos.example.com/callback/</code> are different strings. A trailing slash is enough to break login.</p>
 </div>
 <div class="ts-interview">
 <p><b>"Where do you keep the state and the verifier between the redirect and the callback?"</b> A strong answer: in a server-side session tied to the user's browser (a secure, HTTP-only cookie pointing at it), never in the redirect URL, and deleted after one use. Then say why: the state proves the callback belongs to this browser's login, and the verifier must never travel through the browser.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "We use PKCE, so the order of checks in the callback does not matter."</p>
+<p><b>Why it is wrong:</b> the callback should reject a bad state before trading the code. Trading first means doing work and possibly getting a token for a login this browser never started. Checking state first fails closed and costs nothing.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>New state and new S256 verifier for every login.</li>
+<li>Both kept server-side and deleted after one use.</li>
+<li>Check state first; trade the code once.</li>
+</ul>
 </div>
 <p class="ts-takeaway">A correct client makes a fresh state and S256 verifier per login, keeps both server-side, checks state first, then redeems the code once.</p>
 <div class="ts-quiz" data-answer="c" data-kind="reasoning">
@@ -233,21 +583,79 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="build-api" data-rung="3" data-min="6">
+<section class="ts-part" id="build-api" data-rung="3" data-min="12">
 <h2>Build it: the API checks every token</h2>
 <p class="ts-bridge">Last part: the client gets a token correctly. Still unsolved: what exactly must the Photos API check before trusting it?</p>
 <p class="ts-problem">The Photos API takes 2,000 requests a second, each with a token. Skip one check and a token meant for another service, or an expired one, gets in.</p>
-<p>When the login server issues access tokens as signed <dfn data-def="JSON Web Token: a compact, signed JSON document. Anyone can read it; only the key holder can produce a valid signature.">JWTs</dfn>, the API can check them locally. <span class="ts-claim" data-claim="c34" data-src="s5">RFC 9068 says a JWT access token must declare itself in its typ header, normally as at+jwt, which lets APIs tell it apart from other JWTs such as ID tokens.</span></p>
+
+<h3>Introduction</h3>
+<p>The API is the last line of defence. Everything before it only matters if the API refuses tokens it should refuse. In this part we list the checks, see a real token taken apart, and walk through the code that performs the checks.</p>
+
+<h3>Definition</h3>
+<p>When the login server issues access tokens as signed <dfn data-def="JSON Web Token: a compact, signed JSON document. Anyone can read it; only the key holder can produce a valid signature.">JWTs</dfn>, the API can check them locally. A JWT has three parts separated by dots: a header (how it was signed), a payload (the facts, called claims), and a signature. The login server signs with its private key; the API checks the signature with the matching public key, so the API never needs to call the login server for each request.</p>
+<p><span class="ts-claim" data-claim="c34" data-src="s5">RFC 9068 says a JWT access token must declare itself in its typ header, normally as at+jwt, which lets APIs tell it apart from other JWTs such as ID tokens.</span></p>
+
+<h3>The checks</h3>
 <ul>
 <li><span class="ts-claim" data-claim="c35" data-src="s5">The resource server must check that typ is at+jwt, that iss exactly matches the expected issuer, that aud contains its own identifier, that the signature is valid, and that exp is in the future, and must reject tokens with alg none.</span></li>
 <li><span class="ts-claim" data-claim="c36" data-src="s5">Required claims in a JWT access token are iss, exp, aud, sub, client_id, iat and jti.</span></li>
 <li><span class="ts-claim" data-claim="c37" data-src="s5">If scopes were requested, the token should carry them in a scope claim.</span></li>
 </ul>
+<p>In plain words: <code>iss</code> is who issued it, <code>aud</code> is who it is meant for, <code>exp</code> is when it expires, <code>sub</code> is the user, <code>client_id</code> is the app, <code>iat</code> is when it was issued, and <code>jti</code> is a unique id for this one token.</p>
+
+<h3>Solved example: checking one token by hand</h3>
+<p><b>Given:</b> the Photos API's own identifier is <code>https://photos.example.com</code>, it trusts the issuer <code>https://login.example.com</code>, the current time is 1791763500 (a Unix timestamp), and the request asks to read photos. The token, decoded, is:</p>
+<div class="ts-code" data-lang="json" data-title="A decoded access token (header, then payload)" data-verified="spec" data-claims="c34 c36 c37">
+<pre><code>{"alg": "RS256", "typ": "at+jwt"}
+{"iss": "https://login.example.com",
+ "aud": "https://photos.example.com",
+ "sub": "u1", "client_id": "photo-app",
+ "iat": 1791763200, "exp": 1791763800,
+ "jti": "j1", "scope": "photos.read"}</code></pre>
+</div>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Check</th><th>Value in token</th><th>Expected</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Type</td><td>at+jwt</td><td>at+jwt</td><td>Pass</td></tr>
+<tr><td>Algorithm</td><td>RS256</td><td>In our fixed list (RS256)</td><td>Pass</td></tr>
+<tr><td>Signature</td><td>(verified with the login server's public key)</td><td>Valid</td><td>Pass</td></tr>
+<tr><td>Issuer</td><td>https://login.example.com</td><td>Exactly the same</td><td>Pass</td></tr>
+<tr><td>Audience</td><td>https://photos.example.com</td><td>Contains our identifier</td><td>Pass</td></tr>
+<tr><td>Expiry</td><td>1791763800</td><td>Later than 1791763500</td><td>Pass, with five minutes left</td></tr>
+<tr><td>Scope</td><td>photos.read</td><td>Contains photos.read</td><td>Pass</td></tr>
+</tbody>
+</table></div>
+<p><b>Result:</b> all seven checks pass, so the request is served. Now change one value: the same token with <code>"aud": "https://billing.example.com"</code>. Every other check still passes, but the audience check fails, and the token is refused. One failed check is enough to refuse.</p>
+
+<h3>Program</h3>
 <div class="ts-code" data-lang="python" data-title="api.py (PyJWT)" data-verified="ran" data-file="api.py"></div>
+<h3>Explanation of the program</h3>
+<ol>
+<li><code>jwt.get_unverified_header(token)</code> reads the header without trusting it, only to check <code>typ</code>. An ID token or any other JWT is turned away here.</li>
+<li><code>jwt.decode(...)</code> does the main work: it verifies the signature with <code>public_key</code>, then checks <code>exp</code>, <code>aud</code> against <code>AUDIENCE</code> and <code>iss</code> against <code>ISSUER</code>. If any check fails it raises an error.</li>
+<li><code>algorithms=["RS256"]</code> is a fixed list written in our code. The token's own <code>alg</code> header is never used to choose. This is also what rejects <code>alg: none</code>.</li>
+<li><code>options={"require": [...]}</code> refuses tokens that are missing any of the required claims, instead of silently treating a missing <code>exp</code> as "never expires".</li>
+<li><code>require_scope</code> is a separate step because scope depends on the request: reading needs <code>photos.read</code>, deleting would need something else. A missing scope raises <code>insufficient_scope</code>.</li>
+</ol>
 <p>Run against test tokens, it accepted the valid one and rejected each of these: wrong audience, wrong issuer, expired, an ID token, <code>alg: none</code>, a token signed by another key, and a token missing the needed scope.</p>
-<p><span class="ts-claim" data-claim="c38" data-src="s4">When a token is rejected, the error invalid_token goes with HTTP 401 and insufficient_scope with HTTP 403.</span></p>
+<p><span class="ts-claim" data-claim="c38" data-src="s4">When a token is rejected, the error invalid_token goes with HTTP 401 and insufficient_scope with HTTP 403.</span> The difference matters to the client: 401 means "get a new token", 403 means "this token is fine but not allowed to do this".</p>
 <div class="ts-trap">
 <p><span class="ts-claim" data-claim="c39" data-src="s17">PyJWT's documentation warns never to build the algorithms list from the token's own alg header.</span> If you trust the token to say how it was signed, an attacker picks the algorithm.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "The signature is valid, so the token is good."</p>
+<p><b>Why people hold it:</b> the signature is the cryptographic part, so it feels like the important check.</p>
+<p><b>Why it is wrong:</b> a valid signature proves only that our login server issued the token. The same login server also issues tokens for the billing API, ID tokens, and tokens that expired last week. Audience, type and expiry decide whether the token is valid <em>for this API, now</em>.</p>
+</div>
+<div class="ts-interview">
+<p><b>"Your API accepts tokens from one login server. What exactly do you validate, and in what order?"</b> A strong answer lists type, signature with a fixed algorithm, issuer, audience, expiry, then scope per endpoint, and explains that the first five decide 401 and the last decides 403. Bonus: mention that keys are fetched and cached, not hard-coded, so key rotation does not need a deploy.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Checks: typ, signature (fixed algorithm list), iss, aud, exp, then scope.</li>
+<li>Bad or wrong-audience token: 401 invalid_token. Missing scope: 403 insufficient_scope.</li>
+<li>Never let the token choose its own algorithm.</li>
+</ul>
 </div>
 <p class="ts-takeaway">An API trusts a token only after checking type, signature with a fixed algorithm, issuer, audience, expiry and scope.</p>
 <div class="ts-quiz" data-answer="b" data-claims="c35 c38">
@@ -260,11 +668,15 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <p class="ts-why">The audience check stops a token issued for one service from being replayed at another.</p>
 </div>
 </section>
-
-<section class="ts-part" id="pick-grant" data-rung="3" data-min="5">
+<section class="ts-part" id="pick-grant" data-rung="3" data-min="10">
 <h2>Pick the right flow for the job</h2>
 <p class="ts-bridge">Last part: the API checks every token. Still unsolved: the code flow assumes a person with a browser. What about jobs, TVs and CLIs?</p>
 <p class="ts-problem">A nightly billing job has no user. A smart TV has no keyboard worth typing on. Each needs a different way to get a token.</p>
+
+<h3>Introduction</h3>
+<p>OAuth calls each way of getting a token a <dfn data-def="One defined way for an app to obtain an access token, such as the authorization code grant or the client credentials grant.">grant</dfn> (also called a flow). The code flow of Parts 3 to 5 is one grant. The right grant depends on one question: who is present when the token is needed, and what can they type on?</p>
+
+<h3>Classification of grants</h3>
 <div class="ts-table-wrap"><table class="ts-table">
 <thead><tr><th>Situation</th><th>Flow</th><th>Why</th></tr></thead>
 <tbody>
@@ -274,6 +686,15 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <tr><td>Native mobile or desktop app</td><td>Code + PKCE in the system browser</td><td><span class="ts-claim" data-claim="c32" data-src="s12">Native apps must send the authorization request through an external user-agent such as the system browser, not an embedded web view.</span></td></tr>
 </tbody>
 </table></div>
+<p><b>Explanation of each row.</b></p>
+<ol>
+<li><b>Person with a browser.</b> Covered in Parts 3 to 7.</li>
+<li><b>No person.</b> A nightly job acts for itself, not for a user. Nobody can approve anything, so the app proves its own identity (its client credentials) directly to the login server and receives a token. Because this needs a secret the app can keep, only server-side apps may use it.</li>
+<li><b>Person, but no usable keyboard.</b> The device shows a short code; the person types it on a phone. Explained below.</li>
+<li><b>Native apps.</b> Same as row 1, but the login page must open in the phone's real browser. An embedded web view inside the app would let the app read what you type, which defeats Part 1.</li>
+</ol>
+
+<h3>Working of the device flow</h3>
 <p>The device flow moves the login to a second screen:</p>
 <figure class="ts-seq" data-title="Device authorization flow">
 <script type="application/json">
@@ -289,12 +710,40 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
  {"from": "as", "to": "tv", "label": "Access token", "dashed": true, "note": "Once you approve, the next poll returns the token."}]}
 </script>
 </figure>
+<p><b>Explanation of the diagram.</b></p>
+<ol>
+<li>The TV asks the login server to begin. It sends only its client ID; it has no user yet.</li>
+<li>The login server replies with two codes. The <b>device code</b> is long and secret; the TV keeps it. The <b>user code</b> is short, so a person can read it off the screen and type it. The reply also has the web address to visit.</li>
+<li>You open that address on your phone, type the user code, log in and approve. The user code is what links your phone's approval to that TV's request.</li>
+<li>While you do this, the TV repeatedly asks the login server, using the device code, whether approval has happened.</li>
+<li>After you approve, the next poll returns the access token.</li>
+</ol>
 <p><span class="ts-claim" data-claim="c31" data-src="s7">While polling, the error authorization_pending means keep polling and slow_down means poll less often.</span></p>
+<h3>Solved example: a CLI login</h3>
+<p><b>Given:</b> a command-line tool on a server you reached over SSH. There is no browser on that server.</p>
+<p><b>Step 1.</b> The tool requests device codes and prints: "Open the login page on any device and enter BDWP-HQPK" (an illustrative user code).</p>
+<p><b>Step 2.</b> It polls. The first few answers are authorization_pending.</p>
+<p><b>Step 3.</b> You enter the code on your laptop and approve.</p>
+<p><b>Result:</b> the next poll returns a token, and the tool stores it. The server never needed a browser, and your password was typed only on your laptop.</p>
 <div class="ts-case">
 <p><span class="ts-claim" data-claim="c33" data-src="s16">GitHub documents the device flow for headless apps such as CLI tools, and in its web flow supports PKCE with S256 only.</span></p>
 </div>
 <div class="ts-legacy">
-<p>The password grant let an app collect your username and password and trade them for a token. <span class="ts-claim" data-claim="c28" data-src="s2">RFC 9700 says the resource owner password credentials grant must not be used.</span></p>
+<p>The password grant let an app collect your username and password and trade them for a token. <span class="ts-claim" data-claim="c28" data-src="s2">RFC 9700 says the resource owner password credentials grant must not be used.</span> It brings back every problem from Part 1.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "Client credentials is the simple version of the code flow, so we can use it for our users too."</p>
+<p><b>Why it is wrong:</b> client credentials gives a token for the app itself. There is no user in it, so the API cannot tell which user's data is allowed. Use it only when the app acts on its own behalf.</p>
+</div>
+<div class="ts-interview">
+<p><b>"Our CLI needs to call our API as the logged-in user. How does it get a token?"</b> A strong answer picks the device flow (or code + PKCE with a localhost redirect if the CLI runs where a browser exists), explains why client credentials is wrong (no user), and mentions storing the refresh token safely on disk.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Person + browser: code + PKCE. No person: client credentials. No keyboard: device flow.</li>
+<li>Native apps open the login in the system browser.</li>
+<li>The password grant must not be used.</li>
+</ul>
 </div>
 <p class="ts-takeaway">Match the flow to who is present: a person with a browser gets code + PKCE, a machine gets client credentials, a keyboard-less device gets the device flow.</p>
 <div class="ts-quiz" data-answer="a" data-claims="c29">
@@ -312,25 +761,58 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="redirect-attacks" data-rung="4" data-min="6">
+<section class="ts-part" id="redirect-attacks" data-rung="4" data-min="11">
 <h2>Attacks on the redirect</h2>
 <p class="ts-bridge">Last part: pick the flow by who is present. Still unsolved: the redirect runs through a browser an attacker can steer. Where does it break?</p>
 <p class="ts-problem">An attacker can't touch PrintNest's servers, but they can send you a link. Every attack below starts with your browser visiting a URL the attacker built.</p>
+
+<h3>Introduction</h3>
+<p>Part 4 said the front channel is leaky. Here we study how an attacker uses that leak. There are four classic attacks. For each one we give the idea, a worked case, and the rule that blocks it.</p>
+
+<h3>Types of redirect attack</h3>
 <ol class="ts-steps">
 <li><b>Loose redirect matching.</b> If the login server accepts "anything starting with" the registered URL, the attacker picks a redirect that lands on their site, and the code goes to them. <span class="ts-claim" data-claim="c24" data-src="s2">Authorization servers must compare redirect URIs by exact string match; the only exception is the port of a localhost redirect for native apps.</span></li>
 <li><b>Open redirectors.</b> <span class="ts-claim" data-claim="c25" data-src="s2">Clients and authorization servers must not expose open redirectors, pages that forward the browser to any URL given in a query parameter.</span> An exact-match redirect that then bounces anywhere is no better than a loose one.</li>
-<li><b>Forged callbacks (CSRF).</b> The attacker makes your browser deliver <em>their</em> code to PrintNest, so you end up using the attacker's account. <span class="ts-claim" data-claim="c26" data-src="s2">Clients must prevent CSRF, either with a one-time state value bound to the user's browser or by relying on PKCE when the authorization server is known to support it.</span></li>
+<li><b>Forged callbacks (<dfn data-def="Cross-Site Request Forgery: an attacker's page makes your browser send a request to another site, which the site treats as if you sent it on purpose.">CSRF</dfn>).</b> The attacker makes your browser deliver <em>their</em> code to PrintNest, so you end up using the attacker's account. <span class="ts-claim" data-claim="c26" data-src="s2">Clients must prevent CSRF, either with a one-time state value bound to the user's browser or by relying on PKCE when the authorization server is known to support it.</span></li>
 <li><b>Mix-up.</b> An app that trusts several login servers can be tricked into sending a code to the wrong one. <span class="ts-claim" data-claim="c27" data-src="s2">Such a client should use the iss response parameter to tell the servers apart, or failing that, a distinct redirect URI per server.</span></li>
 </ol>
 <div class="ts-predict" data-claims="c24">
 <p class="q">A login server accepts any redirect URI that starts with <code>https://printnest.com</code>. What URL would an attacker register or use?</p>
 <div class="ts-reveal"><p>Something like <code>https://printnest.com.attacker.io/cb</code>. It starts with the allowed prefix but is a different domain the attacker owns. The code lands on their server. Exact string matching closes this attack.</p></div>
 </div>
+
+<h3>Solved example: a forged callback</h3>
+<p><b>Given:</b> PrintNest does not check state. The attacker logs in to PrintNest with <em>their own</em> photo-cloud account and stops just before the callback, keeping their code <code>ATK-CODE</code>.</p>
+<p><b>Step 1.</b> The attacker sends you a link to <code>https://photos.example.com/callback?code=ATK-CODE</code>.</p>
+<p><b>Step 2.</b> You click it while logged in to PrintNest. Your browser delivers the attacker's code to PrintNest.</p>
+<p><b>Step 3.</b> PrintNest trades the code and links the resulting token to <em>your</em> PrintNest account.</p>
+<p><b>Result:</b> your PrintNest account is now connected to the attacker's photo cloud. Photos you upload to "your" cloud through PrintNest go to the attacker. With a state check, step 3 never happens: the callback has no state, or one your browser never made, so PrintNest rejects it.</p>
+
+<h3>What the user sees, how to detect it, how to fix it</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Attack</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Loose matching / open redirect</td><td>Nothing unusual; the login looked normal</td><td>Authorization requests with unknown redirect URIs; redirector hits with outside targets</td><td>Exact match; remove or allow-list redirectors</td></tr>
+<tr><td>Forged callback</td><td>Linked to someone else's account</td><td>Rate of state-mismatch rejections in callback logs</td><td>State per login, or PKCE with a server known to enforce it</td></tr>
+<tr><td>Mix-up</td><td>Login fails or goes to the wrong account</td><td>Callbacks whose issuer differs from the one the login started with</td><td>Check iss in the response, or one redirect URI per server</td></tr>
+</tbody>
+</table></div>
 <div class="ts-trap">
 <p>A tempting shortcut: allow any subdomain so preview deployments like <code>https://pr-123.printnest.dev/callback</code> work. Then any subdomain an attacker can take over becomes a place to receive codes. Register each redirect URI explicitly instead.</p>
 </div>
 <div class="ts-interview">
 <p><b>"PKCE is on. Do we still need the state parameter?"</b> A strong answer: PKCE also stops injected codes, and <span class="ts-claim" data-claim="c65" data-src="s2">RFC 9700 allows a client to rely on PKCE for CSRF protection once it has ensured the login server supports PKCE.</span> Keep state anyway if you can't guarantee that support, or if you need it to carry where to send the user after login. Show you know both jobs.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "The redirect stays on our own domain, so it is safe."</p>
+<p><b>Why it is wrong:</b> staying on your domain for one hop is not enough. If any page on that domain forwards the browser elsewhere, the code travels on with it. Safety needs both exact matching and no open redirectors.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Exact redirect matching; no open redirectors anywhere.</li>
+<li>State (or verified PKCE support) on every login.</li>
+<li>Several login servers: check iss.</li>
+</ul>
 </div>
 <p class="ts-takeaway">The redirect is only as safe as its matching: exact URIs, no open redirectors, and state or PKCE on every login.</p>
 <div class="ts-quiz" data-answer="c" data-claims="c24 c25">
@@ -344,22 +826,57 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="token-theft" data-rung="4" data-min="6">
+<section class="ts-part" id="token-theft" data-rung="4" data-min="11">
 <h2>When a token is stolen</h2>
 <p class="ts-bridge">Last part: attacks on the redirect. Still unsolved: attackers who skip the flow and steal tokens that were already issued.</p>
 <div class="ts-case">
 <p><span class="ts-claim" data-claim="c48" data-src="s15">In April 2022, attackers used OAuth user tokens stolen from two GitHub integrators, Heroku and Travis CI, to list and clone private repositories of dozens of organisations.</span> <span class="ts-claim" data-claim="c49" data-src="s15">GitHub spotted it when a compromised AWS key was used to access npm's production infrastructure; it revoked the tokens tied to its own use of the affected apps and asked Heroku and Travis CI to revoke all the others.</span></p>
 </div>
 <p class="ts-problem">No flow was broken there. The tokens were valid, just held by the wrong people. Bearer tokens can't tell the difference, so defence is about limiting what a stolen token can do and for how long.</p>
+
+<h3>Introduction</h3>
+<p>All the earlier parts protect the path by which a token is issued. This part assumes that has already failed somewhere: a token was copied out of a database, a log file or a laptop. The question becomes: how much damage can that copy do, and how do we stop it?</p>
+<p>Damage has three dimensions: <b>what</b> the token allows (scope and audience), <b>how long</b> it works (lifetime), and <b>who</b> can use it (anyone, or only the real app).</p>
+
+<h3>Methods of defence</h3>
 <ol class="ts-steps">
 <li><b>Keep them narrow.</b> <span class="ts-claim" data-claim="c45" data-src="s2">RFC 9700 says access tokens should be audience-restricted to a specific resource server and limited to the privileges needed.</span></li>
 <li><b>Keep them short.</b> A stolen token that expires in minutes is a small problem. Pair short tokens with refresh tokens.</li>
 <li><b>Bind them to the sender.</b> <span class="ts-claim" data-claim="c46" data-src="s2">RFC 9700 says authorization and resource servers should use sender-constrained access tokens, through mutual TLS (RFC 8705) or DPoP (RFC 9449).</span></li>
 <li><b>Be able to kill them.</b> <span class="ts-claim" data-claim="c44" data-src="s13">The revocation endpoint takes a token by POST, and revoking a refresh token should also invalidate the access tokens issued from the same grant, if the server supports that.</span></li>
 </ol>
+<p><b>How each method reduces damage.</b> Method 1 reduces <em>what</em>. Method 2 reduces <em>how long</em>. Method 3 changes <em>who</em>: from anyone to the key holder only. Method 4 lets you end <em>how long</em> early, once you know about the theft.</p>
+
+<h3>Solved example: lifetime decides the exposure</h3>
+<p><b>Given:</b> a token is written to a log file at 12:00. An attacker reads the log at 12:30.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Token lifetime</th><th>Still valid at 12:30?</th><th>Attacker's window</th></tr></thead>
+<tbody>
+<tr><td>One hour</td><td>Yes</td><td>12:30 to 13:00</td></tr>
+<tr><td>Five minutes</td><td>No, expired at 12:05</td><td>None</td></tr>
+<tr><td>Five minutes, but sender-constrained</td><td>Irrelevant</td><td>None: no private key, so it cannot be used at any time</td></tr>
+</tbody>
+</table></div>
+
+<h3>Sender-constrained tokens with DPoP</h3>
 <p><dfn data-def="Demonstrating Proof of Possession: the client proves on every request that it holds a private key the token is bound to.">DPoP</dfn> turns a bearer token into one that only works with its owner's private key. <span class="ts-claim" data-claim="c47" data-src="s9">With DPoP the client signs a small proof JWT for each request with its private key; the proof names the HTTP method and URL, includes a hash of the access token when calling an API, and travels in a DPoP header.</span></p>
+<p>Because the proof names the method and URL, a copied proof is useless for any other request. Because it is signed with the private key, an attacker cannot make a fresh one.</p>
+
+<h3>What the user sees, how to detect it</h3>
+<p>Usually the user sees nothing: the attacker reads data quietly with a valid token. That is why detection must come from the server side. Useful signals: one client ID suddenly reading far more data than usual; the same token used from two very different networks; refresh-token reuse events from Part 6; and, as in the GitHub case, a credential found in that data being used somewhere it should not be.</p>
 <div class="ts-interview">
 <p><b>"A partner tells you your OAuth tokens leaked from their logs. Walk me through the next hour."</b> A strong answer: revoke the partner's refresh tokens and grants, so access tokens die at expiry; for high-risk APIs, block the partner's client ID or switch those APIs to introspection so revocation bites immediately; pull API logs by client ID for unusual reads; tell affected users. Then the fix: shorter lifetimes, audience-restricted tokens, and sender-constrained tokens for that partner.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "We use HTTPS everywhere, so our tokens cannot be stolen."</p>
+<p><b>Why it is wrong:</b> HTTPS protects a token while it travels. It does nothing once the token is stored in a database, a log file or a backup. In the GitHub case the tokens were stolen from the two integrators themselves; how they travelled over the network made no difference.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Limit what (scope, audience), how long (short life) and who (sender-constrained).</li>
+<li>Keep the ability to revoke.</li>
+<li>Theft is invisible to the user; detect it in server logs.</li>
+</ul>
 </div>
 <p class="ts-takeaway">A stolen bearer token works until it expires, so make tokens narrow, short-lived, revocable, and ideally bound to a key.</p>
 <div class="ts-quiz" data-answer="b" data-claims="c47">
@@ -372,11 +889,19 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <p class="ts-why">The token is bound to a key pair. Without the private key, the attacker can't produce the per-request proof.</p>
 </div>
 </section>
-
-<section class="ts-part" id="at-scale" data-rung="4" data-min="7">
+<section class="ts-part" id="at-scale" data-rung="4" data-min="12">
 <h2>What breaks first at 10× traffic</h2>
 <p class="ts-bridge">Last part: limit what a stolen token can do. Still unsolved: checking tokens costs something on every request. What happens when traffic grows?</p>
 <p class="ts-problem">The Photos API goes from 200 to 2,000 requests a second. Every one of them carries a token that must be checked. There are two ways to check.</p>
+
+<h3>Introduction</h3>
+<p>In Part 8 the API checked a JWT using only a public key. That is one method. The other is to ask the login server about each token. Both are correct; they differ in cost and in how quickly a cancelled token stops working. At low traffic either is fine. At ten times the traffic, the difference decides what fails first.</p>
+
+<h3>Definitions</h3>
+<ol>
+<li><dfn data-def="Asking the login server, per token, whether it is still active, instead of checking it locally.">Token introspection</dfn>: the API sends the token to the login server and asks "is this active, and what does it allow?"</li>
+<li><b>Local JWT check</b>: the API checks the signature and claims itself, as in Part 8, using the login server's public keys kept in memory.</li>
+</ol>
 <figure class="ts-graph" data-title="Two ways to check a token">
 <script type="application/json">
 {"nodes": [
@@ -393,11 +918,21 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
  "Local JWT check: the API verifies signatures with cached public keys and only fetches keys occasionally. Fast, but it can't see revocations until the token expires."]}
 </script>
 </figure>
+<p><b>Explanation of the diagram.</b> In step 1 every incoming request causes an arrow from the API to the login server and a reply back. The login server sees every request and therefore always knows if a token was cancelled. In step 2 the arrow from the API goes to a key cache inside the API itself; only the rare dashed arrow reaches the login server, to fetch keys. The login server no longer sees each request, so it cannot tell the API that a token was cancelled.</p>
 <ul>
 <li><span class="ts-claim" data-claim="c40" data-src="s6">With token introspection the API POSTs the token to the authorization server, which answers with JSON whose required active field says whether the token is currently valid.</span></li>
 <li><span class="ts-claim" data-claim="c41" data-src="s6">RFC 7662 describes the caching trade-off: a longer cache cuts load on the introspection endpoint, but a revoked token can stay usable until the cache entry expires.</span></li>
 <li><span class="ts-claim" data-claim="c42" data-src="s11 s5">For local checks, the authorization server can publish its signing keys at a jwks_uri listed in its metadata, and RFC 9068 says it should do so for resource servers.</span> <span class="ts-claim" data-claim="c43" data-src="s11">By default that metadata lives at /.well-known/oauth-authorization-server on the issuer's host, placed before any path the issuer URL has.</span></li>
 </ul>
+
+<h3>Solved example: sizing the introspection load</h3>
+<p><b>Given:</b> 2,000 requests a second from 3,000 active tokens, spread evenly, and an introspection call that takes a few milliseconds.</p>
+<p><b>Case 1, no cache.</b> Every request needs a call: 2,000 calls a second reach the login server, and every API request waits for one of them.</p>
+<p><b>Case 2, cache each answer for half a minute.</b> Each token is introspected at most once per half minute. 3,000 tokens ÷ 30 = at most 100 calls a second, a 20-fold reduction. The price: a cancelled token can keep working for up to half a minute.</p>
+<p><b>Case 3, local JWT checks.</b> Zero calls per request. Keys are fetched occasionally. The price: a cancelled token keeps working until its own expiry.</p>
+<p><b>Result:</b> the cache length is a dial between load and revocation delay. Choosing it is a design decision you should be able to state with numbers.</p>
+
+<h3>Comparison at 10× load</h3>
 <div class="ts-table-wrap"><table class="ts-table">
 <thead><tr><th>At 10× load</th><th>Introspection</th><th>Local JWT check</th></tr></thead>
 <tbody>
@@ -407,9 +942,21 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <tr><td>Fix</td><td>Short cache per token, scale the endpoint, move hot paths to JWTs</td><td>On an unknown key id, refetch keys once (rate-limited); small leeway on exp</td></tr>
 </tbody>
 </table></div>
+<p><b>What the user sees.</b> With introspection under strain, every photo loads slowly, and if the endpoint fails, every request fails: the login server has become a single point of failure for the API. With local checks, a key-rotation problem shows up as users suddenly being logged out (401 on valid-looking tokens) right after the login server switched keys.</p>
 <p><span class="ts-claim" data-claim="c58" data-src="s17">PyJWT's decode function takes a leeway argument that allows a small margin when checking expiry, for clocks that are slightly out of sync.</span></p>
 <div class="ts-interview">
 <p><b>"Your API validates JWTs locally. How do you make revocation fast enough?"</b> A strong answer names the trade-off: local checks can't see revocation, so keep access tokens short (minutes) and revoke refresh tokens; for the few endpoints where seconds matter (payouts, admin), use introspection with a short cache. You pay latency only where the risk justifies it.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "Revoking a token at the login server stops it everywhere, immediately."</p>
+<p><b>Why it is wrong:</b> it stops it only where the API asks the login server. An API that checks JWTs locally never asks, so it keeps accepting the token until expiry. Revocation speed is a property of how the API checks, not of the revoke call.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Introspection: fresh answers, one call per request (or per cache window).</li>
+<li>Local JWT: no calls, but revocation waits for expiry.</li>
+<li>Failure signals: introspection p99 and errors; 401 spikes after key changes.</li>
+</ul>
 </div>
 <p class="ts-takeaway">Introspection buys instant revocation with a network call per request; local JWT checks buy speed and give up revocation until expiry, so most systems mix the two.</p>
 <div class="ts-explain" data-points="Introspection calls the login server per request (or per cache window), so its endpoint and latency break first at scale|Local JWT checks are fast but can't see revocation until the token expires|Key rotation and clock skew are the local-check failure modes|Mix: short-lived JWTs everywhere, introspection for high-risk endpoints">
@@ -418,15 +965,36 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="oauth-vs-login" data-rung="5" data-min="6">
+<section class="ts-part" id="oauth-vs-login" data-rung="5" data-min="10">
 <h2>OAuth is not login: where OpenID Connect fits</h2>
 <p class="ts-bridge">Last part: scale and revocation trade-offs. Still unsolved: PrintNest wants to show "Hi, Asha". Can it use the access token for that?</p>
 <p class="ts-problem">An access token says what PrintNest may do. It doesn't reliably say who is sitting at the keyboard, or that they logged in just now.</p>
+
+<h3>Introduction</h3>
+<p>Two questions are often confused. <b>Authorization</b>: what may this app do? <b>Authentication</b>: who is this user, and did they just prove it? OAuth answers the first. An app that uses an access token to answer the second is reading a document addressed to someone else: the access token is written for the API, and its format and contents are the API's business.</p>
+
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
 <p><span class="ts-claim" data-claim="c50" data-src="s8">OpenID Connect is an identity layer on top of OAuth 2.0; OAuth by itself does not tell the app who the user is or how they authenticated.</span></p>
+</div>
 <ul>
 <li><span class="ts-claim" data-claim="c52" data-src="s8">An OpenID Connect request must include openid in its scope.</span></li>
 <li><span class="ts-claim" data-claim="c51" data-src="s8">OpenID Connect adds the ID token, a JWT whose required claims include iss, sub, aud, exp and iat, with aud including the client's ID.</span> The ID token is for the app; the access token is for the API.</li>
 </ul>
+
+<h3>Difference between an access token and an ID token</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Point</th><th>Access token</th><th>ID token</th></tr></thead>
+<tbody>
+<tr><td>Question it answers</td><td>What may the app do?</td><td>Who is the user?</td></tr>
+<tr><td>Who reads it</td><td>The API</td><td>The app</td></tr>
+<tr><td>Its audience (aud)</td><td>The API's identifier</td><td>The app's client ID</td></tr>
+<tr><td>Sent to the API?</td><td>Yes, on every request</td><td>No</td></tr>
+</tbody>
+</table></div>
+<p>The audience row is why mixing them up fails: Part 8's API rejects an ID token because its <code>typ</code> and <code>aud</code> are wrong for the API.</p>
+
+<h3>Choosing between the options</h3>
 <div class="ts-table-wrap"><table class="ts-table">
 <thead><tr><th>Option</th><th>Pick it when</th><th>You give up</th></tr></thead>
 <tbody>
@@ -437,9 +1005,24 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <tr><td>OpenID Connect</td><td>You need to know who the user is (sign-in)</td><td>Same as OAuth, plus ID-token validation</td></tr>
 </tbody>
 </table></div>
+
+<h3>Where tokens live in a single-page app</h3>
 <p>For single-page apps the question is where tokens live. <span class="ts-claim" data-claim="c53" data-src="s10">RFC 10017 (August 2026), on browser-based apps, strongly recommends the Backend for Frontend pattern for business applications, sensitive applications and apps that handle personal data.</span> <span class="ts-claim" data-claim="c54" data-src="s10">In a BFF a server-side component acts as the confidential OAuth client and keeps the tokens, so there are no tokens in the browser to steal.</span> <span class="ts-claim" data-claim="c66" data-src="s10">RFC 10017 notes one attack remains: someone who hijacks the app inside the user's browser can still act through it, a problem inherent to web applications.</span></p>
+<p><b>Working of a BFF, in short.</b> (1) The browser talks only to the BFF, using an ordinary session cookie. (2) The BFF runs the code flow of Part 3 as a confidential client. (3) The BFF stores the tokens on the server. (4) When the browser needs photos, it asks the BFF, which attaches the access token and calls the API. A script injected into the page can still make requests through the BFF while the page is open, but it cannot carry the tokens away for later.</p>
+
 <div class="ts-note" data-label="Which documents this page follows">
-<p><span class="ts-claim" data-claim="c57" data-src="s1">RFC 6749 is still the core OAuth 2.0 spec; RFC 8252, RFC 8996 and RFC 9700 update it.</span> <span class="ts-claim" data-claim="c55" data-src="s14">OAuth 2.1, which folds these best practices into one document meant to replace RFC 6749 and RFC 6750, is still an IETF working-group draft as of September 2026.</span> This page follows RFC 9700's rules.</p>
+<p><span class="ts-claim" data-claim="c57" data-src="s1">RFC 6749 is still the core OAuth 2.0 spec; RFC 8252, RFC 8996 and RFC 9700 update it.</span> <span class="ts-claim" data-claim="c55" data-src="s14">OAuth 2.1, which folds these best practices into one document meant to replace RFC 6749 and RFC 6750, is still an IETF working-group draft as of September 2026.</span> The rules on this page are those of the current best-practice document.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "OpenID Connect replaces OAuth."</p>
+<p><b>Why it is wrong:</b> it is built on top of OAuth. An OpenID Connect login is an OAuth code flow with <code>openid</code> in the scope, which returns an ID token as well. Everything in Parts 3 to 12 still applies.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>OAuth: what may the app do. OpenID Connect: who is the user.</li>
+<li>ID token is read by the app; access token is read by the API.</li>
+<li>Single-page apps with personal data: keep tokens in a BFF.</li>
+</ul>
 </div>
 <p class="ts-takeaway">OAuth answers "what may this app do"; OpenID Connect answers "who is this user". Use each for its own question.</p>
 <div class="ts-quiz" data-answer="a" data-claims="c50 c51 c53">
@@ -453,10 +1036,22 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 </div>
 </section>
 
-<section class="ts-part" id="interview-drill" data-rung="5" data-min="10">
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="14">
 <h2>Interview drill: three designs</h2>
 <p class="ts-bridge">Last part: OAuth for access, OpenID Connect for identity. Now use all of it the way an interviewer will ask.</p>
 <p class="ts-problem">Expect OAuth to come up inside a design, not as a definition. For each prompt, write your answer before revealing.</p>
+
+<h3>How to answer a design question on OAuth</h3>
+<p>A good answer follows the same order every time, so you do not forget a part under pressure:</p>
+<ol>
+<li><b>Who is present?</b> A user with a browser, a machine, or a device without a keyboard. This picks the grant (Part 9).</li>
+<li><b>What kind of client?</b> Confidential or public. This decides PKCE and refresh-token rules (Parts 5 and 6).</li>
+<li><b>How does the API check tokens?</b> Locally, by introspection, or both (Parts 8 and 12).</li>
+<li><b>How fast must revocation work?</b> This sets token lifetimes and cache lengths (Part 12).</li>
+<li><b>What if a token is stolen?</b> Narrow, short, sender-constrained (Part 11).</li>
+<li><b>State the trade-off</b> you are paying for, in one sentence.</li>
+</ol>
+
 <div class="ts-predict" data-claims="c32 c16 c45 c22">
 <p class="q"><b>Design 1.</b> You're building a mobile app for a lending startup. It calls your own APIs for balances and repayments. How do users sign in and how does the app call the APIs?</p>
 <div class="ts-reveal">
@@ -477,6 +1072,16 @@ Authorization: Bearer eyJ0eXAiOiJhdCtqd3Qi...</code></pre>
 <p>Revoke the employee's refresh tokens and grants at the login server, which may also kill the access tokens from those grants if the server supports it. Access tokens validated locally must then expire within the minute, so keep them very short, or have the sensitive tools introspect with a cache under a minute.</p>
 <p><b>Trade-off to say out loud:</b> one-minute revocation costs either very frequent refreshes or introspection traffic. Say which tools deserve it.</p>
 </div>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><b>Wrong belief:</b> "A strong interview answer names the most secure option everywhere."</p>
+<p><b>Why it is wrong:</b> every protection has a cost: introspection costs latency, very short tokens cost refresh traffic, sender-constraining costs key management. Interviewers at senior level look for the reason you spend that cost on some endpoints and not on others.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Answer order: who is present, client type, token checking, revocation speed, theft, trade-off.</li>
+<li>Always say what you are giving up.</li>
+</ul>
 </div>
 <p class="ts-takeaway">In a design, OAuth decisions are trade-offs between revocation speed, latency and blast radius; say which one you're paying for and why.</p>
 <div class="ts-explain" data-points="The problem: apps need limited, revocable access without the user's password|The flow: code through the browser, token on the back channel, PKCE binding them|Using it: client keeps state and verifier server-side; API checks type, signature, iss, aud, exp, scope|What breaks: redirect attacks, stolen bearer tokens, introspection load and revocation lag|When to pick what: code+PKCE, client credentials, device flow, OIDC for identity, BFF for SPAs">

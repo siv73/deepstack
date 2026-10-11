@@ -11,11 +11,14 @@ CLIENT_ID = "photo-app"
 REDIRECT_URI = "https://photos.example.com/callback"
 
 
+def challenge_for(verifier):
+    digest = hashlib.sha256(verifier.encode("ascii")).digest()  # 32 bytes
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode()  # S256
+
+
 def make_pkce():
     verifier = secrets.token_urlsafe(64)  # 86 URL-safe chars
-    digest = hashlib.sha256(verifier.encode("ascii")).digest()
-    challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
-    return verifier, challenge
+    return verifier, challenge_for(verifier)
 
 
 def start_login(session):
