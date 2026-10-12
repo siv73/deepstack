@@ -10,7 +10,7 @@
   {"label": "What a network call costs: latency vs CPU time"}
  ],
  "related": [
-  {"label": "Python async, Part 2: cancellation, queues and structure", "slug": "python-asyncio-2", "why": "shield, backpressure with Queue, async generator cleanup, locks, contextvars, eager tasks, testing, uvloop"},
+  {"label": "Python async, Part 2: cancellation, queues and structure", "why": "shield, backpressure with Queue, async generator cleanup, locks, contextvars, eager tasks, testing, uvloop"},
   {"label": "Threads, processes and the GIL (incl. free-threaded Python)", "why": "the other two concurrency models this page compares against"},
   {"label": "FastAPI request lifecycle", "why": "where these traps show up in an API service"}
  ]
