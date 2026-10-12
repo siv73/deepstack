@@ -1,0 +1,2 @@
+receipts saved: 0
+RuntimeWarning: coroutine 'save_receipt' was never awaited

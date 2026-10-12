@@ -1,28 +1,19 @@
-"""A heartbeat that should tick every 10 ms, next to a handler that waits 300 ms."""
+"""One seller handler makes a blocking call: every other seller waits behind it."""
 
-import asyncio
 import time
 
-
-async def handler_blocking() -> None:
-    time.sleep(0.3)  # sync call: the whole loop stops for 300 ms
-
-
-async def handler_fixed() -> None:
-    await asyncio.to_thread(time.sleep, 0.3)  # runs in a worker thread
+from gateway_v1 import ask_seller, compare, report
+from sellers import BUDGET_MS
 
 
-async def worst_heartbeat_delay(handler) -> float:
-    worst = 0.0
+async def ask_seller_with_blocking_call(loop, seller, item, faulty=()):
+    if seller.name == "seller-b":
+        time.sleep(0.3)  # a blocking call (say, a sync SDK) holds the only thread for 300 ms
+    return await ask_seller(loop, seller, item, faulty)
 
-    async def heartbeat() -> None:
-        nonlocal worst
-        for _ in range(40):
-            start = time.perf_counter()
-            await asyncio.sleep(0.01)
-            worst = max(worst, time.perf_counter() - start - 0.01)
 
-    async with asyncio.TaskGroup() as tg:
-        tg.create_task(heartbeat())
-        tg.create_task(handler())
-    return worst
+if __name__ == "__main__":
+    print("-- no budget --")
+    report(*compare("kettle-1l", ask=ask_seller_with_blocking_call))
+    print(f"-- {BUDGET_MS} ms budget --")
+    report(*compare("kettle-1l", budget_ms=BUDGET_MS, ask=ask_seller_with_blocking_call))

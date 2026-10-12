@@ -1,17 +1,24 @@
 {
  "slug": "python-asyncio-1",
- "title": "Python async (asyncio), Part 1: the core and its traps",
- "tldr": "What the event loop really does, how to get real concurrency with TaskGroup, how to cap, time-box and unblock it, and the six traps that break async services in production: forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts.",
+ "title": "Python async (asyncio), Part 1: build your own event loop",
+ "tldr": "Why a gateway that asks 5 sellers one after another takes 1,450 ms, what one thread per waiting call costs (measured), and concurrency vs parallelism. Then generators (yield, send, throw, close, yield from), native coroutines (async def, await, the __await__ protocol, never-awaited coroutines) and a toy event loop built step by step: a ready queue, a timer heap and a scheduler. Gateway v1 on the toy loop overlaps the waits (900 ms on one thread) and cuts at a 250 ms budget; then what the toy loop gets wrong: blocking calls, 10 times the load, no real I/O, exceptions and forgotten awaits. Ends with threads vs loops vs asyncio and an interview drill.",
  "category": "Python",
- "created": "2026-09-29",
+ "created": "2026-10-13",
  "level": "senior backend engineer (product company)",
  "prereqs": [
-  {"label": "Python functions, exceptions and context managers (with)"},
-  {"label": "What a network call costs: latency vs CPU time"}
+  {"label": "Python functions, for loops, exceptions and try/finally"},
+  {"label": "What an HTTP request and response are"}
  ],
  "related": [
-  {"label": "Python async, Part 2: cancellation, queues and structure", "why": "shield, backpressure with Queue, async generator cleanup, locks, contextvars, eager tasks, testing, uvloop"},
-  {"label": "Threads, processes and the GIL (incl. free-threaded Python)", "why": "the other two concurrency models this page compares against"},
-  {"label": "FastAPI request lifecycle", "why": "where these traps show up in an API service"}
+  {"label": "Python async, Part 1: coroutines from scratch, build your own event loop", "slug": "python-asyncio-1", "why": "this page: generators, coroutines and a toy event loop; the gateway reaches 900 ms on one thread and answers at the 250 ms budget"},
+  {"label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks", "why": "replaces the toy loop with asyncio's real one, so the sellers become real sockets and a failure stays with its Task"},
+  {"label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines", "why": "structured concurrency for the five seller calls, a cap on calls in flight, and the budget as a real timeout"},
+  {"label": "Python async, Part 4: the six traps that break async services", "why": "forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts, on the gateway"},
+  {"label": "Python async, Part 5: cancellation in depth", "why": "what really happens to seller-e at the deadline, shield, and cancellation bookkeeping"},
+  {"label": "Python async, Part 6: bounding work: queues and backpressure", "why": "keeping the gateway stable when requests arrive faster than sellers answer"},
+  {"label": "Python async, Part 7: sharing state safely: locks, events, context and threads", "why": "a price cache shared by requests, per-request context, and crossing between threads and the loop"},
+  {"label": "Python async, Part 8: shutting down and cleaning up", "why": "finishing in-flight requests on SIGTERM and closing async generators and clients"},
+  {"label": "Python async, Part 9: seeing and testing async code", "why": "debug mode, loop lag, task dumps, and deterministic tests for the gateway"},
+  {"label": "Python async, Part 10: the whole gateway: sizing, failures and a full mock interview", "why": "integrates every layer, sizes it, walks its failures across layers, and ends with a mock interview"}
  ]
 }
