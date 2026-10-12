@@ -23,7 +23,8 @@ Write only `body.html`: a sequence of `<section class="ts-part">` elements. `bui
 ```
 - `id`: short kebab-case, unique. It becomes the URL fragment and the progress key; never rename it on refresh.
 - `data-rung`: 0 (prerequisite) to 5. Non-decreasing through the page. Rungs 1 to 5 must all appear.
-- `data-min`: honest reading-plus-checks estimate. Target 3 to 6.
+- `data-min`: honest reading-plus-checks estimate. Textbook-style parts usually take 7 to 14.
+- Inside a part, use `<h3>` for the textbook section headings (Introduction, Definition, Working, Solved example, …); never `h1`/`h2`.
 - The shell adds the "Part N of M · rung · about X min" kicker, the rail station, the "Mark this part done" button and the "Next:" link. Don't write those.
 
 ## 2. Text elements
@@ -49,7 +50,7 @@ All take normal HTML inside. The label is added automatically (override with `da
 | `ts-trap` | Production trap | A failure mode seen in production. Rungs 3 to 5. |
 | `ts-interview` | Senior interview lens | The probing question an interviewer asks at this point and what a strong senior answer contains. Rungs 3 to 5, at least 3 per topic. |
 | `ts-case` | In the wild | A real company or project, what they did, why, link. Must be a verified claim. No case found → skip it, never invent. |
-| `ts-note` | Note | With `data-label="Common misunderstanding"`: the wrong belief, why people hold it, why it is wrong (at least one per rung, see pedagogy.md). Otherwise anything else worth a box; use rarely. |
+| `ts-note` | Note | Labelled boxes from the textbook template (pedagogy.md): `data-label="Definition"` (the formal definition), `data-label="Common misunderstanding"` (at least one per rung), `data-label="Points to remember"` (2 to 4 revision bullets, one per part). Otherwise anything else worth a box; use rarely. |
 
 ## 4. Diagrams
 
