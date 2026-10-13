@@ -1,0 +1,1728 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="8">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Part 1 ended with a gateway that answers in 250 ms with seller-b at 1,199, on one thread. But its five sellers were timers. Not one byte crossed a network. A real seller is a server you reach over a TCP connection, and Part 1's toy loop has no way to wait on one.</p>
+<h3>Introduction</h3>
+<p>This is Part 2 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Part 1 is the prerequisite for this page. This part recaps it in one screen; if any line below is unfamiliar, read that part of Part 1 first.</p>
+<h3>What Part 1 built</h3>
+<ol>
+<li>The gateway asks five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149).</li>
+<li>Asking them one after another took 1,450 ms (the sum). Giving each call its own thread brought it to about 900 ms, at the cost of one waiting thread per call.</li>
+<li>A <strong>generator</strong> pauses at <code>yield</code> and is resumed with <code>send()</code>. A <strong>coroutine</strong> (<code>async def</code>) pauses the same way: <code>await</code> passes a yield from the bottom of the await chain up to whoever called <code>send()</code>.</li>
+<li>The <strong>toy loop</strong> resumed coroutines from a <strong>ready queue</strong>, parked sleeping ones in a <strong>timer heap</strong>, and jumped a <strong>virtual clock</strong> to the next wake-up. On one thread, the five waits overlapped: 900 ms.</li>
+<li>Stopping at the 250 ms budget gave "cheapest: seller-b at 1,199; missed: seller-e".</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>The toy loop fakes the network with timers. It cannot wait on a socket.</li>
+<li>An exception in one task escapes the loop and fails the whole request.</li>
+<li>A blocking call stalls every task.</li>
+<li>Stopping unfinished work is done by hand.</li>
+</ul>
+<p>This page fixes the first two. It makes the sellers real servers on your own machine, shows how one thread can wait on many sockets at once, and then opens up asyncio's real event loop to show that it is the same machine as the toy loop, with three pieces added: a selector, Futures and Tasks.</p>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 2 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "GET /compare", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2, "step": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2, "step": 3},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "item code", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "se", "step": 1},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 2},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 3}],
+ "captions": [
+ "The request, as in Part 1: the app sends an item code and the gateway asks all five sellers. New on this page: each seller is a real server on your machine, reached over its own TCP connection.",
+ "Part 1's toy scheduler is replaced by asyncio's real event loop. It keeps the same two structures (a ready queue and a timer heap) and adds Futures and Tasks.",
+ "New on this page: the loop asks the operating system which sockets are ready, through a selector. On Linux the selector uses epoll; on macOS, kqueue. This is how one thread waits on five connections at once."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Step 1 is the request, unchanged from Part 1, except that every arrow to a seller is now a real network connection.</li>
+<li>Step 2 highlights the scheduler. On this page it stops being our toy and becomes asyncio's loop.</li>
+<li>Step 3 is the new piece: the selector. It belongs to the operating system, not to Python, and it is the reason a loop can wait for many sockets with one thread. The words epoll, kqueue and selector are defined later on this page, where they are first needed.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "asyncio's event loop is something very different from the toy loop of Part 1."</p>
+<p><strong>Why it is wrong:</strong> it is the same design. asyncio's loop also keeps a queue of work that is ready now and a heap of timers ordered by wake-up time. What it adds is a way to wait on sockets (the selector) and two objects that carry results between callbacks and coroutines (the Future and the Task). This page shows each addition next to the toy piece it extends.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Part 1: the waits overlap on one thread (1,450 → 900 ms) and the budget gives seller-b at 1,199 in 250 ms.</li>
+<li>Still broken from Part 1: no real I/O, and one failure ends the whole request.</li>
+<li>Part 2 adds three things to the scheduler: a selector, Futures and Tasks.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 2 keeps Part 1's gateway and numbers and replaces the toy scheduler with asyncio's real loop, which can wait on real sockets.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">Part 1's toy loop ran the five seller calls in 900 ms on one thread. What was it actually waiting on during those 900 ms?</p>
+<ol>
+<li data-why="No network was involved: the sellers were faked, and the toy loop could not wait on a socket.">Five TCP connections to the sellers</li>
+<li data-why="The toy loop used one thread; Part 1's thread-per-call version is the one that used five threads.">Five threads, one per seller</li>
+<li>Nothing real: its virtual clock jumped from one timer's wake-up time to the next</li>
+</ol>
+<p class="ts-why">The toy loop's sellers were timers on a virtual clock. Waiting cost nothing because time jumped. Real waiting, on real sockets, is what this page adds.</p>
+</div>
+</section>
+
+<section class="ts-part" id="blocking-socket" data-rung="1" data-min="12">
+<h2>What a blocking socket does to one thread</h2>
+<p class="ts-bridge">Last part: Part 2 replaces the toy scheduler with a real loop. Still unsolved: why the toy loop is not enough. What goes wrong when one thread talks to real sellers over real connections?</p>
+<p class="ts-problem">We start five seller servers on this machine and let one thread ask them for the kettle's price, the plain way. The answer arrives after about 1,460 ms: Part 1's 1,450 ms is back. During that time the thread used almost no CPU, yet it could not do anything else.</p>
+<h3>Introduction</h3>
+<p>Part 1 overlapped five waits by making every wait a timer. A real seller call is not a timer. The gateway sends a request over a network connection and the answer comes back whenever the seller sends it. This part shows what happens when one thread makes such a call the ordinary way, and why that is the problem the rest of the page solves.</p>
+<h3>Comparison</h3>
+<p>Think of phoning a shop and being put on hold. While the hold music plays, you hold the phone to your ear. You are not working, but you cannot make another call either. Five shops, one after another, means five holds in a row.</p>
+<ul>
+<li>You = the thread.</li>
+<li>The phone line = the socket.</li>
+<li>Being on hold = the thread blocked inside <code>recv()</code>.</li>
+</ul>
+<p>The comparison stops working here: on hold you could still read a book. A blocked thread can do nothing at all until the call returns.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="One end of a network connection, as seen by a program: the program writes bytes into it and reads bytes out of it.">socket</dfn> is one end of a network connection, as seen by a program. The program writes bytes into it with <code>send()</code> and reads bytes out with <code>recv()</code>.</p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="A small integer the operating system gives a process for each open file, socket or pipe; the process uses it to refer to that object in system calls.">file descriptor</dfn> (fd) is a small number the operating system gives a process for every open file, socket or pipe. <span class="ts-claim" data-claim="c1" data-src="s11">A Python socket's fileno() method returns its file descriptor, a small integer.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>A socket in <dfn data-def="The default mode of a socket: an operation that cannot finish yet makes the calling thread wait until it can.">blocking mode</dfn> makes the calling thread wait inside an operation until the operation can finish. <span class="ts-claim" data-claim="c2" data-src="s11">Python's socket docs say sockets are created in blocking mode by default, unless a default timeout was set with setdefaulttimeout().</span> <span class="ts-claim" data-claim="c3" data-src="s11">In blocking mode, operations block until they complete or the system returns an error, such as a connection timeout.</span></p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>The thread opens a connection to seller-a and sends one line: the item code.</li>
+<li>It calls <code>recv()</code>. No answer has arrived yet, so the operating system puts the thread to sleep inside the call.</li>
+<li>80 ms later seller-a's answer arrives. The operating system wakes the thread and <code>recv()</code> returns the bytes.</li>
+<li>Only now can the thread connect to seller-b. Steps 1 to 3 repeat for each seller.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 2 is the whole problem: the thread cannot ask the operating system to wait on several sockets at once in a plain <code>recv()</code> call. It waits on exactly one.</li>
+<li>Step 4 follows from step 2: the next seller cannot even be asked until the previous one has answered, so the waits add up.</li>
+</ul>
+<h3>Program 1: the five sellers as local servers</h3>
+<p>From this page on, the sellers are real servers on 127.0.0.1 (this machine). Each one reads a line, waits its latency, answers one line such as <code>seller-b 1199</code>, and closes. They are written as ordinary blocking code in background threads, because they are the test harness, not the thing we are learning. Every later program on this page uses them.</p>
+<div class="ts-code" data-lang="python" data-title="sellers_net.py" data-file="sellers_net.py" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>socket.create_server(("127.0.0.1", 0))</code> opens a listening socket. Port 0 asks the operating system for any free port, so the tests never clash with other programs.</li>
+<li><code>_serve()</code> accepts connections and hands each one to a new thread running <code>_answer()</code>.</li>
+<li><code>_answer()</code> reads until the end of the line, sleeps for the seller's latency, and sends the answer. In fault mode it sends <code>ERROR</code> instead.</li>
+<li><code>running_sellers()</code> starts all five and gives back a dictionary from seller name to port.</li>
+</ol>
+<h3>Program 2: one thread asks them one after another</h3>
+<div class="ts-code" data-lang="python" data-title="blocking_socket.py" data-file="blocking_socket.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/blocking_socket.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>socket.create_connection()</code> returns a socket in blocking mode, so <code>recv(100)</code> makes the thread wait until the seller answers.</li>
+<li>The <code>for</code> loop cannot start the next seller until <code>ask()</code> returns, so the waits are added up: 80 + 120 + 150 + 200 + 900 = 1,450 ms, plus about 10 ms for opening five connections.</li>
+<li><code>time.process_time()</code> counts only the CPU time the process used. It stays under 50 ms: the thread spent almost all of the 1,460 ms asleep inside <code>recv()</code>.</li>
+<li>Times on real sockets vary by a few milliseconds from run to run. Every timed output on this page is one real run, rounded to the nearest 10 ms; the tests accept any run within 60 ms of it.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the run above. The gateway must answer within 250 ms.</p>
+<p><strong>Step 1.</strong> seller-a answers at 80 ms; seller-b at 80 + 120 = 200 ms; seller-c at 200 + 150 = 350 ms.</p>
+<p><strong>Step 2.</strong> By the 250 ms budget, only seller-a and seller-b have been asked and answered. seller-c's call is still in progress.</p>
+<p><strong>Step 3.</strong> The cheapest offer by then is seller-b at 1,199, the same as Part 1's answer, but only by luck of the order: if seller-b came last in the list, the gateway would see only seller-a by 250 ms.</p>
+<p><strong>Result:</strong> one thread with blocking sockets is back to Part 1's first version: the waits add up, and what the gateway sees within the budget depends on the order of the calls.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A thread waiting in recv() is busy, so the CPU is the bottleneck."</p>
+<p><strong>Why it is wrong:</strong> the thread is asleep. The program used under 50 ms of CPU in 1,460 ms. The cost of blocking is not CPU; it is that the one thread cannot start the next call. That is why the fix is about waiting differently, not about a faster machine.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A socket is one end of a connection; its file descriptor is the number the OS uses for it.</li>
+<li>Sockets start in blocking mode: <code>recv()</code> puts the thread to sleep until data arrives.</li>
+<li>One thread with blocking sockets adds the waits up: about 1,460 ms for the five sellers.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A blocking socket parks its thread inside one call, so one thread can only wait for one seller at a time.</p>
+<div class="ts-predict" data-claims="c2 c3">
+<p class="q">Swap the order so seller-e (900 ms) is asked first, then the other four. With the same blocking code, what does the thread know at the 250 ms budget?</p>
+<div class="ts-reveal"><p>Nothing. The thread is still asleep inside seller-e's <code>recv()</code> until about 900 ms, so not one offer is in by 250 ms. The total stays about 1,460 ms, because the sum does not depend on the order, but what fits in the budget does.</p></div>
+</div>
+<div class="ts-explain" data-points="A blocking recv() puts the thread to sleep until that one socket has data|The thread cannot start another call while it waits|So the waits add up instead of overlapping|The thread uses almost no CPU while it waits">
+<p class="q">In your own words: why does one thread with blocking sockets take about 1,460 ms for the five sellers, and why is a faster CPU no help?</p>
+<div class="ts-model"><p>A blocking recv() puts the thread to sleep until that one socket has data. While it sleeps, the thread cannot connect to the next seller, so the five waits happen one after another and add up to about 1,450 ms plus connection set-up. The CPU is idle almost the whole time, so a faster CPU changes nothing. What must change is how the thread waits: it needs to wait on all five sockets at once.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="non-blocking" data-rung="2" data-min="11">
+<h2>A socket that never makes you wait: non-blocking mode and "would block"</h2>
+<p class="ts-bridge">Last part: a blocking socket parks its thread inside one call. Still unsolved: how can one thread keep five calls in flight if any call may park it?</p>
+<p class="ts-problem">We want to send the item code to all five sellers in the first millisecond and then collect the answers as they arrive: 80, 120, 150, 200 and 900 ms. That only works if no call ever puts our one thread to sleep.</p>
+<h3>Introduction</h3>
+<p>The operating system offers a second mode for every socket. In this mode an operation that cannot finish now does not wait. It returns at once with an error that means "try later". This part shows that error and the naive way of using it, which works but wastes a whole CPU core.</p>
+<h3>Comparison</h3>
+<p>Instead of holding the line, you ask the shop to call you back, and hang up. If you have nothing else to do, the temptation is to keep ringing the shop: "Is it ready yet?" every second.</p>
+<ul>
+<li>Hanging up at once = a non-blocking call that returns "would block".</li>
+<li>Ringing again and again = calling <code>recv()</code> in a loop: busy waiting.</li>
+</ul>
+<p>Where it stops working: a shop would get annoyed. The operating system answers every one of your thousands of calls, and the cost lands on your own CPU.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>A socket in <dfn data-def="A socket mode in which an operation that cannot finish at once fails immediately with a 'would block' error instead of making the thread wait.">non-blocking mode</dfn> never makes the thread wait. <span class="ts-claim" data-claim="c4" data-src="s11">sock.setblocking(False) puts a socket in non-blocking mode; the docs say it is equivalent to sock.settimeout(0.0).</span> <span class="ts-claim" data-claim="c5" data-src="s11">In non-blocking mode, an operation that cannot be completed immediately fails, and functions from the select module can be used to know when the socket is ready for reading or writing.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>"<dfn data-def="The error a non-blocking operation returns when it could only finish by waiting; in Python it is BlockingIOError.">Would block</dfn>" is the error a non-blocking operation returns when finishing it would mean waiting. <span class="ts-claim" data-claim="c6" data-src="s12">Python raises BlockingIOError when an operation would block on an object set for non-blocking operation; it corresponds to the errno values EAGAIN, EALREADY, EWOULDBLOCK and EINPROGRESS.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><dfn data-def="Checking a condition again and again in a loop, using the CPU the whole time, instead of asking to be woken when it changes.">Busy waiting</dfn> means checking something again and again in a loop instead of asking to be woken when it changes. Part 1 met the word for a sleeping task; here it is a socket.</p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>setblocking(False)</code> switches the socket to non-blocking mode.</li>
+<li><code>connect()</code> starts the TCP handshake and returns at once with BlockingIOError, errno EINPROGRESS: "still connecting".</li>
+<li>Once connected, <code>send()</code> copies the line into the operating system's send buffer and returns.</li>
+<li><code>recv()</code> finds no data yet and returns at once with BlockingIOError, errno EAGAIN: "no data, try again".</li>
+<li>The naive program now calls <code>recv()</code> again and again until the answer arrives.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Steps 2 and 4: an error instead of a wait is what keeps the thread free to start other calls.</li>
+<li>Step 5 is the part we will throw away: it keeps the thread free, but it burns the CPU asking.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="nonblock.py" data-file="nonblock.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (Linux)" data-file="out/nonblock.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>sock.connect()</code> on a non-blocking socket raises BlockingIOError with errno EINPROGRESS. The connection finishes in the background. The program sleeps 10 ms to let it finish; the next part replaces that guess with an exact signal.</li>
+<li>The first <code>recv()</code> raises BlockingIOError with errno EAGAIN: seller-a has not answered yet.</li>
+<li>The <code>while True</code> loop is busy waiting. It made well over 1,000 failed <code>recv()</code> calls in 80 ms.</li>
+<li><code>process_time()</code> over wall-clock time shows the CPU was busy for over half of the wait, usually close to all of it. Compare the blocking version: under 50 ms of CPU in 1,460 ms.</li>
+<li>The errno names are from Linux. Other systems may print a different name for the same "try again" error.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> five sellers asked this way, each with its own busy loop, all on one thread taking turns.</p>
+<p><strong>Step 1.</strong> All five lines can be sent in the first few milliseconds, because nothing blocks.</p>
+<p><strong>Step 2.</strong> The thread then circles through five <code>recv()</code> calls forever. seller-a's answer is picked up at about 80 ms, seller-e's at about 900 ms.</p>
+<p><strong>Step 3.</strong> Total time: about 900 ms, like Part 1's toy loop. CPU: one core busy for the full 900 ms, for a gateway that does almost no work.</p>
+<p><strong>Result:</strong> non-blocking sockets fix the waiting (900 ms instead of 1,460 ms) but busy waiting turns idle time into a fully busy core. We need the operating system to tell us when a socket is ready.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "BlockingIOError means the connection failed."</p>
+<p><strong>Why it is wrong:</strong> it means "not yet". EINPROGRESS says the connection is still being made; EAGAIN says no data has arrived yet. Real failures arrive as other errors, such as ConnectionRefusedError, and a closed connection shows up differently again: <span class="ts-claim" data-claim="c7" data-src="s11">socket.recv() returns an empty bytes object when the other side has disconnected.</span> Code that treats BlockingIOError as a failure drops healthy calls.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>setblocking(False)</code> means operations return at once instead of waiting.</li>
+<li>"Would block" arrives as BlockingIOError: EINPROGRESS for connect, EAGAIN for recv on Linux.</li>
+<li>Calling again and again (busy waiting) works but keeps a CPU core busy for the whole wait.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Non-blocking mode frees the thread from waiting, but only half solves the problem: something must say when to try again.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c5 c6 c7">
+<p class="q">A non-blocking <code>recv()</code> raises BlockingIOError with errno EAGAIN. What should the gateway conclude?</p>
+<ol>
+<li data-why="EAGAIN is not a failure; the connection is fine. A closed connection makes recv() return an empty bytes object.">The seller closed the connection; give up on it</li>
+<li>No data has arrived yet; try again when the socket is ready to read</li>
+<li data-why="The socket did not switch modes by itself; the program set non-blocking mode, and the error is the expected answer in that mode.">The socket is broken and must be put back into blocking mode</li>
+</ol>
+<p class="ts-why">BlockingIOError means the operation would have had to wait. In non-blocking mode that is normal: the docs point to the select module to learn when the socket is ready.</p>
+</div>
+</section>
+
+<section class="ts-part" id="readiness" data-rung="2" data-min="13">
+<h2>Asking the operating system which sockets are ready: selectors</h2>
+<p class="ts-bridge">Last part: non-blocking sockets never make the thread wait, but asking again and again keeps a core busy. Still unsolved: how does the thread learn exactly when a socket is worth asking?</p>
+<p class="ts-problem">Five sockets, five answers due at 80, 120, 150, 200 and 900 ms. We want the thread to sleep, using no CPU, and wake exactly five times: once per answer.</p>
+<h3>Introduction</h3>
+<p>The operating system already knows when data arrives on a socket: it is the one that receives the bytes. Every modern operating system lets a program hand over a list of sockets and sleep until at least one of them is ready. Python wraps these system calls in the <code>selectors</code> module. This is the piece Part 1's toy loop was missing.</p>
+<h3>Comparison</h3>
+<p>A restaurant pager. You order at five counters, and each gives you a pager. You sit down and do nothing until a pager buzzes; then you collect that one order and sit down again.</p>
+<ul>
+<li>The pagers on your table = the sockets registered with the selector.</li>
+<li>Sitting and waiting for a buzz = <code>select()</code>.</li>
+<li>The buzzing pager = a ready event, with a note saying which counter it is from (the <code>data</code> you attached).</li>
+</ul>
+<p>Where it stops working: a pager buzzes once and is done. A selector keeps reporting a socket as ready to read for as long as unread data sits in it: every <code>select()</code> call names it again until the program reads the data. (This page's tests check that behaviour.)</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>A socket is <dfn data-def="A socket is ready for reading when a recv() would return at once with data or end-of-file; ready for writing when a send() would accept data at once.">ready</dfn> for reading when a <code>recv()</code> would return at once instead of saying "would block", and ready for writing when a <code>send()</code> would. <dfn data-def="Learning from the operating system which of many file descriptors are ready, so a program only calls the ones that will not block.">Readiness notification</dfn> means the operating system telling a program which of its sockets are ready.</p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="An object from Python's selectors module that holds a set of registered file objects and, in select(), waits until some of them are ready or a timeout passes.">selector</dfn> is an object from Python's <code>selectors</code> module that holds registered sockets and waits until some are ready. <span class="ts-claim" data-claim="c8" data-src="s9">The selectors module provides high-level, efficient I/O multiplexing built on the select module's primitives, and the docs encourage using it unless you need precise control over the operating-system calls.</span> <span class="ts-claim" data-claim="c9" data-src="s9">selectors.DefaultSelector is an alias to the most efficient implementation available on the current platform.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><dfn data-def="The Linux system call family for readiness notification: a kernel object that holds the registered file descriptors and reports which are ready.">epoll</dfn> is Linux's readiness notification facility; <dfn data-def="The BSD and macOS system call family for event notification, including socket readiness.">kqueue</dfn> is the BSD and macOS one. <span class="ts-claim" data-claim="c10" data-src="s10">Python's select module docs list epoll as available on Linux 2.5.44 and later, and kqueue as available on BSD and macOS.</span> <span class="ts-claim" data-claim="c11" data-src="s22">In CPython 3.14's selectors.py, DefaultSelector is KqueueSelector when kqueue is available, otherwise EpollSelector, then DevpollSelector, then PollSelector, and SelectSelector last.</span> Hence DefaultSelector is epoll on Linux and kqueue on macOS.</p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>Create a selector: <code>sel = selectors.DefaultSelector()</code>.</li>
+<li>For each socket, <code>sel.register(sock, EVENT_READ, data=name)</code>: "tell me when this can be read, and remind me it is this seller".</li>
+<li>Call <code>sel.select(timeout)</code>. The thread sleeps inside it, using no CPU, until at least one socket is ready or the timeout passes.</li>
+<li>It returns a list of <code>(key, events)</code> pairs. <code>key.fileobj</code> is the socket and <code>key.data</code> is what you attached.</li>
+<li>Read from each ready socket. A <code>recv()</code> now returns data at once.</li>
+<li>When you are done with a socket, unregister it, then close it.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c12" data-src="s9">register() returns a SelectorKey, and raises KeyError if the file object is already registered.</span> <span class="ts-claim" data-claim="c13" data-src="s9">For select(timeout): a timeout above 0 is the longest wait in seconds, a timeout of 0 or less does not block and only reports what is ready now, and None waits until some registered file object is ready.</span> <span class="ts-claim" data-claim="c14" data-src="s9">The docs say a file object shall be unregistered before it is closed.</span></p>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 2: the selector only watches what it was told to watch; <code>data</code> saves you a lookup from socket to seller.</li>
+<li>Step 3: this single sleep replaces five blocked threads (Part 1) and five spinning loops (last part).</li>
+<li>Step 5: the selector only says "ready"; reading the data is still your job.</li>
+<li>Step 6: a closed socket left in the selector is a bug; the "When it breaks" rung shows what it does.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="select_five.py" data-file="select_five.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (Linux)" data-file="out/select_five.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The first line shows which implementation DefaultSelector chose: EpollSelector on Linux. On a Mac the same program prints KqueueSelector.</li>
+<li>All five requests are sent within the first few milliseconds, then every socket is switched to non-blocking mode and registered for reading.</li>
+<li><code>sel.select(timeout=None)</code> returned five times, once per answer, at 80, 120, 150, 200 and 900 ms. Between those moments the thread slept.</li>
+<li>Each socket is unregistered before it is closed, and the loop ends when <code>get_map()</code> is empty.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the run above.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Version</th><th>Threads</th><th>Time to all answers</th><th>CPU while waiting</th></tr></thead>
+<tbody>
+<tr><td>Blocking sockets, one after another</td><td>1</td><td>about 1,460 ms</td><td>under 50 ms</td></tr>
+<tr><td>Non-blocking sockets, busy waiting</td><td>1</td><td>about 900 ms</td><td>a full core, the whole time</td></tr>
+<tr><td>Non-blocking sockets and a selector</td><td>1</td><td>about 900 ms</td><td>almost none: 5 wake-ups</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the selector gives the overlap of the toy loop with real sockets: 900 ms on one thread, and the thread sleeps between answers.</p>
+<div class="ts-note" data-label="Windows">
+<p>Windows works differently, and asyncio hides most of the difference. <span class="ts-claim" data-claim="c15" data-src="s5">On Windows, ProactorEventLoop has been asyncio's default event loop since Python 3.8.</span> <span class="ts-claim" data-claim="c16" data-src="s1">ProactorEventLoop uses Windows I/O Completion Ports (IOCP).</span> <span class="ts-claim" data-claim="c17" data-src="s5">On Windows, SelectorEventLoop waits on sockets with SelectSelector, which supports only sockets and is limited to 512 of them.</span> <span class="ts-claim" data-claim="c18" data-src="s5">ProactorEventLoop does not support loop.add_reader() and loop.add_writer().</span> The rest of this page describes the selector-based loop used on Linux and macOS.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "select() reads the data for me."</p>
+<p><strong>Why it is wrong:</strong> a selector only reports which sockets are ready. The program still calls <code>recv()</code>. The difference is that the call now returns data at once instead of saying "would block".</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A selector watches many sockets; <code>select()</code> sleeps until one is ready or the timeout passes.</li>
+<li>DefaultSelector picks kqueue first, then epoll: kqueue on macOS, epoll on Linux.</li>
+<li>Unregister a socket before you close it.</li>
+<li>Windows' default loop uses completion ports instead of a selector.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A selector lets one thread sleep on many sockets at once and wake only when one of them has something to read.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c13">
+<p class="q">The gateway has one timer due in 80 ms and five registered sockets. What timeout should it pass to <code>select()</code> so it neither sleeps past the timer nor spins?</p>
+<ol>
+<li>About 0.08 seconds: the time until the earliest timer</li>
+<li data-why="None waits until a socket is ready. If no seller answers within 80 ms, the timer fires late.">None</li>
+<li data-why="A timeout of 0 never sleeps. Calling select(0) in a loop is busy waiting again.">0</li>
+</ol>
+<p class="ts-why">select() should sleep until either a socket is ready or the next timer is due, whichever comes first. That is exactly what asyncio's loop computes before each select() call, as the next part shows.</p>
+</div>
+</section>
+
+<section class="ts-part" id="loop-iteration" data-rung="2" data-min="14">
+<h2>One turn of asyncio's loop: ready callbacks, timers and one select() call</h2>
+<p class="ts-bridge">Last part: a selector sleeps on many sockets and wakes when one is ready. Still unsolved: a loop also has timers and ready work. How does one thread fit sockets, timers and ready work into a single cycle?</p>
+<p class="ts-problem">At some moment the gateway has two callbacks ready to run, a timer due in 100 ms and five sockets waiting for answers. If it calls <code>select()</code> with no timeout, the timer fires late. If it runs the callbacks first and never looks at the sockets, answers sit unread. In what order should the loop do these three jobs?</p>
+<h3>Introduction</h3>
+<p>Part 1's toy loop had two structures: a ready queue and a timer heap. asyncio's loop keeps both and adds the selector from the last part. This part opens one <dfn data-def="One pass of the event loop: work out how long it may sleep, ask the selector which sockets are ready, queue the due timers, then run the callbacks that are ready.">loop iteration</dfn> and follows it line by line in CPython's source. Work in asyncio's loop is a <dfn data-def="A plain function the loop calls later; in asyncio it is wrapped in a Handle so it can be cancelled.">callback</dfn>: a plain function the loop calls later. The next parts show that even a coroutine runs as a series of callbacks.</p>
+<h3>Comparison</h3>
+<p>A clerk at a post office counter works in rounds. Each round: look at the clock to see when the next scheduled pickup is due; check the mail slot, but only wait at it until that pickup if the queue at the counter is empty; move any parcels whose pickup time has come to the counter; then serve everyone standing at the counter right now. People who join the queue during the round wait for the next round.</p>
+<ul>
+<li>The counter queue = the ready queue (<code>_ready</code>).</li>
+<li>The pickup schedule = the timer heap (<code>_scheduled</code>).</li>
+<li>Waiting at the mail slot = <code>select(timeout)</code>.</li>
+</ul>
+<p>Where it stops working: a clerk might serve a late arrival in the same round. asyncio deliberately does not, so that waiting sockets are checked between rounds.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c19" data-src="s18">In CPython 3.14, one iteration is the method BaseEventLoop._run_once(); its own description says it runs all ready callbacks, polls for I/O, schedules the resulting callbacks, and then schedules call_later callbacks.</span> <span class="ts-claim" data-claim="c20" data-src="s18">The ready queue is a collections.deque named _ready, and the timers are a heap list named _scheduled.</span> The names start with an underscore: they are private, and the "When it breaks" rung explains why that matters.</p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Work out the timeout.</strong> <span class="ts-claim" data-claim="c21" data-src="s18">The timeout for select() is 0 if callbacks are ready or the loop is stopping; otherwise it is the time until the earliest timer, capped at 24 hours; with no timers at all it is None.</span></li>
+<li><strong>Poll for I/O.</strong> <span class="ts-claim" data-claim="c22" data-src="s18 s24">The loop calls its selector's select() with that timeout, and the callback registered for each ready socket is added to the ready queue.</span></li>
+<li><strong>Move due timers.</strong> <span class="ts-claim" data-claim="c23" data-src="s18">Every timer whose time has come is popped from the heap and appended to the ready queue.</span></li>
+<li><strong>Run what is ready now.</strong> <span class="ts-claim" data-claim="c24" data-src="s18">The loop runs only the callbacks that were in the ready queue at this point; callbacks they schedule run in the next iteration, after another I/O poll.</span></li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: if work is ready, sleeping would delay it, so the poll is only a peek (timeout 0). If nothing is ready, the loop may sleep, but only until the next timer, so timers fire on time.</li>
+<li>Step 2: one call covers every socket at once; this is the selector from the last part.</li>
+<li>Step 3: timers are queued after the poll, so a timer that came due during a long sleep runs in this same iteration.</li>
+<li>Step 4: counting the ready callbacks first means a callback that keeps scheduling more work cannot keep the loop from polling sockets.</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="asyncio's loop: Part 1's toy loop plus a selector">
+<script type="application/json">
+{"nodes": [
+ {"id": "work", "label": "Callbacks", "sub": "and Task steps", "col": 0, "row": 1},
+ {"id": "ready", "label": "Ready queue", "sub": "_ready, a deque", "col": 1, "row": 0},
+ {"id": "sched", "label": "Scheduler", "sub": "_run_once()", "col": 1, "row": 1},
+ {"id": "heap", "label": "Timer heap", "sub": "_scheduled", "col": 2, "row": 0},
+ {"id": "clock", "label": "Monotonic clock", "sub": "loop.time()", "col": 2, "row": 1},
+ {"id": "sel", "label": "Selector", "sub": "epoll / kqueue", "col": 1, "row": 2, "step": 2}],
+ "edges": [
+ {"from": "sched", "to": "clock", "label": "how long until a timer?", "step": 1},
+ {"from": "sched", "to": "sel", "label": "select(timeout)", "step": 2},
+ {"from": "sel", "to": "sched", "label": "ready sockets", "dashed": true, "step": 3},
+ {"from": "sched", "to": "ready", "label": "their callbacks", "step": 4},
+ {"from": "heap", "to": "ready", "label": "due timers", "dashed": true, "step": 5},
+ {"from": "ready", "to": "sched", "label": "count what is ready now", "step": 6},
+ {"from": "sched", "to": "work", "label": "run exactly that many", "step": 7}],
+ "captions": [
+ "Step 1: the scheduler works out how long it may sleep: 0 if anything is ready, otherwise until the earliest timer, or with no limit if there are none. The clock is real now: loop.time(), not Part 1's virtual clock.",
+ "Step 2, new compared with Part 1: the scheduler hands that timeout to the selector and sleeps inside select() until a socket is ready or the timeout passes.",
+ "Step 3: select() returns the sockets that are ready.",
+ "Step 4: for every ready socket, the callback registered for it joins the ready queue.",
+ "Step 5: every timer whose time has come moves from the heap to the ready queue, exactly as in Part 1.",
+ "Step 6: the scheduler counts how many callbacks are ready at this moment.",
+ "Step 7: it runs exactly that many. Anything they schedule waits for the next iteration, which starts again at step 1."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>The ready queue, the timer heap and the scheduler sit where they sat in Part 1's toy-loop diagrams. The clock is now real.</li>
+<li>The selector, below the scheduler, is the new piece. It is the only place the thread ever sleeps.</li>
+<li>Steps 3 to 5 all feed the ready queue: the selector reports ready sockets, their callbacks are queued, then due timers.</li>
+<li>Steps 6 and 7 are the toy loop's "run the ready queue", with one difference: the count is fixed before running.</li>
+</ol>
+<h3>Program</h3>
+<p>We give asyncio's loop a selector that prints every <code>select()</code> call, so each printed <code>select</code> line marks the start of one iteration. Callback <code>a</code> schedules <code>c</code> while it runs.</p>
+<div class="ts-code" data-lang="python" data-title="tracing.py" data-file="tracing.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="loop_iteration.py" data-file="loop_iteration.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/loop_iteration.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>TracingSelector</code> is the platform's default selector with one change: it prints its timeout before waiting.</li>
+<li><code>asyncio.SelectorEventLoop(TracingSelector())</code> builds a loop around it. We drive the loop by hand with <code>run_forever()</code> to see bare iterations; normal programs use <code>asyncio.run()</code>, covered later on this page.</li>
+<li>Iteration 1: <code>a</code> and <code>b</code> are ready, so the timeout is 0. Both run. <code>a</code> schedules <code>c</code>, but <code>c</code> is not run in this iteration.</li>
+<li>Iteration 2: <code>c</code> is ready, so the timeout is again 0. <code>c</code> runs.</li>
+<li>Iteration 3: nothing is ready, so the loop sleeps until the 100 ms timer: <code>timeout=0.10 s</code>. The timer runs and stops the loop.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the gateway at 0 ms, after sending all five requests. Nothing is ready; the budget timer is due at 250 ms; five sockets are registered.</p>
+<p><strong>Step 1.</strong> Ready queue empty, earliest timer at 250 ms, so <code>select(timeout=0.25)</code>.</p>
+<p><strong>Step 2.</strong> At 80 ms seller-a's socket becomes ready, <code>select()</code> returns early, and seller-a's callback is queued and run.</p>
+<p><strong>Step 3.</strong> Next iteration: timeout = 250 − 80 = 170 ms. seller-b's answer wakes it at 120 ms. In the same way, seller-c wakes it at 150 ms and seller-d at 200 ms.</p>
+<p><strong>Step 4.</strong> After 200 ms the timeout is 50 ms. No socket becomes ready; <code>select()</code> returns empty at 250 ms, and the budget timer moves to the ready queue and runs.</p>
+<p><strong>Result:</strong> five wake-ups and the budget timer fire on time, on one thread that slept between them, the toy loop's 250 ms answer with real sockets.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The loop runs callbacks until the ready queue is empty, then looks at the sockets."</p>
+<p><strong>Why it is wrong:</strong> the loop runs only the callbacks that were ready when the iteration started its run step. A callback that schedules another callback cannot keep the loop from the next <code>select()</code>. If it emptied the queue first, two callbacks that keep scheduling each other would starve every socket.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>One iteration: timeout, <code>select()</code>, queue I/O callbacks, queue due timers, run what is ready now.</li>
+<li>Timeout: 0 if work is ready; time to the earliest timer otherwise; None if there is nothing to wait for but sockets.</li>
+<li>Callbacks scheduled during a run wait for the next iteration.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Each turn of asyncio's loop sleeps in select() only as long as the next timer allows, then runs exactly the work that is ready at that moment.</p>
+<div class="ts-order" data-claims="c21 c22 c23 c24">
+<p class="q">Put one iteration of asyncio's loop in order.</p>
+<ol>
+<li>Work out the select() timeout from the ready queue and the earliest timer</li>
+<li>Call select() and queue the callbacks of ready sockets</li>
+<li>Move every due timer from the heap to the ready queue</li>
+<li>Run the callbacks that are in the ready queue at this moment</li>
+</ol>
+<p class="ts-why">The timeout must be known before select() is called; due timers are collected after the poll, so time spent sleeping is counted; running comes last, and only for what is ready now.</p>
+</div>
+</section>
+
+<section class="ts-part" id="call-soon-later" data-rung="2" data-min="9">
+<h2>Putting work on the loop: call_soon and call_later</h2>
+<p class="ts-bridge">Last part: each iteration runs the ready queue and moves due timers onto it. Still unsolved: how does code put a callback into the ready queue, or onto the timer heap, in the first place?</p>
+<p class="ts-problem">The gateway must cut the request at 250 ms. In Part 1 the toy loop had <code>run(until=250)</code> built in. In asyncio we need to tell the loop "call this function 0.25 seconds from now", and keep a way to cancel it if every seller answers first.</p>
+<h3>Introduction</h3>
+<p>asyncio's loop has two low-level methods that map one to one onto Part 1's structures. <code>call_soon</code> appends to the ready queue. <code>call_later</code> pushes onto the timer heap. Most application code never calls them directly, but every higher-level tool on this page and the next is built from them.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c25" data-src="s1">loop.call_soon(callback, *args) schedules the callback for the next iteration of the loop and returns an asyncio.Handle; callbacks are called in the order in which they are registered, each exactly once.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c26" data-src="s1">loop.call_later(delay, callback, *args) schedules the callback after delay seconds and returns an asyncio.TimerHandle; if two callbacks are scheduled for exactly the same time, the order in which they run is undefined.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="The object call_soon or call_later returns; its cancel() method stops the callback from running if it has not run yet.">handle</dfn> is the object these methods return. <span class="ts-claim" data-claim="c27" data-src="s1">Handle.cancel() cancels the callback; if it has already been cancelled or has run, it has no effect.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c28" data-src="s1">loop.time() returns the current time as a float, according to the event loop's internal monotonic clock.</span> A <dfn data-def="A clock that only moves forward and is not changed when someone sets the wall-clock time.">monotonic clock</dfn> is one that only moves forward. <span class="ts-claim" data-claim="c29" data-src="s26">Python's time.monotonic() returns seconds from a clock that cannot go backwards and is not affected by system clock updates.</span> On CPython, <code>loop.time()</code> reads this same clock, which this page's tests check.</p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>call_soon(f)</code> wraps <code>f</code> in a Handle and appends it to the ready queue.</li>
+<li><code>call_later(0.25, f)</code> wraps <code>f</code> in a TimerHandle due at <code>loop.time() + 0.25</code> and pushes it onto the timer heap.</li>
+<li><code>handle.cancel()</code> marks the handle as cancelled. The loop skips cancelled handles when it reaches them.</li>
+<li>At each iteration, due timers move to the ready queue and every ready handle runs once, in order.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Steps 1 and 2: these are the only two ways into the loop; everything else (Futures, Tasks, sockets) ends up calling one of them.</li>
+<li>Step 3: the gateway's budget timer must be cancellable, or it would fire after a request that already finished.</li>
+<li>Step 4: "each exactly once, in order" is what makes the loop predictable enough to test.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="callbacks.py" data-file="callbacks.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/callbacks.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The two <code>call_soon</code> callbacks run at 0 ms, in the order they were added.</li>
+<li>The <code>call_later</code> callbacks run in order of due time, 0.1 then 0.2 seconds, not in the order they were added.</li>
+<li>The cancelled handle never prints.</li>
+<li><code>await asyncio.sleep(0.3)</code> keeps <code>main()</code> alive long enough for the timers to fire; the next parts show how <code>sleep</code> itself is built from <code>call_later</code>.</li>
+</ol>
+<h3>Mapping to Part 1's toy loop</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Toy loop (Part 1)</th><th>asyncio</th></tr></thead>
+<tbody>
+<tr><td><code>self.ready.append(task)</code></td><td><code>loop.call_soon(callback)</code></td></tr>
+<tr><td><code>heapq.heappush(self.timers, (now + ms, order, task))</code></td><td><code>loop.call_later(seconds, callback)</code></td></tr>
+<tr><td>virtual clock <code>self.now</code>, in ms</td><td>monotonic clock <code>loop.time()</code>, in seconds</td></tr>
+<tr><td>the <code>order</code> counter breaks ties</td><td>equal due times run in an undefined order</td></tr>
+</tbody>
+</table></div>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> at <code>loop.time()</code> = 1,000.000 the gateway calls <code>budget = loop.call_later(0.25, cut)</code>. All five sellers would answer by 1,000.900 without a cut.</p>
+<p><strong>Step 1.</strong> The TimerHandle is due at 1,000.000 + 0.250 = 1,000.250.</p>
+<p><strong>Step 2.</strong> At 1,000.250 the timer is due, moves to the ready queue and <code>cut()</code> runs: seller-e is stopped.</p>
+<p><strong>Step 3.</strong> In a different request where all sellers answer by 1,000.200, the gateway calls <code>budget.cancel()</code> at 1,000.200, and <code>cut()</code> never runs.</p>
+<p><strong>Result:</strong> the budget is one cancellable timer on the heap. Rung 3 builds exactly this into the gateway.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "call_soon(f) runs f right now."</p>
+<p><strong>Why it is wrong:</strong> it only queues <code>f</code>. <code>f</code> runs in a later iteration of the loop, after the code that called <code>call_soon</code> has returned control to the loop. Until then nothing happens.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>call_soon</code> = append to the ready queue; <code>call_later</code> = push onto the timer heap.</li>
+<li>Both return handles; <code>cancel()</code> stops a callback that has not run.</li>
+<li><code>loop.time()</code> is a monotonic clock in seconds.</li>
+</ul>
+</div>
+<p class="ts-takeaway">call_soon and call_later are asyncio's two doors into Part 1's ready queue and timer heap, and every higher-level tool goes through them.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c25 c26">
+<p class="q">Code runs <code>call_later(0.05, x)</code>, then <code>call_soon(y)</code>, then <code>call_later(0.01, z)</code>, then returns to the loop. In what order do x, y and z run?</p>
+<ol>
+<li data-why="Registration order only decides the order among call_soon callbacks; timers run in order of their due time.">x, y, z</li>
+<li data-why="call_soon callbacks run in the next iteration, before any timer that is not due yet.">z, y, x</li>
+<li>y, z, x</li>
+</ol>
+<p class="ts-why">y is in the ready queue at once and runs in the next iteration. Of the two timers, z is due after 10 ms and x after 50 ms, so z runs before x.</p>
+</div>
+</section>
+
+<section class="ts-part" id="future" data-rung="2" data-min="12">
+<h2>A box for a result that is not here yet: the Future</h2>
+<p class="ts-bridge">Last part: call_soon and call_later put callbacks on the loop. Still unsolved: a callback can notice that seller-b's answer arrived, but how does it hand that answer to the coroutine that is waiting for it?</p>
+<p class="ts-problem">At 120 ms the loop runs the callback for seller-b's socket. It has the bytes <code>seller-b 1199</code>. The coroutine that asked for them is suspended somewhere in its await chain. The callback cannot <code>return</code> the price to it: they are not calling each other. Something must hold the price until the coroutine resumes.</p>
+<h3>Introduction</h3>
+<p>Part 1's toy loop stored a finished task's return value in <code>task.result</code>. asyncio makes that idea a separate object, the Future, that any piece of code can fill and any other piece can wait on. Callback code fills it; coroutine code awaits it. It is the meeting point between the two styles.</p>
+<h3>Comparison</h3>
+<p>A claim ticket at a tailor. You get the ticket now; the suit is not ready. Later the tailor puts the suit on the hook for your ticket, or a note saying it was damaged, or the order is cancelled. You can ask "is it ready?" at any time, and you can leave your phone number to be called when it is.</p>
+<ul>
+<li>The ticket = the Future.</li>
+<li>Suit on the hook = <code>set_result()</code>; the damage note = <code>set_exception()</code>; a cancelled order = <code>cancel()</code>.</li>
+<li>"Is it ready?" = <code>done()</code>; leaving your number = <code>add_done_callback()</code>.</li>
+</ul>
+<p>Where it stops working: the tailor phones you at once. asyncio never calls you back on the spot; it schedules your callback for the next loop iteration.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="An asyncio object that starts empty and later holds either a result, an exception, or a cancelled mark; coroutines can await it and callbacks can be attached to it.">Future</dfn> is an object that starts empty and is later completed exactly once, with a result, an exception, or a cancellation. <span class="ts-claim" data-claim="c30" data-src="s2">The docs say a Future represents an eventual result of an asynchronous operation, and that it is not thread-safe.</span> <span class="ts-claim" data-claim="c31" data-src="s2">The recommended way to create one is loop.create_future(), and the rule of thumb is never to expose Future objects in user-facing APIs.</span></p>
+</div>
+<h3>Working</h3>
+<p>A Future is in one of three states. <span class="ts-claim" data-claim="c32" data-src="s21">CPython's futures.py names them _PENDING, _CANCELLED and _FINISHED.</span></p>
+<ol class="ts-steps">
+<li><strong>Pending.</strong> <code>done()</code> is False. <span class="ts-claim" data-claim="c33" data-src="s2">Calling result() or exception() before the Future is done raises InvalidStateError.</span></li>
+<li><strong>Finished with a result or an exception.</strong> <span class="ts-claim" data-claim="c34" data-src="s2">A Future is done if it was cancelled or if a result or an exception was set with set_result() or set_exception().</span> <span class="ts-claim" data-claim="c35" data-src="s2">result() then returns the value, or raises the exception that was set.</span></li>
+<li><strong>Cancelled.</strong> <span class="ts-claim" data-claim="c36" data-src="s2">cancel() returns False if the Future is already done; otherwise it marks it cancelled, schedules its callbacks and returns True.</span> <span class="ts-claim" data-claim="c37" data-src="s2">On a cancelled Future, result() and exception() raise CancelledError.</span></li>
+<li><strong>Only once.</strong> <span class="ts-claim" data-claim="c38" data-src="s2">set_result() and set_exception() raise InvalidStateError if the Future is already done.</span></li>
+<li><strong>Done callbacks.</strong> <span class="ts-claim" data-claim="c39" data-src="s2">add_done_callback(fn) arranges for fn to be called with the Future as its only argument when the Future is done; if it is already done, fn is scheduled with call_soon.</span> <span class="ts-claim" data-claim="c40" data-src="s21">In CPython's futures.py, completing a Future also schedules each waiting callback with loop.call_soon rather than calling it directly.</span></li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: asking too early is a programming error, so it raises instead of returning a placeholder such as None.</li>
+<li>Step 4: "exactly once" means two callbacks racing to fill the same Future cannot silently overwrite each other.</li>
+<li>Step 5: scheduling callbacks instead of calling them keeps the order of work in the loop's hands, so a callback chain cannot grow deeper and deeper inside one function call.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="future_basics.py" data-file="future_basics.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/future_basics.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>A new Future is pending: <code>result()</code> raises InvalidStateError.</li>
+<li>After <code>set_result()</code> it is done, but the done callback has not printed yet. It was scheduled with <code>call_soon</code>.</li>
+<li><code>loop.call_soon(loop.stop)</code> followed by <code>run_forever()</code> runs one iteration: the queued done callback prints, then the loop stops.</li>
+<li>A second <code>set_result()</code> raises InvalidStateError: a Future is completed once.</li>
+<li>A Future with an exception is done and not cancelled; <code>exception()</code> returns the SellerError.</li>
+<li>A cancelled Future is done and cancelled; <code>result()</code> raises CancelledError.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> four Futures, one per state the program reached.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Future</th><th>done()</th><th>cancelled()</th><th>result()</th><th>exception()</th></tr></thead>
+<tbody>
+<tr><td>new</td><td>False</td><td>False</td><td>raises InvalidStateError</td><td>raises InvalidStateError</td></tr>
+<tr><td>after set_result(offer)</td><td>True</td><td>False</td><td>returns the offer</td><td>returns None</td></tr>
+<tr><td>after set_exception(SellerError)</td><td>True</td><td>False</td><td>raises SellerError</td><td>returns the SellerError</td></tr>
+<tr><td>after cancel()</td><td>True</td><td>True</td><td>raises CancelledError</td><td>raises CancelledError</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> <code>done()</code> alone does not say whether the call succeeded. A gateway collecting offers must check <code>cancelled()</code> and <code>exception()</code> before it calls <code>result()</code>. The rung 3 gateway does exactly that.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "done() means the operation succeeded."</p>
+<p><strong>Why it is wrong:</strong> done means finished in any of three ways: a result, an exception or a cancellation. Treat <code>done()</code> as "do not wait any more", then ask which of the three it was.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A Future starts pending and is completed once: result, exception or cancelled.</li>
+<li>Asking for the result too early, or setting it twice, raises InvalidStateError.</li>
+<li>Done callbacks are scheduled with <code>call_soon</code>, not called on the spot.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A Future is the hand-over point: callback code completes it once, and anyone waiting on it is told through the loop.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c38 c39 c40">
+<p class="q">A callback calls <code>fut.set_result(1199)</code>. A done callback on <code>fut</code> prints the price. When does it print?</p>
+<ol>
+<li data-why="asyncio never calls done callbacks inside set_result(); it schedules them.">Inside <code>set_result()</code>, before it returns</li>
+<li>In a later iteration of the loop, because completing the Future schedules the callback with <code>call_soon</code></li>
+<li data-why="Done callbacks do not wait for anyone to await the Future; they are scheduled when it completes.">Only when some coroutine awaits <code>fut</code></li>
+</ol>
+<p class="ts-why">Completing a Future schedules every done callback with call_soon. It runs when the loop next runs its ready queue, after the current callback returns.</p>
+</div>
+</section>
+
+<section class="ts-part" id="future-await" data-rung="2" data-min="11">
+<h2>What travels up the await chain in asyncio: the Future itself</h2>
+<p class="ts-bridge">Last part: a Future holds a result that is not here yet. Still unsolved: how does a coroutine wait on one? In Part 1, the bottom of every await chain yielded a request such as <code>("sleep", 80)</code>. What does asyncio yield?</p>
+<p class="ts-problem">Part 1's <code>await_chain.py</code> showed the loop receiving <code>('sleep', 80)</code> from three calls deep. If we run the same experiment with an asyncio Future at the bottom, what arrives at the top?</p>
+<h3>Introduction</h3>
+<p>Part 1 taught that <code>await x</code> calls <code>x.__await__()</code> and passes every yield of that iterator up to whoever is driving the coroutine. This part shows that asyncio uses exactly the same mechanism, with one choice: the thing that travels up is the Future object itself. Whoever receives it can attach a done callback to it, and that is how a coroutine gets resumed.</p>
+<h3>Comparison</h3>
+<p>In Part 1 the coroutine sent the loop a note: "wake me in 80 ms". In asyncio it hands over the claim ticket itself: "wake me when this ticket is filled". Whoever holds the ticket can find out when that happens, without knowing whether a timer, a socket or another task will fill it.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c41" data-src="s2">A Future is awaitable: coroutines can await it until it has a result or an exception set, or is cancelled, and a Future can be awaited many times with the same result.</span> <span class="ts-claim" data-claim="c42" data-src="s21">In CPython's futures.py, Future.__await__ yields the Future itself if it is not done yet, and when it is resumed returns the Future's result, which raises if an exception was set.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>The coroutine runs <code>await fut</code>. Python calls <code>fut.__await__()</code>.</li>
+<li><code>fut</code> is not done, so <code>__await__</code> yields <code>fut</code>.</li>
+<li>That yield travels up through every <code>await</code> in the chain and comes out as the return value of the <code>send(None)</code> that resumed the coroutine.</li>
+<li>Later someone calls <code>fut.set_result(1199)</code>.</li>
+<li>The coroutine is resumed with <code>send(None)</code> again. <code>__await__</code> continues after its yield and returns <code>fut.result()</code>, so <code>await fut</code> evaluates to 1199.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 2: yielding the Future, not a description of the wait, means the driver does not need to understand timers or sockets: it only needs to know how to be told when a Future is done.</li>
+<li>Step 5: the result is read only after the resume, so an exception set on the Future is raised at the <code>await</code> line, inside the coroutine, where a <code>try</code> can catch it.</li>
+</ul>
+<h3>Program 1: driving the coroutine by hand</h3>
+<div class="ts-code" data-lang="python" data-title="future_await.py" data-file="future_await.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/future_await.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>No loop is running; we play the loop ourselves with <code>send(None)</code>, exactly as in Part 1.</li>
+<li>The first <code>send(None)</code> returns the very same Future object we awaited: <code>yielded is fut</code> is True.</li>
+<li>After <code>set_result(1199)</code>, the second <code>send(None)</code> finishes the coroutine, and its return value arrives in <code>StopIteration.value</code>.</li>
+</ol>
+<h3>Program 2: asyncio.sleep, rebuilt</h3>
+<p><span class="ts-claim" data-claim="c43" data-src="s20">In CPython 3.14's tasks.py, asyncio.sleep() with a delay above 0 creates a Future with loop.create_future(), schedules a call_later() that sets its result, awaits the Future, and cancels the timer handle in a finally block.</span> We can write the same thing in a few lines:</p>
+<div class="ts-code" data-lang="python" data-title="nap.py" data-file="nap.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/nap.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>loop.create_future()</code> makes the empty box.</li>
+<li><code>loop.call_later(seconds, fut.set_result, result)</code> pushes a timer that will fill it: the timer heap from the loop-iteration part.</li>
+<li><code>await fut</code> parks the coroutine until the box is filled, 120 ms later.</li>
+<li>The <code>finally</code> cancels the timer in case the coroutine is stopped before it fires. A leftover timer would fill a Future nobody is waiting for.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> Part 1's toy pieces and their asyncio counterparts.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Question</th><th>Toy loop (Part 1)</th><th>asyncio</th></tr></thead>
+<tbody>
+<tr><td>What is at the bottom of the await chain?</td><td><code>Sleep.__await__</code></td><td><code>Future.__await__</code></td></tr>
+<tr><td>What travels up?</td><td>a request: <code>("sleep", 80)</code></td><td>the Future object</td></tr>
+<tr><td>Who decides when to resume?</td><td>the loop, from the request</td><td>whoever completes the Future</td></tr>
+<tr><td>Where does the result come from?</td><td><code>StopIteration.value</code> of the task</td><td><code>fut.result()</code>, returned by <code>await</code></td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the mechanism is Part 1's, unchanged. Only the object that travels up differs: asyncio's loop never needs to know what a wait is for, only which Future it is waiting on.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "await is special syntax that talks to the event loop."</p>
+<p><strong>Why it is wrong:</strong> <code>await</code> knows nothing about loops. It drives an iterator and passes its yields up. Program 1 resumed a coroutine with no loop at all. The loop only appears because, in a real program, a Task is the one calling <code>send()</code>, as the next part shows.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>await fut</code> yields the Future itself up the chain while it is pending.</li>
+<li>When resumed, it returns <code>fut.result()</code>, or raises the Future's exception.</li>
+<li><code>asyncio.sleep</code> is a Future plus a <code>call_later</code> timer that fills it.</li>
+</ul>
+</div>
+<p class="ts-takeaway">In asyncio, the thing at the bottom of every await chain is a Future, and the Future itself is what the coroutine yields while it waits.</p>
+<div class="ts-predict" data-claims="c42">
+<p class="q">In Program 1, replace <code>fut.set_result(1199)</code> with <code>fut.set_exception(ValueError("seller-b down"))</code>. What happens on the second <code>send(None)</code>?</p>
+<div class="ts-reveal"><p>The ValueError is raised inside the coroutine, at the <code>await fut</code> line, because resuming makes <code>__await__</code> return <code>fut.result()</code>, and that raises the exception that was set. Nothing in the coroutine catches it, so it comes out of <code>send(None)</code> to the caller. A <code>try</code>/<code>except</code> around <code>await fut</code> would have caught it.</p></div>
+</div>
+<div class="ts-explain" data-points="await calls __await__ and passes its yields up the chain|A pending Future's __await__ yields the Future itself|Something else completes the Future, for example a timer from call_later|On resume, await returns the result or raises the exception">
+<p class="q">In your own words: how does <code>await fut</code> pause a coroutine, and what makes it continue?</p>
+<div class="ts-model"><p>await calls fut.__await__(), and while the Future is pending that iterator yields the Future itself. The yield travels up the await chain and comes out of send(None) to whoever is driving the coroutine. Some other code, such as a timer set with call_later or a socket callback, later completes the Future. When the driver calls send(None) again, __await__ resumes and returns the Future's result, or raises its exception, at the await line.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="task-steps" data-rung="2" data-min="14">
+<h2>Who calls send(): a Task drives its coroutine step by step</h2>
+<p class="ts-bridge">Last part: a waiting coroutine yields its Future up the await chain. Still unsolved: in a real program nobody calls <code>send(None)</code> by hand. Who receives that Future, and who resumes the coroutine when the Future is done?</p>
+<p class="ts-problem">seller-b's coroutine yields a Future at 0 ms and the Future is filled at 120 ms. Between those moments the loop runs other sellers' work. Something must remember "this coroutine is waiting on that Future" and resume it at 120 ms, with no thread and no busy loop.</p>
+<h3>Introduction</h3>
+<p>Part 1's toy loop had a small <code>Task</code> class: a coroutine plus a <code>done</code> flag and a <code>result</code>. Its scheduler called <code>send(None)</code>. asyncio's Task does the same job, but in a different style: it is a Future (so it has a result, an exception or a cancellation), and it drives its coroutine through callbacks on the loop instead of being picked by the scheduler.</p>
+<h3>Comparison</h3>
+<p>A personal assistant working through your to-do list. They do the next step, and when a step needs something from someone else, they leave a note on that person's desk: "when this is ready, put me back on the schedule". Then they go and do something else. The note is what brings them back.</p>
+<ul>
+<li>The assistant = the Task; the to-do list = the coroutine.</li>
+<li>The note on the desk = the Task's wake-up callback on the Future.</li>
+<li>"Put me back on the schedule" = <code>call_soon</code> of the next step.</li>
+</ul>
+<p>Where it stops working: an assistant can work on two lists at once. A loop runs one Task step at a time, on one thread.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="An asyncio Future that runs a coroutine: it resumes the coroutine step by step and finishes with the coroutine's return value or exception.">Task</dfn> is a Future that runs a coroutine. <span class="ts-claim" data-claim="c44" data-src="s3">When a Task's coroutine awaits a Future, the Task suspends the coroutine and waits for the Future to complete; when the Future is done, the coroutine resumes.</span> <span class="ts-claim" data-claim="c45" data-src="s3">asyncio.Task inherits all the Future APIs except set_result() and set_exception().</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="One resumption of a Task's coroutine: from one send() or throw() until the coroutine next yields, returns or raises.">step</dfn> is one resumption of the coroutine: from a <code>send()</code> until it next yields, returns or raises. <span class="ts-claim" data-claim="c46" data-src="s3">Event loops use cooperative scheduling: a loop runs one Task at a time, and while a Task awaits a Future the loop runs other Tasks and callbacks or performs I/O.</span></p></div></li>
+</ol>
+<h3>Working</h3>
+<p>The steps below follow CPython 3.14's <code>tasks.py</code>. <span class="ts-claim" data-claim="c47" data-src="s20 s21">When the _asyncio C module is available, CPython uses its C versions of Task and Future instead of the Python classes in tasks.py and futures.py.</span> This page reads the Python versions because they are written out in plain Python.</p>
+<ol class="ts-steps">
+<li><strong>Create.</strong> <span class="ts-claim" data-claim="c48" data-src="s20">Unless it is started eagerly, a new Task schedules its first step with loop.call_soon.</span> Nothing of the coroutine has run yet.</li>
+<li><strong>Step.</strong> <span class="ts-claim" data-claim="c49" data-src="s20">Each step resumes the coroutine with coro.send(None), or with coro.throw(exc) when an exception must be delivered into it.</span></li>
+<li><strong>Park on a Future.</strong> <span class="ts-claim" data-claim="c50" data-src="s20">If the coroutine yields a Future, the Task adds its wake-up method to that Future as a done callback.</span> The step ends; the loop goes on with other work.</li>
+<li><strong>Wake.</strong> When the Future completes, its done callbacks are scheduled with <code>call_soon</code>, so the wake-up runs in a later iteration. <span class="ts-claim" data-claim="c51" data-src="s20">The wake-up starts the next step, throwing the Future's exception into the coroutine if it has one.</span></li>
+<li><strong>Finish.</strong> <span class="ts-claim" data-claim="c52" data-src="s20">When the coroutine returns, the Task sets its result from StopIteration; when it raises any other exception, the Task stores it with set_exception.</span></li>
+<li><strong>Other yields.</strong> <span class="ts-claim" data-claim="c53" data-src="s20">A bare yield, which is what asyncio.sleep(0) produces, makes the Task schedule its next step with call_soon; yielding anything else is an error, reported as "Task got bad yield".</span></li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: scheduling instead of running means <code>create_task()</code> returns at once, and the caller keeps running until it awaits.</li>
+<li>Step 3: the done callback is the "note on the desk". The loop needs no list of waiting tasks; each waiting Task is remembered by the Future it waits on.</li>
+<li>Step 4: going through <code>call_soon</code> means the coroutine resumes from the loop, not from inside whatever code filled the Future.</li>
+<li>Step 5: this is the fix for Part 1's second bug. A failure becomes the Task's stored exception instead of escaping the loop.</li>
+<li>Step 6: this is why Part 1's <code>real_io.py</code> failed. The toy loop did not understand asyncio's yields; an asyncio Task does not understand the toy loop's tuples.</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="seller-b's Task, from create_task to result">
+<script type="application/json">
+{"actors": [
+ {"id": "loop", "label": "Loop", "sub": "ready queue + timers"},
+ {"id": "task", "label": "Task", "sub": "seller-b"},
+ {"id": "coro", "label": "Coroutine", "sub": "ask_seller_b()"},
+ {"id": "fut", "label": "Future", "sub": "the answer"}],
+ "steps": [
+ {"from": "task", "to": "loop", "label": "call_soon(step)", "note": "create_task() only schedules the first step. The coroutine has not started."},
+ {"from": "loop", "to": "task", "label": "run step", "note": "At 0 ms, the loop runs the step from its ready queue."},
+ {"from": "task", "to": "coro", "label": "send(None)", "note": "The Task resumes the coroutine, which runs until it awaits the Future."},
+ {"from": "coro", "to": "task", "label": "yields the Future", "dashed": true, "note": "Future.__await__ yields the Future itself, up the whole await chain to the Task."},
+ {"from": "task", "to": "fut", "label": "add_done_callback(wake-up)", "note": "The Task leaves its wake-up on the Future and the step ends. The loop runs other work."},
+ {"from": "loop", "to": "fut", "label": "timer: set_result(1199)", "note": "At 120 ms a timer (or, with real sockets, a socket callback) fills the Future."},
+ {"from": "fut", "to": "loop", "label": "call_soon(wake-up)", "dashed": true, "note": "Completing the Future schedules the Task's wake-up. It does not call it directly."},
+ {"from": "loop", "to": "task", "label": "run wake-up, next step", "note": "In the next iteration the wake-up runs and starts the next step."},
+ {"from": "task", "to": "coro", "label": "send(None)", "note": "The coroutine continues after its await, which now returns 1199."},
+ {"from": "coro", "to": "task", "label": "StopIteration(1199)", "dashed": true, "note": "The coroutine returns. The Task sets its own result to 1199 and is done."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 and 2: creating a Task only puts its first step in the ready queue; the loop runs it in a later iteration.</li>
+<li>Steps 3 to 5 are one step of the Task: resume, run to the await, receive the Future, leave the wake-up on it.</li>
+<li>Steps 6 and 7: the Future is filled from outside, and the wake-up is queued through <code>call_soon</code>.</li>
+<li>Steps 8 to 10 are the second step: resume, finish, store the result.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="task_steps.py" data-file="task_steps.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/task_steps.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>LoudFuture</code> is a Future that prints when a done callback is added and when it is filled. It lets us watch the Task without touching asyncio's private parts.</li>
+<li>Right after <code>create_task()</code> the Task is not done and the coroutine has not printed anything: the first step is only scheduled.</li>
+<li>Step 1 runs at 0 ms. The coroutine awaits the Future, and at once the Future reports that a done callback was added: the Task's wake-up.</li>
+<li>At 120 ms the timer fills the Future, the wake-up runs, and step 2 resumes the coroutine with 1,199.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> five seller Tasks created at 0 ms, each waiting on its own Future, filled at 80, 120, 150, 200 and 900 ms.</p>
+<p><strong>Step 1.</strong> Iteration 1 runs five first steps. Each ends by leaving a wake-up on its Future. The ready queue is now empty.</p>
+<p><strong>Step 2.</strong> At 80 ms seller-a's Future is filled, its wake-up is queued, and the next iteration runs seller-a's second step, which returns. seller-a's Task holds Offer(seller-a, 1,249).</p>
+<p><strong>Step 3.</strong> The same happens at 120, 150, 200 and 900 ms for the other four.</p>
+<p><strong>Result:</strong> ten steps in all, two per Task, and between them the thread sleeps in <code>select()</code>. That is Part 1's 900 ms, with each result kept on its own Task.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "create_task() starts running the coroutine immediately, like starting a thread."</p>
+<p><strong>Why it is wrong:</strong> by default it only schedules the first step with <code>call_soon</code>. The coroutine starts when the code that called <code>create_task()</code> gives control back to the loop, usually at its next <code>await</code>. <span class="ts-claim" data-claim="c54" data-src="s3">The Task constructor's eager_start argument defaults to False; when it is True and the loop is running, the coroutine starts executing at task creation, until it first blocks.</span></p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A Task is a Future that drives a coroutine with <code>send()</code> and <code>throw()</code>.</li>
+<li>When the coroutine yields a Future, the Task adds its wake-up as a done callback and steps aside.</li>
+<li>Completion queues the wake-up with <code>call_soon</code>; the next step resumes after the <code>await</code>.</li>
+<li>The coroutine's return value or exception becomes the Task's result or exception.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A Task is the code that calls send(): it resumes its coroutine one step at a time and parks it on a Future between steps.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c50 c51">
+<p class="q">seller-c's Task is parked on a Future. A socket callback calls <code>set_exception(SellerError(...))</code> on that Future. What happens to the Task?</p>
+<ol>
+<li>Its wake-up is scheduled; the next step throws the SellerError into the coroutine at its await, and if the coroutine does not catch it, the Task stores it as its exception</li>
+<li data-why="The exception is not raised out of the loop or into the socket callback; it is delivered into the coroutine through the Task's next step.">The SellerError is raised out of the socket callback and stops the loop</li>
+<li data-why="An exception completes the Future, so the done callbacks are scheduled just as for a result.">Nothing: the Task stays parked because no result was set</li>
+</ol>
+<p class="ts-why">An exception completes the Future like a result does. The wake-up throws it into the coroutine; an uncaught one ends the coroutine and is stored on the Task with set_exception.</p>
+</div>
+</section>
+
+<section class="ts-part" id="asyncio-run" data-rung="2" data-min="12">
+<h2>From start to finish: what asyncio.run does</h2>
+<p class="ts-bridge">Last part: a Task drives a coroutine step by step. Still unsolved: somebody has to create the loop, create the first Task, and clean up when it ends. What happens to Tasks that are still running when <code>main()</code> returns?</p>
+<p class="ts-problem">The gateway's <code>main()</code> returns, but a background Task is still waiting, an async generator is paused half-way, and a thread in the loop's executor is busy for another 200 ms. If the program just exits, the Task's clean-up never runs and the generator's <code>finally</code> never runs either.</p>
+<h3>Introduction</h3>
+<p>Every program on the next pages starts with one line: <code>asyncio.run(main())</code>. This part opens it. It is short code in CPython's <code>runners.py</code>, and almost every line of it is a clean-up step that a hand-written <code>run_forever()</code> program tends to forget.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c55" data-src="s4">asyncio.run(coro) runs the coroutine in an asyncio event loop and returns its result, taking care of managing the loop, finalizing asynchronous generators and closing the executor.</span> <span class="ts-claim" data-claim="c56" data-src="s4">It cannot be called while another asyncio event loop is running in the same thread, and the docs say it should be the main entry point of an asyncio program, ideally called only once.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>An <dfn data-def="A function defined with async def that contains yield; it is used with async for and can be paused between values.">async generator</dfn> is an <code>async def</code> function that contains <code>yield</code>; it hands out values one at a time to <code>async for</code>. If it is left paused, its <code>finally</code> block has not run yet.</p></div></li>
+<li><div class="ts-note" data-label="Definition"><p>The <dfn data-def="The thread pool a loop uses for loop.run_in_executor(None, ...), to run blocking functions without blocking the loop's thread.">default executor</dfn> is the pool of threads the loop uses for <code>loop.run_in_executor(None, f)</code>, which runs a blocking function off the loop's thread.</p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Create.</strong> <span class="ts-claim" data-claim="c57" data-src="s4">If loop_factory is given it creates the loop; otherwise asyncio.new_event_loop() is used, and the loop is closed at the end.</span></li>
+<li><strong>Run.</strong> <span class="ts-claim" data-claim="c58" data-src="s19">In CPython 3.14's runners.py, run() wraps the coroutine in a Task with loop.create_task() and runs the loop with run_until_complete() until that Task is done.</span></li>
+<li><strong>Cancel leftovers.</strong> <span class="ts-claim" data-claim="c59" data-src="s19">When the runner closes, it cancels every task that is still running and runs the loop until all of them have finished, gathering them with return_exceptions=True.</span></li>
+<li><strong>Close async generators.</strong> <span class="ts-claim" data-claim="c60" data-src="s1 s19">Next it runs loop.shutdown_asyncgens(), which schedules every async generator that is still open to close with aclose().</span></li>
+<li><strong>Shut down the default executor.</strong> <span class="ts-claim" data-claim="c61" data-src="s1 s19">Then it runs loop.shutdown_default_executor(), which waits for the executor's threads to finish; after that, run_in_executor() with the default executor raises RuntimeError.</span> <span class="ts-claim" data-claim="c62" data-src="s4">asyncio.run gives the executor 5 minutes; if it has not finished by then, a warning is emitted and the executor is closed.</span></li>
+<li><strong>Close the loop.</strong> <span class="ts-claim" data-claim="c63" data-src="s1">loop.close() discards any pending callbacks; it is irreversible, and no other methods should be called on the loop afterwards.</span></li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 3: a Task that is never cancelled never runs its <code>except</code> or <code>finally</code>; cancelling gives it the chance to close sockets and files.</li>
+<li>Step 4: a paused async generator often holds a connection or a cursor; its <code>finally</code> is where that is released.</li>
+<li>Step 5: a thread still running in the executor may be writing data; waiting lets it finish.</li>
+<li>Step 6: closing frees the selector and other resources, and makes any later use of the loop fail loudly instead of silently.</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="asyncio.run(main()), start to finish">
+<script type="application/json">
+{"actors": [
+ {"id": "run", "label": "asyncio.run", "sub": "a Runner"},
+ {"id": "loop", "label": "Loop", "sub": "new_event_loop()"},
+ {"id": "main", "label": "main() Task", "sub": "your program"},
+ {"id": "rest", "label": "Leftovers", "sub": "tasks, generators, threads"}],
+ "steps": [
+ {"from": "run", "to": "loop", "label": "create the loop", "note": "A new loop for every call. asyncio.run never reuses an existing loop."},
+ {"from": "run", "to": "main", "label": "create_task(main())", "note": "The coroutine becomes the main Task."},
+ {"from": "loop", "to": "main", "label": "run_until_complete", "note": "The loop iterates until the main Task is done. Other Tasks run in the same loop meanwhile."},
+ {"from": "main", "to": "run", "label": "result", "dashed": true, "note": "main() returns. Its result is kept to be returned at the end."},
+ {"from": "run", "to": "rest", "label": "cancel remaining tasks", "note": "Every Task still running is cancelled and the loop runs until they have all finished."},
+ {"from": "run", "to": "rest", "label": "shutdown_asyncgens()", "note": "Paused async generators are closed, so their finally blocks run."},
+ {"from": "run", "to": "rest", "label": "shutdown_default_executor()", "note": "Threads still running in the default executor are waited for, up to 5 minutes."},
+ {"from": "run", "to": "loop", "label": "close()", "note": "The loop is closed. Only now does asyncio.run return main()'s result."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 to 4 are the part people expect: create a loop, run <code>main()</code> to completion.</li>
+<li>Steps 5 to 7 are the three clean-up jobs, in this order: tasks, then async generators, then executor threads.</li>
+<li>Step 8 closes the loop. The result is returned after all of it, so the time asyncio.run takes includes the clean-up.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="run_lifecycle.py" data-file="run_lifecycle.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/run_lifecycle.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>main()</code> starts a Task that would sleep for 10 seconds, takes one value from an async generator and leaves it paused, and starts a 200 ms blocking sleep in the default executor. Then it returns.</li>
+<li>Line 2 of the output: the leftover Task receives CancelledError at its <code>await</code>, prints, and re-raises so that it ends as cancelled.</li>
+<li>Line 3: the paused async generator is closed and its <code>finally</code> runs.</li>
+<li>Line 4: asyncio.run returns after about 200 ms, not at once, because it waited for the executor thread. The loop it created is closed.</li>
+<li>The <code>kept</code> list holds strong references, so nothing is garbage-collected early and the order of the output stays the same on every run.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> a gateway <code>main()</code> that returns at 250 ms with seller-e's Task still waiting, and no other leftovers.</p>
+<p><strong>Step 1.</strong> At 250 ms the main Task is done; <code>run_until_complete</code> returns.</p>
+<p><strong>Step 2.</strong> seller-e's Task is still running, so it is cancelled: CancelledError is thrown in at its <code>await reader.readline()</code>, its <code>finally</code> closes the connection, and it ends as cancelled.</p>
+<p><strong>Step 3.</strong> No async generators and no executor threads, so steps 4 and 5 have nothing to wait for. The loop is closed.</p>
+<p><strong>Result:</strong> asyncio.run returns just after 250 ms and seller-e's connection is closed cleanly. Relying on this for normal request handling is still wrong: in a server, <code>main()</code> does not return after each request. The rung 3 gateway cancels its own leftovers.</p>
+<div class="ts-legacy">
+<p>Differences on Python 3.11 to 3.13. <span class="ts-claim" data-claim="c64" data-src="s4">The loop_factory parameter of asyncio.run() was added in Python 3.12, and since 3.14 the argument can be any awaitable, not only a coroutine.</span> <span class="ts-claim" data-claim="c65" data-src="s1">asyncio.EventLoop, an alias for SelectorEventLoop on Unix and ProactorEventLoop on Windows, was added in 3.13.</span> <span class="ts-claim" data-claim="c66" data-src="s1">The timeout parameter of loop.shutdown_default_executor() was added in 3.12.</span> <span class="ts-claim" data-claim="c67" data-src="s4">The asyncio policy system is deprecated and will be removed in Python 3.16; the docs recommend loop_factory to configure the event loop instead.</span> <span class="ts-claim" data-claim="c68" data-src="s15">In Python 3.14, asyncio.get_event_loop() raises RuntimeError if there is no current event loop, and no longer creates one implicitly.</span> Old code that starts with <code>loop = asyncio.get_event_loop()</code> should be rewritten around <code>asyncio.run()</code>.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "When main() returns, background tasks are simply dropped."</p>
+<p><strong>Why it is wrong:</strong> asyncio.run cancels them and runs the loop until they have finished handling the cancellation, so their <code>except</code> and <code>finally</code> blocks run. A task that catches CancelledError and keeps going delays the exit. Part 5 of the series is about exactly that.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>asyncio.run: new loop, main Task, run until it is done.</li>
+<li>Then, in order: cancel leftover tasks, close async generators, shut down the default executor, close the loop.</li>
+<li>Use <code>loop_factory</code>, not policies, to choose a loop on 3.12 and later.</li>
+</ul>
+</div>
+<p class="ts-takeaway">asyncio.run is a loop's whole life in one call: create, run main to the end, then cancel, close and shut down everything that is left.</p>
+<div class="ts-order" data-claims="c58 c59 c60 c61 c63">
+<p class="q">Put the steps asyncio.run takes after main() returns in order.</p>
+<ol>
+<li>Cancel every task still running and wait for them to finish</li>
+<li>Close async generators that are still open</li>
+<li>Wait for threads in the default executor</li>
+<li>Close the loop and return main()'s result</li>
+</ol>
+<p class="ts-why">Tasks first, because a cancelled task's clean-up may still use generators or the executor; the loop is closed last, because every earlier step needs it to run.</p>
+</div>
+</section>
+
+<section class="ts-part" id="gateway-v2" data-rung="3" data-min="15">
+<h2>Gateway v2: Part 1's toy loop learns to wait on real sockets</h2>
+<p class="ts-bridge">Last part: asyncio.run creates a loop, runs main and cleans up. Still unsolved: we have taken asyncio apart, but we have not built anything with the pieces. Can Part 1's own toy loop, with a selector added, run the gateway against real sellers?</p>
+<p class="ts-problem">Part 1's gateway v1 printed 900 ms and 250 ms on a virtual clock with fake sellers. Gateway v2 must print the same answers on a real clock, talking to the five seller servers over TCP, still on one thread.</p>
+<h3>Introduction</h3>
+<p>Before switching to asyncio we upgrade our own toy loop. Doing it by hand shows exactly which pieces asyncio's loop needed beyond Part 1: a real clock, a selector, and a way for a task to say "wake me when this socket is ready". The result is about 120 lines that we fully understand; the next part replaces it with asyncio's version.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Three requests instead of one.</strong> A task can yield <code>("sleep", ms)</code> as in Part 1, or <code>("read", sock)</code> or <code>("write", sock)</code>: "wake me when this socket can be read" or "can be written".</li>
+<li><strong>Park sockets in the selector.</strong> For a read or write request, the loop registers the socket with the selector and stores the task as the key's <code>data</code>.</li>
+<li><strong>One iteration, asyncio's order.</strong> Work out the timeout (0 if a task is ready, else until the next timer or the budget); call <code>select(timeout)</code>; for each ready socket, unregister it and make its task ready; move due timers; run the tasks that are ready now.</li>
+<li><strong>Real clock.</strong> <code>time.monotonic()</code> replaces the virtual clock. The loop really sleeps inside <code>select()</code>.</li>
+<li><strong>Stopping a task.</strong> <code>cancel(task)</code> unregisters the task's socket first, then closes the coroutine, whose <code>finally</code> closes the socket.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: a task must be able to describe a socket wait, just as Part 1's <code>Sleep</code> described a timer.</li>
+<li>Step 3: computing the timeout from the earliest timer and the budget keeps both on time while the thread sleeps.</li>
+<li>Step 5: the order matters. Closing a socket that is still registered leaves the selector holding a dead socket; the "When it breaks" rung shows the bug.</li>
+</ul>
+<h3>Program 1: the upgraded toy loop</h3>
+<div class="ts-code" data-lang="python" data-title="toyloop_io.py" data-file="toyloop_io.py" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>_Request.__await__</code> yields a <code>(kind, what)</code> tuple, exactly like Part 1's <code>Sleep</code>. <code>sleep()</code>, <code>readable()</code> and <code>writable()</code> are the three awaitables a task can use.</li>
+<li><code>run()</code> keeps going while anything is ready, sleeping or registered. <code>until</code> is the budget, in milliseconds.</li>
+<li><code>_run_once()</code> follows the order of asyncio's <code>_run_once()</code>: timeout, <code>select()</code>, ready sockets, due timers, then only the tasks that were ready at that point.</li>
+<li><code>_step()</code> resumes a task with <code>send(None)</code>. A sleep request goes onto the heap; a socket request registers the socket with the task as its data.</li>
+<li><code>cancel()</code> unregisters before it closes. <code>trace</code> records every event with the time rounded to 10 ms, like Part 1's trace.</li>
+</ol>
+<h3>Program 2: the gateway on it</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v2.py" data-file="gateway_v2.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_v2.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>connect_ex()</code> on the non-blocking socket returns EINPROGRESS at once. <span class="ts-claim" data-claim="c69" data-src="s11">The docs describe connect_ex() as returning an error indicator instead of raising, which is useful for asynchronous connects.</span></li>
+<li><code>await writable(sock)</code> parks the task until the connection is made. <span class="ts-claim" data-claim="c70" data-src="s24">asyncio's own sock_connect() does the same: when a non-blocking connect raises BlockingIOError, it registers the socket with add_writer and, once the socket is writable, reads SO_ERROR to learn whether the connection succeeded.</span></li>
+<li>The request line is sent, then <code>await readable(sock)</code> parks the task until the seller answers.</li>
+<li><code>compare()</code> spawns five tasks, runs the loop until the budget, and cancels whatever has not finished.</li>
+<li>The output matches Part 1's gateway v1 line for line, on real sockets and a real clock: 900 ms without a budget, 250 ms with it, seller-e missed.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the 250 ms run. The loop's trace, grouped (times rounded to 10 ms; the tests check the order of every event).</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Clock</th><th>Events</th><th>Selector after</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>a, b, c, d, e each wait to write (connecting)</td><td>5 sockets, for writing</td></tr>
+<tr><td>0</td><td>all five sockets ready: connected</td><td>empty</td></tr>
+<tr><td>0</td><td>a, b, c, d, e each send their line and wait to read</td><td>5 sockets, for reading</td></tr>
+<tr><td>80</td><td>seller-a socket ready; seller-a finished</td><td>b, c, d, e</td></tr>
+<tr><td>120</td><td>seller-b socket ready; seller-b finished</td><td>c, d, e</td></tr>
+<tr><td>150</td><td>seller-c socket ready; seller-c finished</td><td>d, e</td></tr>
+<tr><td>200</td><td>seller-d socket ready; seller-d finished</td><td>e</td></tr>
+<tr><td>250</td><td>budget reached: seller-e cancelled, unregistered, closed</td><td>empty</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> "cheapest: seller-b at 1,199 after 250 ms; missed: seller-e", Part 1's answer, now from real network I/O on one thread.</p>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Here (toy loop)</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>A hand-written loop</td><td>asyncio's loop (or a drop-in replacement): tested on every platform, with Futures, Tasks, streams and debug mode</td></tr>
+<tr><td><code>recv(100)</code> assumes the whole line arrives in one piece</td><td>Read until the end-of-line marker. <span class="ts-claim" data-claim="c71" data-src="s8">asyncio's protocol docs warn that whether received data is buffered, chunked or reassembled depends on the transport, so parsing should not rely on it, although data is always received in the correct order.</span></td></tr>
+<tr><td>Connection errors only checked at <code>connect_ex()</code></td><td>Check SO_ERROR after the socket becomes writable, as asyncio does, and handle refused and reset connections</td></tr>
+<tr><td>An exception in a task leaves <code>run()</code></td><td>The failure is kept on its own task (next parts)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The selector is only needed for reading; connecting and sending never wait."</p>
+<p><strong>Why it is wrong:</strong> a non-blocking connect returns before the connection exists, so the program must wait until the socket is writable before sending. Sending can wait too: when the operating system's send buffer is full, a non-blocking <code>send()</code> raises BlockingIOError, and the program must wait for writability again. The gateway's one short line fits; a large upload would not.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Toy loop step 4 = Part 1's loop + a selector + a real clock.</li>
+<li>Tasks yield <code>("read", sock)</code> or <code>("write", sock)</code>; the loop registers the socket with the task as data.</li>
+<li>Unregister before close when stopping a task.</li>
+<li>Same answers as Part 1, now from real sockets: 900 ms, and seller-b at 1,199 in 250 ms.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Adding a selector and a real clock to Part 1's toy loop is enough to run the gateway on real sockets with the same 900 ms and 250 ms results.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In <code>gateway_v2.py</code>, change the budget from 250 to 160 ms. Which sellers answer, what is the cheapest offer, and what is still registered in the selector just before the cut?</p>
+<div class="ts-reveal"><p>seller-a (80 ms), seller-b (120 ms) and seller-c (150 ms) answer; seller-d (200 ms) and seller-e (900 ms) are missed. The cheapest of 1,249, 1,199 and 1,229 is seller-b at 1,199. Just before the cut, the selector holds the sockets of seller-d and seller-e, both waiting to read; <code>cancel()</code> unregisters them before closing them. Part 1's quiz with a 160 ms budget gave the same answer on the toy loop.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="gateway-v3" data-rung="3" data-min="14">
+<h2>Gateway v3: the same gateway on asyncio, with streams and Tasks</h2>
+<p class="ts-bridge">Last part: the toy loop with a selector runs the gateway on real sockets. Still unsolved: our toy has no Futures, no Tasks and no tested platform support. What does the same gateway look like on asyncio's real loop?</p>
+<p class="ts-problem">Gateway v3 must give the same three answers as v2 (900 ms; seller-b at 1,199 in 250 ms; seller-e missed) using only asyncio: no hand-made loop, no selector code, no non-blocking sockets in sight.</p>
+<h3>Introduction</h3>
+<p>asyncio offers several layers for network I/O. The highest one, streams, gives a coroutine a reader and a writer and hides the selector, the non-blocking sockets and the callbacks. Underneath, everything from the earlier parts is still at work: a selector waits on the socket, a callback fills a Future, and a Task wakes up. This part writes the gateway on streams, and builds the budget and the "wait for all five" by hand from <code>call_later</code>, Futures and done callbacks, because those are exactly the tools this page has taught. Part 3 of the series replaces both with the proper tools.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p><dfn data-def="asyncio's high-level async/await API for network connections: a StreamReader to read from and a StreamWriter to write to.">Streams</dfn> are asyncio's high-level connection API. <span class="ts-claim" data-claim="c72" data-src="s7">The docs describe streams as high-level async/await-ready primitives for network connections that send and receive data without callbacks or low-level protocols and transports.</span> <span class="ts-claim" data-claim="c73" data-src="s7">asyncio.open_connection() establishes a connection and returns a (reader, writer) pair of StreamReader and StreamWriter objects; the reader's buffer limit defaults to 64 KiB.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c74" data-src="s7">StreamWriter.write() tries to write the data to the socket immediately and, if that fails, queues it in an internal write buffer; it should be used together with await writer.drain().</span> <span class="ts-claim" data-claim="c75" data-src="s7">drain() is a flow-control method: when the write buffer has reached its high watermark, it waits until the buffer drains to the low watermark, and otherwise it returns immediately.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c76" data-src="s7">StreamReader.readline() reads one line ending with a newline; at end-of-file without a newline it returns the partial data, and at end-of-file with an empty buffer it returns an empty bytes object.</span> <span class="ts-claim" data-claim="c77" data-src="s7">writer.close() closes the stream and the underlying socket, and the docs recommend following it with await writer.wait_closed().</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c78" data-src="s3">Task.cancel() makes the Task throw a CancelledError into its coroutine; if the coroutine is awaiting a Future at that moment, that Future is cancelled.</span> <span class="ts-claim" data-claim="c79" data-src="s3">task.cancelled() returns True if the coroutine did not suppress the CancelledError and was actually cancelled.</span> <span class="ts-claim" data-claim="c80" data-src="s3">Task.cancel() only requests cancellation: it arranges for the CancelledError to be thrown into the coroutine on the next cycle of the event loop, and the coroutine may clean up or even suppress it.</span></p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>ask_seller()</code> opens a connection, writes the item code, drains, and awaits <code>reader.readline()</code>. Its <code>finally</code> closes the connection.</li>
+<li><code>compare()</code> creates one Task per seller with <code>asyncio.create_task(..., name=...)</code>.</li>
+<li>The budget: <code>loop.call_later(0.25, ...)</code> cancels every Task that is not done yet.</li>
+<li>Waiting for all five: one Future, <code>all_done</code>, and a done callback on every Task that counts down; the last one to finish fills <code>all_done</code>.</li>
+<li>When <code>all_done</code> is filled, each Task is sorted by its state: cancelled means missed, an exception means failed, otherwise its result is an offer.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: <code>finally</code> runs on success, on failure and on cancellation, so no connection is left open.</li>
+<li>Step 3: a cancelled Task still ends, through its <code>finally</code>, so the budget cut is clean.</li>
+<li>Step 4: <code>compare()</code> must not await the Tasks one by one: awaiting a cancelled Task raises CancelledError in the awaiting coroutine. Waiting on one Future that is filled from done callbacks avoids that. This is a stand-in, and Part 3 replaces it.</li>
+<li>Step 5: the Future states from the Future part decide each seller's fate without raising.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v3.py" data-file="gateway_v3.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_v3.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>There is no selector, no <code>setblocking()</code> and no <code>send(None)</code> in this file: the loop, the transport under the stream and the Tasks do that work.</li>
+<li><code>ms_since()</code> reads <code>loop.time()</code>, the loop's monotonic clock, and rounds to 10 ms.</li>
+<li>The budget is a <code>call_later</code> handle, exactly as in the solved example of the call_soon part. Its lambda cancels only Tasks that are not done.</li>
+<li><code>one_done()</code> runs once per Task, through the loop, because done callbacks are scheduled with <code>call_soon</code>.</li>
+<li>The output is v2's output: 900 ms without a budget, and seller-b at 1,199 with seller-e missed at 250 ms.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the 250 ms run. Each Task's state when <code>all_done</code> is filled.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Task</th><th>Finished at</th><th>cancelled()</th><th>exception()</th><th>Counted as</th></tr></thead>
+<tbody>
+<tr><td>seller-a</td><td>80 ms</td><td>False</td><td>None</td><td>offer 1,249</td></tr>
+<tr><td>seller-b</td><td>120 ms</td><td>False</td><td>None</td><td>offer 1,199</td></tr>
+<tr><td>seller-c</td><td>150 ms</td><td>False</td><td>None</td><td>offer 1,229</td></tr>
+<tr><td>seller-d</td><td>200 ms</td><td>False</td><td>None</td><td>offer 1,215</td></tr>
+<tr><td>seller-e</td><td>250 ms (cancelled)</td><td>True</td><td>(not asked)</td><td>missed</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the cheapest of the four offers is seller-b at 1,199, after 250 ms. seller-e's <code>finally</code> closed its connection when the CancelledError arrived at its <code>readline()</code>.</p>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your gateway fans out to five sellers. How do you stop at a deadline, and what happens to the calls still in flight?"</p>
+<p><strong>What a strong senior answer contains:</strong> the deadline is a timer on the loop, and cutting means cancelling the unfinished Tasks: a CancelledError is thrown in at their current <code>await</code>, their <code>finally</code> blocks close the connections, and the gateway answers with what it has. Then the trade-off: a cancelled call may still have reached the seller, so cancellation stops <em>waiting</em>, not the seller's work. And the honest note that a hand-made timer is a stand-in for a real timeout tool.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Cancelling seller-e's Task tells seller-e to stop."</p>
+<p><strong>Why it is wrong:</strong> cancellation is local. It throws CancelledError into our coroutine, whose <code>finally</code> closes our end of the connection. seller-e's server only notices when it next tries to use that connection; in <code>sellers_net.py</code> its <code>sendall()</code> then fails and is ignored. Any work the seller does is not undone.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Streams: <code>open_connection()</code> gives a reader and a writer; write then drain; readline; close then wait_closed.</li>
+<li>One Task per seller; the budget is <code>call_later</code> plus <code>Task.cancel()</code>.</li>
+<li>Sort finished Tasks by state: cancelled, exception, or result.</li>
+</ul>
+</div>
+<p class="ts-takeaway">On asyncio the gateway needs no loop code at all: streams hide the selector, and the budget is one call_later that cancels unfinished Tasks.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c78 c79 c80">
+<p class="q">At 250 ms the budget callback cancels seller-e's Task while it is waiting in <code>await reader.readline()</code>. Which statement is right?</p>
+<ol>
+<li data-why="cancel() only requests cancellation; the CancelledError is delivered in the Task's next step, so the finally block runs later, through the loop.">The Task is done the moment <code>cancel()</code> returns</li>
+<li>CancelledError is thrown in at the <code>readline()</code> await, the <code>finally</code> closes the connection, and the Task ends with <code>cancelled()</code> True</li>
+<li data-why="The coroutine does not catch CancelledError, so it does not keep running; it ends cancelled.">readline() returns an empty line and the coroutine continues normally</li>
+</ol>
+<p class="ts-why">cancel() makes the Task throw CancelledError into the coroutine at its current await. The finally block runs; because the error is not suppressed, cancelled() is True.</p>
+</div>
+</section>
+
+<section class="ts-part" id="fault-stays" data-rung="3" data-min="11">
+<h2>One seller fails, and the failure stays inside its own Task</h2>
+<p class="ts-bridge">Last part: gateway v3 runs on asyncio with one Task per seller. Still unsolved: Part 1's second bug. On the toy loop, when seller-c raised an error, the whole request failed. What happens on asyncio?</p>
+<p class="ts-problem">Part 1's <code>fault.py</code> printed seller-a and seller-b, then "request failed: SellerError: seller-c failed". seller-d's 1,215 and the budget's answer were lost because one of five sellers broke. A gateway that compares prices should still answer with the other four.</p>
+<h3>Introduction</h3>
+<p>In the toy loop, an exception from a task's <code>send(None)</code> left <code>run()</code>, and nothing else ran. An asyncio Task catches the exception that ends its coroutine and stores it, as the Task part showed. This part runs Part 1's fault on gateway v3 and shows what that changes for the request.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>seller-c's server answers <code>ERROR</code> after 150 ms.</li>
+<li>seller-c's coroutine raises SellerError. The exception leaves the coroutine and reaches its Task.</li>
+<li>The Task stores the exception with <code>set_exception()</code>. The loop does not see it; the other four Tasks keep running.</li>
+<li>When all Tasks are done, <code>compare()</code> asks each one: <code>cancelled()</code>? <code>exception()</code>? and reports seller-c as failed.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 3 is the fix: a Task is a Future, and an exception is one of the three ways a Future completes.</li>
+<li>Step 4: a stored exception must be read. If nobody asks, the failure would be silent, as the misunderstanding below explains.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="fault_v3.py" data-file="fault_v3.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/fault_v3.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>running_sellers(faulty={"seller-c"})</code> makes seller-c answer <code>ERROR</code>.</li>
+<li>seller-a, seller-b and seller-d print their offers; seller-c prints nothing because its coroutine raised.</li>
+<li>The report names seller-c as failed with its exception, and seller-e as missed at the 250 ms budget.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the same fault on Part 1's toy loop and on gateway v3, with the 250 ms budget.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th></th><th>Toy loop (Part 1)</th><th>Gateway v3 (asyncio)</th></tr></thead>
+<tbody>
+<tr><td>Where the exception goes</td><td>out of <code>run()</code>, ending the loop</td><td>into seller-c's Task, as its stored exception</td></tr>
+<tr><td>Offers collected</td><td>seller-a 1,249 and seller-b 1,199, then the request fails</td><td>seller-a 1,249, seller-b 1,199, seller-d 1,215</td></tr>
+<tr><td>Answer</td><td>"request failed: SellerError: seller-c failed"</td><td>seller-b at 1,199 after 250 ms; failed: seller-c; missed: seller-e</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the shopper still gets the cheapest price within the budget. The failure is reported, not hidden, and it no longer decides the whole request.</p>
+<div class="ts-trap">
+<p><strong>A failure nobody reads.</strong> <span class="ts-claim" data-claim="c81" data-src="s3">The docs warn that if a task fails and its exception is never retrieved, asyncio logs a "Task exception was never retrieved" message when the task is garbage collected.</span> That log line arrives late and far from the request that failed. <strong>What the user sees:</strong> a wrong or partial answer with no error. <strong>Signal:</strong> that message in the logs. <strong>Fix:</strong> every Task is either awaited or has its result or exception read, as <code>compare()</code> does here.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Because the Task kept the exception, the error is handled."</p>
+<p><strong>Why it is wrong:</strong> keeping is not handling. The exception sits on the Task until someone calls <code>result()</code>, <code>exception()</code> or awaits it. Gateway v3 handles it because <code>compare()</code> checks every Task. Code that creates Tasks and never looks at them again turns errors into silence.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>An exception that ends a Task's coroutine is stored on the Task, not raised into the loop.</li>
+<li>The other Tasks keep running: the gateway still answers seller-b at 1,199.</li>
+<li>Stored exceptions must be read; unread ones show up later as "Task exception was never retrieved".</li>
+</ul>
+</div>
+<p class="ts-takeaway">With one Task per seller, a failure becomes that Task's stored exception, so the other sellers still answer.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c52 c81">
+<p class="q">seller-d now fails too, at 200 ms. On Part 1's toy loop and on gateway v3, both with the 250 ms budget, what does each print as the outcome?</p>
+<ol>
+<li data-why="On the toy loop, seller-c's exception at 150 ms already ended run(); seller-d's failure never even happens.">Both list seller-c and seller-d as failed and answer seller-b at 1,199</li>
+<li data-why="On gateway v3 each Task keeps its own exception; one failure does not end the request.">Both print "request failed" at the first failure</li>
+<li>The toy loop fails the whole request at seller-c's error (150 ms); gateway v3 answers seller-b at 1,199 and lists seller-c and seller-d as failed</li>
+</ol>
+<p class="ts-why">This needs both pages. Part 1: the toy loop lets an exception escape run(), so the first failure ends everything. Part 2: an asyncio Task stores its coroutine's exception, so each failure stays with its Task.</p>
+</div>
+<div class="ts-explain" data-points="A Task is a Future and stores the exception that ended its coroutine|The loop and the other Tasks are not affected|The gateway reads each Task's state and reports failures|Unread exceptions are only logged later, when the Task is garbage collected">
+<p class="q">In your own words: why does one failing seller end the whole request on Part 1's toy loop but not on gateway v3, and what must the gateway still do?</p>
+<div class="ts-model"><p>On the toy loop, an exception from send(None) leaves run(), so the loop stops and every other task is abandoned. On asyncio, each seller runs in a Task, and a Task is a Future: when its coroutine raises, the Task stores the exception with set_exception and the loop carries on with the other Tasks. The gateway must still read each Task's state, cancelled, exception or result, and report failures; an exception nobody reads is only logged later, when the Task is garbage collected.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="toy-to-asyncio" data-rung="3" data-min="10">
+<h2>Every toy piece and its asyncio name</h2>
+<p class="ts-bridge">Last part: a failing seller stays inside its Task. Still unsolved: we now have two versions of the same machine, our toy and asyncio. Which toy piece became which asyncio piece, and what changes when this runs in production?</p>
+<p class="ts-problem">An interviewer asks you to "explain the event loop". You know Part 1's toy loop by heart. To answer about asyncio, you need the name and the job of each real piece, and to know which of them you may use in your code and which you must leave alone.</p>
+<h3>Introduction</h3>
+<p>This part is a reference table and a short list of production rules. Every row maps something built by hand in Part 1 or on this page to the piece that does the same job in asyncio. The last column says whether application code should touch it.</p>
+<h3>Mapping table</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Toy loop (Parts 1 and 2)</th><th>asyncio</th><th>Use it in your code?</th></tr></thead>
+<tbody>
+<tr><td><code>ToyLoop</code> / <code>IOLoop</code></td><td>the event loop (<code>SelectorEventLoop</code> on Linux and macOS)</td><td>Through <code>asyncio.run()</code> and <code>get_running_loop()</code></td></tr>
+<tr><td><code>run()</code></td><td><span class="ts-claim" data-claim="c86" data-src="s18">run_until_complete() calls run_forever(), which calls _run_once() in a loop until the loop is stopped</span></td><td>Only through <code>asyncio.run()</code></td></tr>
+<tr><td><code>self.ready</code> (deque)</td><td><code>loop._ready</code> (deque of Handles)</td><td>No: private</td></tr>
+<tr><td><code>self.timers</code> (heap)</td><td><code>loop._scheduled</code> (heap of TimerHandles)</td><td>No: private</td></tr>
+<tr><td><code>self.ready.append(...)</code></td><td><code>loop.call_soon()</code></td><td>Rarely; libraries use it</td></tr>
+<tr><td><code>heapq.heappush(self.timers, ...)</code></td><td><code>loop.call_later()</code></td><td>Rarely; prefer <code>asyncio.sleep()</code> and timeouts</td></tr>
+<tr><td>virtual clock <code>now</code> / <code>time.monotonic()</code></td><td><code>loop.time()</code></td><td>Yes, for measuring</td></tr>
+<tr><td><code>self.selector</code></td><td>the loop's selector (epoll or kqueue)</td><td>No: the loop owns it</td></tr>
+<tr><td><code>Sleep.__await__</code> yields a tuple</td><td><code>Future.__await__</code> yields the Future</td><td>Await Futures; create them with <code>loop.create_future()</code></td></tr>
+<tr><td><code>Task</code> (coroutine, done, result)</td><td><code>asyncio.Task</code>, a Future that drives a coroutine</td><td>Yes: <code>asyncio.create_task()</code></td></tr>
+<tr><td><code>_step()</code>: <code>coro.send(None)</code></td><td>the Task's step: <code>send(None)</code> or <code>throw(exc)</code></td><td>No: the Task does it</td></tr>
+<tr><td><code>readable(sock)</code> / <code>writable(sock)</code></td><td><code>loop.add_reader()</code> / <code>loop.add_writer()</code>, used inside transports</td><td>Rarely; use streams</td></tr>
+<tr><td><code>loop.cancel(task)</code>: <code>coro.close()</code></td><td><code>task.cancel()</code>: CancelledError thrown in</td><td>Yes</td></tr>
+<tr><td><code>run(until=250)</code></td><td><code>call_later(0.25, cancel)</code> on this page; real timeouts in Part 3</td><td>Use Part 3's tools</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c82" data-src="s1">loop.add_reader(fd, callback) starts watching a file descriptor and calls the callback once it is available for reading.</span> Streams sit on top of transports, which use exactly this, as the interview-drill part traces.</p>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>Tasks kept in a local list until <code>compare()</code> ends</td><td>Always keep a reference to every Task until it is done. <span class="ts-claim" data-claim="c83" data-src="s3">The docs warn that the event loop keeps only weak references to tasks, so a task not referenced elsewhere may be garbage collected at any time, even before it is done.</span></td></tr>
+<tr><td>Hand-made budget and "wait for all"</td><td>Part 3's structured tools, which keep references, cancel and collect errors for you</td></tr>
+<tr><td>Debug mode off</td><td>Debug mode on in tests and staging. <span class="ts-claim" data-claim="c84" data-src="s6">In asyncio's debug mode, many non-thread-safe APIs such as loop.call_soon() raise an exception when called from the wrong thread, and callbacks taking longer than 100 milliseconds are logged.</span></td></tr>
+<tr><td>The default loop</td><td>Choose the loop with <code>loop_factory</code>, not policies, if you need a different one. <span class="ts-claim" data-claim="c85" data-src="s27">uvloop, for example, describes itself as a fast, drop-in replacement for the built-in asyncio event loop, written in Cython on top of libuv.</span></td></tr>
+<tr><td>Default stream limit</td><td>Know it: the reader's buffer limit is 64 KiB by default; set <code>limit</code> for protocols with longer lines</td></tr>
+<tr><td><code>close()</code> then <code>wait_closed()</code></td><td>Keep both, in a <code>finally</code>, so cancelled calls still release their connections</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "What is a Future in asyncio, and how is it different from a Task?"</p>
+<p><strong>What a strong senior answer contains:</strong> a Future is a one-time box for a result, an exception or a cancellation, filled by callback code and awaited by coroutines; awaiting it yields the Future itself up the await chain. A Task is a Future that runs a coroutine: it calls <code>send()</code>, parks the coroutine on whatever Future it yields by adding a done callback, and stores the coroutine's result or exception as its own. Then the practical point: application code creates Tasks and almost never creates bare Futures.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Since loop._ready and loop._scheduled exist, reading them is a fine way to monitor the loop."</p>
+<p><strong>Why it is wrong:</strong> they are private implementation details: they can change in any release, and another loop implementation need not have them at all. The "When it breaks" rung shows a public way to measure the same thing.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Toy ready queue and timer heap = <code>call_soon</code> and <code>call_later</code>; the structures themselves are private.</li>
+<li>Toy request tuple = Future; toy Task = asyncio Task; toy <code>close()</code> = <code>task.cancel()</code>.</li>
+<li>In production: keep Task references, use debug mode in tests, pick loops with <code>loop_factory</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">asyncio's loop is the toy loop with public doors (call_soon, call_later, create_task, streams) in front of private rooms (_ready, _scheduled, the selector).</p>
+<div class="ts-quiz" data-answer="a" data-claims="c83">
+<p class="q">A handler starts a background Task to write an audit record with <code>asyncio.create_task(write_audit(...))</code> and does not store the result anywhere. Occasionally audit records go missing. What is the most likely cause?</p>
+<ol>
+<li>The loop keeps only a weak reference to the Task, so it can be garbage collected before it finishes</li>
+<li data-why="create_task always schedules the Task's first step; it is not skipped because the result is unused.">create_task() skips Tasks whose result is never used</li>
+<li data-why="Tasks run on the loop's thread; there is no separate thread to run out of.">The loop ran out of threads for background Tasks</li>
+</ol>
+<p class="ts-why">The docs warn that the loop holds only weak references to Tasks. Keep a strong reference, for example in a set, until the Task is done.</p>
+</div>
+</section>
+
+<section class="ts-part" id="busy-loops" data-rung="4" data-min="11">
+<h2>Busy loops: waiting that keeps a CPU core at 100%</h2>
+<p class="ts-bridge">Last part: every toy piece has an asyncio name. Still unsolved: what goes wrong in real use. The first failure is the oldest one on this page: waiting by asking again and again.</p>
+<p class="ts-problem">A gateway pod that should idle at a few percent CPU sits at 100% of one core even at night, with almost no traffic. Latency is fine. The cloud bill and the autoscaler, which keeps adding pods because CPU looks saturated, are not.</p>
+<h3>Introduction</h3>
+<p>The non-blocking part showed busy waiting with a raw socket. The same mistake comes back inside asyncio in a friendlier disguise: a coroutine that checks a flag in a loop, giving up control with <code>await asyncio.sleep(0)</code> on every turn. Everything works, every other Task still runs, and one core is burnt for nothing.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>A coroutine waits for seller-b's price with <code>while "price" not in box: await asyncio.sleep(0)</code>.</li>
+<li><code>sleep(0)</code> gives up control for one iteration only, so the coroutine's Task is ready again at once.</li>
+<li>Because something is always ready, every iteration computes a <code>select()</code> timeout of 0: the loop never sleeps.</li>
+<li>The loop spins through thousands of iterations per second until the price appears.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 3 is the link to the loop-iteration part: "timeout 0 if anything is ready" is right for real work and ruinous for a polling loop.</li>
+<li>The fix is to wait on the event itself: a Future (or, in later parts, an Event or a Queue) that the producer fills, so the Task is parked until then.</li>
+</ul>
+<h3>Program 1: spinning on a socket vs sleeping in select()</h3>
+<div class="ts-code" data-lang="python" data-title="busy_loop.py" data-file="busy_loop.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/busy_loop.txt" data-verified="ran"></div>
+<h3>Program 2: polling a flag inside asyncio vs awaiting a Future</h3>
+<div class="ts-code" data-lang="python" data-title="poll_vs_future.py" data-file="poll_vs_future.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/poll_vs_future.txt" data-verified="ran"></div>
+<p><strong>Explanation of the programs</strong></p>
+<ol>
+<li>Program 1 waits 900 ms for seller-e twice. Spinning keeps the CPU busy for over half of that time (usually nearly all of it); waiting in <code>select()</code> uses under 5%.</li>
+<li>Program 2 waits 120 ms for seller-b's price twice. Polling with <code>sleep(0)</code> keeps the loop spinning; awaiting the Future parks the Task until the producer fills it.</li>
+<li>Both versions of each program give the same answer at the same time. Only the CPU differs, so tests that check results never catch this bug.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> 200 requests per second (Part 1's load), each spending about 900 ms waiting for the slowest seller.</p>
+<p><strong>Step 1.</strong> With waits on Futures, the loop sleeps in <code>select()</code> between events; CPU is spent only on real work: parsing answers, building responses.</p>
+<p><strong>Step 2.</strong> With one polling coroutine per request, about 200 × 0.9 = 180 coroutines are polling at any moment. The loop never sleeps, so the process uses its one core fully even if the real work is tiny.</p>
+<p><strong>Step 3.</strong> At 10 times the load, the polling coroutines and the real callbacks share the same single thread. Each iteration is longer, every Task waits longer for its turn, and latency rises with CPU stuck at 100%.</p>
+<p><strong>Result:</strong> polling costs a full core at any load and steals turns from real work as load grows. Waiting on Futures costs nothing while there is nothing to do.</p>
+<h3>Detection and fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Nothing at first; later, slower responses as load grows</td><td>CPU near 100% of one core while request rate and work are low; a profiler shows most time in the loop's own iteration</td><td>Replace polling loops with an awaited Future (or Event, Queue); never <code>while not ready: await asyncio.sleep(0)</code></td></tr>
+<tr><td>Same, on raw sockets</td><td>Same CPU picture</td><td>Wait with a selector, or use asyncio streams, never a retry loop on BlockingIOError</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>await asyncio.sleep(0)</code> in a loop is fine because it lets other Tasks run."</p>
+<p><strong>Why it is wrong:</strong> it does let them run, so nothing hangs, which is why the bug survives review. But a Task that is always ready forces every <code>select()</code> to use a timeout of 0, so the loop never sleeps. <code>sleep(0)</code> is for giving others a turn during long CPU work, not for waiting.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Busy waiting is correct but burns a core: on raw sockets and inside asyncio alike.</li>
+<li>Anything always ready makes the loop's <code>select()</code> timeout 0.</li>
+<li>Wait on the event itself: a Future that someone fills.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A loop only sleeps when nothing is ready, so any coroutine that polls keeps the whole loop, and one CPU core, awake.</p>
+<div class="ts-predict" data-claims="c21 c53">
+<p class="q">The loop has one polling coroutine (<code>while not done: await asyncio.sleep(0)</code>) and 500 idle seller sockets. What timeout does each <code>select()</code> call get, and what does that do to CPU?</p>
+<div class="ts-reveal"><p>Timeout 0 on every iteration. The polling Task's next step is always in the ready queue (a bare yield reschedules it with call_soon), and a non-empty ready queue means the loop only peeks at the sockets. The loop spins, so the core stays busy, even though all 500 sockets are idle.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="forgot-unregister" data-rung="4" data-min="10">
+<h2>Closing a socket without unregistering it</h2>
+<p class="ts-bridge">Last part: polling keeps the loop awake. Still unsolved: what happens to a selector when a socket's owner forgets to tell it the socket is gone?</p>
+<p class="ts-problem">A hand-written selector loop (like gateway v2) closes seller-e's socket at the 250 ms budget but forgets to unregister it. The very next request opens a socket, the operating system gives it the same file descriptor number, and <code>register()</code> raises KeyError. Every request after the first budget cut now fails.</p>
+<h3>Introduction</h3>
+<p>The selector keeps a table from file objects and file descriptor numbers to keys. Closing a socket does not remove its row. File descriptor numbers are reused, so a stale row can collide with a brand-new socket. This is a bug of hand-written selector code; asyncio's transports unregister for you, which is one reason to use them.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>The old socket is registered: the selector's table has one row for its file descriptor.</li>
+<li>The socket is closed while still registered. The table still has the row.</li>
+<li>A new socket is opened. The old number is free again, so the operating system may hand it out; in the program below, on Linux, it did.</li>
+<li><code>register(new)</code> finds a row for that number and raises KeyError: already registered.</li>
+<li>The fix: <code>unregister(old)</code> before <code>old.close()</code>. Then the new socket registers normally.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c87" data-src="s9">The selectors docs say a file object shall be unregistered before it is closed, and that unregister() raises KeyError if the file object is not registered.</span></p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="unregister_bug.py" data-file="unregister_bug.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/unregister_bug.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>After <code>old.close()</code>, <code>get_map()</code> still has one entry: the dead socket.</li>
+<li>The new socket gets the same file descriptor number. (The program prints True instead of the number, which differs between machines.)</li>
+<li>Registering it fails with KeyError, "already registered".</li>
+<li>Unregistering the old socket, even though it is closed, removes the stale row, and the new socket registers.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> gateway v2 without the <code>unregister</code> in <code>cancel()</code>, serving one request after another, each cutting seller-e at 250 ms.</p>
+<p><strong>Step 1.</strong> Request 1: seller-e's socket (say fd 7) is closed at the cut but stays in the selector.</p>
+<p><strong>Step 2.</strong> Request 2 opens five sockets. One of them gets fd 7 again. Registering it raises KeyError, and that seller's task fails at once.</p>
+<p><strong>Step 3.</strong> Each later cut leaves one more stale row, so the number of failing registrations can grow request by request.</p>
+<p><strong>Result:</strong> a bug that is invisible in a one-request test breaks the second request. In our gateway v2, <code>cancel()</code> unregisters before it closes, and a test checks that the selector is empty after the cut.</p>
+<h3>Detection and fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Errors on requests that follow a timeout or cancellation, never on the first</td><td>KeyError "already registered" in logs; selector map size growing over time</td><td>Unregister in the same <code>finally</code> that closes the socket, before the close; or use asyncio transports and streams, which manage registration</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Closing a socket is enough; the selector will notice it is gone."</p>
+<p><strong>Why it is wrong:</strong> the selector keeps its own table, and closing the socket does not touch it. The program above shows the row surviving the close and colliding with the next socket that gets the same number.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Unregister first, then close.</li>
+<li>File descriptor numbers are reused, so a stale row collides with a new socket.</li>
+<li>The bug shows up after the first cancellation, not in a single-request test.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A selector forgets nothing on its own: every path that closes a registered socket, including cancellation, must unregister it first.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c87">
+<p class="q">In gateway v2's <code>cancel()</code>, a teammate swaps the two lines so that the coroutine is closed (and its socket closed in <code>finally</code>) before <code>unregister()</code> runs. Is that safe?</p>
+<ol>
+<li data-why="Between the close and the unregister, the selector holds a dead socket whose number can be handed to a new socket; the docs' rule exists to rule that window out.">Yes, the order never matters as long as both lines run</li>
+<li>It works here, because nothing opens a socket between the two lines, but it breaks the docs' rule; any code that opens a socket in between, such as a finally block that reconnects, gets the old number and collides</li>
+<li data-why="unregister() of a closed socket still works in Python's selectors; the program above does exactly that.">No, unregister() always raises once the socket is closed</li>
+</ol>
+<p class="ts-why">The docs ask for unregister before close. With the order swapped, the stale row exists for a moment, and anything that opens a socket in that moment collides with it.</p>
+</div>
+</section>
+
+<section class="ts-part" id="idle-sockets" data-rung="4" data-min="12">
+<h2>Many idle sockets: why the choice of selector matters at scale</h2>
+<p class="ts-bridge">Last part: a socket closed without unregistering haunts the selector. Still unsolved: what does each registered socket cost the loop, even when nothing happens on it?</p>
+<p class="ts-problem">At 10 times Part 1's load the gateway holds a few thousand seller connections open at once, nearly all of them idle at any moment, waiting for an answer. Every iteration of the loop calls <code>select()</code> over all of them. If each call cost time in proportion to the number of sockets, the loop would spend its time asking about sockets that have nothing to say.</p>
+<h3>Introduction</h3>
+<p>The oldest readiness call, <code>select()</code>, takes the full set of descriptors as arguments on every call; Python's <code>select.select(rlist, wlist, xlist)</code> shows this in its signature. epoll keeps the set inside the kernel. <span class="ts-claim" data-claim="c90" data-src="s22">In CPython's selectors.py, SelectSelector passes its whole set of readers and writers to select() on every call, while EpollSelector hands each descriptor to the kernel's epoll object once, in register(), and its select() calls that object's poll().</span> This part measures the difference on one Linux machine and shows the hard limit that the old call hits first. kqueue plays epoll's role on macOS; it was not measured here.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>With <code>SelectSelector</code>, every <code>select()</code> call passes every registered descriptor to the kernel and gets every one back, ready or not. The work grows with the number of sockets.</li>
+<li>With <code>EpollSelector</code>, the sockets were handed to the kernel once, at <code>register()</code>. A <code>select()</code> call asks only for the ready ones.</li>
+<li><code>SelectSelector</code> also has a ceiling on the descriptor <em>number</em>: past it, the call fails outright.</li>
+</ol>
+<h3>Program 1: the cost of one select() call with idle sockets</h3>
+<p><code>idle_cost.py</code> registers N connected but silent sockets and times 2,000 calls of <code>select(timeout=0)</code>. Measured numbers vary by machine; these are from one run on Linux x86_64 with Python 3.14.6, saved in <code>measured_idle.json</code>.</p>
+<div class="ts-code" data-lang="python" data-title="idle_cost.py" data-file="idle_cost.py" data-verified="ran"></div>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Idle sockets registered</th><th>SelectSelector, per call</th><th>EpollSelector, per call</th></tr></thead>
+<tbody>
+<tr><td>10</td><td>about 1.5 µs</td><td>about 0.4 µs</td></tr>
+<tr><td>100</td><td>about 4.9 µs</td><td>about 0.4 µs</td></tr>
+<tr><td>500</td><td>about 19.7 µs</td><td>about 0.4 µs</td></tr>
+<tr><td>5,000</td><td>not possible (descriptor numbers pass 1023)</td><td>about 0.3 µs</td></tr>
+</tbody>
+</table></div>
+<h3>Program 2: the descriptor-number ceiling</h3>
+<div class="ts-code" data-lang="python" data-title="select_limit.py" data-file="select_limit.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (Linux)" data-file="out/select_limit.txt" data-verified="ran"></div>
+<p><strong>Explanation of the programs</strong></p>
+<ol>
+<li>In Program 1, SelectSelector's cost per call rises with the number of idle sockets: 1.5, 4.9, 19.7 µs for 10, 100, 500. EpollSelector's stays flat at about 0.4 µs, even with 5,000.</li>
+<li>Program 2 opens 1,030 sockets so the last one's number is above 1023. SelectSelector fails with ValueError; EpollSelector does not care.</li>
+<li>DefaultSelector is never SelectSelector on Linux or macOS, so asyncio's loop there does not hit this. Code that picks SelectSelector by hand, or old libraries built on <code>select.select()</code>, do. On Windows, asyncio's SelectorEventLoop is limited to 512 sockets, as the readiness part noted.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> 200 requests per second; each request keeps its five seller connections open for 80, 120, 150, 200 and 250 ms (seller-e is cut at the budget). Load grows 10 times.</p>
+<p><strong>Step 1.</strong> Connection-time per request: 80 + 120 + 150 + 200 + 250 = 800 ms = 0.8 connection-seconds.</p>
+<p><strong>Step 2.</strong> Average connections open at once = arrivals per second × connection-seconds per request = 200 × 0.8 = 160.</p>
+<p><strong>Step 3.</strong> At 10 times the load: 2,000 × 0.8 = 1,600 open connections on average, and more at peaks.</p>
+<p><strong>Step 4.</strong> With a select()-based loop, 1,600 descriptors cannot all be watched (numbers pass 1023), and even below that every iteration pays a cost that grows with the count. With epoll, the cost of each iteration does not grow with idle connections.</p>
+<p><strong>Result:</strong> what breaks first at 10 times the load is not the event loop's design but the count of open sockets. The next part shows the other limit that count runs into: file descriptors.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Idle connections are free: they do nothing, so they cost nothing."</p>
+<p><strong>Why it is wrong:</strong> each one holds a file descriptor, and with select() each one is passed and examined on every loop iteration. epoll makes the per-iteration cost of idle sockets small, as the measurements show, but it does not make the descriptors free.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>select() examines every descriptor on every call and fails for descriptor numbers of 1024 and up.</li>
+<li>epoll keeps the set in the kernel; measured, idle sockets add almost nothing per call.</li>
+<li>Open connections ≈ requests per second × connection-seconds per request: 160 now, 1,600 at 10 times the load.</li>
+</ul>
+</div>
+<p class="ts-takeaway">With epoll, idle sockets barely slow the loop, but they still count against the limit on open file descriptors.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">A legacy service uses a <code>select.select()</code>-based loop and works fine at 300 open connections. After a traffic increase it holds about 1,100. What is the most likely first failure?</p>
+<ol>
+<li data-why="CPU per call grows with select(), but the hard failure comes first: descriptor numbers past 1023 cannot be passed at all.">The loop gets slightly slower but keeps working</li>
+<li data-why="Nothing in the select() call is tied to the network bandwidth; the failure is in which descriptors it can watch.">The network card's bandwidth is exhausted</li>
+<li>Connections whose descriptor numbers are 1024 or higher cannot be watched, so select() fails for them</li>
+</ol>
+<p class="ts-why">Program 2 showed that select() on Linux refuses descriptor numbers above 1023. With about 1,100 descriptors open, some numbers exceed 1023, and Python's select raises ValueError for them.</p>
+</div>
+</section>
+
+<section class="ts-part" id="fd-limits" data-rung="4" data-min="11">
+<h2>Running out of file descriptors</h2>
+<p class="ts-bridge">Last part: at 10 times the load the gateway holds about 1,600 seller connections open. Still unsolved: every one of them is a file descriptor, and a process may only hold so many.</p>
+<p class="ts-problem">During a sale the gateway starts returning errors for every request, while CPU and memory look normal. The logs say <code>OSError: [Errno 24] Too many open files</code>. The process hit its limit on open file descriptors, so it can neither connect to sellers nor accept new shoppers.</p>
+<h3>Introduction</h3>
+<p>The event loop made waiting cheap, which means a single process can now have far more calls in flight than a thread-per-call design ever could. Each one still needs a socket, and each socket is a file descriptor. The operating system caps how many a process may hold. This part hits that cap on purpose.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c91" data-src="s13">RLIMIT_NOFILE is the maximum number of open file descriptors for the current process.</span> <span class="ts-claim" data-claim="c95" data-src="s13">Each resource limit is a pair: a soft limit, which is the current limit and may be lowered or raised by the process, and a hard limit, which the soft limit can never exceed.</span> <span class="ts-claim" data-claim="c92" data-src="s13">Python's resource.setrlimit() raises ValueError if the new soft limit exceeds the hard limit, or if a process tries to raise its hard limit; a process running as the super-user may request any valid value.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c93" data-src="s14">EMFILE is the errno for "Too many open files".</span></p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>Every <code>socket()</code> call, connection made or connection accepted takes one more file descriptor.</li>
+<li>When the process already holds as many descriptors as its soft limit, the next one fails with EMFILE.</li>
+<li>In the gateway, a failed <code>open_connection()</code> fails that seller's Task, and a failed accept in the server means shoppers cannot connect at all.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="fd_limit.py" data-file="fd_limit.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (Linux)" data-file="out/fd_limit.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The program lowers its own soft limit to 64; any process may lower its own limit. It restores the old limit at the end.</li>
+<li>It opens sockets until one fails. Descriptors 0, 1 and 2 are already taken by standard input, output and error, so the sockets get the numbers from 3 up to 63.</li>
+<li>The 62nd socket call fails with OSError EMFILE, "Too many open files".</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the 10-times load from the last part (about 1,600 seller connections on average), plus 2,000 shopper connections per second each held for about 250 ms, and a soft limit of 1,024. (Check your own with <code>resource.getrlimit(resource.RLIMIT_NOFILE)</code>; it varies by system and container.)</p>
+<p><strong>Step 1.</strong> Shopper connections open at once: 2,000 × 0.25 = 500.</p>
+<p><strong>Step 2.</strong> Total: about 1,600 + 500 = 2,100 descriptors, plus a few for logs and files.</p>
+<p><strong>Step 3.</strong> 2,100 is more than 1,024, so roughly every other new connection fails with EMFILE.</p>
+<p><strong>Result:</strong> the first thing to break at 10 times the load is the descriptor limit, long before CPU. The fixes are to raise the soft limit (up to the hard limit, or by changing the hard limit in the service's configuration), and to cap how many calls are in flight, which is Part 3's subject.</p>
+<h3>What breaks, who causes it, and how to see it</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Cause</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Load grows 10 times</td><td>Errors on every request during peaks; CPU looks fine</td><td>"Too many open files" in logs; open descriptors per process near the soft limit</td><td>Raise the limit; cap calls in flight (Part 3)</td></tr>
+<tr><td>A slow or stuck seller</td><td>Requests answer at the budget, never earlier</td><td>Connections to that seller piling up; time from connect to answer</td><td>The budget cut, which closes the connections; later, per-seller limits</td></tr>
+<tr><td>A bad client opens connections to the gateway and never sends a request</td><td>Real shoppers cannot connect</td><td>Many open, idle inbound connections; accept errors</td><td>Time limits on reading a request; limits per client in front of the gateway</td></tr>
+<tr><td>A leak: sockets not closed on some error path</td><td>Errors appear after hours or days, then stay</td><td>Open descriptors rising steadily while traffic is flat</td><td>Close in <code>finally</code> (<code>writer.close()</code> and <code>await writer.wait_closed()</code>)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your asyncio service is at 15% CPU but failing requests during a peak. Where do you look?"</p>
+<p><strong>What a strong senior answer contains:</strong> low CPU with failures points away from compute, toward a limit: file descriptors (EMFILE in the logs, open descriptors near the soft limit), connection pools, or a downstream timing out. The candidate does the arithmetic (open connections ≈ arrival rate × time each is held), names the fix for now (raise the limit) and the real fix (cap calls in flight, shorten how long connections are held), and mentions leak detection: descriptors rising while traffic is flat.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "asyncio lets one process handle unlimited connections."</p>
+<p><strong>Why it is wrong:</strong> asyncio removes the cost of a thread per wait, not the cost of a descriptor per socket. The descriptor limit, kernel memory and the downstream services' own limits still apply. Without a cap on calls in flight, asyncio makes it easier to hit them.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Every socket is a file descriptor; RLIMIT_NOFILE caps them per process.</li>
+<li>Over the soft limit, new sockets fail with EMFILE, "Too many open files".</li>
+<li>At 10 times the load: about 2,100 descriptors against a 1,024 limit.</li>
+<li>Fix: raise the limit and cap calls in flight; watch open descriptors.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Cheap waiting lets one process open thousands of sockets, so the first wall at high load is the per-process limit on file descriptors.</p>
+<div class="ts-predict" data-claims="c91 c93">
+<p class="q">Run <code>fd_limit.py</code> with the soft limit set to 32 instead of 64. What does it print?</p>
+<div class="ts-reveal"><p>"highest fd that worked: 31" and then "next socket(): OSError EMFILE (Too many open files)". Descriptors 0 to 2 are taken, sockets get 3 to 31, and the next one would need a 33rd descriptor.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="cross-thread" data-rung="4" data-min="11">
+<h2>Calling the loop from another thread</h2>
+<p class="ts-bridge">Last part: too many sockets run into the descriptor limit. Still unsolved: the loop assumes it is the only thread touching its queues. What happens when a second thread, such as a metrics exporter or a callback from a blocking library, hands it work?</p>
+<p class="ts-problem">A price-feed library runs in its own thread and calls <code>loop.call_soon(update_cache)</code> whenever a seller pushes a new price. In tests it seems to work. In production, cache updates sometimes arrive up to a second late, and once in a while the process misbehaves in ways nobody can reproduce.</p>
+<h3>Introduction</h3>
+<p>Everything on this page so far ran on the loop's own thread. The loop's queues are plain Python objects with no locks, and the loop may be asleep inside <code>select()</code>. Work handed in from another thread has to be put in safely and has to wake the loop. One method does both; the one most people reach for does neither.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c96" data-src="s6">An event loop runs in a thread, typically the main thread, and executes all callbacks and Tasks in that thread.</span> <span class="ts-claim" data-claim="c97" data-src="s6">Almost all asyncio objects are not thread-safe; code outside a Task or callback that must call a low-level asyncio API should use loop.call_soon_threadsafe().</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c98" data-src="s1">loop.call_soon_threadsafe() is the thread-safe variant of call_soon(), and it must be used when scheduling callbacks from another thread, because call_soon() is not thread-safe.</span> <span class="ts-claim" data-claim="c99" data-src="s6">To schedule a coroutine from another thread, use asyncio.run_coroutine_threadsafe(), which returns a concurrent.futures.Future for the result.</span></p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>The loop has nothing ready and its only timer is 1 second away, so it sleeps in <code>select(timeout=1.0)</code>.</li>
+<li>At 100 ms another thread calls <code>loop.call_soon(cb)</code>. The handle is appended to the ready queue, but nothing wakes the sleeping <code>select()</code>.</li>
+<li>At 1,000 ms the timer's timeout ends the sleep, and only then is <code>cb</code> run: 900 ms late.</li>
+<li>With <code>call_soon_threadsafe(cb)</code> instead, the handle is appended and the loop is woken at once. <span class="ts-claim" data-claim="c100" data-src="s18 s24">In CPython 3.14, call_soon_threadsafe() appends the handle to the ready queue and then calls the loop's _write_to_self(), which sends a byte on a socket pair whose other end the loop's selector watches, so select() returns.</span></li>
+<li>In debug mode, <code>call_soon</code> from the wrong thread is caught. <span class="ts-claim" data-claim="c101" data-src="s18">CPython's check raises RuntimeError("Non-thread-safe operation invoked on an event loop other than the current one").</span></li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: the late callback is the visible half of the bug. The invisible half is that the ready queue was changed from two threads without a lock, which the docs rule out.</li>
+<li>Step 4: waking the selector is the reason the thread-safe method exists. It is the same trick as the selector part: the loop only wakes for sockets and timers, so the thread-safe method makes a socket ready.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="cross_thread.py" data-file="cross_thread.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/cross_thread.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Each trial runs a fresh loop whose only timer stops it after 1 second.</li>
+<li>With <code>call_soon</code> the callback, handed in at 100 ms, runs at 1,000 ms: when the timer ends the loop's sleep.</li>
+<li>With <code>call_soon_threadsafe</code> it runs at 100 ms.</li>
+<li>With debug mode on, <code>call_soon</code> from the other thread raises RuntimeError in that thread, which turns a silent timing bug into a loud one.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the price-feed thread from the problem, calling <code>call_soon</code>, while the gateway's loop is sometimes busy and sometimes asleep.</p>
+<p><strong>Step 1.</strong> When the loop is busy with requests, it runs an iteration every few milliseconds, so the update is picked up quickly. In tests, under load, the bug is invisible.</p>
+<p><strong>Step 2.</strong> At night the loop sleeps until its next timer, which can be a second or more away. The update waits that long.</p>
+<p><strong>Step 3.</strong> Switching to <code>call_soon_threadsafe(update_cache)</code> wakes the loop at once in both cases, and keeps the queue change safe.</p>
+<p><strong>Result:</strong> the fix is one method name. Running the test suite with debug mode on would have caught the bug before production.</p>
+<div class="ts-note" data-label="Note">
+<p>A related rule: <span class="ts-claim" data-claim="c102" data-src="s6">to handle signals, the event loop must run in the main thread.</span> A loop started in a background thread cannot install signal handlers.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Python's GIL makes call_soon safe to call from any thread."</p>
+<p><strong>Why it is wrong:</strong> the docs say plainly that call_soon is not thread-safe; the GIL is not part of that contract. And even when nothing is corrupted, the program above shows the callback waiting 900 ms, because nothing woke the selector.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>One loop, one thread: its callbacks and Tasks all run there.</li>
+<li>From another thread: <code>call_soon_threadsafe</code> for callbacks, <code>run_coroutine_threadsafe</code> for coroutines.</li>
+<li>Plain <code>call_soon</code> from another thread can wait until the next timer; debug mode turns it into a RuntimeError.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Work handed to a loop from another thread must go through call_soon_threadsafe, which both queues it safely and wakes the sleeping selector.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c98 c100">
+<p class="q">The other thread uses <code>call_soon</code>, and the loop's next timer is 5 seconds away with no socket activity. When does the callback run?</p>
+<ol>
+<li data-why="Nothing wakes select(): call_soon only appends to the ready queue.">Within a millisecond</li>
+<li>When something else ends the loop's sleep: a socket event or, at the latest, the timer about 5 seconds later</li>
+<li data-why="The handle is in the ready queue; the next iteration runs it. It is late, not lost.">Never</li>
+</ol>
+<p class="ts-why">The loop is asleep in select() with a 5-second timeout. call_soon appends the handle but writes nothing to the loop's wake-up socket, so the callback waits for the next real event. call_soon_threadsafe would wake it at once.</p>
+</div>
+</section>
+
+<section class="ts-part" id="private-internals" data-rung="4" data-min="11">
+<h2>Depending on the loop's private parts</h2>
+<p class="ts-bridge">Last part: only call_soon_threadsafe may hand work to the loop from another thread. Still unsolved: this page read <code>_ready</code>, <code>_scheduled</code> and <code>_run_once</code> to explain the loop. What happens to production code that uses them?</p>
+<p class="ts-problem">A team's health check reports "loop busy" when <code>len(loop._ready)</code> is above 100. After a Python upgrade the check fails on every pod with AttributeError. On another service, a library that relied on an internal detail of asyncio's tasks starts misbehaving after a patch release, not even a minor one.</p>
+<h3>Introduction</h3>
+<p>Reading CPython's source is the best way to understand the loop, and this page did it on purpose. Using what you read is a different matter. Private names are not a promise, and asyncio changes underneath them in ordinary releases. This part states the rule, shows real changes from the release notes, and gives a public way to measure what the health check wanted.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c103" data-src="s17">Python's tutorial states the convention that a name prefixed with an underscore, such as _spam, should be treated as a non-public part of the API, an implementation detail subject to change without notice.</span></p>
+</div>
+<h3>Working: real changes from the release notes</h3>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c104" data-src="s15">In Python 3.14, asyncio moved native tasks to a new per-thread doubly linked list, which the release notes credit with 10 to 20% better standard benchmark results and lower memory use.</span> The note describes how tasks are stored inside asyncio, not a new API: a change made entirely beneath the underscore names.</li>
+<li><span class="ts-claim" data-claim="c105" data-src="s16">The Python 3.13 release notes say that uncancel() may now reset the undocumented _must_cancel flag of a task.</span> Code that read or set that flag directly saw its meaning change.</li>
+<li><span class="ts-claim" data-claim="c106" data-src="s16">A new **kwargs argument to create_task() was accidentally added in Python 3.13.3 and broke the API contract for custom task factories; several third-party task factories added workarounds, and 3.13.4 and later honour the old factory contract again until 3.14.</span></li>
+</ol>
+<p><strong>Why it matters</strong></p>
+<ul>
+<li>Step 1 is a performance improvement; it changed internals that nobody was promised.</li>
+<li>Step 3 shows that even an extension point (a task factory) close to the internals can break in a patch release, so code at that level needs tests on every Python version it runs on.</li>
+</ul>
+<h3>Program: measuring loop health with public APIs</h3>
+<p>What the health check wanted to know is whether the loop is falling behind. That can be measured from the outside: ask for a 100 ms timer and see how late it fires. A late timer means the loop could not get back to <code>select()</code> on time.</p>
+<div class="ts-code" data-lang="python" data-title="lag_probe.py" data-file="lag_probe.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/lag_probe.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>lag_probe()</code> uses only <code>loop.time()</code> and <code>asyncio.sleep()</code>. It works on any loop that implements the public API.</li>
+<li>The first sample is on time: lag 0 ms.</li>
+<li><code>blocking_handler()</code> blocks the thread from 150 ms to 450 ms with <code>time.sleep(0.3)</code>, Part 1's bug. The probe's second timer was due at 200 ms and fired at 450 ms: lag 250 ms.</li>
+<li>After the blocking call the loop recovers and the lag is 0 again.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the probe running every 100 ms in the gateway, and an alert at a lag of 50 ms or more.</p>
+<p><strong>Step 1.</strong> Normal traffic: lags of 0 to a few ms. No alert.</p>
+<p><strong>Step 2.</strong> A handler calls a blocking client for 300 ms. Every Task on the loop, including all five seller calls of every request, is frozen for that time; the probe reports 250 ms. Alert.</p>
+<p><strong>Step 3.</strong> CPU at 100% of one core with lag growing: the loop is overloaded (Part 1's 10 times load case). CPU low with lag spikes: something is blocking it.</p>
+<p><strong>Result:</strong> one public metric, loop lag, answers the question that <code>len(loop._ready)</code> tried to answer, and keeps working across Python versions and other loop implementations.</p>
+<div class="ts-trap">
+<p><strong>A patch release that broke task factories.</strong> The 3.13.3 change above is a real case of code close to asyncio's internals breaking without a minor version bump. <strong>What the user sees:</strong> errors or wrong behaviour right after a routine base-image update. <strong>Signal:</strong> failures that start exactly at a Python upgrade. <strong>Fix:</strong> keep custom loop and task-factory code minimal, pin the Python patch version in images, and run the test suite on the new version before rolling it out.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If the code works on my Python version, using an underscore attribute is fine."</p>
+<p><strong>Why it is wrong:</strong> it works until the next release. The tutorial's convention says underscore names may change without notice, and the release notes above show asyncio's internals changing in 3.13, 3.13.3 and 3.14.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Read private internals to understand; never depend on them in production code.</li>
+<li>asyncio's internals changed in 3.13, in the 3.13.3 patch release, and in 3.14.</li>
+<li>Measure loop health from the outside: loop lag from a timer, not the size of <code>_ready</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Underscore names are for reading, not for depending on; measure the loop through its public clock and timers instead.</p>
+<div class="ts-explain" data-points="Busy loops keep select() at timeout 0 and burn a core|A socket must be unregistered before it is closed|Every socket is a file descriptor and the per-process limit is hit first at high load|Only call_soon_threadsafe may hand work in from another thread|Private names change between releases; measure loop lag instead">
+<p class="q">In your own words: name the ways an event-loop program breaks that this rung covered, and for each one the signal you would watch.</p>
+<div class="ts-model"><p>A busy loop, whether spinning on a socket or polling with sleep(0), keeps the select() timeout at 0, so CPU sits near 100% with little work; watch CPU against request rate. Closing a registered socket without unregistering leaves a stale row that collides with a new socket; watch for KeyError "already registered". Each socket is a file descriptor, and at 10 times the load the per-process limit is hit first; watch for EMFILE and open descriptors near the limit. Calling call_soon from another thread can leave work waiting until the next timer; debug mode turns it into a RuntimeError. Code that reads private loop attributes breaks on upgrades; measure loop lag with a timer instead.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="choose-layer" data-rung="5" data-min="13">
+<h2>Which layer to write I/O at: selectors, threads, streams or protocols</h2>
+<p class="ts-bridge">Last part: private loop internals change between releases. Still unsolved: this page used four different ways to talk to a seller. Which one should a real service use?</p>
+<p class="ts-problem">Four teams build four gateways. One uses <code>selectors</code> directly, one uses a thread per seller call, one uses asyncio streams, one writes asyncio protocols. All four answer seller-b at 1,199 within 250 ms. Which choice will the team still be happy with after a year?</p>
+<h3>Introduction</h3>
+<p>Every layer on this page waits the same way underneath: a selector (or, on Windows, a completion port) tells the program when a socket is ready. The layers differ in how much of the rest you write yourself. This part adds the fourth layer, protocols, in one short program, and then compares all four.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="An asyncio object that represents a connection and knows how to move bytes over it; created by the event loop.">transport</dfn> moves the bytes; a <dfn data-def="An asyncio object whose callback methods (connection_made, data_received, connection_lost) the transport calls; it decides what the bytes mean.">protocol</dfn> decides what they mean. <span class="ts-claim" data-claim="c107" data-src="s8">The docs say the transport is concerned with how bytes are transmitted, while the protocol determines which bytes to transmit, and that there is always a one-to-one relationship between a transport and its protocol.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c108" data-src="s8">Transports and protocols are used by the low-level loop APIs such as loop.create_connection(); they use a callback-based style, enable high-performance implementations of network protocols, and the docs say they should only be used in libraries and frameworks, never in high-level asyncio applications.</span></p></div></li>
+</ol>
+<h3>Program: the seller call written as a protocol</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_proto.py" data-file="gateway_proto.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_proto.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>There is no <code>await</code> inside <code>SellerProtocol</code>: the loop calls its methods. <code>connection_made()</code> sends the item code; <code>data_received()</code> collects bytes; <code>connection_lost()</code> runs when the seller closes.</li>
+<li><span class="ts-claim" data-claim="c109" data-src="s8">data_received() is called with a non-empty bytes object, and can be called any number of times while the connection is open.</span> That is why the bytes are added to a buffer and parsed only when the connection closes.</li>
+<li>A Future, <code>answer</code>, carries the result from the callback world to the coroutine <code>ask_seller()</code>: the meeting point from the Future part, used exactly as streams use it inside.</li>
+</ol>
+<h3>Difference between the four layers</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Layer</th><th>You write</th><th>Waiting costs</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td><code>selectors</code> directly (gateway v2)</td><td>The loop, timers, registration, partial reads, errors</td><td>Almost nothing per idle socket (epoll, kqueue)</td><td>Learning, or a tiny single-purpose tool with no asyncio available. <span class="ts-claim" data-claim="c110" data-src="s9">The selectors docs encourage it over the raw select module unless you need precise control of the operating-system calls.</span></td></tr>
+<tr><td>A thread per call</td><td>Ordinary blocking code</td><td>A thread per wait: Part 1 measured about 10,182 KiB of virtual memory reserved, about 21 KiB resident and about 118 µs to start, per thread</td><td>A few dozen calls in flight at most, or the only client library is blocking</td></tr>
+<tr><td>asyncio streams (gateway v3)</td><td>Coroutines: connect, write, drain, readline, close</td><td>Almost nothing per idle socket</td><td>Application code: the default for services like the gateway</td></tr>
+<tr><td>Transports and protocols</td><td>Callback classes, buffering, your own Futures</td><td>Almost nothing; fewest layers between the bytes and your code</td><td>Writing a library or a protocol implementation where every microsecond counts</td></tr>
+</tbody>
+</table></div>
+<p>A fifth, separate choice is the loop itself. <span class="ts-claim" data-claim="c111" data-src="s27">uvloop's README benchmarks an echo server written three ways: with loop.sock_recv() and loop.sock_sendall(), with asyncio streams, and with a protocol.</span> Swapping the loop leaves the gateway's code unchanged, as long as that code uses only public APIs: one more reason for the rule in the last part.</p>
+<h3>Decision rules</h3>
+<ol>
+<li>Application code: asyncio streams, or a client library built on them (an HTTP client, a database driver).</li>
+<li>A blocking library you cannot replace: run it off the loop's thread and keep the count small. <span class="ts-claim" data-claim="c112" data-src="s6">The docs say loop.run_in_executor() with a ThreadPoolExecutor runs blocking code in a different OS thread without blocking the thread the loop runs in.</span> Part 7 covers crossing between threads and the loop.</li>
+<li>A library or protocol implementation: transports and protocols.</li>
+<li>Raw <code>selectors</code>: when you are building a loop, which on a team means almost never.</li>
+</ol>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Why not just use threads? They are simpler."</p>
+<p><strong>What a strong senior answer contains:</strong> threads are simpler for a few blocking calls, and they are the right tool when the only library is blocking. The cost is one thread per wait, so memory and scheduling grow with calls in flight; at the gateway's 200 requests per second that is about 900 threads (Part 1). One event loop waits on all of those sockets with a selector on one thread. The trade-off goes the other way too: every library on the loop must be non-blocking, and one blocking call stalls everything (Part 1's bug, measured on this page as loop lag).</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Protocols are faster, so serious services should be written with them."</p>
+<p><strong>Why it is wrong:</strong> the docs reserve them for libraries and frameworks. A gateway spends almost all of its time waiting on sellers, not in Python's per-byte code, so whatever a protocol saves per call is small next to 80 to 900 ms of waiting. Streams are far easier to get right.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>All four layers wait with a selector (or IOCP on Windows); they differ in how much you write.</li>
+<li>Applications: streams. Libraries: transports and protocols. Blocking-only libraries: threads, few of them.</li>
+<li>A different loop (such as uvloop) is a separate choice, safe if you use only public APIs.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Write services with asyncio streams, keep threads for blocking libraries, and leave protocols and raw selectors to library authors.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c108 c110">
+<p class="q">A team writes a new internal HTTP-like protocol client that many services will import, and latency per message matters. Which layer fits best?</p>
+<ol>
+<li data-why="Raw selectors mean writing the loop too; nobody else's asyncio code could share it.">Raw <code>selectors</code>, for full control</li>
+<li>Transports and protocols, because this is library code where the per-message cost matters</li>
+<li data-why="One thread per in-flight message brings back Part 1's thread cost, multiplied across every service that imports it.">A thread per call, because it is simplest</li>
+</ol>
+<p class="ts-why">The docs place transports and protocols in libraries and frameworks: exactly a shared client. Its users then call it from ordinary coroutines.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: between await reader.readline() and your code resuming</h2>
+<p class="ts-bridge">Last part: services use streams, libraries use protocols. Still unsolved: can you explain, without notes, everything this page built, the way an interviewer will ask for it?</p>
+<p class="ts-problem">"Walk me through what happens between <code>line = await reader.readline()</code> and the next line of your code running." Most candidates say "the loop waits for data". A senior answer names every hand-off, and there are about eight.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. The first is the one in the title, worked in full from CPython's source and checked with a program. The other two use the same pieces under pressure. Try each prompt before opening the reference answer.</p>
+<h3>Prompt 1: the full path of one readline()</h3>
+<ol class="ts-steps">
+<li><strong>The coroutine waits on a Future.</strong> <span class="ts-claim" data-claim="c113" data-src="s23">When the StreamReader's buffer has no complete line, it creates a Future with loop.create_future() and awaits it.</span></li>
+<li><strong>The Task parks.</strong> The Future is yielded up the await chain to the Task, which adds its wake-up as a done callback. The step ends.</li>
+<li><strong>The socket was already registered.</strong> <span class="ts-claim" data-claim="c114" data-src="s24">The selector transport registered its socket with add_reader(), with its _read_ready method as the callback, when it started reading.</span></li>
+<li><strong>The loop sleeps.</strong> Nothing is ready and no timer is due, so the iteration calls <code>select(timeout=None)</code>.</li>
+<li><strong>Data arrives.</strong> The selector returns the socket; the loop queues <code>_read_ready</code> and runs it in the same iteration. <span class="ts-claim" data-claim="c115" data-src="s24">That callback calls sock.recv() with a buffer of 256 KiB and passes the bytes to the protocol's data_received().</span></li>
+<li><strong>The bytes reach the reader.</strong> <span class="ts-claim" data-claim="c116" data-src="s23">The streams protocol's data_received() calls the reader's feed_data(), which appends the bytes to the buffer and wakes the waiter by setting the Future's result.</span></li>
+<li><strong>The wake-up is queued.</strong> Completing the Future schedules the Task's wake-up with <code>call_soon</code>. It does not run yet.</li>
+<li><strong>Next iteration, your code runs.</strong> Something is ready, so <code>select(timeout=0)</code> only peeks. The wake-up runs, the Task calls <code>send(None)</code>, <code>readline()</code> finds the line in its buffer and returns it, and your next line runs.</li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="read_trace.py" data-file="read_trace.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/read_trace.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The tracing selector from the loop-iteration part prints only while <code>readline()</code> is waiting.</li>
+<li>Exactly two iterations separate the call from the resume: one that sleeps (<code>timeout=None</code>) and receives the data (steps 4 to 7), and one that peeks (<code>timeout=0.00</code>) and runs the Task's wake-up (step 8).</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="await reader.readline(), hand-off by hand-off">
+<script type="application/json">
+{"actors": [
+ {"id": "task", "label": "Task", "sub": "your coroutine"},
+ {"id": "reader", "label": "StreamReader", "sub": "buffer + waiter"},
+ {"id": "loop", "label": "Loop", "sub": "_run_once()"},
+ {"id": "tr", "label": "Transport", "sub": "socket"},
+ {"id": "os", "label": "Selector", "sub": "epoll / kqueue"}],
+ "steps": [
+ {"from": "task", "to": "reader", "label": "await readline()", "note": "No full line in the buffer, so the reader creates a waiter Future and awaits it."},
+ {"from": "reader", "to": "task", "label": "yields the waiter Future", "dashed": true, "note": "The Future travels up the await chain; the Task adds its wake-up as a done callback and the step ends."},
+ {"from": "loop", "to": "os", "label": "select(timeout=None)", "note": "Nothing is ready and no timer is due, so the loop sleeps. The transport's socket was registered with add_reader earlier."},
+ {"from": "os", "to": "loop", "label": "socket readable", "dashed": true, "note": "seller-b's answer arrives; select() returns the socket and the loop queues the transport's _read_ready callback."},
+ {"from": "loop", "to": "tr", "label": "run _read_ready()", "note": "Same iteration: the callback reads up to 256 KiB with sock.recv()."},
+ {"from": "tr", "to": "reader", "label": "data_received → feed_data", "note": "The bytes are appended to the reader's buffer, and the waiter Future's result is set."},
+ {"from": "reader", "to": "loop", "label": "call_soon(Task wake-up)", "dashed": true, "note": "Completing the Future schedules the Task's wake-up. It runs in the next iteration."},
+ {"from": "loop", "to": "task", "label": "next iteration: wake-up, send(None)", "note": "select(timeout=0) only peeks; then the wake-up resumes the coroutine, and readline() returns the line from the buffer."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 and 2 are the Future and Task parts: an await on a Future, and a wake-up left on it.</li>
+<li>Steps 3 to 5 are the loop-iteration and selector parts: sleep in <code>select()</code>, then run the ready socket's callback.</li>
+<li>Steps 6 to 8 connect callback code back to coroutine code through the Future, one iteration later.</li>
+</ol>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it names the waiter Future, the done callback, add_reader, the select() call, the transport callback, data_received and feed_data, and the extra iteration before the resume, and says why: the loop only ever sleeps in select(), and coroutines only ever resume from the ready queue. It also says what this means in production: if any callback in between blocks, every Task waits, which is why loop lag is the metric to watch.</p>
+</div>
+<div class="ts-explain" data-points="readline awaits a waiter Future and the Task parks on it|The transport's socket is registered with add_reader and the loop sleeps in select()|On readiness the transport reads, data_received calls feed_data, and the waiter's result is set|The Task's wake-up is scheduled with call_soon and runs in the next iteration">
+<p class="q">Your turn, without looking: what happens between <code>await reader.readline()</code> and your code resuming?</p>
+<div class="ts-model"><p>readline() finds no full line, creates a waiter Future and awaits it, so the Future travels up to the Task, which adds its wake-up as a done callback and steps aside. The transport's socket was registered with add_reader, so the loop, having nothing ready, sleeps in select(). When the seller's bytes arrive, select() returns, the loop runs the transport's read callback, which calls recv() and passes the bytes to data_received, which feeds the reader's buffer and sets the waiter's result. That schedules the Task's wake-up with call_soon. In the next iteration the wake-up resumes the coroutine with send(None), and readline() returns the line.</p></div>
+</div>
+<h3>Prompt 2: the slow seller and the budget</h3>
+<p>"seller-e takes 900 ms. Your budget is 250 ms. Explain, in loop terms, how the request still answers at 250 ms, and what you give up."</p>
+<div class="ts-predict" data-claims="c21 c78 c80">
+<p class="q">Answer it in loop terms before opening.</p>
+<div class="ts-reveal"><p>The budget is a TimerHandle on the timer heap, due at 250 ms. After seller-d answers at 200 ms, the next select() timeout is the 50 ms left until that timer, so the loop wakes at 250 ms even though no socket is ready. The timer callback cancels seller-e's Task; in the next iteration the CancelledError is thrown in at its readline(), its finally closes the connection, and the request answers with the four offers: seller-b at 1,199. What is given up: seller-e's 1,149, which is 50 cheaper, and any work seller-e already did.</p></div>
+</div>
+<h3>Prompt 3: "Make the gateway faster"</h3>
+<p>"Your gateway answers in 250 ms with low CPU. A colleague proposes switching to raw protocols and uvloop to make it faster. Do you agree?"</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Decide, and say what it would and would not change.</p>
+<div class="ts-reveal"><p>Not as the first step. With low CPU, the 250 ms is the budget, set by the sellers' latency; a faster loop or a lower layer cuts only the microseconds the loop spends per event, not the 200 ms seller-d takes or the cut at 250 ms. They would matter if CPU on the loop's thread were the limit, which loop lag and CPU near 100% of a core would show. The trade-off: protocols make the code harder to get right, and a different loop must be tested; both are worth it only after measuring that the loop's own time is the problem.</p></div>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "When data arrives, the loop jumps straight back into the coroutine."</p>
+<p><strong>Why it is wrong:</strong> there are two hops. The socket's readiness runs a transport callback, which fills a Future; filling the Future only schedules the Task's wake-up, which runs in the next iteration. The program above shows the extra <code>select(timeout=0.00)</code> between them.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>readline(): waiter Future → Task parks → select() → _read_ready → data_received → feed_data → set_result → call_soon(wake-up) → next iteration → send(None).</li>
+<li>The budget answer comes from a timer on the heap bounding the select() timeout.</li>
+<li>"Faster" proposals need a measurement: loop lag and CPU on the loop's thread.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Between await and resume there are two loop iterations: one that sleeps and receives the bytes into a Future, and one that wakes the Task.</p>
+</section>
+
+<section class="ts-part" id="whats-next" data-rung="5" data-min="7">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: the pieces gateway v3 had to build by hand, which the next page replaces.</p>
+<p class="ts-problem">Gateway v3 answers seller-b at 1,199 in 250 ms from real sockets, and a failing seller no longer ends the request. But its budget is a hand-made <code>call_later</code>, its "wait for all five" is a hand-made Future with a counter, and nothing stops it from opening thousands of connections at once.</p>
+<h3>What this page added</h3>
+<ul>
+<li>The sellers became real TCP servers; one thread with blocking sockets took about 1,460 ms again.</li>
+<li>Non-blocking sockets and "would block" (BlockingIOError), and why busy waiting burns a core.</li>
+<li>Readiness notification with <code>selectors</code>: epoll on Linux, kqueue on macOS; Windows' default loop uses completion ports.</li>
+<li>One iteration of asyncio's loop: timeout, <code>select()</code>, I/O callbacks, due timers, then only the work ready now; <code>call_soon</code> and <code>call_later</code>.</li>
+<li>Futures (pending, finished, cancelled; done callbacks through <code>call_soon</code>), Futures at the bottom of every await chain, and Tasks that drive coroutines step by step.</li>
+<li><code>asyncio.run</code>: new loop, main Task, then cancel leftovers, close async generators, shut down the default executor, close the loop.</li>
+<li>Gateway v2 (toy loop plus selector) and gateway v3 (asyncio streams): 900 ms, then seller-b at 1,199 in 250 ms with seller-e missed, and seller-c's failure kept inside its own Task.</li>
+<li>Failure modes: busy loops, forgotten unregister, idle sockets with select(), file descriptor limits, cross-thread calls, private internals; loop lag as the signal.</li>
+</ul>
+<h3>What is still broken</h3>
+<ul>
+<li><strong>No structured way to run many tasks.</strong> "Wait for all five" is a Future, a counter and five done callbacks. A Task that is never referenced or never read can lose its result or its error.</li>
+<li><strong>No limits.</strong> Every request opens five connections at once; at 10 times the load that is about 1,600 open connections on average, against a descriptor limit that may be 1,024.</li>
+<li><strong>No deadlines.</strong> The 250 ms budget is a timer that cancels by hand. Nothing guarantees it is cancelled when the request ends early, and nothing nests: a seller call has no deadline of its own inside the request's.</li>
+</ul>
+<h3>Next: Part 3 — Running work concurrently: TaskGroup, limits and deadlines</h3>
+<p>Part 3 replaces the hand-made pieces of gateway v3. A TaskGroup starts the five seller Tasks, keeps references to them, waits for all of them and collects their errors. A limit caps how many seller calls are in flight. The 250 ms budget becomes a real timeout. <span class="ts-claim" data-claim="c117" data-src="s3">The create_task docs already point to TaskGroup as the structured alternative: it keeps a strong reference to each task, awaits them and propagates their exceptions.</span></p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: how asyncio's loop waits on real sockets, and what Futures and Tasks are.</li>
+<li>Still broken: no structured task handling, no limits, no real deadlines.</li>
+<li>Part 3: TaskGroup, limits and timeouts for the five seller calls.</li>
+</ul>
+</div>
+<p class="ts-takeaway">The gateway now runs on asyncio's real loop with real sockets and per-Task failures; Part 3 replaces its hand-made budget and waiting with structured tools.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway across Parts 1 and 2 in the order they were built.</p>
+<ol>
+<li>v0: blocking calls one after another, 1,450 ms (fake sellers), then about 1,460 ms on real sockets</li>
+<li>v1 on the toy loop: five tasks on one thread, 900 ms, answer at the 250 ms budget</li>
+<li>v2: the toy loop plus a selector, same answers from real sockets</li>
+<li>v3: asyncio streams and Tasks, same answers, and a failing seller stays inside its Task</li>
+</ol>
+<p class="ts-why">Each version fixes one problem of the one before it: the sum of waits, then fake I/O, then the hand-written loop and the failure that ended everything.</p>
+</div>
+</section>
+

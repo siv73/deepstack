@@ -1,0 +1,2 @@
+loop received: ('sleep', 80)
+finished with: price 1,249

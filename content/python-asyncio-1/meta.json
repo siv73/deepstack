@@ -11,7 +11,7 @@
  ],
  "related": [
   {"label": "Python async, Part 1: coroutines from scratch, build your own event loop", "slug": "python-asyncio-1", "why": "this page: generators, coroutines and a toy event loop; the gateway reaches 900 ms on one thread and answers at the 250 ms budget"},
-  {"label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks", "why": "replaces the toy loop with asyncio's real one, so the sellers become real sockets and a failure stays with its Task"},
+  {"label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks", "slug": "python-asyncio-2", "why": "replaces the toy loop with asyncio's real one, so the sellers become real sockets and a failure stays with its Task"},
   {"label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines", "why": "structured concurrency for the five seller calls, a cap on calls in flight, and the budget as a real timeout"},
   {"label": "Python async, Part 4: the six traps that break async services", "why": "forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts, on the gateway"},
   {"label": "Python async, Part 5: cancellation in depth", "why": "what really happens to seller-e at the deadline, shield, and cancellation bookkeeping"},

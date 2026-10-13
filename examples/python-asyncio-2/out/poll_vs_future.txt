@@ -1,0 +1,2 @@
+polling with sleep(0): got 1,199 after about 120 ms; CPU busy over 50%
+awaiting a Future   : got 1,199 after about 120 ms; CPU busy under 5%

@@ -1,0 +1,4 @@
+after close: the selector still holds 1 entry (for the dead socket)
+new socket reuses the same fd number: True
+register(new socket) -> KeyError: ... is already registered
+after unregistering the old one: new socket registered as seller-b

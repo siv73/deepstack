@@ -1,0 +1,3304 @@
+{
+ "verified": "2026-10-13",
+ "volatility": "evolving",
+ "strict": false,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "asyncio: Event Loop",
+   "url": "https://docs.python.org/3.14/library/asyncio-eventloop.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s2",
+   "title": "asyncio: Futures",
+   "url": "https://docs.python.org/3.14/library/asyncio-future.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s3",
+   "title": "asyncio: Coroutines and Tasks",
+   "url": "https://docs.python.org/3.14/library/asyncio-task.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s4",
+   "title": "asyncio: Runners",
+   "url": "https://docs.python.org/3.14/library/asyncio-runner.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s5",
+   "title": "asyncio: Platform Support",
+   "url": "https://docs.python.org/3.14/library/asyncio-platforms.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s6",
+   "title": "Developing with asyncio",
+   "url": "https://docs.python.org/3.14/library/asyncio-dev.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s7",
+   "title": "asyncio: Streams",
+   "url": "https://docs.python.org/3.14/library/asyncio-stream.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s8",
+   "title": "asyncio: Transports and Protocols",
+   "url": "https://docs.python.org/3.14/library/asyncio-protocol.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s9",
+   "title": "selectors: High-level I/O multiplexing",
+   "url": "https://docs.python.org/3.14/library/selectors.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s10",
+   "title": "select: Waiting for I/O completion",
+   "url": "https://docs.python.org/3.14/library/select.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s11",
+   "title": "socket: Low-level networking interface",
+   "url": "https://docs.python.org/3.14/library/socket.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s12",
+   "title": "Built-in Exceptions",
+   "url": "https://docs.python.org/3.14/library/exceptions.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s13",
+   "title": "resource: Resource usage information",
+   "url": "https://docs.python.org/3.14/library/resource.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s14",
+   "title": "errno: Standard errno system symbols",
+   "url": "https://docs.python.org/3.14/library/errno.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s15",
+   "title": "What's New In Python 3.14",
+   "url": "https://docs.python.org/3.14/whatsnew/3.14.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s16",
+   "title": "What's New In Python 3.13",
+   "url": "https://docs.python.org/3.14/whatsnew/3.13.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s17",
+   "title": "The Python Tutorial: Classes (9.6 Private Variables)",
+   "url": "https://docs.python.org/3.14/tutorial/classes.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s18",
+   "title": "CPython 3.14 source: Lib/asyncio/base_events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/base_events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s19",
+   "title": "CPython 3.14 source: Lib/asyncio/runners.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/runners.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s20",
+   "title": "CPython 3.14 source: Lib/asyncio/tasks.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s21",
+   "title": "CPython 3.14 source: Lib/asyncio/futures.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s22",
+   "title": "CPython 3.14 source: Lib/selectors.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/selectors.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s23",
+   "title": "CPython 3.14 source: Lib/asyncio/streams.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/streams.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s24",
+   "title": "CPython 3.14 source: Lib/asyncio/selector_events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/selector_events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s26",
+   "title": "time: Time access and conversions",
+   "url": "https://docs.python.org/3.14/library/time.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-13"
+  },
+  {
+   "id": "s27",
+   "title": "uvloop README",
+   "url": "https://github.com/MagicStack/uvloop/blob/master/README.rst",
+   "kind": "primary",
+   "publisher": "MagicStack (uvloop project)",
+   "accessed": "2026-10-13"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "A Python socket's fileno() method returns its file descriptor, a small integer.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "socket objects: fileno()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Socket Objects: fileno()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "Python's socket docs say sockets are created in blocking mode by default, unless a default timeout was set with setdefaulttimeout().",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Notes on socket timeouts",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Notes on socket timeouts",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "In blocking mode, operations block until they complete or the system returns an error, such as a connection timeout.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Notes on socket timeouts",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Notes on socket timeouts",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "sock.setblocking(False) puts a socket in non-blocking mode; the docs say it is equivalent to sock.settimeout(0.0).",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "socket objects: setblocking()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "socket objects: setblocking()",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "In non-blocking mode, an operation that cannot be completed immediately fails, and functions from the select module can be used to know when the socket is ready for reading or writing.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Notes on socket timeouts",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Notes on socket timeouts",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "Python raises BlockingIOError when an operation would block on an object set for non-blocking operation; it corresponds to the errno values EAGAIN, EALREADY, EWOULDBLOCK and EINPROGRESS.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "OS exceptions: BlockingIOError",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "OS exceptions: BlockingIOError",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "socket.recv() returns an empty bytes object when the other side has disconnected.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "socket objects: recv()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Socket Objects: recv()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "The selectors module provides high-level, efficient I/O multiplexing built on the select module's primitives, and the docs encourage using it unless you need precise control over the operating-system calls.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Introduction",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Introduction",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:04"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "selectors.DefaultSelector is an alias to the most efficient implementation available on the current platform.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Introduction; Classes: DefaultSelector",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Introduction",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:04"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Python's select module docs list epoll as available on Linux 2.5.44 and later, and kqueue as available on BSD and macOS.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "module introduction; epoll() and kqueue() availability notes",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "select.epoll() and select.kqueue() availability",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "In CPython 3.14's selectors.py, DefaultSelector is KqueueSelector when kqueue is available, otherwise EpollSelector, then DevpollSelector, then PollSelector, and SelectSelector last.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "module end: DefaultSelector choice (if _can_use('kqueue') ... else SelectSelector)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "module end: DefaultSelector choice",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "register() returns a SelectorKey, and raises KeyError if the file object is already registered.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "BaseSelector.register()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "BaseSelector.register()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:04"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "For select(timeout): a timeout above 0 is the longest wait in seconds, a timeout of 0 or less does not block and only reports what is ready now, and None waits until some registered file object is ready.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "BaseSelector.select()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "BaseSelector.select()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:04"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "The docs say a file object shall be unregistered before it is closed.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "BaseSelector.unregister()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "BaseSelector.unregister()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:04"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "On Windows, ProactorEventLoop has been asyncio's default event loop since Python 3.8.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Windows (versionchanged 3.8)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Windows (Changed in version 3.8)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "ProactorEventLoop uses Windows I/O Completion Ports (IOCP).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Event Loop Implementations: ProactorEventLoop",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Event loop implementations: ProactorEventLoop",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "On Windows, SelectorEventLoop waits on sockets with SelectSelector, which supports only sockets and is limited to 512 of them.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Windows: SelectorEventLoop limitations",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Windows: SelectorEventLoop limitations",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "ProactorEventLoop does not support loop.add_reader() and loop.add_writer().",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Windows: ProactorEventLoop limitations",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Windows: ProactorEventLoop limitations",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "In CPython 3.14, one iteration is the method BaseEventLoop._run_once(); its own description says it runs all ready callbacks, polls for I/O, schedules the resulting callbacks, and then schedules call_later callbacks.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "BaseEventLoop._run_once() docstring",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "The ready queue is a collections.deque named _ready, and the timers are a heap list named _scheduled.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "BaseEventLoop.__init__: self._ready = collections.deque(); self._scheduled = []; call_at: heapq.heappush",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "The timeout for select() is 0 if callbacks are ready or the loop is stopping; otherwise it is the time until the earliest timer, capped at 24 hours; with no timers at all it is None.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "BaseEventLoop._run_once(): timeout computation; MAXIMUM_SELECT_TIMEOUT = 24 * 3600",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "The loop calls its selector's select() with that timeout, and the callback registered for each ready socket is added to the ready queue.",
+   "sources": [
+    "s18",
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "_run_once(): self._selector.select(timeout); self._process_events(); s24 _process_events(): _add_callback(reader)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "_run_once(): self._selector.select(timeout); self._process_events(); s24 _process_events(): _add_callback(reader)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "selector_events.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "Every timer whose time has come is popped from the heap and appended to the ready queue.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "_run_once(): \"Handle 'later' callbacks that are ready.\"",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "The loop runs only the callbacks that were in the ready queue at this point; callbacks they schedule run in the next iteration, after another I/O poll.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "_run_once(): ntodo = len(self._ready) and comment \"This is the only place where callbacks are actually *called*\"",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "loop.call_soon(callback, *args) schedules the callback for the next iteration of the loop and returns an asyncio.Handle; callbacks are called in the order in which they are registered, each exactly once.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Scheduling callbacks: loop.call_soon()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Scheduling callbacks: call_soon",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "loop.call_later(delay, callback, *args) schedules the callback after delay seconds and returns an asyncio.TimerHandle; if two callbacks are scheduled for exactly the same time, the order in which they run is undefined.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Scheduling delayed callbacks: loop.call_later()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Scheduling delayed callbacks: call_later",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "Handle.cancel() cancels the callback; if it has already been cancelled or has run, it has no effect.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Callback Handles: Handle.cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Callback handles: Handle.cancel",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "loop.time() returns the current time as a float, according to the event loop's internal monotonic clock.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Scheduling delayed callbacks: loop.time()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Scheduling delayed callbacks: loop.time",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "Python's time.monotonic() returns seconds from a clock that cannot go backwards and is not affected by system clock updates.",
+   "sources": [
+    "s26"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s26",
+     "locator": "time.monotonic()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s26",
+     "locator": "time.monotonic()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "The docs say a Future represents an eventual result of an asynchronous operation, and that it is not thread-safe.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future Object: class Future",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future Object",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "The recommended way to create one is loop.create_future(), and the rule of thumb is never to expose Future objects in user-facing APIs.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future Object: class Future (rule of thumb; loop.create_future)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future Object (rule of thumb)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "CPython's futures.py names them _PENDING, _CANCELLED and _FINISHED.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "module top: _PENDING, _CANCELLED, _FINISHED",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "futures.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "Calling result() or exception() before the Future is done raises InvalidStateError.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future.result(); Future.exception()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future.result(); Future.exception()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "A Future is done if it was cancelled or if a result or an exception was set with set_result() or set_exception().",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future.done()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future.done()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "result() then returns the value, or raises the exception that was set.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future.result()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future.result()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "cancel() returns False if the Future is already done; otherwise it marks it cancelled, schedules its callbacks and returns True.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future.cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future.cancel()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "On a cancelled Future, result() and exception() raise CancelledError.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future.result(); Future.exception()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future.result(); Future.exception()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "set_result() and set_exception() raise InvalidStateError if the Future is already done.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future.set_result(); Future.set_exception()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future.set_result(); Future.set_exception()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "add_done_callback(fn) arranges for fn to be called with the Future as its only argument when the Future is done; if it is already done, fn is scheduled with call_soon.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future.add_done_callback()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future.add_done_callback()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "In CPython's futures.py, completing a Future also schedules each waiting callback with loop.call_soon rather than calling it directly.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Future.__schedule_callbacks(): self._loop.call_soon(callback, self, context=ctx)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "futures.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "A Future is awaitable: coroutines can await it until it has a result or an exception set, or is cancelled, and a Future can be awaited many times with the same result.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Future Object: class Future (awaitable)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Future Object (awaitable)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "In CPython's futures.py, Future.__await__ yields the Future itself if it is not done yet, and when it is resumed returns the Future's result, which raises if an exception was set.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Future.__await__()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "futures.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "In CPython 3.14's tasks.py, asyncio.sleep() with a delay above 0 creates a Future with loop.create_future(), schedules a call_later() that sets its result, awaits the Future, and cancels the timer handle in a finally block.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "async def sleep(): loop.create_future(); loop.call_later(..., futures._set_result_unless_cancelled ...); finally h.cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "When a Task's coroutine awaits a Future, the Task suspends the coroutine and waits for the Future to complete; when the Future is done, the coroutine resumes.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Task Object: class Task",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Task object",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "asyncio.Task inherits all the Future APIs except set_result() and set_exception().",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Task Object: class Task",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Task object",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "Event loops use cooperative scheduling: a loop runs one Task at a time, and while a Task awaits a Future the loop runs other Tasks and callbacks or performs I/O.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Task Object: class Task (cooperative scheduling)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Task object (cooperative scheduling)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "When the _asyncio C module is available, CPython uses its C versions of Task and Future instead of the Python classes in tasks.py and futures.py.",
+   "sources": [
+    "s20",
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "module end: import _asyncio ... Task = _CTask = _asyncio.Task; s21 futures.py end: Future = _CFuture = _asyncio.Future",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "module end: import _asyncio ... Task = _CTask = _asyncio.Task; s21 futures.py end: Future = _CFuture = _asyncio.Future",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "futures.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "Unless it is started eagerly, a new Task schedules its first step with loop.call_soon.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Task.__init__: self._loop.call_soon(self.__step, context=self._context)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "Each step resumes the coroutine with coro.send(None), or with coro.throw(exc) when an exception must be delivered into it.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Task.__step_run_and_handle_result(): coro.send(None) / coro.throw(exc)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "If the coroutine yields a Future, the Task adds its wake-up method to that Future as a done callback.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Task.__step_run_and_handle_result(): result.add_done_callback(self.__wakeup, ...)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "The wake-up starts the next step, throwing the Future's exception into the coroutine if it has one.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Task.__wakeup(): future.result() ... self.__step(exc)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "When the coroutine returns, the Task sets its result from StopIteration; when it raises any other exception, the Task stores it with set_exception.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Task.__step_run_and_handle_result(): except StopIteration -> set_result; except BaseException -> set_exception",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "A bare yield, which is what asyncio.sleep(0) produces, makes the Task schedule its next step with call_soon; yielding anything else is an error, reported as \"Task got bad yield\".",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Task.__step_run_and_handle_result(): result is None -> call_soon(self.__step); else RuntimeError('Task got bad yield')",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "tasks.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "The Task constructor's eager_start argument defaults to False; when it is True and the loop is running, the coroutine starts executing at task creation, until it first blocks.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Task Object: class Task signature and eager_start paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Task object (signature, eager_start)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "asyncio.run(coro) runs the coroutine in an asyncio event loop and returns its result, taking care of managing the loop, finalizing asynchronous generators and closing the executor.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Running an asyncio Program: asyncio.run()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "It cannot be called while another asyncio event loop is running in the same thread, and the docs say it should be the main entry point of an asyncio program, ideally called only once.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Running an asyncio Program: asyncio.run()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "If loop_factory is given it creates the loop; otherwise asyncio.new_event_loop() is used, and the loop is closed at the end.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Running an asyncio Program: asyncio.run() (loop_factory)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "In CPython 3.14's runners.py, run() wraps the coroutine in a Task with loop.create_task() and runs the loop with run_until_complete() until that Task is done.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "Runner.run(): task = self._loop.create_task(coro, ...); self._loop.run_until_complete(task)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Runner.run(); Runner.close(); _cancel_all_tasks()",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "When the runner closes, it cancels every task that is still running and runs the loop until all of them have finished, gathering them with return_exceptions=True.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "Runner.close(): _cancel_all_tasks(loop); _cancel_all_tasks(): task.cancel(); gather(*to_cancel, return_exceptions=True)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Runner.run(); Runner.close(); _cancel_all_tasks()",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "Next it runs loop.shutdown_asyncgens(), which schedules every async generator that is still open to close with aclose().",
+   "sources": [
+    "s1",
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "loop.shutdown_asyncgens(); s19 Runner.close(): loop.run_until_complete(loop.shutdown_asyncgens())",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "loop.shutdown_asyncgens(); s19 Runner.close(): loop.run_until_complete(loop.shutdown_asyncgens())",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running and stopping the loop: shutdown_asyncgens",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Runner.run(); Runner.close(); _cancel_all_tasks()",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "Then it runs loop.shutdown_default_executor(), which waits for the executor's threads to finish; after that, run_in_executor() with the default executor raises RuntimeError.",
+   "sources": [
+    "s1",
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "loop.shutdown_default_executor(); s19 Runner.close(): loop.shutdown_default_executor(constants.THREAD_JOIN_TIMEOUT)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "loop.shutdown_default_executor(); s19 Runner.close(): loop.shutdown_default_executor(constants.THREAD_JOIN_TIMEOUT)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running and stopping the loop: shutdown_default_executor",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Runner.run(); Runner.close(); _cancel_all_tasks()",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "asyncio.run gives the executor 5 minutes; if it has not finished by then, a warning is emitted and the executor is closed.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "asyncio.run(): executor timeout paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "loop.close() discards any pending callbacks; it is irreversible, and no other methods should be called on the loop afterwards.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Running and stopping the loop: loop.close()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running and stopping the loop: close",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "The loop_factory parameter of asyncio.run() was added in Python 3.12, and since 3.14 the argument can be any awaitable, not only a coroutine.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "asyncio.run(): versionchanged 3.12 and 3.14",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "asyncio.EventLoop, an alias for SelectorEventLoop on Unix and ProactorEventLoop on Windows, was added in 3.13.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Event Loop Implementations: class EventLoop (versionadded 3.13)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Event loop implementations: EventLoop (Added in 3.13)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "The timeout parameter of loop.shutdown_default_executor() was added in 3.12.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "loop.shutdown_default_executor(): versionchanged 3.12",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running and stopping the loop: shutdown_default_executor (Changed in 3.12)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c67",
+   "text": "The asyncio policy system is deprecated and will be removed in Python 3.16; the docs recommend loop_factory to configure the event loop instead.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "asyncio.run(): note on the policy system",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c68",
+   "text": "In Python 3.14, asyncio.get_event_loop() raises RuntimeError if there is no current event loop, and no longer creates one implicitly.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Removed: asyncio (get_event_loop)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Removed: asyncio",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c69",
+   "text": "The docs describe connect_ex() as returning an error indicator instead of raising, which is useful for asynchronous connects.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "socket objects: connect_ex()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Socket Objects: connect_ex()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c70",
+   "text": "asyncio's own sock_connect() does the same: when a non-blocking connect raises BlockingIOError, it registers the socket with add_writer and, once the socket is writable, reads SO_ERROR to learn whether the connection succeeded.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "BaseSelectorEventLoop._sock_connect() (except BlockingIOError: self._add_writer(...)) and _sock_connect_cb() (sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR))",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "selector_events.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c71",
+   "text": "asyncio's protocol docs warn that whether received data is buffered, chunked or reassembled depends on the transport, so parsing should not rely on it, although data is always received in the correct order.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Protocols: Protocol.data_received()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Streaming Protocols: Protocol.data_received()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c72",
+   "text": "The docs describe streams as high-level async/await-ready primitives for network connections that send and receive data without callbacks or low-level protocols and transports.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Streams: introduction",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Streams: introduction",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c73",
+   "text": "asyncio.open_connection() establishes a connection and returns a (reader, writer) pair of StreamReader and StreamWriter objects; the reader's buffer limit defaults to 64 KiB.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Streams: asyncio.open_connection()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Stream Functions: open_connection()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c74",
+   "text": "StreamWriter.write() tries to write the data to the socket immediately and, if that fails, queues it in an internal write buffer; it should be used together with await writer.drain().",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "StreamWriter.write()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "StreamWriter.write()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c75",
+   "text": "drain() is a flow-control method: when the write buffer has reached its high watermark, it waits until the buffer drains to the low watermark, and otherwise it returns immediately.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "StreamWriter.drain()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "StreamWriter.drain()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c76",
+   "text": "StreamReader.readline() reads one line ending with a newline; at end-of-file without a newline it returns the partial data, and at end-of-file with an empty buffer it returns an empty bytes object.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "StreamReader.readline()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "StreamReader.readline()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c77",
+   "text": "writer.close() closes the stream and the underlying socket, and the docs recommend following it with await writer.wait_closed().",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "StreamWriter.close(); StreamWriter.wait_closed()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "StreamWriter.close()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c78",
+   "text": "Task.cancel() makes the Task throw a CancelledError into its coroutine; if the coroutine is awaiting a Future at that moment, that Future is cancelled.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Task Object: class Task (cancellation paragraph)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Task object; Task.cancel()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c79",
+   "text": "task.cancelled() returns True if the coroutine did not suppress the CancelledError and was actually cancelled.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Task Object: class Task (cancelled() paragraph)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Task object; Task.cancelled()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c80",
+   "text": "Task.cancel() only requests cancellation: it arranges for the CancelledError to be thrown into the coroutine on the next cycle of the event loop, and the coroutine may clean up or even suppress it.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c81",
+   "text": "The docs warn that if a task fails and its exception is never retrieved, asyncio logs a \"Task exception was never retrieved\" message when the task is garbage collected.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Creating Tasks: asyncio.create_task() (important note)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Creating tasks: Important note",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c82",
+   "text": "loop.add_reader(fd, callback) starts watching a file descriptor and calls the callback once it is available for reading.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Watching file descriptors: loop.add_reader()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Watching file descriptors: add_reader",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c83",
+   "text": "The docs warn that the event loop keeps only weak references to tasks, so a task not referenced elsewhere may be garbage collected at any time, even before it is done.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Creating Tasks: asyncio.create_task() (important note)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Creating tasks: Important note",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c84",
+   "text": "In asyncio's debug mode, many non-thread-safe APIs such as loop.call_soon() raise an exception when called from the wrong thread, and callbacks taking longer than 100 milliseconds are logged.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Debug Mode: \"When the debug mode is enabled\"",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Debug Mode",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c85",
+   "text": "uvloop, for example, describes itself as a fast, drop-in replacement for the built-in asyncio event loop, written in Cython on top of libuv.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "README: introduction",
+     "result": "supported",
+     "method": "verbatim read of MagicStack/uvloop README.rst (commit 07b10a4)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "README: introduction",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh clone of MagicStack/uvloop (commit 07b10a4)",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c86",
+   "text": "run_until_complete() calls run_forever(), which calls _run_once() in a loop until the loop is stopped",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "BaseEventLoop.run_until_complete(): self.run_forever(); run_forever(): while True: self._run_once()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c87",
+   "text": "The selectors docs say a file object shall be unregistered before it is closed, and that unregister() raises KeyError if the file object is not registered.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "BaseSelector.unregister()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "BaseSelector.unregister()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:04"
+    }
+   ]
+  },
+  {
+   "id": "c90",
+   "text": "In CPython's selectors.py, SelectSelector passes its whole set of readers and writers to select() on every call, while EpollSelector hands each descriptor to the kernel's epoll object once, in register(), and its select() calls that object's poll().",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "SelectSelector.select(): self._select(self._readers, self._writers, [], timeout); _PollLikeSelector.register(): self._selector.register(key.fd, ...); select(): self._selector.poll(timeout)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "SelectSelector.select(); _PollLikeSelector.register()/select(); class EpollSelector",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c91",
+   "text": "RLIMIT_NOFILE is the maximum number of open file descriptors for the current process.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Resource Limits: RLIMIT_NOFILE",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Resource Limits: RLIMIT_NOFILE",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c92",
+   "text": "Python's resource.setrlimit() raises ValueError if the new soft limit exceeds the hard limit, or if a process tries to raise its hard limit; a process running as the super-user may request any valid value.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Resource Limits: setrlimit()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Resource Limits: setrlimit()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c93",
+   "text": "EMFILE is the errno for \"Too many open files\".",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "errno.EMFILE",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "errno.EMFILE",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c95",
+   "text": "Each resource limit is a pair: a soft limit, which is the current limit and may be lowered or raised by the process, and a hard limit, which the soft limit can never exceed.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Resource Limits: introduction (pair of limits)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Resource Limits: introduction",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c96",
+   "text": "An event loop runs in a thread, typically the main thread, and executes all callbacks and Tasks in that thread.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c97",
+   "text": "Almost all asyncio objects are not thread-safe; code outside a Task or callback that must call a low-level asyncio API should use loop.call_soon_threadsafe().",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c98",
+   "text": "loop.call_soon_threadsafe() is the thread-safe variant of call_soon(), and it must be used when scheduling callbacks from another thread, because call_soon() is not thread-safe.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Scheduling callbacks: loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Scheduling callbacks: call_soon_threadsafe",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:02"
+    }
+   ]
+  },
+  {
+   "id": "c99",
+   "text": "To schedule a coroutine from another thread, use asyncio.run_coroutine_threadsafe(), which returns a concurrent.futures.Future for the result.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading (run_coroutine_threadsafe)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c100",
+   "text": "In CPython 3.14, call_soon_threadsafe() appends the handle to the ready queue and then calls the loop's _write_to_self(), which sends a byte on a socket pair whose other end the loop's selector watches, so select() returns.",
+   "sources": [
+    "s18",
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "BaseEventLoop.call_soon_threadsafe(): self._ready.append(handle); self._write_to_self(); s24 _make_self_pipe(): socket.socketpair(), _add_reader(self._ssock.fileno(), ...); _write_to_self(): csock.send(b'\\0')",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "BaseEventLoop.call_soon_threadsafe(): self._ready.append(handle); self._write_to_self(); s24 _make_self_pipe(): socket.socketpair(), _add_reader(self._ssock.fileno(), ...); _write_to_self(): csock.send(b'\\0')",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "selector_events.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c101",
+   "text": "CPython's check raises RuntimeError(\"Non-thread-safe operation invoked on an event loop other than the current one\").",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "BaseEventLoop._check_thread()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "BaseEventLoop (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c102",
+   "text": "to handle signals, the event loop must run in the main thread.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading (signals)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c103",
+   "text": "Python's tutorial states the convention that a name prefixed with an underscore, such as _spam, should be treated as a non-public part of the API, an implementation detail subject to change without notice.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "9.6. Private Variables",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "9.6. Private Variables",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:05"
+    }
+   ]
+  },
+  {
+   "id": "c104",
+   "text": "In Python 3.14, asyncio moved native tasks to a new per-thread doubly linked list, which the release notes credit with 10 to 20% better standard benchmark results and lower memory use.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Optimizations: asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Optimizations: asyncio",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c105",
+   "text": "The Python 3.13 release notes say that uncancel() may now reset the undocumented _must_cancel flag of a task.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Improved modules: asyncio (TaskGroup cancellation item)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Improved modules: asyncio",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c106",
+   "text": "A new **kwargs argument to create_task() was accidentally added in Python 3.13.3 and broke the API contract for custom task factories; several third-party task factories added workarounds, and 3.13.4 and later honour the old factory contract again until 3.14.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Improved modules: asyncio (create_task **kwargs item)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Improved modules: asyncio",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c107",
+   "text": "The docs say the transport is concerned with how bytes are transmitted, while the protocol determines which bytes to transmit, and that there is always a one-to-one relationship between a transport and its protocol.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Introduction (how vs which bytes; 1:1 relationship)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Introduction",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c108",
+   "text": "Transports and protocols are used by the low-level loop APIs such as loop.create_connection(); they use a callback-based style, enable high-performance implementations of network protocols, and the docs say they should only be used in libraries and frameworks, never in high-level asyncio applications.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Preface",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Preface",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c109",
+   "text": "data_received() is called with a non-empty bytes object, and can be called any number of times while the connection is open.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Protocols: Protocol.data_received()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Streaming Protocols: Protocol.data_received()",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c110",
+   "text": "The selectors docs encourage it over the raw select module unless you need precise control of the operating-system calls.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Introduction",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Introduction",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:04"
+    }
+   ]
+  },
+  {
+   "id": "c111",
+   "text": "uvloop's README benchmarks an echo server written three ways: with loop.sock_recv() and loop.sock_sendall(), with asyncio streams, and with a protocol.",
+   "sources": [
+    "s27"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s27",
+     "locator": "README: Performance",
+     "result": "supported",
+     "method": "verbatim read of MagicStack/uvloop README.rst (commit 07b10a4)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s27",
+     "locator": "README: Performance",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh clone of MagicStack/uvloop (commit 07b10a4)",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c112",
+   "text": "The docs say loop.run_in_executor() with a ThreadPoolExecutor runs blocking code in a different OS thread without blocking the thread the loop runs in.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading (run_in_executor)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  },
+  {
+   "id": "c113",
+   "text": "When the StreamReader's buffer has no complete line, it creates a Future with loop.create_future() and awaits it.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "StreamReader.readline() -> readuntil() -> _wait_for_data(): self._waiter = self._loop.create_future(); await self._waiter",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "streams.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c114",
+   "text": "The selector transport registered its socket with add_reader(), with its _read_ready method as the callback, when it started reading.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "_SelectorSocketTransport.__init__(): self._loop.call_soon(self._add_reader, self._sock_fd, self._read_ready)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "selector_events.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c115",
+   "text": "That callback calls sock.recv() with a buffer of 256 KiB and passes the bytes to the protocol's data_received().",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "_SelectorTransport.max_size = 256 * 1024; _read_ready__data_received(): self._sock.recv(self.max_size); self._protocol.data_received(data)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "selector_events.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c116",
+   "text": "The streams protocol's data_received() calls the reader's feed_data(), which appends the bytes to the buffer and wakes the waiter by setting the Future's result.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "StreamReaderProtocol.data_received(): reader.feed_data(data); StreamReader.feed_data(): self._buffer.extend(data); self._wakeup_waiter() -> waiter.set_result(None)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch source (commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "streams.py (see pass 1 locator)",
+     "result": "supported",
+     "method": "verbatim read of a separate fresh checkout of the CPython 3.14 branch (commit 1f06ef7), made after the page was drafted",
+     "at": "2026-10-13T06:12"
+    }
+   ]
+  },
+  {
+   "id": "c117",
+   "text": "The create_task docs already point to TaskGroup as the structured alternative: it keeps a strong reference to each task, awaits them and propagates their exceptions.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Creating Tasks: asyncio.create_task() (important note, TaskGroup)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 1f06ef7)",
+     "at": "2026-10-13T02:40"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Creating tasks: Important note (TaskGroup)",
+     "result": "supported",
+     "method": "WebFetch, neutral SUPPORTED/CONTRADICTED/NOT FOUND prompt with NOT IN CONTENT guard",
+     "at": "2026-10-13T06:03"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Linux select(2): select() can monitor only file descriptor numbers below FD_SETSIZE (1024)",
+   "reason": "read in a 2021 mirror of the man-pages source; the current man7.org page could not be fetched for pass 2. The page shows the limit with a tested program instead"
+  },
+  {
+   "text": "Linux epoll(7): the epoll API scales well to large numbers of watched file descriptors; interest list and ready list",
+   "reason": "same: no pass 2 against the current man7.org page. The page shows measured select() costs instead"
+  },
+  {
+   "text": "Linux socket(2): EMFILE means the per-process limit on open file descriptors has been reached",
+   "reason": "same: no pass 2 against man7.org; Python's errno docs and a tested program cover EMFILE"
+  },
+  {
+   "text": "A non-blocking connect is complete when the socket becomes writable (connect(2))",
+   "reason": "man7.org unreachable for pass 2; the page cites asyncio's own sock_connect() source instead"
+  },
+  {
+   "text": "How Windows I/O Completion Ports report finished operations rather than readiness",
+   "reason": "only Microsoft docs would support it, and they were not read for this page"
+  },
+  {
+   "text": "The operating system hands out the lowest free file descriptor number",
+   "reason": "POSIX/man-page fact not re-checked; the page shows reuse in a program run on Linux instead"
+  },
+  {
+   "text": "uvloop makes asyncio 2-4x faster",
+   "reason": "a project's own benchmark claim; not needed, and not independently verifiable"
+  },
+  {
+   "text": "uvloop's loop has no _ready or _scheduled attributes",
+   "reason": "no documentation states it"
+  },
+  {
+   "text": "Python 3.14 per-thread task list change broke code that read asyncio's internal task registries",
+   "reason": "not stated in the release notes; the page only says the change happened beneath private names"
+  }
+ ]
+}
