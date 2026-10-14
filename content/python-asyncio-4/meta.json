@@ -1,0 +1,68 @@
+{
+ "slug": "python-asyncio-4",
+ "title": "Python async (asyncio), Part 4: six traps that break async services",
+ "tldr": "Six mistakes that are legal Python, raise no error where they are written, and pass tests, each measured on Part 3's gateway: a forgotten await that empties the metrics; seller-e's sync SDK called on the loop, which makes the slowest seller 'win' at 900 ms while the four fast ones time out; CPU work, where threads take turns and only a process pool helps; background Tasks that vanish or fail with nobody told; gather, which drops every failure after the first and hides cancellations among its results; a broad except that swallows CancelledError so requests take 1,200 ms against a 250 ms budget; and timeouts that are relabelled as failures or never counted. Each comes with its root cause in the loop's machinery, its signal, its fix and a test. Debug mode and Ruff/mypy as detectors (and why pytest -W error::RuntimeWarning is not enough), then gateway v5 with every fix, sized for 10 times the load, and an interview drill.",
+ "category": "Python",
+ "created": "2026-10-15",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {
+   "label": "Python async, Part 1: coroutines from scratch, build your own event loop",
+   "slug": "python-asyncio-1"
+  },
+  {
+   "label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks",
+   "slug": "python-asyncio-2"
+  },
+  {
+   "label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines",
+   "slug": "python-asyncio-3"
+  }
+ ],
+ "related": [
+  {
+   "label": "Python async, Part 1: coroutines from scratch, build your own event loop",
+   "slug": "python-asyncio-1",
+   "why": "previous page: generators, coroutines and a toy event loop; the gateway reaches 900 ms on one thread and answers at the 250 ms budget"
+  },
+  {
+   "label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks",
+   "why": "previous page: real sockets, selectors (epoll, kqueue), one loop iteration, Futures, Tasks and asyncio.run; a failing seller stays inside its own Task",
+   "slug": "python-asyncio-2"
+  },
+  {
+   "label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines",
+   "why": "previous page: TaskGroup, ExceptionGroup and except*, gather, as_completed, eager tasks, a Semaphore cap and asyncio.timeout_at; gateway v4 answers within 250 ms with seller-e timed out",
+   "slug": "python-asyncio-3"
+  },
+  {
+   "label": "Python async, Part 4: six traps that break async services",
+   "why": "this page: forgotten awaits, blocking calls (seller-e's sync SDK, CPU work), lost tasks, gather leaks, swallowed cancellation and silent timeouts, with debug mode and static checks to find them; gateway v5",
+   "slug": "python-asyncio-4"
+  },
+  {
+   "label": "Python async, Part 5: cancellation in depth",
+   "why": "what really happens to seller-e at the deadline, shield, and cancellation bookkeeping"
+  },
+  {
+   "label": "Python async, Part 6: bounding work: queues and backpressure",
+   "why": "keeping the gateway stable when requests arrive faster than sellers answer"
+  },
+  {
+   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads",
+   "why": "a price cache shared by requests, per-request context, and crossing between threads and the loop"
+  },
+  {
+   "label": "Python async, Part 8: shutting down and cleaning up",
+   "why": "finishing in-flight requests on SIGTERM and closing async generators and clients"
+  },
+  {
+   "label": "Python async, Part 9: seeing and testing async code",
+   "why": "debug mode, loop lag, task dumps, and deterministic tests for the gateway"
+  },
+  {
+   "label": "Python async, Part 10: the whole gateway: sizing, failures and a full mock interview",
+   "why": "integrates every layer, sizes it, walks its failures across layers, and ends with a mock interview"
+  }
+ ]
+}

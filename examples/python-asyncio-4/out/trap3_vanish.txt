@@ -1,0 +1,6 @@
+Tasks alive before gc.collect(): 3
+asyncio: Task was destroyed but it is pending!
+Tasks alive after gc.collect():  2
+orphan task: its finally ran, inside gc.collect()
+event task: finished
+timer task: finished

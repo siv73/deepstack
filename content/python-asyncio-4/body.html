@@ -1,0 +1,1054 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="9">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Gateway v4 from Part 3 answers seller-b at 1,199 in 250 ms, reports seller-e as timed out, caps seller calls with one Semaphore shared by every request, and leaves nothing running. Its tests pass. Yet six small mistakes, each legal Python that raises no error where it is written, can still make it answer late, answer wrong, or fail without anyone noticing. This page makes each mistake on purpose.</p>
+<h3>Introduction</h3>
+<p>This is Part 4 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Parts 1 to 3 are the prerequisites for this page. This part recaps them in one screen; if any line below is unfamiliar, read that part first.</p>
+<h3>What Parts 1 to 3 built</h3>
+<ol>
+<li>The five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149). The right answer within 250 ms is seller-b at 1,199, with seller-e missing.</li>
+<li>Part 1: asked one after another, the waits add up to 1,450 ms; overlapped on one thread with a toy event loop, 900 ms. Part 1 also showed, on the toy loop, that one blocking call delays every task and that a forgotten <code>await</code> raises nothing.</li>
+<li>Part 2: the sellers became real TCP servers. asyncio's loop runs ready callbacks, sleeps in <code>select()</code> until a socket or a timer is due, and hands results over in <strong>Futures</strong>. A <strong>Task</strong> drives a coroutine step by step and stores its result or exception. Loop lag, measured with a timer, shows when something holds the loop.</li>
+<li>Part 3: a <strong>TaskGroup</strong> runs the five calls and cancels the rest on an unexpected failure; a <strong>Semaphore</strong> caps calls in flight; <code>asyncio.timeout_at</code> gives each request one deadline, entered before the wait for a slot. Expected seller failures and timeouts are returned as values. That is gateway v4.</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>Blocking calls: a synchronous call in a seller coroutine still freezes every Task.</li>
+<li>Swallowed cancellation: a broad <code>except</code> in the wrong place can break the deadline and the TaskGroup.</li>
+<li>Lost tasks and silent timeouts: Tasks created outside a group, forgotten awaits, and timeouts that nobody counts.</li>
+</ul>
+<h3>What this page adds</h3>
+<p>Six traps, one per part, each with the same five headings: what the user sees, the root cause traced through the loop of Parts 1 and 2, the signal that reveals it, the fix, and a test that proves the fix. Before the traps come the two detection tools: asyncio's debug mode and static checks. After them comes gateway v5, which carries every fix and is sized for 10 times the load.</p>
+<p>Three things change in the running system from this page on, and later pages keep them:</p>
+<ol>
+<li><strong>seller-e has only a sync SDK.</strong> Its vendor ships a client library built on blocking sockets, with no async version. Gateway v5 calls it in a small thread pool of its own.</li>
+<li><strong>The gateway ranks the offers.</strong> A pure-Python ranking step runs on every answer. It is CPU work, so gateway v5 runs it in a process pool.</li>
+<li><strong>The gateway counts outcomes per seller.</strong> Every request records "answered", "timed out" or "failed" for each seller, and a background Task sends the counts to a metrics service.</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 4 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "GET /compare", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "tg", "label": "Run together", "sub": "Part 3: group · cap · deadline", "col": 1, "row": 0},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2},
+ {"id": "sdk", "label": "SDK threads", "sub": "Part 4: seller-e's own pool", "col": 3, "row": 3, "step": 4},
+ {"id": "cpu", "label": "Process pool", "sub": "Part 4: ranking offers", "col": 1, "row": 3, "step": 4},
+ {"id": "met", "label": "Metrics service", "sub": "Part 4: counts per seller", "col": 0, "row": 0, "step": 4}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "item code", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "tg", "label": "starts and bounds the calls", "step": 2},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 3},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 3},
+ {"from": "gw", "to": "sdk", "label": "run_in_executor", "step": 4},
+ {"from": "sdk", "to": "se", "label": "sync SDK call", "step": 4},
+ {"from": "gw", "to": "cpu", "label": "rank the offers", "step": 4},
+ {"from": "gw", "to": "met", "label": "background flush", "step": 4}],
+ "captions": [
+ "The request, as in Parts 1 to 3: the app sends an item code and the gateway asks sellers a to d over their own TCP connections.",
+ "Part 3's tools, unchanged: a TaskGroup starts and waits for the calls, a shared Semaphore caps them, and one deadline per request cuts them at 250 ms.",
+ "Part 2's machinery, unchanged: asyncio's loop runs the waits and the operating system's selector says which sockets are ready.",
+ "New on this page: seller-e is reached through its sync SDK, in a thread pool of its own; the ranking step runs in a process pool; and a background Task sends per-seller counts to a metrics service."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Step 1 is the request. The arrow to seller-e is missing on purpose: from this page on, the gateway reaches seller-e only through the vendor's SDK.</li>
+<li>Steps 2 and 3 are Parts 3 and 2, unchanged. Every trap on this page breaks a promise those pieces rely on.</li>
+<li>Step 4 highlights the three new pieces. Each one exists because a trap on this page showed that the simple way does not work: the SDK freezes the loop if called directly, the ranking freezes it if run on the loop, and the counts are the only way a missing seller gets noticed.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "These are beginner mistakes; a team that writes TaskGroups and deadlines does not make them."</p>
+<p><strong>Why it is wrong:</strong> each trap on this page is one or two lines inside otherwise correct code, and each passes the kind of tests Parts 1 to 3 wrote, because each answer the shopper sees still looks right or the failure appears only under load. The page measures every one of them on gateway v4 itself.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v4: TaskGroup, a shared Semaphore and one deadline per request; seller-b at 1,199 in 250 ms.</li>
+<li>Still broken: blocking calls, swallowed cancellation, lost tasks and silent timeouts.</li>
+<li>New in the system: seller-e's sync SDK in its own threads, ranking in a process pool, per-seller counts sent in the background.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 4 keeps gateway v4 and breaks it six ways, then builds gateway v5 with seller-e's sync SDK, a ranking step and per-seller metrics, each placed where it cannot hurt the loop.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">This needs Part 3. In gateway v4, why is <code>asyncio.timeout_at(deadline)</code> entered before <code>async with self.limit</code> and not after it?</p>
+<ol>
+<li data-why="The order of the two blocks does not change how many calls run at once; the Semaphore alone sets that.">So that fewer calls run at once</li>
+<li>So that time spent waiting for a free slot also counts against the request's 250 ms</li>
+<li data-why="Both orders release the slot: async with releases it in a finally either way.">So that the slot is released when the deadline fires</li>
+</ol>
+<p class="ts-why">Part 3 measured the other order: with the timer started after the slot was taken, calls waited in line and then still got a full 250 ms, and the slowest request took about 1,770 ms. The deadline must cover the wait.</p>
+</div>
+</section>
+<section class="ts-part" id="the-promises" data-rung="1" data-min="10">
+<h2>Why the traps exist: five promises the loop takes on trust</h2>
+<p class="ts-bridge">Last part: gateway v4 works, and this page breaks it six ways. Still unsolved: why are these mistakes possible at all, and why does none of them raise an error where it is made?</p>
+<p class="ts-problem">A thread pool protects itself: if one thread blocks, the operating system runs another. asyncio's loop cannot. It runs every request of the gateway on one thread and believes what each coroutine tells it. If a coroutine never hands back the thread, or quietly ignores a request to stop, the loop has no way to notice, let alone object.</p>
+<h3>Introduction</h3>
+<p>Parts 1 to 3 built the gateway on a small number of rules that the code must follow for the loop to work. Nothing in Python enforces them. This part names them, because each trap on this page is one of them broken, and the signal for each trap is whatever trace the broken rule happens to leave.</p>
+<h3>Comparison</h3>
+<p>Consider a shared office kitchen with one cook and a rota on the wall. The cook does whatever ticket is at the front, and trusts every ticket to say honestly what it needs. A ticket written but never handed in is never cooked. A ticket that says "stir for 10 seconds" but means "stir for 10 minutes" holds the cook while every other order goes cold. An order nobody collects is thrown away without anyone hearing about it.</p>
+<ul>
+<li>The cook = the loop's one thread.</li>
+<li>A ticket never handed in = a coroutine that is never awaited or turned into a Task.</li>
+<li>A ticket that holds the cook = code that blocks instead of awaiting.</li>
+<li>An order nobody collects = a Task whose result or error nobody reads.</li>
+</ul>
+<p>The comparison stops working here: a cook can be interrupted. The loop cannot interrupt a coroutine at all; it can only throw an exception in at the next <code>await</code>, and the coroutine decides what to do with it.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>An <dfn data-def="A mistake that is legal Python, raises no error where it is written, usually passes tests, and breaks behaviour only in some runs or under load.">async trap</dfn> is a mistake in asyncio code that the language accepts, that raises no error at the line where it is made, and that breaks one of the promises below, so the damage appears somewhere else: in another request, at another time, or only under load.</p>
+</div>
+<h3>Working: the five promises</h3>
+<ol class="ts-steps">
+<li><strong>Every coroutine is handed to someone who runs it.</strong> It is awaited, or wrapped in a Task. A coroutine object on its own does nothing (Part 1).</li>
+<li><strong>Every step gives the thread back quickly.</strong> Code runs between awaits without waiting on the network, the disk or a long computation. The loop can only switch at an <code>await</code> (Parts 1 and 2).</li>
+<li><strong>Every Task has an owner who reads its outcome.</strong> Someone keeps a reference to it and reads its result or its exception. A Task stores its failure; it does not announce it (Part 2).</li>
+<li><strong>Cancellation always travels out.</strong> When a Task is cancelled, the CancelledError thrown in at its <code>await</code> is allowed to leave the coroutine, after any clean-up. Deadlines and TaskGroups are built on it (Part 3).</li>
+<li><strong>Every missing answer is counted.</strong> A seller that timed out or failed is reported as such, so a partial answer is visible. This one is the gateway's promise, not the loop's.</li>
+</ol>
+<p><strong>Which trap breaks which promise</strong></p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Trap</th><th>Promise broken</th><th>Where the damage shows</th></tr></thead>
+<tbody>
+<tr><td>1. Forgotten await</td><td>1</td><td>The work silently does not happen</td></tr>
+<tr><td>2. Blocking call (I/O or CPU)</td><td>2</td><td>Every request on the loop, not only the one that blocked</td></tr>
+<tr><td>3. Lost background task</td><td>3</td><td>A failure reported late, or nowhere</td></tr>
+<tr><td>4. gather that keeps running</td><td>3</td><td>Calls and failures after the request has already failed</td></tr>
+<tr><td>5. Swallowed CancelledError</td><td>4</td><td>Deadlines that do not fire; groups that wait</td></tr>
+<tr><td>6. Silent timeouts</td><td>5</td><td>Answers that are partial with nobody aware</td></tr>
+</tbody>
+</table></div>
+<p><strong>Why each promise is needed</strong></p>
+<ul>
+<li>Promise 1: the loop only runs what is in its ready queue or parked on a Future; a coroutine object nobody hands over is in neither.</li>
+<li>Promise 2: the loop is one thread; while a step runs, nothing else does, including the timer that enforces the deadline.</li>
+<li>Promise 3: a Task keeps its exception until someone asks for it; with no owner, nobody asks.</li>
+<li>Promise 4: <code>timeout</code>, <code>timeout_at</code> and TaskGroup stop work by cancelling it; if the cancellation is caught and dropped, the work goes on.</li>
+<li>Promise 5: a partial answer looks like a normal answer; only a count makes the difference visible.</li>
+</ul>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If something goes wrong in async code, an exception will tell me."</p>
+<p><strong>Why people hold it:</strong> in ordinary synchronous code, a mistake usually raises at the line that made it.</p>
+<p><strong>Why it is wrong:</strong> in four of the six traps nothing is raised anywhere the caller can see: a forgotten await only warns, a blocking call only makes things late, a lost Task keeps its exception to itself, and a swallowed cancellation makes a deadline quietly not fire. The fifth, gather, raises the first failure and drops the next ones. The signals are warnings, logs, late timers and counts, not exceptions.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>The loop trusts five promises: hand over every coroutine, give the thread back, own every Task, let cancellation out, count every missing answer.</li>
+<li>Each trap breaks one promise and raises no error where it is written.</li>
+<li>The damage appears elsewhere: other requests, later, or under load.</li>
+</ul>
+</div>
+<p class="ts-takeaway">The loop runs on trust: each trap is one broken promise whose damage shows up somewhere other than the line that broke it.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">A handler calls a sync database driver that waits 40 ms per query. Which promise does it break, and who pays for it?</p>
+<ol>
+<li data-why="The coroutine is awaited normally; the problem is what it does between awaits.">Promise 1; only that handler's request, because its work never runs</li>
+<li data-why="Nothing is cancelled here; the query simply holds the thread.">Promise 4; the request's deadline is cancelled</li>
+<li>Promise 2; every request on that loop waits 40 ms for each query</li>
+</ol>
+<p class="ts-why">A sync driver holds the loop's only thread while it waits. Part 1 showed the same thing on the toy loop: every task, not only the caller, is delayed by the full wait.</p>
+</div>
+</section>
+<section class="ts-part" id="where-traps-hide" data-rung="2" data-min="13">
+<h2>Where each trap hides inside the loop</h2>
+<p class="ts-bridge">Last part: each trap breaks one of five promises. Still unsolved: what, exactly, does the loop do when a promise is broken? Where in Part 2's machinery does each mistake disappear?</p>
+<p class="ts-problem">An engineer reads the gateway's code for an hour looking for the bug that makes every request slow at 14:00 each day. The bug is a single synchronous call. Reading code finds it only if you know which line of the loop it hides behind; knowing the machinery tells you which signal to look for instead.</p>
+<h3>Introduction</h3>
+<p>Part 2 opened asyncio's loop: a ready queue of callbacks, a timer heap, a selector, Futures that hand results over, and Tasks that step coroutines. This part walks the six traps through those same pieces, using CPython 3.14's source. Each trap gets its own part later; here the aim is the map.</p>
+<h3>Working: the six hiding places</h3>
+<ol class="ts-steps">
+<li><strong>Forgotten await: before the loop ever sees it.</strong> Calling an async function only builds a coroutine object. Without <code>await</code> or a Task, it never reaches the ready queue. <span class="ts-claim" data-claim="c1" data-src="s2">The docs say that when a coroutine function is called but not awaited, or not scheduled with create_task(), asyncio emits a RuntimeWarning.</span> The warning is issued when the dropped object is cleaned up, not where it was dropped.</li>
+<li><strong>Blocking call: inside one callback of one iteration.</strong> <span class="ts-claim" data-claim="c2" data-src="s12">In CPython 3.14's base_events.py, each loop iteration counts the callbacks in the ready queue and calls them one after another; each call returns before the next starts.</span> A Task step is one such callback. If it blocks for 900 ms, the next <code>select()</code> and every due timer, including the deadline's, wait 900 ms.</li>
+<li><strong>Lost Task: in a reference the loop does not keep.</strong> <span class="ts-claim" data-claim="c3" data-src="s1">The docs warn that the event loop only keeps weak references to tasks, so a task that isn't referenced elsewhere may get garbage collected at any time, even before it is done.</span> <span class="ts-claim" data-claim="c4" data-src="s14">In CPython 3.14's futures.py, a Future whose exception was set but never retrieved reports "exception was never retrieved" from its __del__ method, that is, only when the object is destroyed.</span></li>
+<li><strong>gather: in a done callback that has stopped listening.</strong> <span class="ts-claim" data-claim="c5" data-src="s13">In CPython 3.14's tasks.py, once gather()'s outer Future is done, its done callback marks the exception of each child that finishes later as retrieved and returns without passing it on.</span></li>
+<li><strong>Swallowed cancellation: at the await where CancelledError arrives.</strong> <span class="ts-claim" data-claim="c6" data-src="s1">Task.cancel() arranges for a CancelledError to be thrown into the wrapped coroutine on the next cycle of the event loop, and the coroutine then has a chance to clean up or even deny the request by suppressing the exception.</span> <span class="ts-claim" data-claim="c7" data-src="s15">In CPython 3.14's timeouts.py, the timeout's exit turns a CancelledError into TimeoutError only when that CancelledError is leaving the block; if the block ends without an exception, nothing is raised.</span></li>
+<li><strong>Silent timeout: in an except clause that is too wide.</strong> <span class="ts-claim" data-claim="c8" data-src="s5">TimeoutError is one of the built-in subclasses of OSError.</span> So <code>except OSError</code>, meant for refused or reset connections, also catches the deadline's TimeoutError, and so does <code>except Exception</code>.</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="Where the six traps hide">
+<script type="application/json">
+{"nodes": [
+ {"id": "coro", "label": "Your coroutine", "sub": "async def code", "col": 0, "row": 1},
+ {"id": "ready", "label": "Ready queue", "sub": "callbacks, Task steps", "col": 1, "row": 0},
+ {"id": "sched", "label": "Scheduler", "sub": "one iteration", "col": 1, "row": 1},
+ {"id": "heap", "label": "Timer heap", "sub": "the deadline's timer", "col": 2, "row": 0},
+ {"id": "task", "label": "Task", "sub": "steps it; keeps the outcome", "col": 1, "row": 2},
+ {"id": "gc", "label": "Garbage collector", "sub": "finalizers warn here", "col": 0, "row": 3},
+ {"id": "group", "label": "gather()", "sub": "outer Future + callbacks", "col": 2, "row": 2},
+ {"id": "count", "label": "Answer and counts", "sub": "what the shopper and you see", "col": 2, "row": 3}],
+ "edges": [
+ {"from": "coro", "to": "gc", "label": "never handed over", "step": 1, "dashed": true},
+ {"from": "sched", "to": "coro", "label": "a step that never yields", "step": 2},
+ {"from": "task", "to": "gc", "label": "no owner: weak reference", "step": 3, "dashed": true},
+ {"from": "group", "to": "task", "label": "later failure: marked read", "step": 4},
+ {"from": "heap", "to": "task", "label": "cancel() at the deadline", "step": 5},
+ {"from": "task", "to": "count", "label": "TimeoutError relabelled", "step": 6}],
+ "captions": [
+ "Trap 1: a coroutine object that is never awaited or wrapped in a Task never reaches the ready queue. The only trace is a RuntimeWarning, issued when the garbage collector cleans the object up.",
+ "Trap 2: the scheduler runs each ready callback to completion. A Task step that blocks holds the iteration, so select() and the deadline's timer wait for it.",
+ "Trap 3: the loop keeps only weak references to Tasks. A Task with no owner can be collected, and a stored exception is reported only by the finalizer, when the object is destroyed.",
+ "Trap 4: once gather() has raised, its done callback marks later failures as read and drops them.",
+ "Trap 5: the deadline's timer calls cancel(). The CancelledError arrives at the Task's await; if the coroutine catches and drops it, the timeout never turns into TimeoutError.",
+ "Trap 6: the deadline's TimeoutError is an OSError. A handler that is too wide reports it as a failure, or nobody counts it, and the answer looks complete."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>The ready queue, scheduler and timer heap are Part 2's, in the same positions. The new boxes are the places a broken promise leaves its trace.</li>
+<li>Steps 1 and 3 both end at the garbage collector: two of the six traps are reported, if at all, only when Python cleans up an object. That is why their signals arrive late and far from the request.</li>
+<li>Step 2 is the only trap that slows everything. Every other trap damages one request or one piece of data.</li>
+<li>Steps 5 and 6 both involve the deadline: in one the timer fires and is ignored, in the other it fires and is misreported.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> four symptoms reported by four teams. Match each to its hiding place.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Symptom</th><th>Hiding place</th><th>Trap</th></tr></thead>
+<tbody>
+<tr><td>Every endpoint slow at once; CPU low</td><td>One iteration held by one step</td><td>2</td></tr>
+<tr><td>A log line "Task exception was never retrieved", hours after the error</td><td>A finalizer, at garbage collection</td><td>3</td></tr>
+<tr><td>Requests take 1,200 ms; the timeout counter stays at zero</td><td>A CancelledError caught at the await</td><td>5</td></tr>
+<tr><td>seller-e shows a 100% error rate and no timeouts</td><td>An except clause that catches OSError</td><td>6</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the symptom points at a piece of the loop, and the piece points at the line to look for: a sync call, an unowned <code>create_task</code>, a broad <code>except</code>.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "asyncio would raise an error if a Task were lost or a cancellation were ignored."</p>
+<p><strong>Why it is wrong:</strong> the loop has no list of Tasks it must finish, and no rule that a cancelled Task must end. <span class="ts-claim" data-claim="c9" data-src="s1">The docs say that Task.cancel() does not guarantee that the Task will be cancelled, unlike Future.cancel().</span> Both traps are allowed by design; only their side effects can be observed.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Forgotten awaits and lost Tasks are reported, if at all, when objects are garbage-collected.</li>
+<li>A blocking step holds the whole iteration, including the deadline's timer.</li>
+<li>gather drops failures after its first; a swallowed CancelledError stops a timeout from converting; TimeoutError is an OSError.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Each trap hides in a specific piece of Part 2's loop, and knowing the piece tells you which trace to look for.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c2">
+<p class="q">This needs Part 2. A seller coroutine blocks for 300 ms. The request's deadline timer was due 50 ms into that block. When does the timer's callback run?</p>
+<ol>
+<li>After the blocking step returns, in a later iteration, about 250 ms late</li>
+<li data-why="Timers are callbacks on the same thread; nothing can run while a step is still running.">At its due time, in parallel with the blocked step</li>
+<li data-why="The timer is not lost: it is still on the heap and is moved to the ready queue at the next iteration.">Never, because its due time has passed</li>
+</ol>
+<p class="ts-why">One iteration runs its ready callbacks one after another on one thread. The timer waits on the heap until the blocked step returns; the next iteration finds it overdue and runs it, about 250 ms late.</p>
+</div>
+</section>
+<section class="ts-part" id="debug-mode" data-rung="3" data-min="14">
+<h2>The detector: asyncio's debug mode</h2>
+<p class="ts-bridge">Last part: each trap hides in one piece of the loop. Still unsolved: three of those pieces leave a trace only when you know where to look. Is there a switch that makes the loop point at the line?</p>
+<p class="ts-problem">The gateway's logs show "coroutine 'MetricsClient.record' was never awaited", but the gateway calls <code>record()</code> from four places. Another day, every endpoint is slow and nothing is logged at all. In both cases the team needs one thing: the line of code responsible.</p>
+<h3>Introduction</h3>
+<p>asyncio has a debug mode built for exactly this. It does not change what the program computes. It adds checks and timings to the loop and records where objects were created, so the warnings and logs of traps 1 to 3 name the line that caused them. This part shows how to turn it on, what it reports, and how to make a test suite fail on what it finds.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="asyncio's development setting that adds checks and timings to the event loop, so mistakes such as blocking calls and never-awaited coroutines are reported with the code location.">Debug mode</dfn> is asyncio's development setting. <span class="ts-claim" data-claim="c10" data-src="s2">The docs list four ways to enable it: the PYTHONASYNCIODEBUG environment variable set to 1, the Python Development Mode, debug=True passed to asyncio.run(), or loop.set_debug().</span></p>
+</div>
+<h3>What it reports</h3>
+<ol class="ts-steps">
+<li><strong>Slow steps.</strong> <span class="ts-claim" data-claim="c11" data-src="s2 s3">In debug mode, callbacks taking longer than 100 milliseconds are logged, and loop.slow_callback_duration sets the minimum duration, in seconds, that counts as slow.</span> <span class="ts-claim" data-claim="c12" data-src="s12">In CPython 3.14's base_events.py, the loop times each ready callback in debug mode and logs a warning "Executing … took … seconds" when it took at least slow_callback_duration.</span> A Task step is a callback, so a blocking call shows up here with the Task's coroutine named.</li>
+<li><strong>Where a never-awaited coroutine was created.</strong> <span class="ts-claim" data-claim="c13" data-src="s2">In debug mode, the never-awaited RuntimeWarning adds a "Coroutine created at" traceback that ends at the line that called the coroutine function.</span> <span class="ts-claim" data-claim="c14" data-src="s12">In CPython 3.14, turning debug mode on also turns on coroutine origin tracking with sys.set_coroutine_origin_tracking_depth().</span></li>
+<li><strong>Where an unread Task was created.</strong> <span class="ts-claim" data-claim="c15" data-src="s2">With debug mode on, the "Task exception was never retrieved" message also shows the traceback where the task was created.</span></li>
+<li><strong>Calls from the wrong thread.</strong> <span class="ts-claim" data-claim="c16" data-src="s2">In debug mode, many non-threadsafe asyncio APIs, such as loop.call_soon() and loop.call_at(), raise an exception if they are called from a wrong thread.</span> Part 2 measured this one.</li>
+<li><strong>Slow I/O polls.</strong> <span class="ts-claim" data-claim="c17" data-src="s2">The execution time of the I/O selector is logged if it takes too long to perform an I/O operation.</span></li>
+</ol>
+<p><strong>Why each report is needed</strong></p>
+<ul>
+<li>Report 1 is the only runtime signal for trap 2 that names the code; loop lag (Part 2) says that something blocked, not what.</li>
+<li>Reports 2 and 3 turn traps 1 and 3 from "somewhere in the program" into one file and one line.</li>
+<li>Report 4 catches the cross-thread mistake Part 2 showed, which otherwise only makes callbacks late.</li>
+</ul>
+<h3>Program</h3>
+<p>The program runs three of this page's traps with <code>debug=True</code> and prints what asyncio reports for each. The traps themselves are the programs of the trap parts later on this page; here they are only the input.</p>
+<div class="ts-code" data-lang="python" data-title="debug_demo.py" data-file="debug_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/debug_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>slow_step()</code> runs the gateway with seller-e's sync SDK called directly. The asyncio logger receives one warning: a step of <code>Blocking._ask()</code> took 0.9 seconds, seller-e's 900 ms.</li>
+<li><code>never_awaited()</code> runs the gateway with one missing <code>await</code>. The warning's "Coroutine created at" traceback ends at <code>trap1_forgotten_await.py</code>, line 20, in <code>compare</code>: the exact line.</li>
+<li><code>never_retrieved()</code> starts a background Task that fails and is never read. The exception handler's context holds a <code>source_traceback</code>; the program prints its last frame outside asyncio: <code>trap3_silent.py</code>, line 26, in <code>start_bare</code>, where <code>create_task()</code> was called.</li>
+<li>Paths are shortened to file names so the output is the same on every machine.</li>
+</ol>
+<h3>Making a test suite fail on what debug mode finds</h3>
+<p>Logging a problem is only half of it; CI must fail. Two of the reports are warnings, and one detail decides whether a test fails. <span class="ts-claim" data-claim="c18" data-src="s17">pytest's docs describe exceptions raised in a situation where they cannot propagate to a caller, most commonly in a __del__ method, and say pytest reports them with the warning category pytest.PytestUnraisableExceptionWarning.</span> The never-awaited warning is issued while a coroutine object is being finalized, so under <code>-W error</code> it becomes exactly such an unraisable exception. The tests on this page measured the consequence on Python 3.14.6 and pytest 9.1.1:</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>A test with a forgotten await</th></tr></thead>
+<tbody>
+<tr><td>no warning filter</td><td>passes, with 1 warning</td></tr>
+<tr><td><code>-W error::RuntimeWarning</code></td><td>passes, with 1 warning (the RuntimeWarning becomes an unraisable exception, reported as a different warning)</td></tr>
+<tr><td><code>-W error</code></td><td>fails</td></tr>
+<tr><td><code>-W error::RuntimeWarning -W error::pytest.PytestUnraisableExceptionWarning</code></td><td>fails</td></tr>
+</tbody>
+</table></div>
+<div class="ts-code" data-lang="bash" data-title="CI: debug mode on, every warning an error" data-verified="spec" data-claims="c10 c19 c18">
+<pre><code>PYTHONASYNCIODEBUG=1 pytest -W error</code></pre>
+</div>
+<p><span class="ts-claim" data-claim="c19" data-src="s21">The -W option's error action converts warnings to exceptions.</span> Outside pytest, a plain <code>python -W error::RuntimeWarning</code> run does not fail either: Python prints "Exception ignored while finalizing coroutine" and the exit code stays 0, as a test on this page checks.</p>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Where</th><th>Setting</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Tests and CI</td><td>Debug mode on (<code>PYTHONASYNCIODEBUG=1</code>), <code>pytest -W error</code></td><td>Never-awaited coroutines and never-read Tasks fail the build, with the creating line in the report</td></tr>
+<tr><td>Tests and CI</td><td><code>slow_callback_duration</code> lowered, for example to 0.05</td><td>A 60 ms blocking call in a test is a 60 ms stall for every request in production</td></tr>
+<tr><td>Staging or a canary</td><td>Debug mode on, asyncio logger at WARNING or lower, alerts on "Executing … took"</td><td>Real traffic finds blocking calls tests never exercise</td></tr>
+<tr><td>Production</td><td>Debug mode off; loop lag (Part 2) as a metric; alerts on "never retrieved" and "destroyed but it is pending"</td><td><span class="ts-claim" data-claim="c20" data-src="s7">The docs describe the Python Development Mode as additional runtime checks that are too expensive to be enabled by default.</span></td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c21" data-src="s7">The Python Development Mode enables asyncio's debug mode and adds the default warning filter, so ResourceWarning and DeprecationWarning are shown.</span> <span class="ts-claim" data-claim="c22" data-src="s7">It is enabled with the -X dev command line option or the PYTHONDEVMODE environment variable set to 1.</span></p>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Every endpoint of your async service gets slow for a few seconds several times a day. How do you find the cause?"</p>
+<p><strong>What a strong senior answer contains:</strong> slowness on every endpoint at once points at the shared loop, so first a metric: loop lag (how late a periodic timer fires) to confirm the loop is being held. Then attribution: debug mode on a canary or in staging, where every step slower than <code>slow_callback_duration</code> is logged with the Task's coroutine named. The candidate does not propose debug mode for the whole fleet, and names the fix for what it finds: an async client, or the call moved to a sized thread pool.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>-W error::RuntimeWarning</code> in CI makes every forgotten await fail the build."</p>
+<p><strong>Why people hold it:</strong> the warning is a RuntimeWarning, so turning RuntimeWarnings into errors sounds sufficient. (Part 1 of this series suggested this setting; it is corrected there too.)</p>
+<p><strong>Why it is wrong:</strong> the warning is raised during finalization, where an exception cannot reach any caller. pytest catches it and reports it as a PytestUnraisableExceptionWarning, which that filter does not cover, so the test passes. Use <code>-W error</code>, or add the pytest warning to the filter as well.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Enable with <code>PYTHONASYNCIODEBUG=1</code>, <code>-X dev</code>, <code>asyncio.run(..., debug=True)</code> or <code>loop.set_debug(True)</code>.</li>
+<li>It logs steps over 100 ms by name, and adds creation tracebacks to never-awaited and never-retrieved reports.</li>
+<li>In CI: debug mode plus <code>pytest -W error</code>; in production: off, with loop lag as the metric.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Debug mode turns three of the traps' faint traces into reports that name the coroutine and the line, and <code>pytest -W error</code> turns those reports into failed builds.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c11 c12">
+<p class="q">With debug mode on and the default threshold, a handler parses a large JSON body for 70 ms between two awaits. What does asyncio log?</p>
+<ol>
+<li data-why="Debug mode logs; it does not raise an exception for a slow step.">It raises an exception in the handler</li>
+<li>Nothing: 70 ms is under the default 100 ms threshold, unless slow_callback_duration is lowered</li>
+<li data-why="The slow-step check measures how long each callback ran; a JSON parse in a step is timed like anything else.">Nothing: CPU work is never reported, only blocking I/O</li>
+</ol>
+<p class="ts-why">The check times each callback, whatever it does, and logs it when it took at least slow_callback_duration, 100 ms by default. A 70 ms step passes unnoticed unless the threshold is lowered, which is why CI lowers it.</p>
+</div>
+</section>
+<section class="ts-part" id="static-checks" data-rung="3" data-min="11">
+<h2>What a linter and a type checker catch before the code runs</h2>
+<p class="ts-bridge">Last part: debug mode reports traps while the code runs. Still unsolved: can some of them be stopped earlier, at review time, before any test runs?</p>
+<p class="ts-problem">A pull request adds <code>time.sleep(0.3)</code> to a retry path inside an async handler. Another adds <code>asyncio.create_task(flush())</code> with no reference kept. A third wraps a seller call in <code>except BaseException</code>. A linter could flag all three in seconds; but each of these mistakes also has a variant that no linter sees.</p>
+<h3>Introduction</h3>
+<p>Static checks read the source without running it. They are cheap and run on every change, so they are worth having; but they can only recognise patterns they were written for. This part runs one linter, Ruff, over seven small trap examples, shows exactly which ones it flags, and names a type-checker rule for the most common trap it misses.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="A tool that reads source code without running it and reports patterns known to be mistakes.">static check</dfn> reads source code without running it and reports patterns known to be mistakes. A linter checks patterns; a type checker checks types, and can see that a value is a coroutine that nobody uses.</p>
+</div>
+<h3>The rules used</h3>
+<ul>
+<li><span class="ts-claim" data-claim="c23" data-src="s19">Ruff's rule RUF006 checks for asyncio.create_task and asyncio.ensure_future calls that do not store a reference to the returned result.</span></li>
+<li><span class="ts-claim" data-claim="c24" data-src="s20">Ruff's rule ASYNC251 checks that async functions do not call time.sleep.</span> <span class="ts-claim" data-claim="c25" data-src="s22">Ruff's rule ASYNC210 checks that async functions do not contain blocking HTTP calls.</span></li>
+<li><span class="ts-claim" data-claim="c26" data-src="s23">Ruff's rule BLE001 checks for except clauses that catch all exceptions, including except BaseException and except Exception; clauses that re-raise, or that log the exception with exc_info enabled, are not flagged.</span></li>
+<li><span class="ts-claim" data-claim="c27" data-src="s18">mypy's unused-coroutine check, one of its error codes enabled by default, reports an async def function whose return value is ignored, because the coroutine won't be executed at the call site.</span></li>
+</ul>
+<h3>Program</h3>
+<p>Seven traps, one per function. The test file runs <code>ruff check --select ASYNC,RUF006,BLE001</code> on it with Ruff 0.16.9, the version this repository locks, and compares the result with the output below.</p>
+<div class="ts-code" data-lang="python" data-title="lint_cases.py" data-file="lint_cases.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="ruff check --select ASYNC,RUF006,BLE001" data-file="out/lint_cases.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>sleeps</code> and <code>fetches</code> are flagged: <code>time.sleep</code> and <code>urllib.request.urlopen</code> are calls the rules know by name.</li>
+<li><code>calls_the_sdk</code> is not flagged. Its blocking happens inside <code>SyncSellerClient.get_price</code>, a method the linter knows nothing about. This is seller-e's case, and the common case in real services: the blocking call is inside a library.</li>
+<li><code>fires_and_forgets</code> is flagged by RUF006.</li>
+<li><code>swallows</code> is flagged by BLE001, but <code>swallows_and_logs</code>, which swallows CancelledError in exactly the same way, is not: the rule treats logging the exception as handling it. The "log and carry on" handler is the more common form of trap 5.</li>
+<li><code>forgets_the_await</code> is not flagged by any of these three rules. mypy's unused-coroutine check exists for it, but needs type information: it must know that <code>metrics.record</code> is an <code>async def</code>.</li>
+</ol>
+<h3>Testing the program</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Function</th><th>Trap</th><th>Flagged</th></tr></thead>
+<tbody>
+<tr><td><code>sleeps</code></td><td>2</td><td>ASYNC251</td></tr>
+<tr><td><code>fetches</code></td><td>2</td><td>ASYNC210</td></tr>
+<tr><td><code>calls_the_sdk</code></td><td>2</td><td>no</td></tr>
+<tr><td><code>fires_and_forgets</code></td><td>3</td><td>RUF006</td></tr>
+<tr><td><code>swallows</code></td><td>5</td><td>BLE001</td></tr>
+<tr><td><code>swallows_and_logs</code></td><td>5</td><td>no</td></tr>
+<tr><td><code>forgets_the_await</code></td><td>1</td><td>no (a type checker's job)</td></tr>
+</tbody>
+</table></div>
+<h3>Advantages and limitations</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Check</th><th>Catches</th><th>Misses</th></tr></thead>
+<tbody>
+<tr><td>Linter rules (RUF006, ASYNC, BLE001)</td><td>Known blocking calls by name; create_task with no reference; broad except with no re-raise and no logging</td><td>Blocking inside libraries; broad except that logs; forgotten awaits</td></tr>
+<tr><td>Type checker (mypy, unused-coroutine)</td><td>An async call whose result is ignored, when the types are known</td><td>Untyped code; a coroutine stored and dropped later</td></tr>
+<tr><td>Debug mode and tests (last part)</td><td>Any blocking step, by duration; forgotten awaits and unread Tasks that a test exercises</td><td>Code paths no test runs</td></tr>
+<tr><td>Production signals (loop lag, per-seller counts)</td><td>Everything that happens in real traffic</td><td>Nothing, but only after it has happened</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Our linter has the async rules turned on, so blocking calls cannot reach production."</p>
+<p><strong>Why it is wrong:</strong> the rules recognise calls by name. seller-e's SDK, a sync database driver or any library built on blocking sockets looks like an ordinary method call. The program above shows the rule missing exactly that case; debug mode's timing catches it, because it measures what actually ran.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Ruff flagged 4 of the 7 traps: time.sleep, a blocking HTTP call, an unreferenced create_task, a silent except BaseException.</li>
+<li>It missed blocking inside a library, a swallowing except that logs, and a forgotten await.</li>
+<li>Use static checks for the cheap catches, a type checker for forgotten awaits, and runtime signals for the rest.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Static checks catch the traps that have a recognisable name, so they belong in CI, but the most common forms of trap 2 and trap 5 need debug mode and production signals.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c26">
+<p class="q">A worker loop has <code>except BaseException: log.exception("poll failed")</code> and then continues to the next poll. <code>log</code> is the module's own logger (<code>log = logging.getLogger(__name__)</code>), and Ruff runs with BLE001 enabled. What happens?</p>
+<ol>
+<li data-why="BLE001 skips except clauses that log the exception with exc_info, which log.exception does.">BLE001 flags it as a blind except</li>
+<li data-why="Logging does not re-raise; the CancelledError is caught and the loop continues.">Nothing is wrong: logging the exception counts as handling cancellation correctly</li>
+<li>BLE001 does not flag it, yet it still swallows CancelledError, so a timeout around the worker will not stop it</li>
+</ol>
+<p class="ts-why">The rule exempts handlers that log with exc_info, and log.exception does. But the handler still catches CancelledError and goes on, which is trap 5. The tests on this page show the rule passing this exact function.</p>
+</div>
+</section>
+<section class="ts-part" id="trap-forgotten-await" data-rung="4" data-min="12">
+<h2>Trap 1: the forgotten await, and the dashboard that stays empty</h2>
+<p class="ts-bridge">Last part: static checks catch the traps with recognisable names. Still unsolved: the traps themselves, one at a time, starting with the one Part 1 met on the toy loop.</p>
+<p class="ts-problem">The gateway records each seller's outcome with <code>await metrics.record(name, outcome)</code>. A refactor drops one <code>await</code>. Every shopper still gets seller-b at 1,199 in 250 ms, every test passes, and the per-seller dashboard shows nothing at all: zero answers, zero timeouts, for every seller.</p>
+<h3>Introduction</h3>
+<p>Part 1 showed this trap on the toy loop: <code>sleep(...)</code> without <code>await</code> made seller-c "answer" in 0 ms. This part shows the asyncio version on gateway v4, where the work that silently does not happen is the gateway's own bookkeeping, and adds what Part 1 could not: the exact signal, the line it points to, and a test setting that really fails.</p>
+<h3>What the user sees</h3>
+<p>The shopper sees nothing wrong. The people running the gateway see an empty metrics dashboard, and later, when they need the numbers (is seller-e timing out more this week?), there are none.</p>
+<h3>Root cause</h3>
+<ol class="ts-steps">
+<li><code>self.metrics.record(name, outcome)</code> runs the call expression: it builds a coroutine object and returns it. The body of <code>record()</code> has not run (Part 1).</li>
+<li>Nothing awaits the object or wraps it in a Task, so it never reaches a Task step or the ready queue (the last part's map, step 1).</li>
+<li>The object is dropped at the end of the statement. When it is finalized, Python issues the RuntimeWarning.</li>
+<li>No exception is raised, so <code>compare()</code> returns its answer as usual.</li>
+</ol>
+<h3>Program</h3>
+<p><code>ForgotAwait</code> is gateway v4 with outcome recording added and one <code>await</code> missing; <code>Fixed</code> restores it. The program records the warnings and prints what the metrics service received.</p>
+<div class="ts-code" data-lang="python" data-title="metrics.py" data-file="metrics.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="trap1_forgotten_await.py" data-file="trap1_forgotten_await.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap1_forgotten_await.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>MetricsClient.record()</code> is a coroutine because a full batch is sent to the metrics service before it returns; that is a real reason for a recording call to be <code>async</code>.</li>
+<li>With the <code>await</code> missing, the answer line is identical to gateway v4's, the metrics service receives an empty dictionary, and five RuntimeWarnings appear, one per seller.</li>
+<li>With the <code>await</code> restored, the service receives one count per seller: four answered and seller-e timed out.</li>
+</ol>
+<h3>The signal</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Signal</th><th>Where</th><th>What it tells you</th></tr></thead>
+<tbody>
+<tr><td><code>RuntimeWarning: coroutine '…' was never awaited</code></td><td>stderr or the warnings log</td><td>Which coroutine function; with debug mode, the line that called it</td></tr>
+<tr><td>A counter that never moves, or work that takes 0 ms</td><td>Dashboards</td><td>That something "ran" without ever waiting</td></tr>
+<tr><td>mypy unused-coroutine</td><td>CI, before running</td><td>The exact call, when the types are known</td></tr>
+</tbody>
+</table></div>
+<h3>The fix and its test</h3>
+<p>The fix is the missing <code>await</code>. The guard is a CI setting that makes the warning a failure: <code>PYTHONASYNCIODEBUG=1 pytest -W error</code>, from the debug-mode part. This page's tests run a one-test file with a forgotten await under four warning settings and check that only <code>-W error</code> (or both filters) fails it.</p>
+<div class="ts-trap">
+<p><strong>A coroutine object is always true.</strong> <code>if seller_is_blocked(name):</code>, where <code>seller_is_blocked</code> is <code>async def</code> and the <code>await</code> is missing, is always true, because any coroutine object is truthy. Every seller is skipped and the gateway answers "no offer". The never-awaited warning still appears, and it is the fastest way to find the line. A test on this page checks that the condition is true even when the function would return False.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A forgotten await shows up as a failed test, because the work did not happen."</p>
+<p><strong>Why it is wrong:</strong> only if a test checks the effect of that exact work. Here the answer is correct and only the metrics are missing; a test that checks the answer passes. The warning is the signal, and it fails a test only with the CI setting above.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Without await, an async call only builds a coroutine object; the body never runs and nothing is raised.</li>
+<li>Signal: the never-awaited RuntimeWarning (with the line in debug mode), counters that never move, mypy's unused-coroutine.</li>
+<li>Guard: <code>PYTHONASYNCIODEBUG=1 pytest -W error</code>; <code>-W error::RuntimeWarning</code> alone does not fail the test.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A forgotten await silently skips the work and leaves only a warning, so the guard is a CI run where that warning fails the build.</p>
+<div class="ts-predict" data-claims="c1">
+<p class="q">A handler writes <code>if await seller_is_blocked(name): continue</code> as <code>if seller_is_blocked(name): continue</code>. <code>seller_is_blocked</code> would return False for every seller. What does the gateway answer, and what does the log show?</p>
+<div class="ts-reveal"><p>"No offer": every seller is skipped, because a coroutine object is truthy, so the condition is always true. The log shows the RuntimeWarning that the coroutine <code>seller_is_blocked</code> was never awaited, but only once: Python's default warning settings report a warning once per line of code, so a thousand skipped sellers look like one line. In debug mode it points at the <code>if</code> line. Unlike the metrics case, this time the shopper sees the bug.</p></div>
+</div>
+</section>
+<section class="ts-part" id="trap-blocking-io" data-rung="4" data-min="15">
+<h2>Trap 2a: a sync SDK that freezes every request</h2>
+<p class="ts-bridge">Last part: a forgotten await skips work silently. Still unsolved: the opposite mistake, code that does its work but will not give the thread back while it waits.</p>
+<p class="ts-problem">seller-e's vendor stops supporting its HTTP API and ships a Python SDK instead, built on blocking sockets. A developer calls <code>sdk.get_price(item)</code> inside the seller coroutine, the way the README shows. The next request answers after 900 ms, and the cheapest offer is now seller-e at 1,149, while the four fast sellers are all reported as timed out.</p>
+<h3>Introduction</h3>
+<p>Part 1 showed a blocking call on the toy loop, where it could only be faked with <code>time.sleep</code>. Here it is the real thing: a library that waits on a socket without ever awaiting. <span class="ts-claim" data-claim="c28" data-src="s2">The docs say blocking (CPU-bound) code should not be called directly: if a function performs a CPU-intensive calculation for 1 second, all concurrent asyncio Tasks and IO operations would be delayed by 1 second.</span> A blocking network call does the same, and the result on the gateway is stranger than "slow": the answer is wrong in a way that looks plausible.</p>
+<h3>What the user sees</h3>
+<p>Every request takes 900 ms instead of 250 ms, and every request names seller-e as the cheapest, with seller-a to seller-d "timed out". A dashboard would show the four fastest sellers failing and the slowest one perfect: exactly backwards.</p>
+<h3>Root cause</h3>
+<ol class="ts-steps">
+<li>The TaskGroup creates five Tasks. Their first steps run one after another in one loop iteration (Part 2).</li>
+<li>Sellers a to d each run until <code>await asyncio.open_connection(...)</code> and park on a Future. Their requests are not sent yet.</li>
+<li>seller-e's step calls <code>sdk.get_price()</code>. It connects, sends and waits for the answer inside the call, holding the loop's only thread for 900 ms. The step then returns the Offer, so seller-e's Task finishes within that same step, and its timeout's exit cancels its own timer.</li>
+<li>Only now does the iteration end. The next one finds sellers a to d's connections ready and the 250 ms deadline timers 650 ms overdue. The timers cancel sellers a to d before they can send a byte.</li>
+<li>The group ends with four TimeoutErrors and one offer: seller-e at 1,149, after 900 ms.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 3: the deadline cannot cut seller-e, because cutting is a timer callback and callbacks need the thread seller-e is holding (Part 1 showed the same on the toy loop).</li>
+<li>Step 4: the healthy sellers are punished for the slow one; their timers fire late, all at once.</li>
+</ul>
+<h3>Program</h3>
+<p><code>SyncSellerClient</code> stands in for the vendor's SDK: plain blocking sockets to seller-e's server. <code>Blocking</code> is gateway v4 with seller-e called through it directly. <code>InAThread</code> makes the same call in a thread of seller-e's own pool with <code>loop.run_in_executor()</code>.</p>
+<div class="ts-code" data-lang="python" data-title="sync_sdk.py" data-file="sync_sdk.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="trap2_blocking_io.py" data-file="trap2_blocking_io.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap2_blocking_io.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Called directly, the SDK produces the backwards answer from the root cause: seller-e at 1,149 after about 900 ms, sellers a to d timed out. No seller line is printed for a to d, because none of them ever sent its request.</li>
+<li>In a thread, seller-e's call waits in another OS thread, the loop stays free, sellers a to d answer at 80 to 200 ms, and the deadline cuts seller-e at 250 ms: gateway v4's answer again.</li>
+<li>After the answer, one SDK call is still running in its thread. It finishes at about 900 ms with nobody waiting for it. The deadline stopped the gateway's wait, not the thread.</li>
+</ol>
+<h3>Why the thread keeps running</h3>
+<p><span class="ts-claim" data-claim="c29" data-src="s3">loop.run_in_executor() arranges for a function to be called in the given executor; if the executor is None, the default executor is used, which, unless set with set_default_executor(), is a ThreadPoolExecutor created the first time it is needed.</span> It returns an asyncio Future linked to the executor's own future. <span class="ts-claim" data-claim="c30" data-src="s14">In CPython 3.14's futures.py, when the asyncio Future is cancelled, the linked executor future's cancel() is called.</span> <span class="ts-claim" data-claim="c31" data-src="s4">But a concurrent.futures Future cannot be cancelled once its call is being executed: cancel() then returns False.</span> So the deadline cancels the gateway's wait at 250 ms, and the thread runs to 900 ms regardless. A call still waiting in the pool's queue, by contrast, is cancelled before it starts; gateway v5's part uses that.</p>
+<h3>to_thread or run_in_executor</h3>
+<p><span class="ts-claim" data-claim="c32" data-src="s1">asyncio.to_thread() runs a function in a separate thread, propagates the current contextvars context to it, and is primarily intended for IO-bound functions that would otherwise block the event loop.</span> <span class="ts-claim" data-claim="c33" data-src="s16">In CPython 3.14's threads.py, to_thread() is loop.run_in_executor(None, …) around a copy of the current context, so it always uses the loop's default executor.</span> That is fine for an occasional call. For a dependency every request uses, the gateway passes its own pool to <code>run_in_executor</code>; gateway v5's part measures why.</p>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "A vendor only ships a sync SDK, and your service is asyncio. What are your options, and what does each cost?"</p>
+<p><strong>What a strong senior answer contains:</strong> first, look for an async client or call the vendor's HTTP API directly with an async client. If the SDK is the only option, run it with <code>run_in_executor</code> in a thread pool of its own, sized from the call rate and how long each call holds a thread, with a deadline around the await. The candidate says plainly that the deadline frees the request, not the thread: a call that runs on after its deadline still occupies a thread, so the pool's size, not the deadline, bounds the cost. If the calls are slow and frequent, moving them off the request path (a cache refreshed in the background) can beat any pool size.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The deadline will cut the slow sync call at 250 ms, like any other seller call."</p>
+<p><strong>Why it is wrong:</strong> a deadline is a timer callback on the loop. While the sync call holds the thread, no callback runs; the deadline fires only after the call returns, and by then it can only cut the calls that were waiting behind it.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A blocking call in a coroutine holds the loop: every other Task and every timer waits, including the deadline.</li>
+<li>On the gateway, the slowest seller "wins" at 900 ms and the four fast ones time out.</li>
+<li>Fix: <code>run_in_executor</code> (or <code>to_thread</code>); the deadline then frees the request, but the running thread continues to the end.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A sync call in a coroutine freezes every request and even the deadline, so it belongs in a thread, where the deadline can free the request though not the thread.</p>
+<div class="ts-predict" data-claims="c2">
+<p class="q">This needs Parts 2 and 3. Suppose seller-b (120 ms), not seller-e, is the one called through a sync SDK directly. With gateway v4's 250 ms deadline, which sellers answer and what is the cheapest offer?</p>
+<div class="ts-reveal"><p>seller-a's step runs first and parks at its connect. seller-b's step then holds the loop for 120 ms and returns its offer, 1,199. Only after that do seller-c, seller-d and seller-e start, and seller-a sends its request, so seller-a answers at about 120 + 80 = 200 ms, seller-c would answer at about 270 ms and seller-d at about 320 ms. The deadline cuts seller-c, seller-d and seller-e at 250 ms. The answer is still seller-b at 1,199, but with seller-c and seller-d timed out: one 120 ms block cost two healthy sellers.</p></div>
+</div>
+</section>
+<section class="ts-part" id="trap-cpu" data-rung="4" data-min="13">
+<h2>Trap 2b: CPU work, where a thread does not help</h2>
+<p class="ts-bridge">Last part: a sync SDK belongs in a thread, which waits on its socket without the loop. Still unsolved: work that does not wait at all, but computes. Does a thread fix that too?</p>
+<p class="ts-problem">The gateway adds a ranking step: a pure-Python model scores the offers before the cheapest is returned. It costs about 100 ms of CPU per request. Six requests arrive together. On the loop, the last of them waits behind the other five's ranking; a timer that should fire every 10 ms fires several hundred ms late.</p>
+<h3>Introduction</h3>
+<p>Part 1 separated waiting (I/O-bound) from computing (CPU-bound) and noted that, in CPython, only one thread runs Python code at a time. That rule decides this trap. A thread fixed seller-e's SDK because the SDK mostly waits. A ranking step never waits; moving it to a thread only moves it to a different place in the same single queue for the interpreter.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="A pool of separate operating-system processes that run submitted functions; each has its own interpreter, so Python code in them runs in parallel on different cores.">process pool</dfn> is a set of worker processes that run submitted functions. <span class="ts-claim" data-claim="c34" data-src="s4">ProcessPoolExecutor uses the multiprocessing module, which allows it to side-step the Global Interpreter Lock, but also means that only picklable objects can be executed and returned.</span></p>
+</div>
+<h3>What the user sees</h3>
+<p>Latency rises for every request, not only the ones that rank, and it rises with load: each ranking adds about 100 ms to every request whose turn on the loop comes after it. Loop lag shows the same numbers.</p>
+<h3>Root cause</h3>
+<ol class="ts-steps">
+<li>On the loop: the ranking runs inside a Task step, so it holds the iteration for its whole 100 ms, exactly like the sync SDK, but with the CPU busy instead of idle.</li>
+<li>In a thread: the loop thread is free between the GIL switches, so timers still fire, but the six rankings still run one at a time on the interpreter. <span class="ts-claim" data-claim="c35" data-src="s1">The docs say that, due to the GIL, asyncio.to_thread() can typically only be used to make IO-bound functions non-blocking, unless an extension module releases the GIL or the Python implementation has none.</span></li>
+<li>In a process pool: each ranking runs in another process with its own interpreter, on another core. The loop only sends the offers and receives the result.</li>
+</ol>
+<h3>Program</h3>
+<p><code>score_offers()</code> is the ranking step. The program calibrates it to about 100 ms of CPU on the machine running it, then runs six rankings three ways while a 10 ms heartbeat timer measures how late the loop is.</p>
+<div class="ts-code" data-lang="python" data-title="scoring.py" data-file="scoring.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="trap2_cpu.py" data-file="trap2_cpu.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (one run on 2 CPU cores)" data-file="out/trap2_cpu.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>On the loop, the six rankings run back to back inside one iteration, and the heartbeat's worst lag is almost the whole run: the loop was frozen.</li>
+<li>With two threads, the total is no shorter than on the loop, because the interpreter runs one ranking at a time; the heartbeat's lag drops to tens of milliseconds, because the loop thread gets the interpreter between switches.</li>
+<li>With two processes, the total drops to well under the thread version's on two cores, and the heartbeat is on time.</li>
+<li>Exact times vary with the machine and its other work; the test checks the relationships: the loop frozen, threads no faster, processes faster with the loop free.</li>
+</ol>
+<h3>What changes with a process pool</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Point</th><th>Thread pool</th><th>Process pool</th></tr></thead>
+<tbody>
+<tr><td>Python code in parallel</td><td>No (one interpreter lock)</td><td>Yes, one interpreter per process</td></tr>
+<tr><td>Arguments and results</td><td>Passed by reference</td><td>Pickled and copied each way; functions must be importable by name, so not lambdas</td></tr>
+<tr><td>Start-up</td><td>Threads start fast</td><td>Workers take time to start; gateway v5 starts them before the first request</td></tr>
+<tr><td>Size</td><td><span class="ts-claim" data-claim="c36" data-src="s4">ThreadPoolExecutor's default max_workers is min(32, (os.process_cpu_count() or 1) + 4).</span></td><td><span class="ts-claim" data-claim="c37" data-src="s4">ProcessPoolExecutor's max_workers defaults to os.process_cpu_count().</span></td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c38" data-src="s3">The docs require the entry point guard, if __name__ == '__main__', when run_in_executor() is used with a ProcessPoolExecutor, because of how multiprocessing starts its workers.</span> <span class="ts-claim" data-claim="c39" data-src="s9 s8">In Python 3.14, on Unix platforms other than macOS, forkserver replaced fork as ProcessPoolExecutor's default start method; on Windows and macOS the default is still spawn.</span> With forkserver, a worker imports the main module and the function by name, which is why <code>score_offers</code> lives in its own module.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.11 to 3.13.</strong> On Linux, ProcessPoolExecutor started workers with fork by default. <span class="ts-claim" data-claim="c40" data-src="s4">Since Python 3.12, if the application has several threads and the multiprocessing context uses fork, the os.fork() call used to spawn workers may raise a DeprecationWarning.</span> A gateway that already has SDK threads should pass a forkserver or spawn context explicitly on those versions, rather than rely on fork.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>to_thread()</code> fixes anything that blocks the loop."</p>
+<p><strong>Why it is wrong:</strong> it fixes waiting, because a waiting thread lets go of the interpreter. Computing in pure Python holds the interpreter, so threads take turns: the program above shows threads no faster than the loop itself. CPU work needs processes, or a library that releases the GIL.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>CPU work on the loop freezes it like a blocking call; with threads it still runs one ranking at a time.</li>
+<li>A process pool runs it in parallel and keeps the loop free, at the cost of pickling and worker start-up.</li>
+<li>3.14 on Linux starts workers with forkserver: keep the function importable and the <code>__main__</code> guard in place.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Waiting goes to threads, computing goes to processes; a thread around pure-Python CPU work keeps the loop responsive but makes nothing faster.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c35 c34">
+<p class="q">A handler resizes images with a library written in pure Python, 200 ms of CPU each, 20 per second, on a machine with 8 cores and the standard (GIL) build of Python. Which change lets one gateway process keep up?</p>
+<ol>
+<li>Run the resize in a ProcessPoolExecutor with one worker per core, and await it with run_in_executor</li>
+<li data-why="With the GIL, pure-Python CPU work in threads still runs one at a time, so 20 x 200 ms = 4 s of CPU per second cannot fit.">Move the resize to asyncio.to_thread()</li>
+<li data-why="Async functions overlap waiting, not computing; the CPU work is the same.">Make the resize function async def</li>
+</ol>
+<p class="ts-why">20 resizes of 200 ms each need 4 seconds of CPU every second: about 4 cores. Only processes give pure-Python code more than one core.</p>
+</div>
+</section>
+<section class="ts-part" id="trap-lost-tasks" data-rung="4" data-min="15">
+<h2>Trap 3: background Tasks that vanish or fail silently</h2>
+<p class="ts-bridge">Last part: CPU work goes to processes. Still unsolved: work that runs on the loop but belongs to no request at all, such as sending the per-seller counts to the metrics service. Who owns it, and who hears when it fails?</p>
+<p class="ts-problem">The gateway starts its metrics flusher with <code>self.flusher = asyncio.create_task(flush_every(...))</code> and never looks at it again. One night the metrics service refuses connections. The flusher's first send fails, the Task ends with ConnectionRefusedError, and the dashboard stays flat for three days. No error appears in any log.</p>
+<h3>Introduction</h3>
+<p>Part 2 showed that a Task stores its coroutine's exception instead of raising it into the loop, and warned that the loop keeps only weak references to Tasks. Part 3 gave every request's Tasks an owner, the TaskGroup. A background job outlives any request, so it has no group. This part shows the two ways such a Task is lost (collected while still waiting, or ended by an error nobody reads) and a small helper that fixes both.</p>
+<h3>What the user sees</h3>
+<p>Nothing, until someone needs the background job's work: a flat dashboard, a cache that stopped refreshing, an audit trail with gaps. At best a single "Task exception was never retrieved" line, far from the cause and with no request attached.</p>
+<h3>Root cause, part 1: which Tasks can disappear</h3>
+<p><span class="ts-claim" data-claim="c3" data-src="s1">The docs warn that the event loop only keeps weak references to tasks, so a task that isn't referenced elsewhere may get garbage collected at any time, even before it is done.</span> In practice, in CPython 3.14, a waiting Task is also referenced by whatever will wake it: a timer's callback, a socket's callback, or a Future someone else holds (Part 2's done callbacks). It is collected only when nothing that can wake it is reachable either. <span class="ts-claim" data-claim="c43" data-src="s13">In CPython 3.14's tasks.py, a Task destroyed while still pending reports "Task was destroyed but it is pending!" from its __del__ method.</span></p>
+<div class="ts-code" data-lang="python" data-title="trap3_vanish.py" data-file="trap3_vanish.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap3_vanish.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Three Tasks are created and no reference to any of them is kept.</li>
+<li>The timer Task is reachable through the timer heap; the Event Task through the Event, which <code>main()</code> keeps. Both survive <code>gc.collect()</code> and finish.</li>
+<li>The third Task waits on a Future that only it can reach. <code>gc.collect()</code> destroys it while it is pending: asyncio reports it, and its <code>finally</code> runs at that moment, inside the garbage collector, not at any point the code chose.</li>
+<li>The docs' warning is a promise not made, not a description of when collection happens: keep the reference whatever the Task waits on.</li>
+</ol>
+<h3>Root cause, part 2: who reads the failure</h3>
+<p><span class="ts-claim" data-claim="c41" data-src="s1">For reliable fire-and-forget tasks, the docs recommend keeping them in a collection such as a set, and having each task remove itself on completion with add_done_callback(background_tasks.discard).</span> <span class="ts-claim" data-claim="c42" data-src="s1">The docs add that this approach never awaits the tasks, so if a task fails, its exception is never retrieved and asyncio logs a "Task exception was never retrieved" message when the task is garbage collected.</span> The gateway's version of the trap is worse still: a reference kept in an attribute and never read means the Task is never collected, so even that message never appears.</p>
+<div class="ts-code" data-lang="python" data-title="spawn.py" data-file="spawn.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="trap3_silent.py" data-file="trap3_silent.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap3_silent.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Kept in <code>self.flusher</code> and never read: the Task is done with ConnectionRefusedError, and the failure is reported nowhere. It would surface only when the gateway object itself is destroyed.</li>
+<li>With no reference: the Task is collected after it ends, and asyncio's exception handler receives "Task exception was never retrieved", with no name and no request.</li>
+<li>With <code>spawn()</code>: the set keeps the Task alive while it runs; the done callback reads the exception at once, logs it with the Task's name, and counts it in <code>failures</code>, which can feed an alert.</li>
+</ol>
+<h3>The signal</h3>
+<ul>
+<li>"Task was destroyed but it is pending!" and "Task exception was never retrieved" in the asyncio logger; with debug mode on, each names the line that created the Task.</li>
+<li>A background job's own output stops (a counter that stops moving), with no matching error.</li>
+<li>RUF006 at review time, for a <code>create_task</code> whose result is not stored.</li>
+</ul>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c44" data-src="s24">In February 2023, a post by Will McGugan on the blog of the Textual project warned that a task created with asyncio.create_task may disappear without warning when Python runs garbage collection if no reference to it is held, a bug it called almost impossible to reproduce, and recommended keeping a reference for as long as the task must live, or using TaskGroups.</span></p>
+</div>
+<div class="ts-trap">
+<p><strong>In-process background work dies with the process.</strong> Even a perfectly owned Task is lost on a deploy or a crash, and Part 2 showed that <code>asyncio.run</code> cancels whatever is still running when <code>main()</code> returns. Counts lost on a restart are acceptable for a metrics flush. Work that must happen, such as an order confirmation, belongs in a durable queue or an outbox table, not in a Task.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Storing the Task in an attribute is enough; it cannot be lost now."</p>
+<p><strong>Why it is wrong:</strong> it can no longer be collected, but its failure is still never read, and now not even the "never retrieved" message will appear while the object lives. Ownership means both: a reference, and someone who reads the outcome as soon as the Task ends.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A Task with no reference may be collected when nothing can wake it; its <code>finally</code> then runs inside the garbage collector.</li>
+<li>A Task nobody reads keeps its failure: reported late ("never retrieved"), or never if a reference is held.</li>
+<li>Fix: a set for the reference plus a done callback that reads, logs and counts the exception; a TaskGroup when the work belongs to a request.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A background Task needs an owner that keeps it alive and reads its outcome the moment it ends; without one it can vanish, and its failure can go unheard.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c41 c42">
+<p class="q">A team adopts the docs' recipe exactly: a module-level set, and <code>task.add_done_callback(background_tasks.discard)</code>. One background job raises an exception. When do they hear about it?</p>
+<ol>
+<li data-why="discard only removes the Task from the set; it does not look at the exception.">Immediately, from the done callback</li>
+<li data-why="The set keeps it only while it runs; discard removes it when it ends.">Never, because the set keeps the Task alive</li>
+<li>Only when the Task is garbage-collected after the set drops it, as a "Task exception was never retrieved" log line</li>
+</ol>
+<p class="ts-why">The docs say this recipe never awaits the tasks, so the exception is never retrieved and is logged only at garbage collection. A done callback that calls task.exception() itself, as spawn() does, reports it at once.</p>
+</div>
+</section>
+<section class="ts-part" id="trap-gather" data-rung="4" data-min="12">
+<h2>Trap 4: gather keeps running after it fails, and drops what comes next</h2>
+<p class="ts-bridge">Last part: a background Task needs an owner who reads its outcome. Still unsolved: gather looks like an owner of the Tasks it runs. When does it stop being one?</p>
+<p class="ts-problem">An older part of the gateway still uses <code>asyncio.gather()</code>. seller-c fails at 150 ms, gather raises, and the request returns an error. At 200 ms seller-d fails too. That second failure, which may be the real cause of an incident, appears in no log and no metric. And in another path, a request crashes with <code>AttributeError: 'CancelledError' object has no attribute 'price'</code>.</p>
+<h3>Introduction</h3>
+<p>Part 3 measured gather's best-known problem: when one call fails, the others keep running, holding connections, until they finish. This part adds two less obvious failures that make no sound: what gather does with the second failure, and what <code>return_exceptions=True</code> puts in the result list when a call is cancelled.</p>
+<h3>Recap from Part 3</h3>
+<p><span class="ts-claim" data-claim="c45" data-src="s1">With return_exceptions=False, the default, the first raised exception is immediately propagated to the task that awaits gather(), and the other awaitables won't be cancelled and will continue to run.</span> <span class="ts-claim" data-claim="c49" data-src="s1">The docs note that TaskGroup provides stronger safety guarantees than gather: if a task raises, TaskGroup cancels the remaining tasks and gather does not.</span></p>
+<h3>What the user sees</h3>
+<p>For the first failure: a request that failed, with only half of the story in the logs. For the second: an occasional crash with a confusing message about CancelledError, in code that "handles all exceptions".</p>
+<h3>Root cause</h3>
+<ol class="ts-steps">
+<li><strong>Later failures are dropped.</strong> gather's outer Future is done once it has raised. <span class="ts-claim" data-claim="c5" data-src="s13">In CPython 3.14's tasks.py, once gather()'s outer Future is done, its done callback marks the exception of each child that finishes later as retrieved and returns without passing it on.</span> Marked as retrieved, the exception is never logged, not even as "never retrieved".</li>
+<li><strong>A cancelled child becomes a CancelledError in the list.</strong> <span class="ts-claim" data-claim="c47" data-src="s1">If a Task or Future passed to gather() is cancelled, it is treated as if it raised CancelledError, and the gather() call itself is not cancelled.</span> <span class="ts-claim" data-claim="c46" data-src="s1">With return_exceptions=True, exceptions are treated the same as successful results and aggregated in the result list.</span> So a cancelled seller call shows up as a CancelledError object among the offers.</li>
+<li><strong>And CancelledError is not an Exception.</strong> <span class="ts-claim" data-claim="c48" data-src="s6 s11">Since Python 3.8, asyncio.CancelledError is a subclass of BaseException rather than Exception.</span> Code that filters the list with <code>isinstance(r, Exception)</code> keeps it as if it were an offer.</li>
+</ol>
+<h3>Program</h3>
+<p>The first half fails seller-c and seller-d and checks, after garbage collection, whether asyncio reported seller-d's failure; a plain Task with the same failure, nobody reading it, is the control. The second half is Part 2's hand-made budget with <code>gather(return_exceptions=True)</code> collecting the results.</p>
+<div class="ts-code" data-lang="python" data-title="trap4_gather.py" data-file="trap4_gather.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap4_gather.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>gather raises seller-c's SellerError at 150 ms. seller-d's Task ends at 200 ms and seller-e's at 900 ms, after the request has failed: Part 3's leak.</li>
+<li>After every Task is garbage-collected, asyncio has reported nothing. The control, the same seller-d failure in a Task nobody reads, is reported as "Task exception was never retrieved". gather did not lose the failure by accident; it marked it as read.</li>
+<li>In the second half, seller-e's Task is cancelled at 250 ms, and the result list holds four Offers and a CancelledError. Filtering with <code>Exception</code> keeps the CancelledError, and <code>cheapest()</code> crashes on it. Filtering with <code>BaseException</code> gives seller-b at 1,199.</li>
+</ol>
+<h3>The signal and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>Signal</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Calls left running after the first failure</td><td>Open connections per seller staying high after errors (Part 3)</td><td>A TaskGroup, which cancels them</td></tr>
+<tr><td>Second and later failures dropped</td><td>None in logs; a seller's own error count higher than the gateway's</td><td>A TaskGroup, whose ExceptionGroup holds every failure; or count failures per call, as gateway v4 does</td></tr>
+<tr><td>CancelledError in a <code>return_exceptions=True</code> list</td><td>AttributeError or TypeError far from the cause</td><td>Test results with <code>isinstance(r, BaseException)</code>, or use a TaskGroup with values</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "With <code>return_exceptions=True</code>, everything in the list is either a result or an Exception."</p>
+<p><strong>Why it is wrong:</strong> a cancelled awaitable contributes a CancelledError, which is a BaseException and not an Exception. Any filter on the list must use <code>BaseException</code>, as gateway v4's sorting of TaskGroup results does.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>After gather raises, it marks later failures as retrieved: they are never logged.</li>
+<li>With <code>return_exceptions=True</code>, a cancelled child appears as a CancelledError, which <code>isinstance(r, Exception)</code> misses.</li>
+<li>Prefer a TaskGroup; if gather stays, filter with BaseException and count failures per call.</li>
+</ul>
+</div>
+<p class="ts-takeaway">gather raises the first failure, leaves the other calls running, silently drops the failures that follow, and hides cancellations among the results unless you filter with BaseException.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c5 c45">
+<p class="q">A request runs <code>await asyncio.gather(a(), b(), c())</code> with default settings. a() fails at 50 ms; b() fails at 80 ms; c() succeeds at 100 ms. Which failures does the gateway's code, and asyncio's logger, ever see?</p>
+<ol>
+<li data-why="Only the first exception propagates; b's is never raised to anyone.">Both: a's is raised at 50 ms and b's at 80 ms</li>
+<li>Only a's, raised at 50 ms; b's is marked retrieved by gather and logged nowhere</li>
+<li data-why="gather reads b's exception in its done callback, which marks it retrieved, so the garbage-collection message is never issued.">a's is raised, and b's is logged as "Task exception was never retrieved"</li>
+</ol>
+<p class="ts-why">The outer Future is done after a's failure. When b() fails, gather's done callback marks its exception as retrieved and returns, so nothing ever reports it.</p>
+</div>
+</section>
+<section class="ts-part" id="trap-swallowed-cancel" data-rung="4" data-min="14">
+<h2>Trap 5: one broad except that breaks every deadline</h2>
+<p class="ts-bridge">Last part: gather drops failures and hides cancellations. Still unsolved: what if the code inside a call is the one hiding the cancellation, so that the deadline itself stops working?</p>
+<p class="ts-problem">Someone adds a retry wrapper around each seller call: "on any failure, wait 50 ms and try once more". It is written with <code>except BaseException</code> so that "nothing can crash a seller call". From then on, requests take 1,200 ms, the cheapest offer is seller-e at 1,149, and the timeout counter shows zero. The deadline is still in the code; it has simply stopped working.</p>
+<h3>Introduction</h3>
+<p>Part 3 built the deadline from <code>asyncio.timeout_at</code>, and showed that a timeout is a timer that calls <code>Task.cancel()</code>. Cancelling works by throwing CancelledError into the coroutine at its current <code>await</code>. This part shows what happens when the coroutine catches that exception and carries on. It stays at the surface: how to recognise the trap and fix it. Part 5 goes inside cancellation itself.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>To <dfn data-def="To catch CancelledError and not raise it again, so the cancelled coroutine continues as if nothing had happened.">swallow</dfn> a cancellation is to catch CancelledError and not raise it again, so the coroutine continues as if it had not been cancelled. <span class="ts-claim" data-claim="c51" data-src="s1">The docs warn that TaskGroup and asyncio.timeout() are implemented using cancellation internally and might misbehave if a coroutine swallows CancelledError.</span></p>
+</div>
+<h3>What the user sees</h3>
+<p>Requests that ignore their budget: 1,200 ms instead of 250 ms. Their answers often look better (seller-e's cheaper price arrives), so the bug can even look like an improvement in a dashboard of prices.</p>
+<h3>Root cause</h3>
+<ol class="ts-steps">
+<li>At 250 ms the deadline's timer calls <code>cancel()</code> on seller-e's Task. In the next step, CancelledError is thrown in at the <code>await</code> inside the first attempt.</li>
+<li><code>except BaseException</code> matches it, because CancelledError is a BaseException. The wrapper sleeps 50 ms and starts a second attempt.</li>
+<li>The second attempt is not cancelled again: the cancel request was delivered once, and it was caught. seller-e answers 900 ms later, at about 1,200 ms.</li>
+<li>The <code>async with asyncio.timeout_at(...)</code> block ends normally, with a value. <span class="ts-claim" data-claim="c7" data-src="s15">In CPython 3.14's timeouts.py, the timeout's exit turns a CancelledError into TimeoutError only when that CancelledError is leaving the block; if the block ends without an exception, nothing is raised.</span> No TimeoutError is raised, yet <span class="ts-claim" data-claim="c53" data-src="s1">the timeout's expired() method returns whether the context manager has exceeded its deadline</span>, and here it returns True.</li>
+<li>The TaskGroup waits for every Task, so the whole request waits for seller-e.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="trap5_swallow.py" data-file="trap5_swallow.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap5_swallow.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>retry_anything</code> catches BaseException. seller-e's first attempt is cancelled at 250 ms, the wrapper retries, and seller-e answers at about 1,200 ms. The report says "cheapest: seller-e at 1,149 after 1200 ms" with no timeout listed, and <code>expired()</code> is True.</li>
+<li><code>retry_errors</code> catches only <code>SellerError</code> and <code>ConnectionError</code>, the failures a retry can fix. CancelledError passes through, the timeout turns it into TimeoutError, and the answer is gateway v4's again.</li>
+<li>Both versions print <code>expired() = True</code>: the deadline fired in both. Only the first one let the request ignore it.</li>
+</ol>
+<h3>The rule, and the fix</h3>
+<p><span class="ts-claim" data-claim="c50" data-src="s1">The docs recommend try/finally blocks for clean-up, and say that if CancelledError is explicitly caught, it should generally be propagated when clean-up is complete; because it directly subclasses BaseException, most code will not need to be aware of it.</span> <span class="ts-claim" data-claim="c52" data-src="s6">The exceptions reference adds that in almost all situations a caught CancelledError must be re-raised.</span> In practice:</p>
+<ul>
+<li>Catch the exceptions you can handle, by name. <code>except Exception</code> already lets CancelledError through.</li>
+<li>Put clean-up in <code>finally</code>, which runs on cancellation too.</li>
+<li>If you must catch BaseException (to log everything), end the handler with a bare <code>raise</code>.</li>
+<li><span class="ts-claim" data-claim="c54" data-src="s1">For the rare case where suppressing cancellation is truly intended, the docs say Task.uncancel() must also be called, and that user code should not generally call it.</span> That is Part 5's subject.</li>
+</ul>
+<h3>The signal</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Signal</th><th>What it shows</th></tr></thead>
+<tbody>
+<tr><td>Request latency above the budget, while the timeout count does not rise</td><td>Deadlines fire but nothing times out: a cancellation is being swallowed</td></tr>
+<tr><td><code>cm.expired()</code> True on a block that raised no TimeoutError</td><td>The same, in a test or a debug log</td></tr>
+<tr><td>Shutdowns or TaskGroups that wait far longer than any call should take</td><td>A Task that does not end when cancelled</td></tr>
+<tr><td>BLE001 at review time</td><td>A silent <code>except BaseException</code>; not one that logs (static-checks part)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your service's p99 is 1.2 s against a 250 ms timeout, and your timeout metric is flat. What do you suspect?"</p>
+<p><strong>What a strong senior answer contains:</strong> a timeout that fires but does not end the work, which means something catches CancelledError: <code>except BaseException</code>, a bare <code>except:</code>, or <code>except asyncio.CancelledError</code> without <code>raise</code>, often in a retry or "never crash" wrapper. The candidate explains why it breaks the deadline (cancellation is an exception delivered at an <code>await</code>, and the timeout converts it only if it escapes), and how to confirm it: <code>expired()</code> True with no TimeoutError, and a search for broad handlers. The fix keeps clean-up in <code>finally</code> and lets the exception travel.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A timeout stops the code inside it, whatever that code does."</p>
+<p><strong>Why it is wrong:</strong> a timeout can only ask. It cancels the Task, which throws CancelledError at the next <code>await</code>; the coroutine decides whether that exception escapes. The program shows the deadline firing (<code>expired()</code> is True) and the request carrying on for another 950 ms.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A deadline works by throwing CancelledError in; catching it without re-raising disables the deadline and the TaskGroup's cancelling.</li>
+<li>CancelledError is a BaseException: <code>except Exception</code> lets it pass; <code>except BaseException</code> and bare <code>except:</code> do not.</li>
+<li>Signal: latency above the budget with no timeouts counted; <code>expired()</code> True with no TimeoutError.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Cancellation is an exception the code must let through; one broad except that keeps it quietly turns every deadline above it into a suggestion.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c50 c48">
+<p class="q">Which retry wrapper is safe under gateway v4's deadline?</p>
+<ol>
+<li data-why="A bare except catches BaseException, including CancelledError, so the deadline's cancel is retried away.">A bare <code>except:</code> that waits and retries</li>
+<li data-why="Catching CancelledError and continuing is exactly swallowing it; the retry then ignores the deadline.">An <code>except asyncio.CancelledError:</code> that logs "cancelled, retrying" and loops again</li>
+<li>An <code>except (SellerError, ConnectionError):</code> that waits and retries, with clean-up in <code>finally</code></li>
+</ol>
+<p class="ts-why">Only the named exceptions are retried; CancelledError, a BaseException, passes through, so the deadline still ends the call and finally still cleans up.</p>
+</div>
+<div class="ts-explain" data-points="The deadline fires as a cancel that throws CancelledError at the await|A handler that catches BaseException keeps it, so the coroutine continues|The timeout converts only an exception that leaves the block, so no TimeoutError is raised|The TaskGroup waits for the Task, so the whole request runs past the budget">
+<p class="q">In your own words: why does an <code>except BaseException</code> in a retry wrapper make gateway v4 answer at 1,200 ms with no timeout reported?</p>
+<div class="ts-model"><p>At 250 ms the deadline cancels seller-e's Task, which throws CancelledError in at the await inside the first attempt. The wrapper's except BaseException catches it, so the coroutine carries on and retries; the second attempt is not cancelled again. The timeout only turns a CancelledError into TimeoutError if it leaves the block, so the block ends normally with seller-e's offer. The TaskGroup waits for that Task, so the request answers at about 1,200 ms, with seller-e as the cheapest and no timeout recorded.</p></div>
+</div>
+</section>
+<section class="ts-part" id="trap-silent-timeouts" data-rung="4" data-min="14">
+<h2>Trap 6: timeouts nobody sees</h2>
+<p class="ts-bridge">Last part: a swallowed cancellation stops a deadline from working. Still unsolved: deadlines that work perfectly, but whose results nobody can see: timeouts reported as something else, not reported at all, or never fired.</p>
+<p class="ts-problem">For three weeks seller-e times out on every request. Shoppers always get seller-b at 1,199, never seller-e's 1,149, so each pays 50 more than the best offer the gateway knew about. The error rate is 0%. One team's dashboard even shows seller-e "failing" with an empty error message, so someone raises seller-e's connection limit, which changes nothing.</p>
+<h3>Introduction</h3>
+<p>Gateway v4 answers within its budget by design: a seller that is too slow is cut, and the answer is built from the rest. That is correct behaviour. The trap is not the timeout but its invisibility. This part shows three ways a timeout disappears, each measured on the gateway.</p>
+<h3>What the user sees</h3>
+<p>A worse price, quietly, on every request, with every health check green. The team running the gateway sees either nothing or the wrong thing.</p>
+<h3>Root cause: three ways a timeout goes missing</h3>
+<ol class="ts-steps">
+<li><strong>Relabelled.</strong> <span class="ts-claim" data-claim="c55" data-src="s1">asyncio.timeout() turns the resulting CancelledError into a TimeoutError, which can only be caught outside the async with block.</span> Outside the block, it is a TimeoutError, and <span class="ts-claim" data-claim="c8" data-src="s5">TimeoutError is one of the built-in subclasses of OSError.</span> So an <code>except OSError</code> written for refused connections catches it too. If that handler wraps everything as one "seller failed" error, the timeout is counted as a failure, with an empty message, because a TimeoutError raised by a timeout has no text.</li>
+<li><strong>Not counted.</strong> The answer lists seller-e as timed out, the response is a normal 200, and nothing aggregates that list. One request's partial answer is invisible among thousands.</li>
+<li><strong>Never fired.</strong> A timeout around a blocking call cannot fire during the call (trap 2), and when the call returns the block exits without an exception. Part 3's <code>asyncio.wait(timeout=...)</code> is the other silent form: <span class="ts-claim" data-claim="c56" data-src="s1">wait() does not raise TimeoutError; futures that are not done when the timeout occurs are returned in the second set, and unlike wait_for(), wait() does not cancel them.</span></li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="trap6_silent_timeouts.py" data-file="trap6_silent_timeouts.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap6_silent_timeouts.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>Mislabelled</code> catches <code>(SellerError, OSError)</code> and wraps each as a SellerError. seller-e's timeout comes out as "failed: seller-e (SellerError: seller-e failed: )", and the metrics count "seller-e failed". The trailing colon with nothing after it is the TimeoutError's empty message.</li>
+<li>Ten requests at once with gateway v4: all ten answer seller-b at 1,199 with no error. Only the per-seller counts show seller-e timed out on 10 of 10, and that the best price reached no shopper.</li>
+<li>A 250 ms timeout around seller-e's sync SDK: no TimeoutError, the block takes 900 ms, <code>expired()</code> is False because the timer never got to run, and the code carries on with seller-e's offer as if it had arrived in time.</li>
+</ol>
+<h3>The signal</h3>
+<ul>
+<li>Per-seller outcome counts, with "timed out" separate from "failed": the only way to see case 2, and the way to notice case 1 (a "failed" count with no matching errors from the seller).</li>
+<li>A "partial" flag on every answer that is missing a seller, so the share of partial answers can be graphed and alerted on.</li>
+<li>For case 3: request latency above the budget, with no timeouts counted; the same signal as a swallowed cancellation.</li>
+</ul>
+<h3>The fix</h3>
+<ol>
+<li>Catch TimeoutError first and report it as a timeout, as gateway v4 already does; keep <code>except OSError</code> for connection errors after it.</li>
+<li>Record every seller's outcome for every request, and mark partial answers in the response.</li>
+<li>Alert on the timeout ratio per seller, and give the ratio an owner: a seller that times out on every request is a decision (drop it, cache its prices, or raise the budget), not noise.</li>
+<li>Never rely on a timeout around blocking code; move the code to a thread first (trap 2).</li>
+</ol>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your fan-out service returns partial results on timeout. How would you know if one dependency had been timing out on every request for a month?"</p>
+<p><strong>What a strong senior answer contains:</strong> outcome metrics per dependency, with timeouts separate from errors; a partial flag in the response and its rate on a dashboard; and an alert on the per-dependency timeout ratio, owned by someone. The candidate also names the business cost (here, 50 on every kettle) and the trap that makes timeouts look like errors: TimeoutError is an OSError, so the order of except clauses decides how it is counted.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If requests succeed within the budget, the timeouts are working as intended and need no attention."</p>
+<p><strong>Why it is wrong:</strong> a timeout that fires on every request is a dependency that is effectively gone. The answers are within budget and wrong by the value that dependency would have added: in the program, the best price on 10 of 10 requests.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>TimeoutError is an OSError: catch it first, or a broad handler reports it as a failure with an empty message.</li>
+<li>Partial answers look like normal answers; only per-seller counts and a partial flag make them visible.</li>
+<li>A timeout around blocking code never fires; wait()'s timeout raises nothing and cancels nothing.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A timeout is only useful if it is counted as a timeout, so every answer must say what it is missing and every seller's outcome must be recorded.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c8 c55">
+<p class="q">A handler around a seller call has <code>except OSError: return Failure(name)</code> and then <code>except TimeoutError: return Timeout(name)</code>, in that order. The try sits outside an <code>async with asyncio.timeout(...)</code> block. The deadline fires. What is recorded?</p>
+<ol>
+<li>Failure: TimeoutError is an OSError, so the first clause matches and the second is never reached</li>
+<li data-why="Python tries except clauses in order and uses the first that matches; the more specific clause second never runs.">Timeout, because TimeoutError is the more specific class</li>
+<li data-why="Outside the async with block, the deadline arrives as TimeoutError, which the OSError clause matches.">Nothing: the deadline arrives as CancelledError, which neither clause catches</li>
+</ol>
+<p class="ts-why">TimeoutError subclasses OSError, and the first matching clause wins. Put <code>except TimeoutError</code> first, as gateway v4 does.</p>
+</div>
+</section>
+<section class="ts-part" id="gateway-v5" data-rung="4" data-min="16">
+<h2>Gateway v5: every fix together, sized for 10 times the load</h2>
+<p class="ts-bridge">Last part: timeouts must be counted to be seen. Still unsolved: putting all six fixes into one gateway, and checking what its new pieces (seller-e's thread pool, the process pool, the metrics flusher) do when traffic grows 10 times.</p>
+<p class="ts-problem">Part 1's load was 200 requests per second; a sale brings 2,000. Every request now calls seller-e's sync SDK, which holds a thread for 900 ms; ranks its offers in a process; and records five outcomes. Which of these runs out first, and what should each pool's size be?</p>
+<h3>Introduction</h3>
+<p>Gateway v5 is gateway v4 with the fixes from this page and nothing else. Each change is marked in the code with the trap it fixes. After the program, a solved example sizes each new piece for 2,000 requests per second, and a second program shows why seller-e's threads must not share the loop's default pool.</p>
+<h3>Working: what changed from v4</h3>
+<ol class="ts-steps">
+<li><strong>Trap 2a:</strong> seller-e's SDK runs in a thread pool of its own, 4 threads, through <code>run_in_executor</code>, under the same deadline as every other seller.</li>
+<li><strong>Trap 2b:</strong> the ranking step runs in a process pool of 2 workers, started before the first request.</li>
+<li><strong>Trap 3:</strong> the metrics flusher is started with <code>spawn()</code>: a strong reference and a done callback that logs and counts its failure.</li>
+<li><strong>Trap 4:</strong> the calls run in a TaskGroup (already in v4); results are sorted with <code>BaseException</code>.</li>
+<li><strong>Trap 5:</strong> the per-call handler catches TimeoutError, SellerError and OSError by name; CancelledError passes through.</li>
+<li><strong>Traps 1 and 6:</strong> every outcome is recorded with <code>await</code>, timeouts separate from failures, and the answer carries a <code>partial</code> flag.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v5.py" data-file="gateway_v5.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_v5.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>One request: gateway v4's answer, seller-b at 1,199 in 250 ms with seller-e timed out, now marked as partial.</li>
+<li>Ten requests at once: all ten answer seller-b at 1,199. The slowest takes about 260 ms: after the 250 ms deadline, each request still sends its offers to the process pool to be ranked and records five outcomes. A heavier ranking step would need its time taken out of the budget, with the seller deadline set earlier.</li>
+<li>seller-e's SDK was asked 11 times but started only 4 calls. The first request's call was still running, so 3 threads were free; the other 7 calls waited in the pool's queue, and when the deadline cancelled them they were removed from the queue without ever running. The pool's size bounded the wasted work.</li>
+<li>The metrics service received 11 outcomes per seller, seller-e's all "timed out"; the flusher reported no failure.</li>
+<li>The pools are created, started and closed in <code>main()</code>, outside the event loop. Closing a pool waits for its threads, and starting a process pool's workers makes the caller wait while the processes are created. A first version of gateway v5 started the workers inside <code>start()</code>, a coroutine, and debug mode in this page's tests reported that step as slow (about 0.1 s): trap 2 again, inside the fix for trap 2.</li>
+</ol>
+<h3>Solved example: sizing v5 for 2,000 requests per second</h3>
+<p><strong>Given:</strong> 2,000 requests per second (10 times Part 1's 200). seller-e's sync call holds a thread for 900 ms and cannot be stopped once running. Ranking costs about 1 ms of CPU per request here. Each request records 5 outcomes; the metrics client sends a batch every 100 records.</p>
+<p><strong>Step 1. seller-e's threads if every call ran.</strong> Threads busy = calls per second × seconds each holds a thread = 2,000 × 0.9 = 1,800 threads. And every one of those calls answers after the 250 ms deadline, so all 1,800 threads would produce nothing anyone reads.</p>
+<p><strong>Step 2. With a pool of 4.</strong> At most 4 threads are busy. A call that has not started when its deadline fires is cancelled in the queue (the trap 2a part: a waiting executor call can be cancelled, a running one cannot). So the pool's size is the amount of waste the gateway accepts, here 4 threads, not a capacity to fill. For a dependency that does answer in time, the same arithmetic sets the size the other way: a 100 ms sync call at 2,000 per second needs about 2,000 × 0.1 = 200 threads.</p>
+<p><strong>Step 3. Ranking.</strong> CPU needed = 2,000 × 1 ms = 2,000 ms of CPU per second: two cores' worth, in addition to the loop's own work. A gateway process with a pool of 2 workers is at its limit; at 10 times the load, run several gateway processes (Part 1's one loop per core), each with its own small pool.</p>
+<p><strong>Step 4. Metrics.</strong> Records per second = 2,000 × 5 = 10,000, so 100 batches per second. Each full batch is sent inside the <code>record()</code> call that filled it, so 1 request in 20 waits for one send (5 records per request, 100 per batch). The background flusher only sends what is left each second.</p>
+<p><strong>Result:</strong> the scarce resources at 10 times the load are threads for seller-e and cores for ranking; the pool sizes cap both, and the deadline keeps unanswerable seller-e calls from ever starting.</p>
+<h3>Why seller-e must not use the loop's default pool</h3>
+<p><span class="ts-claim" data-claim="c57" data-src="s3">The docs note that loop.getaddrinfo() and getnameinfo() use their synchronous versions through the loop's default thread pool executor, so when that executor is saturated these methods may be delayed, which higher-level networking libraries may report as increased timeouts.</span> <span class="ts-claim" data-claim="c58" data-src="s12">In CPython 3.14's base_events.py, a connection to a host name that is not already an IP address is resolved with loop.getaddrinfo(), which runs socket.getaddrinfo() with run_in_executor(None, …).</span> Real sellers are reached by name, so with <code>to_thread()</code> seller-e's 900 ms calls and every seller's name lookups wait in the same queue.</p>
+<div class="ts-code" data-lang="python" data-title="trap2_shared_pool.py" data-file="trap2_shared_pool.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/trap2_shared_pool.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The sellers are reached as <code>localhost</code>, so each connection starts with a lookup in the default pool, set here to 4 threads to keep the numbers small.</li>
+<li>Four requests are already in flight; their seller-e calls hold all 4 default threads for 900 ms. Request 5 arrives at 100 ms, its lookups queue behind seller-e's calls, and all five of its sellers time out: no offer at all.</li>
+<li>With seller-e in its own pool, request 5's lookups run at once and it answers seller-b at 1,199 as usual.</li>
+</ol>
+<h3>What breaks first, and the signal</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Piece</th><th>What the user sees when it runs out</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>seller-e's thread pool</td><td>Nothing new (seller-e already times out)</td><td>Calls asked vs started; pool queue length</td><td>Keep it small on purpose; move seller-e off the request path if its answers matter</td></tr>
+<tr><td>The default pool</td><td>All sellers time out at once, CPU low</td><td>Name-lookup time; <code>to_thread</code> wait time</td><td>Never put a slow dependency on the default pool</td></tr>
+<tr><td>The process pool</td><td>Answers late by the ranking queue's wait</td><td>Time from submit to start of ranking; CPU per worker</td><td>Workers = cores available; more gateway processes</td></tr>
+<tr><td>The metrics flusher</td><td>A flat dashboard</td><td><code>spawn</code>'s failure count; batches sent per minute</td><td>Alert on failures; restart the flusher</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "How do you size a thread pool for a blocking dependency in an async service?"</p>
+<p><strong>What a strong senior answer contains:</strong> Little's law: threads ≈ calls per second × seconds each call holds a thread, using the dependency's real latency, not the request deadline, because a call that outlives its deadline keeps its thread. Then the ceiling: the dependency's own capacity, memory per thread, and the fact that a waiting call can be cancelled before it starts but a running one cannot. The pool is a separate bulkhead per dependency, never the shared default, which also serves name lookups. And if the dependency rarely answers within the budget, the right size is small, or the call belongs off the request path.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A bigger thread pool for seller-e means more of its answers get through."</p>
+<p><strong>Why it is wrong:</strong> seller-e takes 900 ms and the budget is 250 ms; no pool size changes that. A bigger pool only means more threads busy on answers nobody will read. The small pool is the better design: it drops the calls that cannot help before they start.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>v5 = v4 + seller-e in its own thread pool, ranking in a process pool, a watched flusher, outcomes recorded with <code>await</code>, partial answers marked.</li>
+<li>Threads ≈ rate × seconds held; a running executor call cannot be cancelled, a queued one can.</li>
+<li>Keep slow dependencies off the default pool: it also runs name lookups.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v5 places each new piece where it cannot hold the loop, and sizes each pool as a deliberate limit on waste, not as a capacity to fill.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c31 c30">
+<p class="q">This needs Part 3 and this page. Gateway v5 receives 10 requests at once; seller-e's pool has 4 free threads. At the 250 ms deadline, what happens to the 6 seller-e calls still waiting in the pool's queue?</p>
+<ol>
+<li data-why="The deadline cancels the asyncio Future, and the link to the executor future cancels the queued call; it does not wait.">They run later, one by one, when threads free up</li>
+<li>They are cancelled in the queue and never run, because a call that has not started can be cancelled</li>
+<li data-why="Each call has its own deadline inside the TaskGroup; the group does not fail because seller-e timed out.">They make the TaskGroup fail, and the whole request with it</li>
+</ol>
+<p class="ts-why">The deadline cancels each waiting asyncio Future, which cancels the linked executor future. A concurrent.futures call can be cancelled until it starts running, so the 6 queued calls are dropped; only the 4 running calls continue to 900 ms.</p>
+</div>
+</section>
+<section class="ts-part" id="trap-table" data-rung="5" data-min="11">
+<h2>The six traps on one page: symptom, detection, fix</h2>
+<p class="ts-bridge">Last part: gateway v5 carries every fix. Still unsolved: in an incident or a review, which trap is it, and which tool would have caught it? This part puts the whole page into one table and a few rules.</p>
+<p class="ts-problem">An on-call engineer has three numbers in front of them: latency, error rate and CPU. They need to go from those to one of six traps in minutes, and a reviewer needs to know which tool to trust for which trap before the code ever ships.</p>
+<h3>Introduction</h3>
+<p>Every row below was measured earlier on this page. The columns are the questions asked in an incident: what does it look like from outside, what proves it, what catches it early, and what fixes it.</p>
+<h3>Trap, detection and fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Trap</th><th>What the user sees</th><th>Signal that proves it</th><th>Caught early by</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>1. Forgotten await</td><td>Usually nothing; missing side effects (empty metrics); a condition that is always true</td><td>"coroutine … was never awaited"; counters that never move</td><td>mypy unused-coroutine; CI with debug mode and <code>pytest -W error</code></td><td>Add the await</td></tr>
+<tr><td>2a. Blocking I/O (sync SDK)</td><td>Every request slow at once; low CPU; the slowest seller "wins"</td><td>Loop lag; debug mode's "Executing … took" naming the coroutine</td><td>ASYNC rules only for known calls; debug mode in tests and on a canary</td><td><code>run_in_executor</code> with the dependency's own pool; an async client</td></tr>
+<tr><td>2b. CPU work</td><td>Every request slow; one core at 100%</td><td>Loop lag with high CPU; the same slow-step warning</td><td>Debug mode; profiling</td><td>A process pool; less CPU per request; more processes</td></tr>
+<tr><td>3. Lost background Task</td><td>A background job's output stops</td><td>"Task exception was never retrieved"; "Task was destroyed but it is pending!"; nothing at all if a reference is held</td><td>RUF006; debug mode's creation traceback</td><td>A strong reference plus a done callback that reads the exception; a TaskGroup for request work</td></tr>
+<tr><td>4. gather after a failure</td><td>Calls finishing after the request failed; one crash on a CancelledError result</td><td>Connections open after errors; a second failure absent from every log</td><td>Code review: prefer TaskGroup</td><td>TaskGroup; filter results with BaseException</td></tr>
+<tr><td>5. Swallowed CancelledError</td><td>Requests far over budget; shutdowns that hang</td><td>Latency above the budget with no timeouts counted; <code>expired()</code> True with no TimeoutError</td><td>BLE001, but not when the handler logs</td><td>Catch by name; clean up in finally; re-raise</td></tr>
+<tr><td>6. Silent timeouts</td><td>Worse answers, no errors</td><td>Per-seller counts with timeouts separate; partial-answer rate</td><td>A test that checks the outcome label of a timed-out call</td><td>TimeoutError first; record every outcome; flag partial answers; alert on the ratio</td></tr>
+</tbody>
+</table></div>
+<h3>Decision rules</h3>
+<ul>
+<li><strong>Every endpoint slow at once:</strong> look at the loop first. Low CPU means something waits on the loop's thread (2a); high CPU means something computes there (2b). Loop lag confirms either; debug mode names the coroutine.</li>
+<li><strong>Latency above the budget but timeouts flat:</strong> a deadline fires and is ignored (5), or never gets to fire (2a).</li>
+<li><strong>A piece of work silently missing:</strong> look for a forgotten await (1) or an unowned Task (3); both leave a specific log line.</li>
+<li><strong>Answers fine, numbers wrong:</strong> a timeout is being relabelled or not counted (6).</li>
+<li><strong>Before shipping:</strong> static checks for the named patterns, CI with debug mode and <code>-W error</code>, and production metrics for the rest. No single tool covers all six.</li>
+</ul>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "With debug mode in CI we will catch all six before production."</p>
+<p><strong>Why it is wrong:</strong> debug mode reports what the tests run. It never sees a code path no test exercises, and it cannot know that a timeout should have been counted (6) or that gather dropped a failure (4). Production signals (loop lag, per-seller outcome counts, the partial-answer rate) are the only net for those.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Slow everywhere at once means the loop: low CPU is blocking I/O, high CPU is computation.</li>
+<li>Over budget with no timeouts counted means a swallowed or blocked deadline.</li>
+<li>Static checks, debug mode in CI and production counts each catch different traps; use all three.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Match the outside symptom to a trap with the decision rules, prove it with that trap's signal, and rely on all three layers of detection, because none covers every trap.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">Latency is 900 ms on every endpoint, CPU is 12%, the timeout counter for four of the five sellers is suddenly high, and the slowest seller's success rate is 100%. Which trap fits best?</p>
+<ol>
+<li data-why="A swallowed cancellation makes timeouts disappear from the counts; here the timeouts are counted.">5: a swallowed CancelledError</li>
+<li>2a: a blocking sync call on the loop, which lets the slow call finish while the deadlines of the others fire late</li>
+<li data-why="CPU work would show high CPU; 12% points at waiting, not computing.">2b: CPU work on the loop</li>
+</ol>
+<p class="ts-why">This is the exact pattern measured in trap 2a: the blocked seller completes inside its own step, and the fast sellers' deadlines fire late, all at once. Low CPU rules out computation.</p>
+</div>
+</section>
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: debugging an async service under pressure</h2>
+<p class="ts-bridge">Last part: one table for symptom, detection and fix. Still unsolved: explaining it out loud, with numbers and trade-offs, the way an interviewer asks.</p>
+<p class="ts-problem">"Our asyncio service is fine in tests and occasionally terrible in production. Walk me through how you would find out why." Most answers list tools. A senior answer starts from the symptom, names the mechanism, and says what each fix gives up.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. Each draws on this page and at least one earlier part. Try each before opening the reference answer.</p>
+<h3>Prompt 1: "Every endpoint got slow at once, and CPU is low"</h3>
+<div class="ts-predict" data-claims="c2 c11">
+<p class="q">The service fans out to five downstreams per request. After a release, p99 is 900 ms on every endpoint, including the health check. CPU is 15%. What is your hypothesis, how do you confirm it, and what is the fix and its cost?</p>
+<div class="ts-reveal"><p>Every endpoint at once points at the shared loop; low CPU means it is waiting, not computing: a blocking call in a coroutine, probably a sync client added in the release. Confirm with loop lag (a periodic timer firing late) and then name the coroutine with debug mode on a canary: "Executing … took 0.900 seconds". Fix: an async client, or <code>run_in_executor</code> with a pool of its own sized as rate × seconds held. The cost: threads that keep running after the request's deadline, so the pool size, not the deadline, bounds the waste; and if the dependency is slower than the budget, no pool makes it useful.</p></div>
+</div>
+<h3>Prompt 2: "Our timeouts don't seem to work"</h3>
+<div class="ts-predict" data-claims="c7 c50">
+<p class="q">The service wraps each downstream call in <code>asyncio.timeout(0.25)</code>. Some requests take over 1 s, and the timeout metric is flat. Name the two most likely causes and how you tell them apart.</p>
+<div class="ts-reveal"><p>Either the deadline fires and is swallowed (a retry or "never crash" handler catching BaseException, so the CancelledError never leaves the block and no TimeoutError is raised; <code>expired()</code> is True), or it cannot fire because a blocking call holds the loop until the call ends and the block finishes without awaiting again (<code>expired()</code> is False and loop lag spikes). Fix the first by catching exceptions by name and re-raising CancelledError after clean-up; fix the second by moving the call to a thread. A senior answer adds the TaskGroup consequence: a swallowed cancellation also stops the group from ending, so it can hang shutdowns too.</p></div>
+</div>
+<h3>Prompt 3: "Design background work for an async API"</h3>
+<div class="ts-explain" data-points="A strong reference for the Task's whole life|A done callback that reads the exception, logs it with a name and counts it|Must-happen work goes to a durable queue or outbox, because Tasks die with the process|Request-scoped work goes in a TaskGroup, not a fire-and-forget Task">
+<p class="q">The API must send per-dependency metrics every second and must also send an order confirmation after each purchase. Design both, and say what each design gives up.</p>
+<div class="ts-model"><p>The metrics flush is a long-lived background Task started with a helper that keeps a strong reference in a set and adds a done callback that reads the exception, logs it with the Task's name and increments a failure counter that pages someone; losing a few seconds of counts on a deploy is acceptable. The order confirmation must not be lost, so it is not a Task at all: it is written to an outbox table in the same transaction as the order, and a worker sends it with retries; that costs a table and a worker, and gives at-least-once delivery. Any work that belongs to one request runs in that request's TaskGroup, so it is awaited and its errors are raised.</p></div>
+</div>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it goes from symptom to mechanism (one thread, cancellation as an exception, Tasks that store their errors) instead of from tool to tool; it uses numbers (900 ms, 250 ms, rate × seconds held); and it states the cost of each fix: threads that outlive deadlines, partial answers that must be counted, work that dies with the process unless it is made durable.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Turning on debug mode in production is the fastest way to find these bugs."</p>
+<p><strong>Why it is wrong:</strong> <span class="ts-claim" data-claim="c20" data-src="s7">The docs describe the Python Development Mode as additional runtime checks that are too expensive to be enabled by default.</span> <span class="ts-claim" data-claim="c59" data-src="s14">In CPython 3.14's futures.py, every Future, and so every Task, created while the loop is in debug mode records the stack where it was created.</span> Use it in tests, staging or a canary; in production, use loop lag and outcome counts, which cost almost nothing.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Symptom → mechanism → signal → fix → cost, in that order.</li>
+<li>Over budget with flat timeouts: swallowed (expired True) or blocked (expired False).</li>
+<li>Background work: owned and watched if it may be lost; durable if it must happen.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A senior answer to an async incident walks from the symptom to the broken promise and its signal, and names what the fix costs.</p>
+</section>
+<section class="ts-part" id="whats-next" data-rung="5" data-min="7">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: cancellation itself. This page only taught how not to break it.</p>
+<p class="ts-problem">Gateway v5 answers seller-b at 1,199 in 250 ms with seller-e marked as timed out and the answer marked partial; seller-e's sync SDK runs in its own pool, ranking runs in a process pool, and a watched background Task sends per-seller counts. But at the deadline, seller-e's thread keeps running for another 650 ms, and the page never explained what really happens inside a Task between <code>cancel()</code> and the end of its <code>finally</code>.</p>
+<h3>What this page added</h3>
+<ul>
+<li>Five promises the loop takes on trust, and where each trap hides in Part 2's machinery.</li>
+<li>Debug mode as a detector (slow steps by name, creation tracebacks), CI with <code>PYTHONASYNCIODEBUG=1 pytest -W error</code>, and what Ruff and mypy catch and miss.</li>
+<li>The six traps, each measured on the gateway: forgotten await, blocking I/O (seller-e's sync SDK), CPU work, lost background Tasks, gather after a failure, swallowed cancellation, silent timeouts.</li>
+<li>Gateway v5: seller-e in its own thread pool, ranking in a process pool, a watched metrics flusher, every outcome recorded, partial answers marked; pools sized as limits on waste at 10 times the load.</li>
+</ul>
+<h3>What is still broken</h3>
+<p>This page treated cancellation from the outside: let CancelledError through, clean up in <code>finally</code>, never swallow it. That leaves questions it did not answer:</p>
+<ul>
+<li>seller-e's thread runs to 900 ms after its call was cancelled at 250 ms. What can and cannot be stopped, and how should a gateway stop work it no longer needs?</li>
+<li>A <code>finally</code> that awaits, such as <code>await writer.wait_closed()</code>, can itself be interrupted. What happens to clean-up that is cancelled?</li>
+<li>When a timeout and a TaskGroup both cancel the same Task, how does each know which cancellation is its own? The docs mention <code>uncancel()</code>; this page only said not to call it.</li>
+<li>Some work must finish even when the request is cancelled, such as sending a full batch of counts. How is that protected, and what does protecting it cost?</li>
+</ul>
+<h3>Next: Part 5 — Cancellation in depth</h3>
+<p>Part 5 follows a cancellation from <code>Task.cancel()</code> to the end of the coroutine: what happens to seller-e at the deadline, cancellation counts and <code>uncancel()</code>, clean-up that is itself cancelled, and <code>asyncio.shield()</code> for work that must finish.</p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: six traps, each with a symptom, a mechanism, a signal, a fix and a test; debug mode and static checks to find them; gateway v5.</li>
+<li>Still broken: cancellation is understood only as "let it through".</li>
+<li>Part 5: cancellation in depth, starting from seller-e at the deadline.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v5 survives the six traps; Part 5 opens up the mechanism several of them depend on, cancellation.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway across Parts 1 to 4 in the order they were built.</p>
+<ol>
+<li>v0: blocking calls one after another, 1,450 ms</li>
+<li>v1 on the toy loop: five tasks on one thread, 900 ms, answer at the 250 ms budget</li>
+<li>v2: the toy loop plus a selector, the same answers from real sockets</li>
+<li>v3: asyncio streams and Tasks, with a hand-made budget and hand-made waiting</li>
+<li>v4: a TaskGroup, a shared Semaphore and one timeout_at deadline per request</li>
+<li>v5: seller-e's sync SDK in its own thread pool, ranking in a process pool, watched background metrics, partial answers marked</li>
+</ol>
+<p class="ts-why">Each version fixes what the one before it could not do: the sum of waits, fake I/O, the hand-written loop, the hand-made waiting and budget, and finally the traps that the loop cannot detect on its own.</p>
+</div>
+</section>

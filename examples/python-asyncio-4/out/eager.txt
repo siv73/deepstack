@@ -1,0 +1,4 @@
+eager_start=False: after create_task, done=False | lookup started | result 1,199
+eager_start=True: lookup started | after create_task, done=True | result 1,199
+eager factory, cache miss: done=False after create_task; log=['lookup started']
+result 1,199

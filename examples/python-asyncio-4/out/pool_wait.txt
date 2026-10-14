@@ -1,0 +1,4 @@
+-- 20 requests, cap 10: per-call timeout(0.25) inside the cap --
+slowest request 1,780 ms; over budget: 18 of 20; no offer: 0 of 20
+-- 20 requests, cap 10: gateway v4, timeout_at(deadline) around the wait --
+slowest request 250 ms; over budget: 0 of 20; no offer: 16 of 20

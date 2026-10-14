@@ -1,0 +1,4 @@
+-- seller-e via to_thread(): one default pool of 4 threads for everything --
+request 5, sent at 100 ms: no offer after 250 ms; timed out: seller-a, seller-b, seller-c, seller-d, seller-e
+-- seller-e in its own pool of 4; the default pool stays free for lookups --
+request 5, sent at 100 ms: cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e

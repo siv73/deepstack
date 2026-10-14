@@ -1,0 +1,14 @@
+-- 1. except (SellerError, OSError), every problem reported as a SellerError --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; failed: seller-e (SellerError: seller-e failed: )
+metrics for seller-e: {'seller-e failed': 1}
+-- 2. partial answers with nothing to show for it --
+10 requests answered, every one with: seller-b 1,199; errors: 0
+per-seller counts: seller-e timed out on 10 of 10 requests
+the cheapest price, seller-e's 1,149, reached 0 of 10 shoppers
+-- 3. asyncio.timeout(0.25) around a blocking call --
+no TimeoutError; the block took 900 ms; expired() = False
+and returned an offer: seller-e at 1,149

@@ -1,0 +1,5 @@
+first price: 1,199
+1. main() returns
+2. leftover task: cancelled
+3. async generator: closed (its finally ran)
+4. asyncio.run returned "main's result" after 200 ms; loop closed: True

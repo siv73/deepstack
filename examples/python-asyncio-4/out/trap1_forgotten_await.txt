@@ -1,0 +1,15 @@
+-- one await missing --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e
+metrics service received: {}
+RuntimeWarnings: 5, all saying: coroutine 'MetricsClient.record' was never awaited
+-- the await restored --
+   90 ms  seller-a answered 1,249
+  130 ms  seller-b answered 1,199
+  160 ms  seller-c answered 1,229
+  210 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e
+metrics service received: {'seller-a answered': 1, 'seller-b answered': 1, 'seller-c answered': 1, 'seller-d answered': 1, 'seller-e timed out': 1}

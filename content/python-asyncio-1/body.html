@@ -1525,7 +1525,7 @@ async def sleep(ms):
 <div class="ts-table-wrap"><table class="ts-table">
 <thead><tr><th>What the user sees</th><th>Signal</th><th>Fix</th></tr></thead>
 <tbody>
-<tr><td>Usually nothing; sometimes stale or missing data from one dependency</td><td>A RuntimeWarning that a coroutine was never awaited; a dependency that is suspiciously fast (0 ms)</td><td>Run tests with warnings turned into errors (for example <code>-W error::RuntimeWarning</code>); use a linter or type checker that flags unused coroutines</td></tr>
+<tr><td>Usually nothing; sometimes stale or missing data from one dependency</td><td>A RuntimeWarning that a coroutine was never awaited; a dependency that is suspiciously fast (0 ms)</td><td>Run tests with every warning turned into an error (for example <code>pytest -W error</code>; <code>-W error::RuntimeWarning</code> alone lets the test pass, as Part 4 shows); use a type checker that flags unused coroutines</td></tr>
 </tbody>
 </table></div>
 <div class="ts-note" data-label="Common misunderstanding">

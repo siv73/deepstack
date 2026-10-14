@@ -1,0 +1,2404 @@
+{
+  "verified": "2026-10-15",
+  "volatility": "evolving",
+  "strict": true,
+  "sources": [
+    {
+      "id": "s1",
+      "title": "asyncio: Coroutines and Tasks",
+      "url": "https://docs.python.org/3.14/library/asyncio-task.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s2",
+      "title": "asyncio: Developing with asyncio",
+      "url": "https://docs.python.org/3.14/library/asyncio-dev.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s3",
+      "title": "asyncio: Event Loop",
+      "url": "https://docs.python.org/3.14/library/asyncio-eventloop.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s4",
+      "title": "concurrent.futures: Launching parallel tasks",
+      "url": "https://docs.python.org/3.14/library/concurrent.futures.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s5",
+      "title": "Built-in Exceptions (CPython 3.14 documentation source)",
+      "url": "https://github.com/python/cpython/blob/v3.14.8/Doc/builtins/exceptions.rst",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s6",
+      "title": "asyncio: Exceptions",
+      "url": "https://docs.python.org/3.14/library/asyncio-exceptions.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s7",
+      "title": "Python Development Mode",
+      "url": "https://docs.python.org/3.14/library/devmode.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s8",
+      "title": "multiprocessing: Process-based parallelism",
+      "url": "https://docs.python.org/3.14/library/multiprocessing.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s9",
+      "title": "What's New In Python 3.14",
+      "url": "https://docs.python.org/3.14/whatsnew/3.14.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s11",
+      "title": "What's New In Python 3.8",
+      "url": "https://docs.python.org/3.14/whatsnew/3.8.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s12",
+      "title": "CPython 3.14 source: Lib/asyncio/base_events.py",
+      "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/base_events.py",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s13",
+      "title": "CPython 3.14 source: Lib/asyncio/tasks.py",
+      "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s14",
+      "title": "CPython 3.14 source: Lib/asyncio/futures.py",
+      "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s15",
+      "title": "CPython 3.14 source: Lib/asyncio/timeouts.py",
+      "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/timeouts.py",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s16",
+      "title": "CPython 3.14 source: Lib/asyncio/threads.py",
+      "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/threads.py",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s17",
+      "title": "pytest 9.1: How to handle test failures (unraisable exceptions)",
+      "url": "https://github.com/pytest-dev/pytest/blob/9.1.1/doc/en/how-to/failures.rst",
+      "kind": "primary",
+      "publisher": "pytest",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s18",
+      "title": "mypy: Error codes enabled by default",
+      "url": "https://github.com/python/mypy/blob/v1.20.2/docs/source/error_code_list.rst",
+      "kind": "primary",
+      "publisher": "mypy project",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s19",
+      "title": "Ruff rule RUF006 asyncio-dangling-task (rule documentation, Ruff 0.16.9)",
+      "url": "https://github.com/astral-sh/ruff/blob/0.16.9/crates/ruff_linter/src/rules/ruff/rules/asyncio_dangling_task.rs",
+      "kind": "primary",
+      "publisher": "Astral (Ruff)",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s20",
+      "title": "Ruff rule ASYNC251 blocking-sleep-in-async-function (rule documentation, Ruff 0.16.9)",
+      "url": "https://github.com/astral-sh/ruff/blob/0.16.9/crates/ruff_linter/src/rules/flake8_async/rules/blocking_sleep.rs",
+      "kind": "primary",
+      "publisher": "Astral (Ruff)",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s21",
+      "title": "Command line and environment",
+      "url": "https://docs.python.org/3.14/using/cmdline.html",
+      "kind": "primary",
+      "publisher": "Python Software Foundation",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s22",
+      "title": "Ruff rule ASYNC210 blocking-http-call-in-async-function (rule documentation, Ruff 0.16.9)",
+      "url": "https://github.com/astral-sh/ruff/blob/0.16.9/crates/ruff_linter/src/rules/flake8_async/rules/blocking_http_call.rs",
+      "kind": "primary",
+      "publisher": "Astral (Ruff)",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s23",
+      "title": "Ruff rule BLE001 blind-except (rule documentation, Ruff 0.16.9)",
+      "url": "https://github.com/astral-sh/ruff/blob/0.16.9/crates/ruff_linter/src/rules/flake8_blind_except/rules/blind_except.rs",
+      "kind": "primary",
+      "publisher": "Astral (Ruff)",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s24",
+      "title": "Textual blog: The Heisenbug lurking in your async code (Will McGugan, 2023-02-11)",
+      "url": "https://github.com/Textualize/textual/blob/main/docs/blog/posts/create-task-psa.md",
+      "kind": "primary",
+      "publisher": "Textualize",
+      "accessed": "2026-10-15"
+    },
+    {
+      "id": "s25",
+      "title": "Ruff 0.16.9 rule code registry (codes.rs)",
+      "url": "https://github.com/astral-sh/ruff/blob/0.16.9/crates/ruff_linter/src/codes.rs",
+      "kind": "primary",
+      "publisher": "Astral (Ruff)",
+      "accessed": "2026-10-15"
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "The docs say that when a coroutine function is called but not awaited, or not scheduled with create_task(), asyncio emits a RuntimeWarning.",
+      "sources": [
+        "s2"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Developing with asyncio › Detect never-awaited coroutines",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Developing with asyncio › Detect never-awaited coroutines",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Developing with asyncio › Detect never-awaited coroutines",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "text": "In CPython 3.14's base_events.py, each loop iteration counts the callbacks in the ready queue and calls them one after another; each call returns before the next starts.",
+      "sources": [
+        "s12"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s12",
+          "locator": "BaseEventLoop._run_once(): ntodo loop",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s12",
+          "locator": "BaseEventLoop._run_once(): ntodo loop",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s12",
+          "locator": "BaseEventLoop._run_once(): ntodo loop",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "text": "The docs warn that the event loop only keeps weak references to tasks, so a task that isn't referenced elsewhere may get garbage collected at any time, even before it is done.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c4",
+      "text": "In CPython 3.14's futures.py, a Future whose exception was set but never retrieved reports \"exception was never retrieved\" from its __del__ method, that is, only when the object is destroyed.",
+      "sources": [
+        "s14"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s14",
+          "locator": "Future.__del__",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s14",
+          "locator": "Future.__del__",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s14",
+          "locator": "Future.__del__",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c5",
+      "text": "In CPython 3.14's tasks.py, once gather()'s outer Future is done, its done callback marks the exception of each child that finishes later as retrieved and returns without passing it on.",
+      "sources": [
+        "s13"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s13",
+          "locator": "gather() › _done_callback",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s13",
+          "locator": "gather() › _done_callback",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s13",
+          "locator": "gather() › _done_callback",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c6",
+      "text": "Task.cancel() arranges for a CancelledError to be thrown into the wrapped coroutine on the next cycle of the event loop, and the coroutine then has a chance to clean up or even deny the request by suppressing the exception.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "Task.cancel()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "Task.cancel()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "Task.cancel()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c7",
+      "text": "In CPython 3.14's timeouts.py, the timeout's exit turns a CancelledError into TimeoutError only when that CancelledError is leaving the block; if the block ends without an exception, nothing is raised.",
+      "sources": [
+        "s15"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s15",
+          "locator": "Timeout.__aexit__",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s15",
+          "locator": "Timeout.__aexit__",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s15",
+          "locator": "Timeout.__aexit__",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c8",
+      "text": "TimeoutError is one of the built-in subclasses of OSError.",
+      "sources": [
+        "s5"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s5",
+          "locator": "OS exceptions › TimeoutError",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s5",
+          "locator": "OS exceptions › TimeoutError",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s5",
+          "locator": "OS exceptions › TimeoutError",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c9",
+      "text": "The docs say that Task.cancel() does not guarantee that the Task will be cancelled, unlike Future.cancel().",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "Task.cancel()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "Task.cancel()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "Task.cancel()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c10",
+      "text": "The docs list four ways to enable it: the PYTHONASYNCIODEBUG environment variable set to 1, the Python Development Mode, debug=True passed to asyncio.run(), or loop.set_debug().",
+      "sources": [
+        "s2"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Debug Mode",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Debug Mode",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Debug Mode",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c11",
+      "text": "In debug mode, callbacks taking longer than 100 milliseconds are logged, and loop.slow_callback_duration sets the minimum duration, in seconds, that counts as slow.",
+      "sources": [
+        "s2",
+        "s3"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 1,
+          "source": "s3",
+          "locator": "Enabling debug mode › loop.slow_callback_duration",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 2,
+          "source": "s3",
+          "locator": "Enabling debug mode › loop.slow_callback_duration",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        },
+        {
+          "pass": 3,
+          "source": "s3",
+          "locator": "Enabling debug mode › loop.slow_callback_duration",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c12",
+      "text": "In CPython 3.14's base_events.py, the loop times each ready callback in debug mode and logs a warning \"Executing … took … seconds\" when it took at least slow_callback_duration.",
+      "sources": [
+        "s12"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s12",
+          "locator": "BaseEventLoop._run_once(): debug timing",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s12",
+          "locator": "BaseEventLoop._run_once(): debug timing",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s12",
+          "locator": "BaseEventLoop._run_once(): debug timing",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c13",
+      "text": "In debug mode, the never-awaited RuntimeWarning adds a \"Coroutine created at\" traceback that ends at the line that called the coroutine function.",
+      "sources": [
+        "s2"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Detect never-awaited coroutines › Output in debug mode",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Detect never-awaited coroutines › Output in debug mode",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Detect never-awaited coroutines › Output in debug mode",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c14",
+      "text": "In CPython 3.14, turning debug mode on also turns on coroutine origin tracking with sys.set_coroutine_origin_tracking_depth().",
+      "sources": [
+        "s12"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s12",
+          "locator": "BaseEventLoop.set_debug / _set_coroutine_origin_tracking",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s12",
+          "locator": "BaseEventLoop.set_debug / _set_coroutine_origin_tracking",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s12",
+          "locator": "BaseEventLoop.set_debug / _set_coroutine_origin_tracking",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c15",
+      "text": "With debug mode on, the \"Task exception was never retrieved\" message also shows the traceback where the task was created.",
+      "sources": [
+        "s2"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Detect never-retrieved exceptions",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Detect never-retrieved exceptions",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Detect never-retrieved exceptions",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c16",
+      "text": "In debug mode, many non-threadsafe asyncio APIs, such as loop.call_soon() and loop.call_at(), raise an exception if they are called from a wrong thread.",
+      "sources": [
+        "s2"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c17",
+      "text": "The execution time of the I/O selector is logged if it takes too long to perform an I/O operation.",
+      "sources": [
+        "s2"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Debug Mode › When the debug mode is enabled",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c18",
+      "text": "pytest's docs describe exceptions raised in a situation where they cannot propagate to a caller, most commonly in a __del__ method, and say pytest reports them with the warning category pytest.PytestUnraisableExceptionWarning.",
+      "sources": [
+        "s17"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s17",
+          "locator": "Warning about unraisable exceptions and unhandled thread exceptions",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s17",
+          "locator": "Warning about unraisable exceptions and unhandled thread exceptions",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s17",
+          "locator": "Warning about unraisable exceptions and unhandled thread exceptions",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c19",
+      "text": "The -W option's error action converts warnings to exceptions.",
+      "sources": [
+        "s21"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s21",
+          "locator": "Command line option -W",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s21",
+          "locator": "Command line option -W",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s21",
+          "locator": "Command line option -W",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c20",
+      "text": "The docs describe the Python Development Mode as additional runtime checks that are too expensive to be enabled by default.",
+      "sources": [
+        "s7"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s7",
+          "locator": "Python Development Mode (introduction)",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s7",
+          "locator": "Python Development Mode (introduction)",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s7",
+          "locator": "Python Development Mode (introduction)",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c21",
+      "text": "The Python Development Mode enables asyncio's debug mode and adds the default warning filter, so ResourceWarning and DeprecationWarning are shown.",
+      "sources": [
+        "s7"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s7",
+          "locator": "Effects of the Python Development Mode",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s7",
+          "locator": "Effects of the Python Development Mode",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s7",
+          "locator": "Effects of the Python Development Mode",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c22",
+      "text": "It is enabled with the -X dev command line option or the PYTHONDEVMODE environment variable set to 1.",
+      "sources": [
+        "s7"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s7",
+          "locator": "Python Development Mode (introduction)",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s7",
+          "locator": "Python Development Mode (introduction)",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s7",
+          "locator": "Python Development Mode (introduction)",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c23",
+      "text": "Ruff's rule RUF006 checks for asyncio.create_task and asyncio.ensure_future calls that do not store a reference to the returned result.",
+      "sources": [
+        "s19",
+        "s25"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s19",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 1,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s19",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 2,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s19",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        },
+        {
+          "pass": 3,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c24",
+      "text": "Ruff's rule ASYNC251 checks that async functions do not call time.sleep.",
+      "sources": [
+        "s20",
+        "s25"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s20",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 1,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s20",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 2,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s20",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        },
+        {
+          "pass": 3,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c25",
+      "text": "Ruff's rule ASYNC210 checks that async functions do not contain blocking HTTP calls.",
+      "sources": [
+        "s22",
+        "s25"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s22",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 1,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s22",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 2,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s22",
+          "locator": "## What it does",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        },
+        {
+          "pass": 3,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c26",
+      "text": "Ruff's rule BLE001 checks for except clauses that catch all exceptions, including except BaseException and except Exception; clauses that re-raise, or that log the exception with exc_info enabled, are not flagged.",
+      "sources": [
+        "s23",
+        "s25"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s23",
+          "locator": "## What it does / exemptions",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 1,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s23",
+          "locator": "## What it does / exemptions",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 2,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s23",
+          "locator": "## What it does / exemptions",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        },
+        {
+          "pass": 3,
+          "source": "s25",
+          "locator": "rule registry",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c27",
+      "text": "mypy's unused-coroutine check, one of its error codes enabled by default, reports an async def function whose return value is ignored, because the coroutine won't be executed at the call site.",
+      "sources": [
+        "s18"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s18",
+          "locator": "Error codes enabled by default › [unused-coroutine]",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s18",
+          "locator": "Error codes enabled by default › [unused-coroutine]",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s18",
+          "locator": "Error codes enabled by default › [unused-coroutine]",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c28",
+      "text": "The docs say blocking (CPU-bound) code should not be called directly: if a function performs a CPU-intensive calculation for 1 second, all concurrent asyncio Tasks and IO operations would be delayed by 1 second.",
+      "sources": [
+        "s2"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s2",
+          "locator": "Running Blocking Code",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s2",
+          "locator": "Running Blocking Code",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s2",
+          "locator": "Running Blocking Code",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c29",
+      "text": "loop.run_in_executor() arranges for a function to be called in the given executor; if the executor is None, the default executor is used, which, unless set with set_default_executor(), is a ThreadPoolExecutor created the first time it is needed.",
+      "sources": [
+        "s3"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s3",
+          "locator": "loop.run_in_executor()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s3",
+          "locator": "loop.run_in_executor()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s3",
+          "locator": "loop.run_in_executor()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c30",
+      "text": "In CPython 3.14's futures.py, when the asyncio Future is cancelled, the linked executor future's cancel() is called.",
+      "sources": [
+        "s14"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s14",
+          "locator": "_chain_future()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s14",
+          "locator": "_chain_future()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s14",
+          "locator": "_chain_future()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c31",
+      "text": "But a concurrent.futures Future cannot be cancelled once its call is being executed: cancel() then returns False.",
+      "sources": [
+        "s4"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s4",
+          "locator": "Future.cancel()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s4",
+          "locator": "Future.cancel()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s4",
+          "locator": "Future.cancel()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c32",
+      "text": "asyncio.to_thread() runs a function in a separate thread, propagates the current contextvars context to it, and is primarily intended for IO-bound functions that would otherwise block the event loop.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "Running in threads › to_thread()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "Running in threads › to_thread()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "Running in threads › to_thread()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c33",
+      "text": "In CPython 3.14's threads.py, to_thread() is loop.run_in_executor(None, …) around a copy of the current context, so it always uses the loop's default executor.",
+      "sources": [
+        "s16"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s16",
+          "locator": "to_thread()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s16",
+          "locator": "to_thread()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s16",
+          "locator": "to_thread()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c34",
+      "text": "ProcessPoolExecutor uses the multiprocessing module, which allows it to side-step the Global Interpreter Lock, but also means that only picklable objects can be executed and returned.",
+      "sources": [
+        "s4"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor (introduction)",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor (introduction)",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor (introduction)",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c35",
+      "text": "The docs say that, due to the GIL, asyncio.to_thread() can typically only be used to make IO-bound functions non-blocking, unless an extension module releases the GIL or the Python implementation has none.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "to_thread() › Note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "to_thread() › Note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "to_thread() › Note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c36",
+      "text": "ThreadPoolExecutor's default max_workers is min(32, (os.process_cpu_count() or 1) + 4).",
+      "sources": [
+        "s4"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s4",
+          "locator": "ThreadPoolExecutor › versionchanged 3.13",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s4",
+          "locator": "ThreadPoolExecutor › versionchanged 3.13",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s4",
+          "locator": "ThreadPoolExecutor › versionchanged 3.13",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c37",
+      "text": "ProcessPoolExecutor's max_workers defaults to os.process_cpu_count().",
+      "sources": [
+        "s4"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c38",
+      "text": "The docs require the entry point guard, if __name__ == '__main__', when run_in_executor() is used with a ProcessPoolExecutor, because of how multiprocessing starts its workers.",
+      "sources": [
+        "s3"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s3",
+          "locator": "loop.run_in_executor() › example note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s3",
+          "locator": "loop.run_in_executor() › example note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s3",
+          "locator": "loop.run_in_executor() › example note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c39",
+      "text": "In Python 3.14, on Unix platforms other than macOS, forkserver replaced fork as ProcessPoolExecutor's default start method; on Windows and macOS the default is still spawn.",
+      "sources": [
+        "s9",
+        "s8"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s9",
+          "locator": "Improved modules › concurrent.futures",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 1,
+          "source": "s8",
+          "locator": "Contexts and start methods",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s9",
+          "locator": "Improved modules › concurrent.futures",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 2,
+          "source": "s8",
+          "locator": "Contexts and start methods",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s9",
+          "locator": "Improved modules › concurrent.futures",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        },
+        {
+          "pass": 3,
+          "source": "s8",
+          "locator": "Contexts and start methods",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c40",
+      "text": "Since Python 3.12, if the application has several threads and the multiprocessing context uses fork, the os.fork() call used to spawn workers may raise a DeprecationWarning.",
+      "sources": [
+        "s4"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor › versionchanged 3.12",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor › versionchanged 3.12",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s4",
+          "locator": "ProcessPoolExecutor › versionchanged 3.12",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c41",
+      "text": "For reliable fire-and-forget tasks, the docs recommend keeping them in a collection such as a set, and having each task remove itself on completion with add_done_callback(background_tasks.discard).",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c42",
+      "text": "The docs add that this approach never awaits the tasks, so if a task fails, its exception is never retrieved and asyncio logs a \"Task exception was never retrieved\" message when the task is garbage collected.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "create_task() › Important note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c43",
+      "text": "In CPython 3.14's tasks.py, a Task destroyed while still pending reports \"Task was destroyed but it is pending!\" from its __del__ method.",
+      "sources": [
+        "s13"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s13",
+          "locator": "Task.__del__",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s13",
+          "locator": "Task.__del__",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s13",
+          "locator": "Task.__del__",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c44",
+      "text": "In February 2023, a post by Will McGugan on the blog of the Textual project warned that a task created with asyncio.create_task may disappear without warning when Python runs garbage collection if no reference to it is held, a bug it called almost impossible to reproduce, and recommended keeping a reference for as long as the task must live, or using TaskGroups.",
+      "sources": [
+        "s24"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s24",
+          "locator": "post body",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s24",
+          "locator": "post body",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s24",
+          "locator": "post body",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c45",
+      "text": "With return_exceptions=False, the default, the first raised exception is immediately propagated to the task that awaits gather(), and the other awaitables won't be cancelled and will continue to run.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c46",
+      "text": "With return_exceptions=True, exceptions are treated the same as successful results and aggregated in the result list.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c47",
+      "text": "If a Task or Future passed to gather() is cancelled, it is treated as if it raised CancelledError, and the gather() call itself is not cancelled.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "gather()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c48",
+      "text": "Since Python 3.8, asyncio.CancelledError is a subclass of BaseException rather than Exception.",
+      "sources": [
+        "s6",
+        "s11"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s6",
+          "locator": "CancelledError › versionchanged 3.8",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 1,
+          "source": "s11",
+          "locator": "asyncio",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s6",
+          "locator": "CancelledError › versionchanged 3.8",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 2,
+          "source": "s11",
+          "locator": "asyncio",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s6",
+          "locator": "CancelledError › versionchanged 3.8",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        },
+        {
+          "pass": 3,
+          "source": "s11",
+          "locator": "asyncio",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c49",
+      "text": "The docs note that TaskGroup provides stronger safety guarantees than gather: if a task raises, TaskGroup cancels the remaining tasks and gather does not.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "gather() › Note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "gather() › Note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "gather() › Note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c50",
+      "text": "The docs recommend try/finally blocks for clean-up, and say that if CancelledError is explicitly caught, it should generally be propagated when clean-up is complete; because it directly subclasses BaseException, most code will not need to be aware of it.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c51",
+      "text": "The docs warn that TaskGroup and asyncio.timeout() are implemented using cancellation internally and might misbehave if a coroutine swallows CancelledError.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c52",
+      "text": "The exceptions reference adds that in almost all situations a caught CancelledError must be re-raised.",
+      "sources": [
+        "s6"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s6",
+          "locator": "CancelledError",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s6",
+          "locator": "CancelledError",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s6",
+          "locator": "CancelledError",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c53",
+      "text": "the timeout's expired() method returns whether the context manager has exceeded its deadline",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "Timeout.expired()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "Timeout.expired()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "Timeout.expired()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c54",
+      "text": "For the rare case where suppressing cancellation is truly intended, the docs say Task.uncancel() must also be called, and that user code should not generally call it.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "Task cancellation",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c55",
+      "text": "asyncio.timeout() turns the resulting CancelledError into a TimeoutError, which can only be caught outside the async with block.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "asyncio.timeout() › Note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "asyncio.timeout() › Note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "asyncio.timeout() › Note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c56",
+      "text": "wait() does not raise TimeoutError; futures that are not done when the timeout occurs are returned in the second set, and unlike wait_for(), wait() does not cancel them.",
+      "sources": [
+        "s1"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s1",
+          "locator": "asyncio.wait()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s1",
+          "locator": "asyncio.wait()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s1",
+          "locator": "asyncio.wait()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c57",
+      "text": "The docs note that loop.getaddrinfo() and getnameinfo() use their synchronous versions through the loop's default thread pool executor, so when that executor is saturated these methods may be delayed, which higher-level networking libraries may report as increased timeouts.",
+      "sources": [
+        "s3"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s3",
+          "locator": "loop.getaddrinfo() / getnameinfo() › Note",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s3",
+          "locator": "loop.getaddrinfo() / getnameinfo() › Note",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s3",
+          "locator": "loop.getaddrinfo() / getnameinfo() › Note",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c58",
+      "text": "In CPython 3.14's base_events.py, a connection to a host name that is not already an IP address is resolved with loop.getaddrinfo(), which runs socket.getaddrinfo() with run_in_executor(None, …).",
+      "sources": [
+        "s12"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s12",
+          "locator": "_ensure_resolved() and getaddrinfo()",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s12",
+          "locator": "_ensure_resolved() and getaddrinfo()",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s12",
+          "locator": "_ensure_resolved() and getaddrinfo()",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    },
+    {
+      "id": "c59",
+      "text": "In CPython 3.14's futures.py, every Future, and so every Task, created while the loop is in debug mode records the stack where it was created.",
+      "sources": [
+        "s14"
+      ],
+      "status": "verified",
+      "checks": [
+        {
+          "pass": 1,
+          "source": "s14",
+          "locator": "Future.__init__",
+          "result": "supported",
+          "method": "verbatim read of the CPython 3.14 branch documentation and source (commit dacf472), pytest 9.1.1, mypy v1.20.2 and Ruff 0.16.9 sources on raw.githubusercontent.com; each page sentence judged against the located passage",
+          "at": "2026-10-15T00:30"
+        },
+        {
+          "pass": 2,
+          "source": "s14",
+          "locator": "Future.__init__",
+          "result": "supported",
+          "method": "fresh verbatim read of release-tag copies: CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9, Textual blog post; each page sentence judged against the passage",
+          "at": "2026-10-15T09:40"
+        },
+        {
+          "pass": 3,
+          "source": "s14",
+          "locator": "Future.__init__",
+          "result": "supported",
+          "method": "strict mode: independent reviewer agent given only the ledger and quiz keys; raw reads of CPython v3.14.8 Doc and Lib/asyncio, pytest 9.1.1, mypy v1.20.2, Ruff 0.16.9 and the Textual post; quiz wording fixed where it flagged ambiguity",
+          "at": "2026-10-15T09:55"
+        }
+      ]
+    }
+  ],
+  "cut": [
+    {
+      "text": "Ruff has no rule that detects a forgotten await.",
+      "reason": "only the rules selected on the page (ASYNC, RUF006, BLE001) were run and read; the page says 'none of these three rules' instead"
+    },
+    {
+      "text": "Debug mode slows a typical asyncio service by a measured percentage.",
+      "reason": "no official source states a figure; the page uses the Development Mode docs' 'too expensive to be enabled by default' and the source fact that debug mode records a stack per Future"
+    },
+    {
+      "text": "On a read-only file system the default start method falls back to spawn.",
+      "reason": "present only as a 'versionchanged:: next' note on the 3.14 branch, not in the v3.14.8 release used for pass 2"
+    },
+    {
+      "text": "gather()'s silence about later failures is documented behaviour.",
+      "reason": "the docs do not state it; the page states it only as what CPython 3.14's tasks.py does, and the tests check it"
+    },
+    {
+      "text": "Will McGugan is the CEO of Textualize.",
+      "reason": "the blog post itself names the author but not his role; the page attributes the post by name only"
+    }
+  ]
+}

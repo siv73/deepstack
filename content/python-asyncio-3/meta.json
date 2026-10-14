@@ -33,7 +33,8 @@
   },
   {
    "label": "Python async, Part 4: the six traps that break async services",
-   "why": "forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts, on the gateway"
+   "why": "forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts, on the gateway",
+   "slug": "python-asyncio-4"
   },
   {
    "label": "Python async, Part 5: cancellation in depth",

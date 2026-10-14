@@ -1262,7 +1262,7 @@
 <li><strong>Swallowed cancellation.</strong> <span class="ts-claim" data-claim="c54" data-src="s1">The docs warn that TaskGroup and asyncio.timeout() are implemented with cancellation internally and might misbehave if a coroutine swallows CancelledError.</span> An <code>except Exception</code> or <code>except BaseException</code> in the wrong place breaks gateway v4's deadline.</li>
 <li><strong>Lost tasks and silent timeouts.</strong> Tasks created outside a group, forgotten awaits, and a TimeoutError caught by an over-broad handler and logged as "seller failed" still slip through.</li>
 </ul>
-<h3>Next: Part 4 — The six traps that break async services</h3>
+<h3>Next: <a href="../python-asyncio-4/index.html">Part 4 — The six traps that break async services</a></h3>
 <p>Part 4 breaks gateway v4 on purpose, one trap at a time: forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts. For each it shows what the shopper sees, the signal that reveals it, and the fix.</p>
 <div class="ts-note" data-label="Points to remember">
 <ul>
