@@ -1,0 +1,7 @@
+   0 ms  A sleeps 30 ms
+   0 ms  B sleeps 20 ms
+   0 ms  C sleeps 40 ms
+  20 ms  B done
+  30 ms  A sleeps 50 ms
+  40 ms  C done
+  80 ms  A done

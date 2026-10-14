@@ -1,0 +1,3 @@
+call_soon:            callback ran at 1000 ms (asked at 100 ms)
+call_soon_threadsafe: callback ran at 100 ms (asked at 100 ms)
+call_soon, debug mode: RuntimeError: Non-thread-safe operation invoked on an event loop other than the current one

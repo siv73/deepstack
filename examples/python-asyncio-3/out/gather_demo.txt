@@ -1,0 +1,13 @@
+-- gather, every seller answers --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+  900 ms  seller-e answered 1,149
+after 900 ms, in argument order: seller-e 1,149; seller-d 1,215; seller-c 1,229; seller-b 1,199; seller-a 1,249
+-- gather(return_exceptions=True), seller-c fails --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  200 ms  seller-d answered 1,215
+  900 ms  seller-e answered 1,149
+after 900 ms, in argument order: seller-e 1,149; seller-d 1,215; SellerError: seller-c failed; seller-b 1,199; seller-a 1,249

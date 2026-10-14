@@ -24,7 +24,8 @@
   },
   {
    "label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines",
-   "why": "structured concurrency for the five seller calls, a cap on calls in flight, and the budget as a real timeout"
+   "why": "structured concurrency for the five seller calls, a cap on calls in flight, and the budget as a real timeout",
+   "slug": "python-asyncio-3"
   },
   {
    "label": "Python async, Part 4: the six traps that break async services",

@@ -1,0 +1,2 @@
+yielded: Future; it is our Future: True
+finished with: price 1,199

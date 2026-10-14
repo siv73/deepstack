@@ -1,0 +1,3 @@
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+request failed: SellerError: seller-c failed

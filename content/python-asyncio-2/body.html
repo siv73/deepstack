@@ -1704,7 +1704,7 @@
 <li><strong>No limits.</strong> Every request opens five connections at once; at 10 times the load that is about 1,600 open connections on average, against a descriptor limit that may be 1,024.</li>
 <li><strong>No deadlines.</strong> The 250 ms budget is a timer that cancels by hand. Nothing guarantees it is cancelled when the request ends early, and nothing nests: a seller call has no deadline of its own inside the request's.</li>
 </ul>
-<h3>Next: Part 3 — Running work concurrently: TaskGroup, limits and deadlines</h3>
+<h3>Next: <a href="../python-asyncio-3/index.html">Part 3 — Running work concurrently: TaskGroup, limits and deadlines</a></h3>
 <p>Part 3 replaces the hand-made pieces of gateway v3. A TaskGroup starts the five seller Tasks, keeps references to them, waits for all of them and collects their errors. A limit caps how many seller calls are in flight. The 250 ms budget becomes a real timeout. <span class="ts-claim" data-claim="c117" data-src="s3">The create_task docs already point to TaskGroup as the structured alternative: it keeps a strong reference to each task, awaits them and propagates their exceptions.</span></p>
 <div class="ts-note" data-label="Points to remember">
 <ul>

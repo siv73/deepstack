@@ -1,0 +1,1286 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="8">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Part 2 ended with gateway v3: five seller Tasks on asyncio's real loop, talking to five real seller servers. It answers seller-b at 1,199 in 250 ms. But three of its pieces are hand-made: the budget is a <code>call_later</code> timer that cancels Tasks by hand, "wait for all five" is a Future with a counter and five done callbacks, and nothing limits how many seller calls are open at once.</p>
+<h3>Introduction</h3>
+<p>This is Part 3 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Parts 1 and 2 are the prerequisites for this page. This part recaps them in one screen; if any line below is unfamiliar, read that part first.</p>
+<h3>What Parts 1 and 2 built</h3>
+<ol>
+<li>The five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149). The right answer within 250 ms is seller-b at 1,199, with seller-e missing.</li>
+<li>Part 1: asked one after another, the waits add up to 1,450 ms. Overlapped on one thread with a toy event loop, the request takes 900 ms, the slowest seller.</li>
+<li>Part 2: the sellers became real TCP servers on this machine. asyncio's loop waits on their sockets with a selector (epoll on Linux, kqueue on macOS), runs callbacks with <code>call_soon</code> and timers with <code>call_later</code>, and hands results over in <strong>Futures</strong>.</li>
+<li>A <strong>Task</strong> is a Future that drives a coroutine step by step. When a seller's coroutine raises, its Task stores the exception, so one failing seller no longer ends the request.</li>
+<li>At high load, every open connection is a file descriptor, and a process may hold only so many: about 1,600 seller connections at 10 times the load, against a limit that may be 1,024.</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>No structured way to run many Tasks: waiting for all five is hand-made, and a Task nobody reads can lose its result or its error.</li>
+<li>No limits: nothing caps how many seller calls are in flight.</li>
+<li>No deadlines: the budget is a hand-made timer, and nothing gives a single call a deadline inside the request's.</li>
+</ul>
+<p>This page fixes all three with three standard tools: a <strong>TaskGroup</strong> to start and wait for the seller calls, a <strong>Semaphore</strong> to cap calls in flight, and <strong>asyncio.timeout_at</strong> to turn the 250 ms budget into a real deadline. Then it asks what happens to those tools at 10 times the load.</p>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 3 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "GET /compare", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "tg", "label": "Run together", "sub": "Part 3: group · cap · deadline", "col": 1, "row": 0, "step": 2},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "item code", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "se", "step": 1},
+ {"from": "gw", "to": "tg", "label": "starts and bounds the calls", "step": 2},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 3},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 3}],
+ "captions": [
+ "The request, as in Parts 1 and 2: the app sends an item code and the gateway asks all five sellers, each over its own TCP connection.",
+ "New on this page: the gateway no longer starts, counts and cuts the seller calls by hand. A TaskGroup starts and waits for them, a cap limits how many are in flight, and one deadline cuts them at 250 ms.",
+ "Unchanged from Part 2: asyncio's loop runs the waits, and the operating system's selector says which sockets are ready."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Step 1 is the request, exactly as in Part 2.</li>
+<li>Step 2 highlights the new piece. It sits between the gateway and the seller calls: it decides when calls start (the cap), when the gateway stops waiting (the deadline), and how the gateway waits for all of them (the group).</li>
+<li>Step 3 shows Part 2's machinery, which is still doing the real work underneath. Every tool on this page is built from Part 2's pieces: Tasks, Futures, done callbacks and timers.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "TaskGroup, Semaphore and timeouts are new machinery that replaces the event loop's Tasks and Futures."</p>
+<p><strong>Why it is wrong:</strong> they are thin layers on top of them. This page shows, from CPython's source, that a TaskGroup is a set of Tasks plus a done callback and one Future, that a Semaphore parks waiting callers on Futures, and that a timeout is a timer that calls <code>Task.cancel()</code>. Those are exactly the pieces gateway v3 assembled by hand.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Part 2: real sockets, Futures and Tasks; a failing seller stays inside its own Task.</li>
+<li>Still broken: hand-made waiting, no cap on calls in flight, a hand-made budget.</li>
+<li>Part 3 adds a TaskGroup, a Semaphore and a deadline, all built from Part 2's pieces.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 3 keeps Part 2's gateway and replaces its hand-made waiting, missing limit and hand-made budget with TaskGroup, Semaphore and timeout_at.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">In gateway v3 (Part 2), how did <code>compare()</code> know that all five seller Tasks had finished?</p>
+<ol>
+<li data-why="Awaiting the Tasks one by one was avoided on purpose: awaiting a cancelled Task raises CancelledError in the awaiting coroutine.">It awaited each Task in turn</li>
+<li>A done callback on each Task counted down, and the last one filled a Future that <code>compare()</code> awaited</li>
+<li data-why="The loop has no such feature; Part 2 built the waiting by hand from Futures and done callbacks.">The event loop reported when every Task created in <code>compare()</code> was done</li>
+</ol>
+<p class="ts-why">Part 2 built "wait for all five" from a Future, a counter and five done callbacks. This page shows that TaskGroup does the same thing, packaged and tested.</p>
+</div>
+</section>
+
+<section class="ts-part" id="awaits-add-up" data-rung="1" data-min="11">
+<h2>Why two awaits in a row still take the sum</h2>
+<p class="ts-bridge">Last part: Part 3 replaces gateway v3's hand-made pieces. Still unsolved: why does the gateway need Tasks at all? Is <code>await</code> not enough to make the calls overlap?</p>
+<p class="ts-problem">A teammate writes the gateway in the most natural way: <code>await</code> seller-a, then <code>await</code> seller-b. Both calls are <code>async def</code>; the code runs on asyncio's real loop. Yet the request takes 200 ms for two sellers, not 120 ms, and 1,460 ms for all five.</p>
+<h3>Introduction</h3>
+<p>Many engineers believe that writing <code>async def</code> and <code>await</code> is what makes code run at the same time. It is not. <code>await</code> pauses the coroutine that wrote it until the awaited thing is finished. If the code awaits one call, then the next, the second call does not even start until the first is finished. This part shows the difference with real seller calls and the numbers from Part 1.</p>
+<h3>Comparison</h3>
+<p>Consider two errands: posting a parcel (80 minutes in the queue) and collecting a suit from the tailor (120 minutes). If you stand in the post office queue and only then walk to the tailor and wait there, the afternoon takes 80 + 120 = 200 minutes. If you hand the parcel to one friend and the suit ticket to another before either queue starts, you get both back after 120 minutes, the longer of the two.</p>
+<ul>
+<li>Standing in one queue, then the next = <code>await</code> one call, then <code>await</code> the next.</li>
+<li>Handing each errand to a friend first = creating a Task for each call before awaiting any of them.</li>
+</ul>
+<p>The comparison stops working here: friends are extra people. Tasks are not extra threads; all of them still take turns on the loop's one thread, which is free to switch whenever a Task is waiting.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>Two calls run <dfn data-def="Two waits run sequentially when the second starts only after the first has finished, so their times add up.">sequentially</dfn> when the second starts only after the first has finished, so their times add up. They <dfn data-def="Two waits overlap when both are in progress during the same period, so the total is about the longer of the two.">overlap</dfn> when both are in progress during the same period, so the total is about the longer of the two. An <code>await</code> on a coroutine runs that coroutine to the end before the next line runs, so a list of awaits is sequential.</p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>await ask_seller(seller-a)</code>: seller-a's coroutine runs inside the gateway's coroutine. It opens a connection, sends the item code and waits for the answer.</li>
+<li>While it waits, the gateway's coroutine is paused at that <code>await</code>. The loop is free, but nobody has asked it to start seller-b.</li>
+<li>At 80 ms seller-a answers; the <code>await</code> returns; only now does the next line run.</li>
+<li><code>await ask_seller(seller-b)</code> starts seller-b at 80 ms; it answers at 80 + 120 = 200 ms.</li>
+<li>With Tasks: <code>create_task()</code> for both first. Each Task's first step runs as soon as the gateway gives the loop a turn, so both connections are open at about 0 ms, and the gateway then awaits the Tasks.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2 is the whole point: a paused coroutine does not start the work written after it. Something must have been started before the pause.</li>
+<li>Step 5: a Task is the "something started before the pause". Part 2 showed that <code>create_task()</code> schedules the Task's first step with <code>call_soon</code>; the loop runs it at its next iteration.</li>
+</ul>
+<h3>Program</h3>
+<p>The program asks the real seller servers from Part 2 three ways. <code>ask_seller()</code> is gateway v3's seller call, unchanged; it prints each answer with the time since the start.</p>
+<div class="ts-code" data-lang="python" data-title="two_awaits.py" data-file="two_awaits.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/two_awaits.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>in_a_row()</code> awaits each call inside a <code>for</code> loop. seller-b's line prints at 200 ms, not 120 ms.</li>
+<li><code>tasks_first()</code> creates both Tasks in a list comprehension before awaiting either. seller-b answers at 120 ms and the total is 120 ms.</li>
+<li>Awaiting all five in a row gives 1,460 ms: Part 1's 1,450 ms sum plus about 10 ms for opening five connections one after another. Times on real sockets vary by a few milliseconds from run to run; every timed output on this page is one real run, rounded to the nearest 10 ms, and the tests accept any run within 60 ms of it.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> seller-a takes 80 ms and seller-b 120 ms.</p>
+<p><strong>Step 1.</strong> In a row: seller-a answers at 0 + 80 = 80 ms. seller-b starts at 80 ms and answers at 80 + 120 = 200 ms.</p>
+<p><strong>Step 2.</strong> Tasks first: both start at 0 ms. seller-a answers at 80 ms, seller-b at 120 ms. Total = max(80, 120) = 120 ms.</p>
+<p><strong>Step 3.</strong> All five in a row: 80 + 120 + 150 + 200 + 900 = 1,450 ms. All five as Tasks: max(80, 120, 150, 200, 900) = 900 ms.</p>
+<p><strong>Result:</strong> sequential awaits cost the sum (200 ms for two, 1,450 ms for five); calls started as Tasks first cost the longest (120 ms for two, 900 ms for five). <span class="ts-claim" data-claim="c2" data-src="s1">In the docs' own example, awaiting say_after(1, ...) and then say_after(2, ...) takes about 3 seconds, and creating both as Tasks first takes about 2.</span></p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Making a function <code>async def</code> makes its calls run concurrently."</p>
+<p><strong>Why people hold it:</strong> the word "async" suggests "in the background".</p>
+<p><strong>Why it is wrong:</strong> <code>async def</code> only makes a function that can pause. Whether calls overlap depends on whether more than one of them has been started before the code pauses. Part 1 showed the same mistake on the toy loop: <code>for s in SELLERS: await ask_seller(...)</code> took 1,450 ms.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>await</code> pauses the coroutine that wrote it until the awaited thing finishes.</li>
+<li>Awaits in a row are sequential: 80 + 120 = 200 ms for seller-a then seller-b.</li>
+<li>Calls overlap only if they were started (as Tasks) before the code pauses: max(80, 120) = 120 ms.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Two awaits in a row take the sum of their times, because the second call does not start until the first await returns; overlap needs both calls started first.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The gateway awaits seller-d (200 ms), then creates Tasks for seller-a and seller-b and awaits both. How long does the request take?</p>
+<div class="ts-reveal"><p>About 320 ms. seller-d is awaited alone first, so nothing else starts until 200 ms. Then seller-a and seller-b start together at 200 ms and the longer of them, seller-b, answers at 200 + 120 = 320 ms. Only the calls started together overlap; the first await still adds its full 200 ms.</p></div>
+</div>
+<div class="ts-explain" data-points="await pauses the coroutine until the awaited call finishes|The next line, and so the next call, starts only after that|Awaits in a row cost the sum: 80 + 120 = 200 ms|Creating Tasks first starts every call, so the total is the longest: 120 ms">
+<p class="q">In your own words: why do two awaits in a row take 200 ms for seller-a and seller-b, and what change brings it to 120 ms?</p>
+<div class="ts-model"><p>An await pauses the coroutine until the awaited call has finished. The line after it, which starts seller-b, only runs at 80 ms, when seller-a has answered, so seller-b answers at 80 + 120 = 200 ms. If both calls are wrapped in Tasks before the code awaits anything, both start at once, the loop overlaps their waits, and the request takes the longer of the two: 120 ms.</p></div>
+</div>
+</section>
+<section class="ts-part" id="coroutine-vs-task" data-rung="2" data-min="11">
+<h2>A coroutine waits to be awaited; a Task is already on the loop</h2>
+<p class="ts-bridge">Last part: overlap needs calls started as Tasks before the code pauses. Still unsolved: what exactly is the difference between awaiting a coroutine and creating a Task, and when does each one's code run?</p>
+<p class="ts-problem">A handler calls <code>ask_seller(...)</code> and gets back a coroutine object. Another handler calls <code>asyncio.create_task(ask_seller(...))</code> and gets back a Task. One of them has already been put on the loop's ready queue; the other will never run unless someone awaits it. Which is which, and in what order does their code run?</p>
+<h3>Introduction</h3>
+<p>Part 1 built coroutines from generators, and Part 2 showed a Task driving a coroutine with <code>send()</code>. This part puts the two side by side in the order an application meets them, because every tool on this page (gather, TaskGroup, as_completed) either takes coroutines and wraps them in Tasks, or takes Tasks directly.</p>
+<h3>Comparison</h3>
+<p>A recipe card and a cook. The card says what to do, but nothing happens until someone picks it up. Handing the card to a cook in the kitchen means the dish will be made when the cook gets a free moment, whether or not you stand there watching.</p>
+<ul>
+<li>The recipe card = a coroutine object.</li>
+<li>Following the recipe yourself, right now, until it is done = <code>await coro</code>.</li>
+<li>Handing it to the kitchen = <code>asyncio.create_task(coro)</code>; the kitchen is the loop.</li>
+</ul>
+<p>The comparison stops working here: the kitchen has one cook who switches dishes only when a dish is waiting (for the oven, say). A Task's code runs only when the loop gets a turn.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="The object returned by calling an async def function; it holds the paused function and runs only when awaited or wrapped in a Task.">coroutine object</dfn> is what calling an <code>async def</code> function returns. <span class="ts-claim" data-claim="c1" data-src="s1">The docs say that calling a coroutine function does not schedule it to run; it only creates a coroutine object.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c3" data-src="s1">asyncio.create_task() wraps a coroutine into a Task and schedules its execution; it raises RuntimeError if there is no running loop in the current thread.</span> <span class="ts-claim" data-claim="c4" data-src="s1">The docs say to save a reference to the Task that create_task() returns, because the event loop keeps only weak references to tasks.</span></p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>task = create_task(note("task"))</code>: the Task's first step goes into the ready queue. Nothing of <code>note</code> has run.</li>
+<li><code>await note("coroutine")</code>: the coroutine runs right here, inside the caller, to its end. It never yields, so the loop gets no turn and the Task still has not run.</li>
+<li><code>await asyncio.sleep(0)</code>: the caller's first real pause. The loop runs one iteration, and the Task's first step runs then.</li>
+<li><code>await task</code>: the Task is already done, so the await returns at once.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: awaiting a coroutine gives the loop a turn only if that coroutine actually waits on something. A coroutine that finishes without waiting runs like an ordinary function call.</li>
+<li>Step 3: a Task's code starts at the caller's first pause, not at <code>create_task()</code>. This is Part 2's <code>call_soon</code> at work.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="coro_vs_task.py" data-file="coro_vs_task.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/coro_vs_task.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Line 1 of the log: <code>create_task()</code> returned before the Task did anything.</li>
+<li>Lines 2 and 3: the awaited coroutine ran in place, before the Task, even though the Task was created first.</li>
+<li>Line 4: the Task ran at the first real pause, <code>sleep(0)</code>, before the line after it (line 5).</li>
+<li>The last line: a Task wraps a coroutine. The Task is what the loop schedules; the coroutine is what the Task drives.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> a gateway that wants seller-a and seller-b in flight together.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Code</th><th>When seller-b's connection opens</th><th>Total</th></tr></thead>
+<tbody>
+<tr><td><code>await ask(a)</code>; <code>await ask(b)</code></td><td>80 ms, after seller-a has answered</td><td>200 ms</td></tr>
+<tr><td><code>ta = create_task(ask(a))</code>; <code>tb = create_task(ask(b))</code>; <code>await ta</code>; <code>await tb</code></td><td>about 0 ms, at the first pause</td><td>120 ms</td></tr>
+<tr><td><code>coro_b = ask(b)</code> and never awaited</td><td>never; Python warns that the coroutine was never awaited</td><td>seller-b is silently skipped</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> only a Task (or something that creates Tasks for you) puts a call on the loop; a coroutine object does nothing until it is awaited, and awaiting it makes the caller wait for it.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>await task</code> is what starts the Task."</p>
+<p><strong>Why it is wrong:</strong> the Task was scheduled when it was created; <code>await task</code> only waits for its result. In the program, the Task finished at the <code>sleep(0)</code>, before <code>await task</code> was reached. This is why creating all five seller Tasks first and awaiting later gives overlap.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Calling an <code>async def</code> function only creates a coroutine object.</li>
+<li><code>await coro</code> runs it now, inside the caller; <code>create_task(coro)</code> schedules it on the loop.</li>
+<li>A Task's first step runs at the caller's next pause; keep a reference to every Task.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A coroutine object runs only when awaited, inside the caller; a Task is scheduled on the loop at once and runs at the caller's next pause.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c1 c3">
+<p class="q">Code runs <code>t = asyncio.create_task(log_it("A"))</code>, then <code>await log_it("B")</code> (which never awaits anything inside), then <code>await asyncio.sleep(0)</code>, then <code>log("C")</code>. In what order are A, B and C logged?</p>
+<ol>
+<li data-why="create_task() only schedules the Task; it does not run any of its code before returning.">A, B, C</li>
+<li data-why="The Task runs at the first real pause, sleep(0), which comes before C.">B, C, A</li>
+<li>B, A, C</li>
+</ol>
+<p class="ts-why">B runs in place when awaited. The Task's first step was only scheduled; it runs at sleep(0), the first real pause, so A comes next. C is logged after the pause.</p>
+</div>
+</section>
+
+<section class="ts-part" id="gather" data-rung="2" data-min="11">
+<h2>gather(): many calls, one list of results in argument order</h2>
+<p class="ts-bridge">Last part: only Tasks put calls on the loop. Still unsolved: creating five Tasks and awaiting each one is repetitive. Is there one call that starts them all and collects their results?</p>
+<p class="ts-problem">The gateway needs all five offers in one list so it can pick the cheapest. Writing five <code>create_task</code> lines and five <code>await</code> lines is tedious, and gateway v3's done-callback counter is worse. <code>asyncio.gather()</code> has been the usual one-line answer for years.</p>
+<h3>Introduction</h3>
+<p><code>gather()</code> is the oldest of this page's tools. It is still everywhere in real code and interviews, so it is taught first. Its behaviour when one call fails is the reason TaskGroup was added; this part states that behaviour, and the "When it breaks" rung measures it.</p>
+<h3>Comparison</h3>
+<p>A teacher hands out five exam papers at once and collects them in roll-number order, however early each student finishes. If one student is caught cheating, the teacher walks out to report it at once, and the other students keep writing; nobody tells them to stop.</p>
+<ul>
+<li>Handing out the papers = gather scheduling every awaitable.</li>
+<li>Collecting in roll-number order = results in argument order.</li>
+<li>Walking out while the others keep writing = the first exception propagating while the other calls continue.</li>
+</ul>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c5" data-src="s1">gather() runs its awaitables concurrently, and any coroutine passed to it is automatically scheduled as a Task.</span> <span class="ts-claim" data-claim="c6" data-src="s1 s11">If all succeed, gather() returns a list of results in the order of the awaitables passed, not necessarily the order in which the results arrived.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>gather wraps each coroutine in a Task, so all five seller calls are in flight together.</li>
+<li>It waits until every Task is done, then returns their results as a list in argument order.</li>
+<li><strong>A failure, by default.</strong> <span class="ts-claim" data-claim="c7" data-src="s1">With return_exceptions=False, the default, the first exception is immediately propagated to the task awaiting gather(), and the other awaitables are not cancelled and continue to run.</span></li>
+<li><strong>A failure, collected.</strong> <span class="ts-claim" data-claim="c8" data-src="s1">With return_exceptions=True, exceptions are treated the same as successful results and placed in the result list.</span></li>
+<li><strong>gather itself cancelled.</strong> <span class="ts-claim" data-claim="c9" data-src="s1">If gather() itself is cancelled, every submitted awaitable that has not completed yet is also cancelled.</span></li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: argument order lets the caller match each result to its call without names.</li>
+<li>Step 3 is the dangerous default: the caller has moved on, but the other calls still hold connections and may still fail, and nobody is waiting to read those failures.</li>
+<li>Step 4 is safe but slow: gather waits for every call, including seller-e's 900 ms.</li>
+</ul>
+<h3>Program</h3>
+<p>The sellers are passed slowest first, so finishing order and argument order differ.</p>
+<div class="ts-code" data-lang="python" data-title="gather_demo.py" data-file="gather_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gather_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>calls</code> is a list of five coroutine objects; gather turns each into a Task.</li>
+<li>The answers print in finishing order (a at 80 ms, … e at 900 ms), but the returned list is in argument order: seller-e first.</li>
+<li>With <code>return_exceptions=True</code> and seller-c failing, gather still waits 900 ms, and seller-c's place in the list holds its SellerError.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the five sellers passed as e, d, c, b, a; seller-c fails at 150 ms.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>When gather returns or raises</th><th>What the caller gets</th><th>seller-d and seller-e afterwards</th></tr></thead>
+<tbody>
+<tr><td>Default</td><td>raises at 150 ms</td><td>SellerError</td><td>still running: d answers at 200 ms, e at 900 ms</td></tr>
+<tr><td><code>return_exceptions=True</code></td><td>returns at 900 ms</td><td>[1,149, 1,215, SellerError, 1,199, 1,249]</td><td>finished before gather returned</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> gather's default either fails fast and leaves calls running, or (with <code>return_exceptions=True</code>) waits for every call. Neither cancels the others when one fails. <span class="ts-claim" data-claim="c10" data-src="s1">The docs note that TaskGroup gives stronger safety guarantees than gather(): if a task raises, TaskGroup cancels the remaining tasks and gather() does not.</span></p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "When gather raises, the other calls are cancelled."</p>
+<p><strong>Why it is wrong:</strong> they keep running. And cancelling them later through gather does not help either: <span class="ts-claim" data-claim="c11" data-src="s1">Cancelling gather() after it has already raised a child's exception does not cancel the other awaitables.</span> Only cancelling gather while it is still waiting cancels them.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>gather wraps coroutines in Tasks and returns results in argument order.</li>
+<li>Default: the first exception is raised at once; the other calls keep running.</li>
+<li><code>return_exceptions=True</code>: exceptions come back in the list, after every call finishes.</li>
+</ul>
+</div>
+<p class="ts-takeaway">gather runs calls together and returns results in argument order, but by default it raises the first failure and leaves the other calls running.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c6 c7">
+<p class="q">The gateway runs <code>await asyncio.gather(ask(a), ask(b), ask(c), ask(d), ask(e))</code> with the default settings, and seller-b fails at 120 ms. What does the caller see, and what is seller-c doing at 130 ms?</p>
+<ol>
+<li>The SellerError from seller-b at 120 ms; seller-c is still waiting for its answer, due at 150 ms</li>
+<li data-why="The default does not wait for the others; the first exception is propagated immediately.">A list of four offers and one SellerError at 900 ms; seller-c finished at 150 ms</li>
+<li data-why="gather does not cancel the other awaitables when one of them raises.">The SellerError at 120 ms; seller-c was cancelled at 120 ms</li>
+</ol>
+<p class="ts-why">With return_exceptions=False the first exception reaches the caller immediately, and the other awaitables are not cancelled: seller-c keeps its connection open and answers at 150 ms with nobody waiting.</p>
+</div>
+</section>
+
+<section class="ts-part" id="taskgroup" data-rung="2" data-min="14">
+<h2>TaskGroup: start a group of Tasks, wait for all, fail together</h2>
+<p class="ts-bridge">Last part: gather raises the first failure and leaves the other calls running. Still unsolved: how do we start the five seller calls so that the gateway always waits for all of them, keeps a reference to each, and stops the rest when one fails unexpectedly?</p>
+<p class="ts-problem">Gateway v3 needed about a dozen lines of hand-made code (a list of Tasks, a counter, a Future and a done callback on each Task) to wait for five calls, and it still had no answer for "one call failed in a way we did not expect: stop the others". A TaskGroup does all of it in one <code>async with</code> block.</p>
+<h3>Introduction</h3>
+<p><span class="ts-claim" data-claim="c20" data-src="s5">Python 3.11's release notes recommend TaskGroup for new code over using create_task() and gather() directly.</span> This part first states what a TaskGroup promises, then opens CPython's source to show that it is gateway v3's hand-made waiting, done properly.</p>
+<h3>Comparison</h3>
+<p>A school trip. The teacher writes every child's name on a list before leaving, and the bus does not leave the museum until every name is ticked off. If one child is badly hurt, the teacher calls everyone back at once, waits until all of them are on the bus, and then reports what happened.</p>
+<ul>
+<li>The list of names = the group's set of Tasks (strong references).</li>
+<li>The bus waiting = the end of the <code>async with</code> block waiting for every Task.</li>
+<li>Calling everyone back = cancelling the remaining Tasks on the first failure.</li>
+<li>The report = the ExceptionGroup raised at the end.</li>
+</ul>
+<p>The comparison stops working here: a child who is late is still waited for. A TaskGroup has no deadline of its own; the deadline comes later on this page.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="An asyncio async context manager that starts Tasks with its create_task(), waits for all of them when the block ends, and cancels the rest if one fails.">TaskGroup</dfn> starts Tasks and owns them until they finish. <span class="ts-claim" data-claim="c12" data-src="s1">asyncio.TaskGroup, added in Python 3.11, is an asynchronous context manager holding a group of tasks: tasks are added with its create_task() method, and all of them are awaited when the context manager exits.</span> Running Tasks this way, so that no Task outlives the block that started it, is called <dfn data-def="A style in which every task is started inside a block that waits for it, so no task outlives the code that started it.">structured concurrency</dfn>.</p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>async with asyncio.TaskGroup() as tg:</code> enters the group.</li>
+<li><code>tg.create_task(coro)</code> creates a Task exactly like <code>asyncio.create_task</code>, and the group keeps it.</li>
+<li>At the end of the block, the group waits until every Task is done.</li>
+<li><strong>A failure.</strong> <span class="ts-claim" data-claim="c13" data-src="s1">The first time a task in the group fails with an exception other than CancelledError, the remaining tasks are cancelled, no further tasks can be added, and the task running the async with body is also cancelled if the body is still active.</span></li>
+<li><strong>The report.</strong> <span class="ts-claim" data-claim="c14" data-src="s1">Once all tasks have finished, the failures other than CancelledError are combined into an ExceptionGroup or BaseExceptionGroup, which is raised.</span></li>
+<li><strong>The body itself fails.</strong> <span class="ts-claim" data-claim="c16" data-src="s1">If the body of the async with block raises, this is treated as if a task failed: the remaining tasks are cancelled and waited for, and the body's exception, unless it is CancelledError, is included in the group.</span></li>
+</ol>
+<p><span class="ts-claim" data-claim="c15" data-src="s1">If a task fails with KeyboardInterrupt or SystemExit, the group still cancels and waits for the remaining tasks, then re-raises that exception instead of an exception group.</span></p>
+<p>A group has no "stop now" button. <span class="ts-claim" data-claim="c23" data-src="s1">Terminating a task group early is not natively supported; the docs show adding a task that raises a custom exception and catching it with except*.</span></p>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: the group holds a strong reference, which fixes Part 2's weak-reference warning. <span class="ts-claim" data-claim="c17" data-src="s1">The create_task() docs recommend TaskGroup because it keeps a strong reference to each task, awaits them and propagates their exceptions.</span></li>
+<li>Step 3: no Task can outlive the block, so nothing is left running when the request answers.</li>
+<li>Step 4: a failure nobody expected stops the work that no longer matters, instead of leaving it running as gather does.</li>
+<li>Step 5: every failure is reported, not only the first.</li>
+</ul>
+<h3>Inside: the hand-made waiting from Part 2, packaged</h3>
+<p><span class="ts-claim" data-claim="c18" data-src="s9">In CPython 3.14's taskgroups.py, a TaskGroup keeps its tasks in a set, adds a done callback to each task, and its __aexit__ awaits a Future that the done callback completes once the set is empty.</span> <span class="ts-claim" data-claim="c19" data-src="s9">When a task in the group fails, that done callback cancels every task that is not done yet and then cancels the parent task, which interrupts the await in the async with body.</span> Compare gateway v3: a list of Tasks, a done callback that counts down, and a Future <code>all_done</code> filled by the last callback. The group adds the cancelling, the error collecting and years of tested corner cases.</p>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="A TaskGroup when seller-c fails at 150 ms">
+<script type="application/json">
+{"actors": [
+ {"id": "body", "label": "Gateway", "sub": "async with body"},
+ {"id": "tg", "label": "TaskGroup", "sub": "set of Tasks + Future"},
+ {"id": "tc", "label": "seller-c Task", "sub": "fails at 150 ms"},
+ {"id": "rest", "label": "seller-d, seller-e", "sub": "still waiting"}],
+ "steps": [
+ {"from": "body", "to": "tg", "label": "create_task × 5", "note": "Five Tasks start; the group keeps each one in its set and adds its done callback to each."},
+ {"from": "body", "to": "tg", "label": "end of block: await the Future", "note": "The body reaches the end of the async with block. __aexit__ waits on one Future, to be filled when the set is empty."},
+ {"from": "tc", "to": "tg", "label": "done callback: SellerError", "dashed": true, "note": "At 150 ms seller-c's Task stores a SellerError. Its done callback runs in the next loop iteration and records the error."},
+ {"from": "tg", "to": "rest", "label": "cancel()", "note": "The callback cancels every Task that is not done yet: seller-d and seller-e. CancelledError is thrown in at their readline()."},
+ {"from": "rest", "to": "tg", "label": "done callbacks: cancelled", "dashed": true, "note": "Their finally blocks close the connections; they end cancelled. The set becomes empty and the Future is filled."},
+ {"from": "tg", "to": "body", "label": "raise ExceptionGroup", "dashed": true, "note": "__aexit__ wakes and raises ExceptionGroup([SellerError]) out of the async with block, at about 150 ms."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 and 2 are the normal path: the body creates Tasks, then waits at the end of the block.</li>
+<li>Step 3 is Part 2's mechanism: a failing Task stores its exception, and its done callback is scheduled with <code>call_soon</code>.</li>
+<li>Steps 4 and 5 are new compared with gateway v3: the group cancels the others and waits for their clean-up.</li>
+<li>Step 6: the error reaches the gateway's code as one exception group, after every Task is done.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="taskgroup_demo.py" data-file="taskgroup_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/taskgroup_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The <code>for</code> loop creates five Tasks inside the block; the <code>print</code> after the block runs only when all five are done, at 900 ms.</li>
+<li>With seller-c failing, the block raises at 150 ms. seller-d and seller-e did not print an answer: the group cancelled them.</li>
+<li><code>except* Exception</code> catches the ExceptionGroup; the next part explains <code>except*</code>.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> five seller Tasks in a TaskGroup; seller-c fails at 150 ms.</p>
+<p><strong>Step 1.</strong> 0 ms: five Tasks start. 80 ms and 120 ms: seller-a and seller-b finish with offers.</p>
+<p><strong>Step 2.</strong> 150 ms: seller-c's Task stores SellerError. Its done callback cancels seller-d (due at 200 ms) and seller-e (due at 900 ms).</p>
+<p><strong>Step 3.</strong> Just after 150 ms: seller-d and seller-e end cancelled, their connections closed in <code>finally</code>.</p>
+<p><strong>Step 4.</strong> The set is empty; the block raises ExceptionGroup([SellerError('seller-c failed')]).</p>
+<p><strong>Result:</strong> the request fails at 150 ms with nothing left running. That is right for an unexpected bug, and wrong for the gateway, where one failing seller should not cost the other four: rung 3 shows how gateway v4 keeps seller failures out of the group.</p>
+<div class="ts-legacy">
+<p>Differences on Python 3.11 to 3.13. <span class="ts-claim" data-claim="c22" data-src="s1 s7">TaskGroup's handling of simultaneous internal and external cancellations, and of cancellation counts, was improved in Python 3.13.</span> <span class="ts-claim" data-claim="c65" data-src="s7">Python 3.13's release notes say that before this change, when two nested task groups both had a child task fail at the same time, the outer group could hang.</span> Upgrade rather than work around it. <span class="ts-claim" data-claim="c21" data-src="s1 s7">If the group is not active (not yet entered, already finished, or shutting down), TaskGroup.create_task() raises RuntimeError; since Python 3.13 it also closes the given coroutine.</span> <span class="ts-claim" data-claim="c66" data-src="s7">Python 3.13's release notes say that closing that coroutine prevents a RuntimeWarning about it never being awaited.</span></p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "TaskGroup is gather with a nicer syntax."</p>
+<p><strong>Why it is wrong:</strong> the difference is what happens on failure and who owns the Tasks. The group cancels the rest and always waits for every Task before raising; gather raises at once and leaves the others running. And a Task created in a group cannot outlive the block, while a Task created with gather can.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Create Tasks with <code>tg.create_task()</code>; the block's end waits for all of them.</li>
+<li>First failure: cancel the rest, wait for them, raise an ExceptionGroup of every failure.</li>
+<li>Inside: a set of Tasks, a done callback each, and one Future, gateway v3's waiting done properly.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A TaskGroup owns its Tasks: it waits for all of them, and on the first unexpected failure it cancels the rest and raises every failure as one ExceptionGroup.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c13 c14 c18">
+<p class="q">This needs Part 2. A TaskGroup holds five seller Tasks; seller-b raises at 120 ms. Exactly when does seller-d (due at 200 ms) receive its CancelledError?</p>
+<ol>
+<li data-why="Nothing in a Task runs inside another Task's step; the group reacts through a done callback, which is scheduled with call_soon.">At 120 ms, inside seller-b's own step, before seller-b's exception is stored</li>
+<li>Just after 120 ms: seller-b's done callback runs in the next loop iteration and calls cancel(), and seller-d's next step throws CancelledError in at its await</li>
+<li data-why="The group cancels the remaining tasks on the first failure; it does not wait for them to finish first.">At 200 ms, when seller-d would have answered</li>
+</ol>
+<p class="ts-why">Part 2: a Task's done callbacks are scheduled with call_soon, and Task.cancel() throws CancelledError in at the next step. The group's done callback is what calls cancel(), so seller-d is cancelled one or two loop iterations after 120 ms.</p>
+</div>
+</section>
+
+<section class="ts-part" id="exception-groups" data-rung="2" data-min="10">
+<h2>Handling several failures at once: ExceptionGroup and except*</h2>
+<p class="ts-bridge">Last part: a TaskGroup raises every failure as one ExceptionGroup. Still unsolved: an ordinary <code>except SellerError</code> does not match a group. How does code handle the SellerErrors in it one way and the connection errors another?</p>
+<p class="ts-problem">In one request, seller-c and seller-b both answer ERROR and seller-d refuses the connection. The TaskGroup raises one ExceptionGroup holding two SellerErrors and one ConnectionRefusedError. The gateway wants to log seller errors as "seller problem" and connection errors as "network problem".</p>
+<h3>Introduction</h3>
+<p><span class="ts-claim" data-claim="c24" data-src="s5">ExceptionGroup, BaseExceptionGroup and the except* syntax were added in Python 3.11 (PEP 654).</span> TaskGroup was added in the same release and is their main user in asyncio.</p>
+<h3>Comparison</h3>
+<p>A sorting office receives one sack holding letters and parcels. The letters counter takes out the letters; the parcels counter takes out the parcels. Anything nobody takes out is sent back up the line in a new sack.</p>
+<ul>
+<li>The sack = the ExceptionGroup.</li>
+<li>Each counter = an <code>except*</code> clause.</li>
+<li>The new sack sent back up = the unmatched exceptions propagating on.</li>
+</ul>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>An <dfn data-def="An exception that holds a list of other exceptions in its .exceptions attribute, so several failures can be raised together.">ExceptionGroup</dfn> is an exception that holds several exceptions, in its <code>exceptions</code> attribute. (A BaseExceptionGroup is the same for exceptions that do not derive from Exception.)</p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><code>except* T</code> handles the part of a group that matches T. <span class="ts-claim" data-claim="c25" data-src="s4">An except* clause matches by type against the exceptions inside the group: each clause splits the group into a matching subgroup, which its body handles, and a non-matching subgroup, which goes on to the next except* clause.</span> <span class="ts-claim" data-claim="c26" data-src="s4">After all except* clauses have run, the exceptions no clause matched propagate on as a new exception group.</span></p></div></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>The group (SellerError c, ConnectionRefusedError d, SellerError b) reaches <code>except* SellerError</code>. Its body runs once, with a subgroup of the two SellerErrors.</li>
+<li>The rest (ConnectionRefusedError d) goes to <code>except* OSError</code>. ConnectionRefusedError is a subclass of OSError, so it matches, and that body runs once.</li>
+<li>Nothing is left, so nothing propagates and the code after the <code>try</code> runs.</li>
+<li>If something were left over (say a ValueError from a bad price), it would be raised on, in a new ExceptionGroup, after both clauses had run.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c27" data-src="s4">A try statement can have except clauses or except* clauses but not both, and break, continue and return cannot appear in an except* clause.</span></p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="except_star.py" data-file="except_star.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/except_star.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Three of the four Tasks raise in the same loop iteration, so all three failures are collected before the group's done callbacks cancel anything.</li>
+<li>Each <code>except*</code> body runs once with a group, not once per exception: <code>group.exceptions</code> holds both SellerErrors.</li>
+<li>In the second block only SellerError is handled; the ValueError is raised on in a new ExceptionGroup and caught by the outer plain <code>except ExceptionGroup</code>.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> a group of [SellerError c, ValueError e] and one clause, <code>except* SellerError</code>.</p>
+<p><strong>Step 1.</strong> Split: matching = [SellerError c], non-matching = [ValueError e].</p>
+<p><strong>Step 2.</strong> The clause body runs with ExceptionGroup([SellerError c]) and prints "handled".</p>
+<p><strong>Step 3.</strong> No clause is left; the non-matching part, ExceptionGroup([ValueError e]), propagates on.</p>
+<p><strong>Result:</strong> the program prints "handled: ['seller-c failed']" and then the outer handler sees the ValueError. A bug (the bad price) is not swallowed by the handler for expected seller errors.</p>
+<div class="ts-legacy">
+<p>Before Python 3.11 there were no exception groups and no TaskGroup. Code used <code>gather(..., return_exceptions=True)</code> and checked each result with <code>isinstance(result, Exception)</code>. You will meet that pattern in older services; for new code, TaskGroup and <code>except*</code> replace it.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>except SellerError:</code> around the TaskGroup catches a seller's failure."</p>
+<p><strong>Why it is wrong:</strong> the group raises an ExceptionGroup, which is not a SellerError, so the plain clause does not match and the group propagates. Use <code>except* SellerError</code>, or keep expected seller failures out of the group altogether, as gateway v4 does.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A TaskGroup raises an ExceptionGroup; plain <code>except T</code> does not match the exceptions inside it.</li>
+<li>Each <code>except* T</code> body runs once with the subgroup that matches T.</li>
+<li>Unmatched exceptions propagate on in a new group, so bugs are not swallowed.</li>
+</ul>
+</div>
+<p class="ts-takeaway">except* splits an ExceptionGroup by type, handles each part in its own clause, and raises on whatever no clause matched.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c25 c26">
+<p class="q">A TaskGroup raises ExceptionGroup([SellerError, TimeoutError, SellerError]). The handler has only <code>except* SellerError as g: log(g)</code>. What happens?</p>
+<ol>
+<li data-why="An except* body runs once per matching subgroup, not once per exception.">log() is called twice, once per SellerError, and the TimeoutError is ignored</li>
+<li data-why="Unmatched exceptions are not dropped: they propagate on after the clauses run.">log() is called once with both SellerErrors, and the TimeoutError is discarded</li>
+<li>log() is called once with a group of both SellerErrors, then an ExceptionGroup holding the TimeoutError propagates on</li>
+</ol>
+<p class="ts-why">The clause splits off the matching subgroup (both SellerErrors) and runs once with it. The non-matching part, the TimeoutError, is raised on in a new exception group.</p>
+</div>
+</section>
+
+<section class="ts-part" id="as-completed" data-rung="2" data-min="10">
+<h2>as_completed(): act on each answer the moment it arrives</h2>
+<p class="ts-bridge">Last part: except* handles the failures a group collects. Still unsolved: gather and TaskGroup both hand results back only when everything is done. What if the gateway wants to act on each offer as soon as it arrives?</p>
+<p class="ts-problem">A product manager asks for a "fast path": if any seller offers the kettle at 1,200 or less, answer at once. seller-b offers 1,199 at 120 ms. With gather or a TaskGroup, the gateway would only see it at 900 ms, when seller-e finishes.</p>
+<h3>Introduction</h3>
+<p><code>as_completed()</code> hands back each call as it finishes, in finishing order. It is the tool for "first good result wins", progress reporting, and streaming partial results. Its one trap is what happens to the calls you stop waiting for.</p>
+<h3>Comparison</h3>
+<p>A takeaway counter calls out order numbers as each meal is ready, not in the order people ordered. You walk up when your number is called. If you get bored and leave, the kitchen keeps cooking the meals that nobody will collect, unless someone tells it to stop.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c28" data-src="s1">as_completed() runs the awaitables concurrently and returns an object that can be iterated to get their results as they finish.</span> <span class="ts-claim" data-claim="c29" data-src="s1">With async for, as_completed() yields the original Task or Future objects as they finish, which makes it easy to tell which call finished.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>Create the five seller Tasks and pass them to <code>as_completed()</code>.</li>
+<li><code>async for done in as_completed(tasks)</code> yields seller-a's Task at 80 ms, seller-b's at 120 ms, and so on.</li>
+<li>The loop body checks the price and <code>break</code>s at the first offer of 1,200 or less.</li>
+<li>The gateway must now cancel the Tasks it no longer needs. <span class="ts-claim" data-claim="c31" data-src="s1">as_completed() does not cancel the remaining tasks: if a timeout occurs or the iteration is cancelled, they continue to run.</span></li>
+</ol>
+<p><span class="ts-claim" data-claim="c32" data-src="s1">With a timeout, as_completed() raises TimeoutError if the timeout occurs before all awaitables are done.</span></p>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: yielding the original Tasks means <code>done.get_name()</code> says which seller it was.</li>
+<li>Step 4 is the trap: leaving the loop does not stop the calls. Without the cancel, seller-c, seller-d and seller-e keep their connections open, and seller-e holds its connection for 900 ms with nobody waiting.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="as_completed_demo.py" data-file="as_completed_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/as_completed_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The Tasks are created slowest first, yet seller-a is handled first: finishing order, not creation order.</li>
+<li>seller-b's 1,199 is good enough at 120 ms, so the loop breaks.</li>
+<li>Three Tasks are still running after the loop; only the explicit <code>cancel()</code> stops them, and <code>gather(..., return_exceptions=True)</code> waits for their clean-up.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the fast path, with GOOD_ENOUGH = 1,200.</p>
+<p><strong>Step 1.</strong> 80 ms: seller-a, 1,249. Not good enough; continue.</p>
+<p><strong>Step 2.</strong> 120 ms: seller-b, 1,199 ≤ 1,200. Answer now.</p>
+<p><strong>Step 3.</strong> Cancel seller-c, seller-d and seller-e.</p>
+<p><strong>Result:</strong> the shopper gets 1,199 at 120 ms instead of 250 ms. The trade-off: seller-e's 1,149 is never seen.</p>
+<div class="ts-legacy">
+<p><span class="ts-claim" data-claim="c30" data-src="s1 s7">Async iteration of as_completed() was added in Python 3.13; before that it was only a plain iterator, which yields new coroutines that must be awaited to get each result.</span> On 3.11 and 3.12 write <code>for next_done in as_completed(tasks): offer = await next_done</code>; the coroutine you get is not one of your Tasks, so you cannot ask it which seller it was.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Breaking out of <code>as_completed()</code> stops the other calls."</p>
+<p><strong>Why it is wrong:</strong> the docs say the remaining tasks continue to run. The program shows three of them still running after the loop. Cancel them yourself, or start them inside a TaskGroup so the block's end deals with them.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>async for t in as_completed(tasks)</code> yields your Tasks in finishing order (3.13 and later).</li>
+<li>Good for "first good answer wins" and for showing progress.</li>
+<li>It never cancels anything: cancel the leftovers yourself.</li>
+</ul>
+</div>
+<p class="ts-takeaway">as_completed hands back each call as it finishes, so the gateway can act on the first good answer, but it leaves the other calls running until you cancel them.</p>
+<div class="ts-predict" data-claims="c29 c31">
+<p class="q">Change GOOD_ENOUGH to 1,220. At what time does the loop stop, which seller wins, and which Tasks are still running after the loop?</p>
+<div class="ts-reveal"><p>It still stops at 120 ms with seller-b at 1,199: seller-a's 1,249 is above 1,220, and seller-b's 1,199 is below it. seller-c, seller-d and seller-e are still running after the loop, because as_completed does not cancel them. (seller-d's 1,215 would also be good enough, but it arrives at 200 ms, after seller-b.)</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="eager-tasks" data-rung="2" data-min="10">
+<h2>Eager tasks: when a Task starts running inside create_task()</h2>
+<p class="ts-bridge">Last part: as_completed hands back calls in finishing order. Still unsolved: everything so far assumed Part 2's rule that a Task's first step waits for the loop's next iteration. Python 3.12 added a way to change that rule. What changes, and when is it worth it?</p>
+<p class="ts-problem">The gateway caches recent prices. For a cached item, <code>cached_price()</code> returns at once without awaiting anything. Yet each lookup still creates a Task, puts its first step in the ready queue and waits for the next loop iteration, only to return a value that was available immediately.</p>
+<h3>Introduction</h3>
+<p>Scheduling a Task's first step through the ready queue costs a little time and a trip round the loop. For coroutines that often finish without waiting, that cost is pure overhead. An <dfn data-def="A Task that runs its coroutine immediately inside create_task() until the coroutine first blocks; if it never blocks, it finishes without ever being scheduled.">eager task</dfn> runs its first step immediately, inside <code>create_task()</code>.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c33" data-src="s1">With eager_task_factory, added in Python 3.12, coroutines begin running synchronously during Task construction, and a task is scheduled on the event loop only if it blocks.</span> <span class="ts-claim" data-claim="c34" data-src="s1">The docs name coroutines that use caching or memoization to avoid real I/O as a common case where eager execution helps.</span> <span class="ts-claim" data-claim="c36" data-src="s1">The Task constructor's eager_start parameter was added in Python 3.12, and asyncio.create_task() accepts eager_start since 3.14; when it is not passed, the mode set by the loop's task factory is used.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>create_task(coro, eager_start=True)</code> (or a loop whose task factory is <code>asyncio.eager_task_factory</code>) runs the coroutine at once, inside the call.</li>
+<li>If the coroutine returns or raises without awaiting anything that waits, the Task is done before <code>create_task()</code> returns.</li>
+<li>If the coroutine waits (a cache miss that asks a seller), the Task is scheduled on the loop as usual from that point.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c35" data-src="s1">The docs call eager execution a semantic change: a coroutine that returns or raises without blocking is never scheduled to the event loop, and the application's task execution order is likely to change.</span></p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="eager.py" data-file="eager.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/eager.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Default (<code>eager_start=False</code>): "after create_task" is logged first, and the Task is not done yet; the lookup runs at the <code>await task</code>.</li>
+<li>Eager: "lookup started" is logged inside <code>create_task()</code>, and the Task is already done when <code>create_task()</code> returns.</li>
+<li>With the eager factory and a cache miss, the lookup starts inside <code>create_task()</code>, reaches <code>await asyncio.sleep(0.12)</code>, and from there is scheduled normally: not done after <code>create_task()</code>.</li>
+</ol>
+<h3>Solved example</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Mode</th><th>Order of the log</th><th>Done right after create_task()?</th></tr></thead>
+<tbody>
+<tr><td>Default, cache hit</td><td>after create_task → lookup started</td><td>No</td></tr>
+<tr><td>Eager, cache hit</td><td>lookup started → after create_task</td><td>Yes</td></tr>
+<tr><td>Eager, cache miss</td><td>lookup started → (waits 120 ms) → result</td><td>No</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> eager tasks skip the trip round the loop when a coroutine finishes without waiting. <span class="ts-claim" data-claim="c37" data-src="s6">Python 3.12's release notes say opting an event loop in to eager task execution makes some use-cases 2x to 5x faster.</span> The gateway's seller calls always wait on a socket, so for them it changes the order of a few microseconds of work, not the 250 ms.</p>
+<div class="ts-legacy">
+<p>On Python 3.12 and 3.13 the documented switch is for the whole loop: <code>loop.set_task_factory(asyncio.eager_task_factory)</code>. The <code>eager_start</code> argument of <code>asyncio.create_task()</code> is documented from 3.14 on. Python 3.11 has neither.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Turning on the eager factory is a free speed-up with no visible change."</p>
+<p><strong>Why it is wrong:</strong> code that ran after <code>create_task()</code> now runs after the coroutine's first part. A test or a handler that relied on "the Task has not started yet" (for example, setting a variable the coroutine reads) behaves differently. Turn it on with tests, not as a blind setting.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Eager: the coroutine runs inside <code>create_task()</code> until it first waits.</li>
+<li>Helps coroutines that often finish without waiting, such as cache hits.</li>
+<li>It changes the order in which code runs; Python 3.12 added the factory, 3.14 the <code>eager_start</code> argument to <code>create_task()</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">An eager Task starts its coroutine inside create_task() and may finish there, which saves a trip round the loop but changes the order in which code runs.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c33 c35">
+<p class="q">This needs Part 2. With the eager factory on, a coroutine sends a request and then awaits <code>reader.readline()</code>. What happens inside <code>create_task()</code>?</p>
+<ol>
+<li>The coroutine runs until readline() has to wait on a Future; then the Task is scheduled on the loop like any other and create_task() returns a Task that is not done</li>
+<li data-why="Eager execution only runs the coroutine until it first blocks; it cannot wait for the network inside create_task().">create_task() waits until the seller's line arrives and returns a finished Task</li>
+<li data-why="The factory changes when the first step runs, not whether the coroutine reaches the network.">Nothing different: the Task's first step still waits for the next loop iteration</li>
+</ol>
+<p class="ts-why">Eager tasks run until the coroutine first blocks. Part 2 showed that readline() blocks by awaiting a waiter Future, so the Task parks on it and is scheduled from there; create_task() returns a pending Task.</p>
+</div>
+</section>
+<section class="ts-part" id="semaphore" data-rung="3" data-min="12">
+<h2>Capping calls in flight: the Semaphore</h2>
+<p class="ts-bridge">Last part: eager tasks change when a Task's first step runs. Still unsolved: none of the tools so far limits how many calls run at once. Part 2 showed 10 times the load needing about 1,600 open connections. What keeps the count bounded?</p>
+<p class="ts-problem">During a sale, 2,000 requests per second each start five seller calls the moment they arrive. Nothing in gather, TaskGroup or as_completed says "no more than N at a time", so the gateway opens as many connections as it has calls, until the file descriptor limit or a seller gives out.</p>
+<h3>Introduction</h3>
+<p>The standard tool for "at most N at a time" is a <dfn data-def="A counter of free slots: taking a slot decrements it, giving one back increments it, and a caller that finds no free slot waits until one is given back.">semaphore</dfn>. Every seller call takes a slot before it starts and gives it back when it ends; when no slot is free, the call waits in line. This part uses a deliberately small cap of 3 so the waiting is easy to see.</p>
+<h3>Comparison</h3>
+<p>A car park with 3 spaces and a barrier. A car enters only if a space is free; otherwise it queues at the barrier. When a car leaves, the first car in the queue goes in.</p>
+<ul>
+<li>The number of free spaces = the semaphore's counter.</li>
+<li>Entering = <code>acquire()</code>; leaving = <code>release()</code>.</li>
+<li>The queue at the barrier = tasks waiting in <code>acquire()</code>.</li>
+</ul>
+<p>The comparison stops working here: a car park counts cars, but a semaphore counts nothing it can check. If code releases without having acquired, the counter simply grows.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c38" data-src="s2">A Semaphore manages a counter that each acquire() decrements and each release() increments; the counter can never go below zero, and acquire() waits while it is zero until some task calls release().</span> <span class="ts-claim" data-claim="c40" data-src="s2">Semaphore(value) starts the counter at value, 1 by default, and raises ValueError if value is less than 0.</span> <span class="ts-claim" data-claim="c39" data-src="s2">The preferred way to use a Semaphore is async with, which the docs show is equivalent to await acquire(), then the block in a try, with release() in the finally.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>limit = asyncio.Semaphore(3)</code>: three free slots.</li>
+<li>seller-a, seller-b and seller-c enter <code>async with limit</code> at 0 ms and take the three slots.</li>
+<li>seller-d and seller-e find the counter at 0 and wait inside <code>acquire()</code>.</li>
+<li>At 80 ms seller-a finishes and its <code>async with</code> releases the slot; seller-d, first in line, takes it.</li>
+<li>At 120 ms seller-b releases; seller-e takes the slot.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c42" data-src="s2">asyncio's synchronization primitives are not thread-safe, and their methods take no timeout argument; the docs point to asyncio.wait_for() for timeouts.</span> Gateway v4 does the same job with <code>timeout_at</code> around the <code>async with</code>, as the timeouts part explains.</p>
+<p><span class="ts-claim" data-claim="c43" data-src="s12">In CPython 3.14's locks.py, an acquire() that has to wait puts a Future on the Semaphore's deque of waiters, and release() wakes the first waiter that is not done, so waiters get slots in first-in, first-out order.</span> That is Part 2's pattern once more: a waiting coroutine is parked on a Future, and someone else fills it.</p>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: the cap does not slow anything while there are free slots.</li>
+<li>Step 3: the cap turns "too many calls" into "calls waiting in line", which costs time but not connections.</li>
+<li>Steps 4 and 5: <code>async with</code> releases in a <code>finally</code>, so a slot comes back even when the call fails or is cancelled.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="semaphore_demo.py" data-file="semaphore_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/semaphore_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Only three calls start at 0 ms. seller-d starts at 80 ms, in seller-a's freed slot; seller-e starts at 120 ms, in seller-b's.</li>
+<li>seller-d answers at 80 + 200 = 280 ms, and seller-e at 120 + 900 = 1,020 ms.</li>
+<li>The most calls in flight at once is 3, never more.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> a cap of 3, the five sellers started in order a to e, no deadline.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Seller</th><th>Gets a slot at</th><th>Answers at</th><th>Freed slot goes to</th></tr></thead>
+<tbody>
+<tr><td>seller-a</td><td>0 ms</td><td>0 + 80 = 80 ms</td><td>seller-d</td></tr>
+<tr><td>seller-b</td><td>0 ms</td><td>0 + 120 = 120 ms</td><td>seller-e</td></tr>
+<tr><td>seller-c</td><td>0 ms</td><td>0 + 150 = 150 ms</td><td>nobody waiting</td></tr>
+<tr><td>seller-d</td><td>80 ms</td><td>80 + 200 = 280 ms</td><td>nobody waiting</td></tr>
+<tr><td>seller-e</td><td>120 ms</td><td>120 + 900 = 1,020 ms</td><td>nobody waiting</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> a cap of 3 holds the request's connections to 3, and costs time: seller-d now answers at 280 ms instead of 200 ms, past the 250 ms budget. Choosing the cap is a trade between protecting resources and finishing in time; the "When it breaks" rung sizes it.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A Semaphore of 3 makes calls three times faster" or "… three times slower".</p>
+<p><strong>Why it is wrong:</strong> it changes neither the speed of a call nor the work done; it only decides when each call may start. With five calls of different lengths, what it does to the total depends on the order in which slots free up, which is why the table above works it out call by call.</p>
+</div>
+<div class="ts-legacy">
+<p><span class="ts-claim" data-claim="c41" data-src="s2">BoundedSemaphore raises ValueError in release() if the counter would go above its initial value; a plain Semaphore allows more release() calls than acquire() calls.</span> With <code>async with</code> the two are equivalent; prefer BoundedSemaphore if any code calls <code>release()</code> by hand, so an extra release is caught instead of silently raising the cap.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A Semaphore is a counter of free slots; <code>acquire()</code> waits at zero.</li>
+<li>Use <code>async with limit:</code>, which always releases, even on failure or cancellation.</li>
+<li>Waiters are parked on Futures and served first in, first out (CPython 3.14).</li>
+</ul>
+</div>
+<p class="ts-takeaway">A Semaphore caps calls in flight by making extra calls wait for a free slot, which protects connections at the cost of later starts.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">With a cap of 2 and the sellers started in order a to e, at what time does seller-c answer?</p>
+<ol>
+<li data-why="With a cap of 2, seller-c cannot start at 0 ms; only seller-a and seller-b get slots.">150 ms</li>
+<li data-why="seller-c takes the first slot freed, seller-a's at 80 ms, not seller-b's at 120 ms.">270 ms</li>
+<li>230 ms</li>
+</ol>
+<p class="ts-why">seller-a and seller-b take the two slots at 0 ms. The first slot freed is seller-a's, at 80 ms, and seller-c is first in line, so it answers at 80 + 150 = 230 ms.</p>
+</div>
+</section>
+
+<section class="ts-part" id="timeouts" data-rung="3" data-min="13">
+<h2>Real deadlines: asyncio.timeout, timeout_at and wait_for</h2>
+<p class="ts-bridge">Last part: a Semaphore caps calls in flight. Still unsolved: the 250 ms budget is still gateway v3's hand-made <code>call_later</code>. What is the standard way to say "stop waiting at this time"?</p>
+<p class="ts-problem">seller-e answers at 900 ms. The request must answer at 250 ms. And a request that first waits 80 ms for seller-a and then asks seller-e must still stop at 250 ms from the start, not 250 ms after seller-e was asked.</p>
+<h3>Introduction</h3>
+<p>asyncio has three tools for this. Two of them are context managers that put a deadline on a block of code: <code>asyncio.timeout(delay)</code> counts from now; <code>asyncio.timeout_at(when)</code> takes an absolute time on the loop's clock. The third, <code>wait_for()</code>, puts a timeout on one awaitable. All three are, underneath, Part 2's budget: a timer on the loop that cancels a Task.</p>
+<h3>Comparison</h3>
+<p>An exam has a fixed end time, written on the board: 12:00. A student who arrives late still stops at 12:00. That is <code>timeout_at</code>. "You have three hours from when you start" is <code>timeout</code>: each student's end time depends on when they began.</p>
+<h3>Definitions</h3>
+<ol>
+<li><div class="ts-note" data-label="Definition"><p>A <dfn data-def="An absolute time at which waiting must stop, as opposed to a duration that starts counting when each call begins.">deadline</dfn> is the absolute time at which waiting must stop. <span class="ts-claim" data-claim="c44" data-src="s1">asyncio.timeout(delay) returns an asynchronous context manager; if the work inside takes longer than delay seconds, it cancels the current task and turns the resulting CancelledError into a TimeoutError.</span> <span class="ts-claim" data-claim="c45" data-src="s1">That TimeoutError can only be caught outside the async with block.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c47" data-src="s1">asyncio.timeout_at(when) is like asyncio.timeout(), except that when is the absolute time to stop waiting, measured on the event loop's clock.</span> <span class="ts-claim" data-claim="c46" data-src="s1">delay can be None for no limit; the deadline can be changed later with reschedule(), and expired() says whether the context manager exceeded its deadline.</span> <span class="ts-claim" data-claim="c48" data-src="s1">Timeout context managers can be safely nested; asyncio.timeout() and timeout_at() were added in Python 3.11.</span></p></div></li>
+<li><div class="ts-note" data-label="Definition"><p><span class="ts-claim" data-claim="c50" data-src="s1">wait_for(aw, timeout) cancels aw and raises TimeoutError when the timeout occurs, and it waits until aw is actually cancelled, so the total wait can exceed the timeout.</span> <span class="ts-claim" data-claim="c51" data-src="s1 s11">Since Python 3.12, wait_for() is implemented using asyncio.timeout(), and a coroutine passed to it is no longer wrapped in a Task when the timeout is positive.</span></p></div></li>
+</ol>
+<h3>Working: how a timeout cuts a call</h3>
+<p><span class="ts-claim" data-claim="c49" data-src="s10">In CPython 3.14's timeouts.py, timeout(delay) creates Timeout(loop.time() + delay); entering it schedules a callback with loop.call_at() for that time, the callback calls the task's cancel(), and leaving the block cancels that timer.</span></p>
+<ol class="ts-steps">
+<li>Entering <code>async with asyncio.timeout(0.25)</code> at 1,000.00 on the loop clock puts a timer on Part 2's timer heap, due at 1,000.25.</li>
+<li>The body awaits seller-e. The loop's <code>select()</code> timeout is bounded by that timer, exactly as in Part 2.</li>
+<li>At 1,000.25 the timer runs and calls <code>cancel()</code> on the current Task: CancelledError is thrown in at seller-e's <code>readline()</code>, and its <code>finally</code> closes the connection.</li>
+<li>The CancelledError travels out of the block. The context manager's exit sees that it caused it and raises TimeoutError instead.</li>
+<li>If the body finishes first, the exit cancels the timer handle: nothing fires.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 1: the deadline is a single timer, so it costs nothing while waiting.</li>
+<li>Step 4: turning the cancellation into TimeoutError means the caller can tell "this block ran out of time" from "someone cancelled the whole request".</li>
+<li>Step 5: this is what gateway v3's hand-made budget lacked: a timer that is always cleaned up when the work ends early.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="timeouts_demo.py" data-file="timeouts_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/timeouts_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>timeout(0.25)</code> around seller-e: TimeoutError after 250 ms; <code>cm.expired()</code> is True.</li>
+<li><code>timeout_at(start + 0.25)</code> around two calls: seller-a answers at 80 ms, and seller-e is cut at 250 ms from the start, not 80 + 250 = 330 ms. One deadline covers the whole block.</li>
+<li><code>wait_for(…, 0.25)</code> gives the same 250 ms for a single call.</li>
+<li>Nested: the inner 0.1 s timeout fires first and its TimeoutError is caught inside the outer block, which then asks seller-b: 100 + 120 = 220 ms, inside the outer 250 ms.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> a request that calls seller-a, then seller-e, with a 250 ms budget, written two ways.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Code</th><th>seller-e's deadline</th><th>Request ends at</th></tr></thead>
+<tbody>
+<tr><td><code>timeout(0.25)</code> around each call</td><td>80 + 250 = 330 ms</td><td>330 ms: over budget</td></tr>
+<tr><td><code>timeout_at(start + 0.25)</code> around both</td><td>250 ms</td><td>250 ms</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> a per-call duration lets the request's total drift past its budget; one absolute deadline for the request keeps every call inside it. Gateway v4 uses one <code>timeout_at</code> deadline per request, shared by its five calls.</p>
+<div class="ts-legacy">
+<p><span class="ts-claim" data-claim="c52" data-src="s1 s3">Since Python 3.11, wait_for() raises the built-in TimeoutError, and asyncio.TimeoutError is a deprecated alias of it.</span> Old code that catches <code>asyncio.TimeoutError</code> still works; write <code>except TimeoutError</code> in new code. <span class="ts-claim" data-claim="c53" data-src="s5">Python 3.11's release notes recommend asyncio.timeout() over using wait_for() directly in new code.</span> So on 3.11, <code>wait_for()</code> still wrapped a coroutine in a Task of its own.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>try: … except TimeoutError</code> inside the <code>async with asyncio.timeout()</code> block will catch the timeout."</p>
+<p><strong>Why it is wrong:</strong> inside the block the timeout arrives as a CancelledError; only the context manager's exit turns it into TimeoutError. The docs say the TimeoutError can only be caught outside the block. A handler inside sees CancelledError, and if it swallows that, the timeout breaks.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>timeout(d)</code>: d seconds from now; <code>timeout_at(t)</code>: absolute loop time t. Both cancel, then raise TimeoutError outside the block.</li>
+<li><code>wait_for(aw, t)</code>: one awaitable; built on <code>timeout()</code> since 3.12.</li>
+<li>Underneath: one <code>call_at</code> timer and <code>Task.cancel()</code>, Part 2's budget done properly. Nested deadlines: the earliest wins.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A timeout is one timer on the loop that cancels the Task at the deadline and reports it as TimeoutError outside the block; timeout_at shares one absolute deadline across many calls.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c44 c47 c48">
+<p class="q">The request deadline is <code>timeout_at(start + 0.25)</code>. Inside it, a call to seller-d is wrapped in <code>timeout(0.1)</code>, starting at 0 ms. When does seller-d's call stop, and what does the code outside the inner block see?</p>
+<ol>
+<li data-why="The inner deadline (100 ms) is earlier than the outer one (250 ms), so it fires first.">At 200 ms, when seller-d answers; the inner timeout never fires</li>
+<li>At 100 ms; the inner block's exit raises TimeoutError, which the code just outside the inner block can catch while the request goes on</li>
+<li data-why="Nested timeouts are allowed; the inner one fires on its own and is reported as TimeoutError for its own block.">At 250 ms, because the outer deadline replaces the inner one</li>
+</ol>
+<p class="ts-why">Nested timeouts each keep their own deadline, and the earliest fires first: 100 ms. The inner context manager turns its cancellation into TimeoutError outside its own block, as the nested case in the program shows.</p>
+</div>
+</section>
+
+<section class="ts-part" id="gateway-v4" data-rung="3" data-min="14">
+<h2>Gateway v4: a TaskGroup, a shared cap and one deadline per request</h2>
+<p class="ts-bridge">Last part: timeout_at gives one absolute deadline. Still unsolved: putting TaskGroup, Semaphore and deadline together in the gateway, so that it answers within 250 ms with partial results, reports each seller's fate, and never leaves a call running.</p>
+<p class="ts-problem">Gateway v4 must answer "cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e", with seller-a to seller-d answering. A failing seller must be reported, not end the request. And all requests in the process must share one cap on calls in flight.</p>
+<h3>Introduction</h3>
+<p>Three decisions shape gateway v4. First, which failures belong in the TaskGroup: a seller answering ERROR or timing out is normal data for a price-comparison gateway, so each call catches those and returns them as values; only real bugs reach the group. Second, where the cap lives: one Semaphore per gateway object, created once per process and shared by every request. Third, what the deadline covers: the wait for a slot as well as the call.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>compare()</code> computes <code>deadline = start + 0.25</code> on the loop's clock.</li>
+<li>Inside <code>async with asyncio.TaskGroup()</code> it creates one Task per seller, running <code>_ask()</code>.</li>
+<li><code>_ask()</code> enters <code>timeout_at(deadline)</code> first, then <code>async with self.limit</code>, then calls the seller. Waiting for a slot therefore counts against the deadline.</li>
+<li>A TimeoutError, a SellerError or an OSError is caught inside <code>_ask()</code> and returned as a value. Any other exception (a bug) escapes and makes the group cancel the rest.</li>
+<li>When the group's block ends, every Task is done. Results are sorted into offers, timed-out sellers and failed sellers.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 1: one absolute deadline for all five calls, so no call can push the request past 250 ms.</li>
+<li>Step 3: if the deadline started only after the slot was taken, a call stuck in the line could still run for a full 250 ms afterwards. The "When it breaks" rung measures this.</li>
+<li>Step 4: a seller failure stays out of the group, so it cannot cancel the other four calls. A bug still does, which is what the group is for.</li>
+<li>Step 5: the group guarantees that nothing is left running when the gateway answers.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v4.py" data-file="gateway_v4.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_v4.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>Gateway.__init__</code> creates the Semaphore once. Every <code>compare()</code> on that gateway shares it: the cap is per process, not per request.</li>
+<li>In <code>_ask()</code>, <code>timeout_at(deadline)</code> is the outer block, so both the wait in <code>async with self.limit</code> and the seller call are inside the deadline.</li>
+<li>Run 1 (cap of 100): seller-a to seller-d answer by 200 ms; seller-e is cut at 250 ms and reported as timed out.</li>
+<li>Run 2 (cap of 3): seller-d gets a slot only at 80 ms and would answer at 280 ms, so it is cut at 250 ms too, the semaphore part's table with a deadline added.</li>
+<li>Run 3: seller-c's ERROR is reported as failed; the other calls go on. Compare the TaskGroup part, where the same failure cancelled seller-d and seller-e.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> gateway v4, cap of 100, deadline 250 ms, all sellers healthy.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Seller</th><th>Gets a slot</th><th>Would answer</th><th>Outcome at the deadline</th></tr></thead>
+<tbody>
+<tr><td>seller-a</td><td>0 ms</td><td>80 ms</td><td>offer 1,249</td></tr>
+<tr><td>seller-b</td><td>0 ms</td><td>120 ms</td><td>offer 1,199</td></tr>
+<tr><td>seller-c</td><td>0 ms</td><td>150 ms</td><td>offer 1,229</td></tr>
+<tr><td>seller-d</td><td>0 ms</td><td>200 ms</td><td>offer 1,215</td></tr>
+<tr><td>seller-e</td><td>0 ms</td><td>900 ms</td><td>cut at 250 ms: timed out</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> "cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e", the answer Part 1 worked out by hand, now with no hand-made timer, no hand-made waiting, and a cap shared by every request.</p>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "You fan out to five services inside a TaskGroup. One of them returns a 500. Should the whole request fail?"</p>
+<p><strong>What a strong senior answer contains:</strong> it depends on whether the request can be answered without that service. For a price comparison it can, so the call catches the expected failures (error answers, timeouts, refused connections) and returns them as values; the group then never cancels the healthy calls. Unexpected exceptions (bugs) are left to escape, so the group still cancels everything and the bug is loud. The candidate names the trade-off: catching too broadly (a bare <code>except Exception</code>) would hide bugs as "seller failed".</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Putting the calls in a TaskGroup means one bad seller fails the whole request."</p>
+<p><strong>Why it is wrong:</strong> only exceptions that leave a Task count as failures of the group. Gateway v4's Tasks return a seller's ERROR and timeout as values, so the group sees five successful Tasks. What fails the group is your choice, made in the code of each Task.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>One deadline per request (<code>timeout_at</code>), entered before the cap, so waiting for a slot counts.</li>
+<li>One Semaphore per process, shared by every request.</li>
+<li>Expected seller failures are returned as values; only bugs reach the TaskGroup.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v4 answers at 250 ms with partial results because each call carries the request's deadline, waits for a shared slot inside it, and reports expected failures as values rather than as group failures.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Run gateway v4 with a cap of 2 and the 250 ms deadline. Which sellers answer, and what does the report line say?</p>
+<div class="ts-reveal"><p>seller-a and seller-b take the two slots at 0 ms. seller-c takes seller-a's slot at 80 ms and answers at 230 ms. seller-d takes seller-b's slot at 120 ms and would answer at 320 ms; seller-e takes seller-c's at 230 ms. At 250 ms seller-d and seller-e are cut. The report: "cheapest: seller-b at 1,199 after 250 ms; timed out: seller-d, seller-e".</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="production-defaults" data-rung="3" data-min="10">
+<h2>Production defaults vs tutorial defaults</h2>
+<p class="ts-bridge">Last part: gateway v4 runs the five calls in a group, under a shared cap and one deadline. Still unsolved: the values on this page (a cap of 3, a 250 ms budget, raw TCP sellers) are chosen to teach. What changes in a real service, and what do the usual client libraries do by default?</p>
+<p class="ts-problem">A team moves gateway v4 to production with an HTTP client library in place of raw streams. They keep the library's defaults. Under load, a slow seller holds requests for minutes, not 250 ms, and the library's own connection limit quietly queues calls the gateway thought were in flight.</p>
+<h3>Introduction</h3>
+<p>Real services rarely talk raw TCP; they use an HTTP client with its own connection pool and its own timeouts. Those defaults are tuned to "do not fail for no reason", not to a 250 ms budget. This part lists what each default is, from the libraries' own docs, and what a gateway like ours sets instead.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="A set of open connections a client keeps and reuses, with a maximum size; a call that finds every connection busy waits for one.">connection pool</dfn> is the set of connections a client library keeps open and reuses, with a maximum size. When every connection is busy, a new call waits for one. It is a semaphore built into the client.</p>
+</div>
+<h3>What two common clients do by default</h3>
+<ul>
+<li><span class="ts-claim" data-claim="c60" data-src="s13">HTTPX's connection pool defaults to max_connections=100 and max_keepalive_connections=20, with idle keep-alive connections expiring after 5 seconds.</span> <span class="ts-claim" data-claim="c61" data-src="s14">HTTPX raises a TimeoutException after 5 seconds of network inactivity by default, and has separate connect, read, write and pool timeouts; the pool timeout limits the wait for a connection from the pool and raises PoolTimeout.</span></li>
+<li><span class="ts-claim" data-claim="c62" data-src="s15">aiohttp's TCPConnector allows 100 simultaneous connections by default (limit=100) and has no per-host limit by default (limit_per_host=0).</span> <span class="ts-claim" data-claim="c63" data-src="s15 s16">aiohttp's default timeout is a total of 300 seconds (5 minutes) for the whole operation.</span> <span class="ts-claim" data-claim="c64" data-src="s15">aiohttp's connect timeout covers getting a connection from the pool, including waiting for a free connection when the pool limits are exceeded; it is not set (None) by default.</span></li>
+</ul>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>Deadline</td><td>250 ms per request, <code>timeout_at</code> around every call</td><td>The same shape, always set explicitly. A library's default is far longer (HTTPX: 5 s of inactivity per operation; aiohttp: 300 s in total) and is not a request budget.</td></tr>
+<tr><td>Where the deadline starts</td><td>At request start; covers the wait for a slot</td><td>The same. In client libraries, check that the pool wait is covered (HTTPX's pool timeout, aiohttp's connect timeout) or wrap the call in your own deadline.</td></tr>
+<tr><td>Cap on calls in flight</td><td>A Semaphore of 3 or 100, chosen for the demo</td><td>Sized from arithmetic: calls in flight ≈ calls per second × seconds each is held (rung 4). Kept below the file descriptor limit and below what each seller can take.</td></tr>
+<tr><td>Cap per seller</td><td>None: one shared cap</td><td>Often one per seller as well, so one slow seller cannot take every slot (aiohttp's <code>limit_per_host</code>, off by default).</td></tr>
+<tr><td>The client library's own pool limit</td><td>Not used: one raw connection per call</td><td>Set it to match the gateway's cap; otherwise the library's limit (100 by default in both clients above) silently becomes the real cap.</td></tr>
+<tr><td>Which failures fail the group</td><td>Seller errors and timeouts are values; bugs escape</td><td>The same, with metrics on every value returned: timeouts and failures per seller.</td></tr>
+<tr><td>Fire-and-forget Tasks</td><td>None: every Task belongs to a TaskGroup</td><td>The same. A background Task outside a group needs a stored reference and someone reading its result (page 4).</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your service uses an HTTP client with a 30-second timeout. Your API promises 300 ms. What is wrong?"</p>
+<p><strong>What a strong senior answer contains:</strong> a library timeout is a safety net per network operation, not a budget for the request. The request needs its own deadline, set once at the edge and passed down, so every call (and every wait for a pooled connection) stops when the request's time is up. The candidate also checks how the library's pool limit relates to the service's own cap, since an unconsidered default of 100 connections is a cap too.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The client library has timeouts, so the gateway does not need its own deadline."</p>
+<p><strong>Why it is wrong:</strong> HTTPX's default fires after 5 seconds of inactivity, so a seller that sends a byte every 4 seconds is never cut, and aiohttp's default allows 5 minutes in total. Neither knows about a 250 ms promise to the shopper. Only a deadline set by the gateway, around everything the request waits for, enforces it.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Library defaults: HTTPX 100 connections and 5 s of inactivity; aiohttp 100 connections, no per-host limit, 300 s in total.</li>
+<li>Set a request deadline yourself and make it cover the wait for a connection.</li>
+<li>Size the cap with arithmetic and align the library's pool limit with it.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Client libraries default to generous timeouts and a pool of about 100 connections, so a gateway with a 250 ms promise must set its own deadline and size its own cap.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c62 c63 c64">
+<p class="q">A gateway uses aiohttp with all defaults and no deadline of its own. 300 seller calls start at once to the same seller host. What happens to the 201st call?</p>
+<ol>
+<li>It waits for a free pooled connection, because the connector allows 100 simultaneous connections; that wait counts against the connect timeout, which is not set by default, under a total limit of 300 seconds</li>
+<li data-why="limit_per_host is 0 by default, which means no per-host limit; the total limit of 100 is what stops it.">It fails at once, because aiohttp limits each host to 100 connections</li>
+<li data-why="The default total timeout is 300 seconds, not a few hundred milliseconds; nothing here enforces the 250 ms budget.">It is cut after 250 ms by aiohttp's default timeout</li>
+</ol>
+<p class="ts-why">The default connector allows 100 connections in total and none per host, so calls beyond 100 wait for the pool. The default ClientTimeout has a 300-second total and no connect limit; the gateway's own deadline is the only thing that would cut the wait at 250 ms.</p>
+</div>
+</section>
+<section class="ts-part" id="gather-vs-taskgroup" data-rung="4" data-min="12">
+<h2>When one call fails: gather leaves the rest running, TaskGroup does not</h2>
+<p class="ts-bridge">Last part: library defaults are not a request budget. Still unsolved: the rung on how things break starts with the most common bug in fan-out code: what happens to the other calls when one of them fails.</p>
+<p class="ts-problem">A gateway written with <code>gather()</code> logs "seller-c failed" and returns an error to the shopper at 150 ms. Its dashboards show open connections to seller-e staying high, and seller-e's own logs show it answering requests that the gateway gave up on long ago. At 10 times the load, those left-over calls hold hundreds of connections.</p>
+<h3>Introduction</h3>
+<p>The gather and TaskGroup parts stated the rules. This part runs both on the same failure and watches the calls that are left behind, because the left-over calls, not the error itself, are what hurt at scale.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>seller-c answers ERROR at 150 ms; its Task raises SellerError.</li>
+<li><strong>gather:</strong> the error reaches the caller at once. seller-d and seller-e are not cancelled: their connections stay open and their answers arrive at 200 and 900 ms, to nobody.</li>
+<li><strong>TaskGroup:</strong> the group cancels seller-d and seller-e, waits for their <code>finally</code> blocks to close the connections, then raises the ExceptionGroup, still at about 150 ms.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gather_vs_taskgroup.py" data-file="gather_vs_taskgroup.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gather_vs_taskgroup.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>With gather, the error arrives at 150 ms while seller-d and seller-e are still running.</li>
+<li>The program then waits on the leftovers to show what they do: seller-d answers at 200 ms and seller-e at 900 ms, both after the request had already failed.</li>
+<li>With a TaskGroup, nothing is still running when the error arrives: seller-d and seller-e are cancelled.</li>
+</ol>
+<h3>Solved example: the cost of leftovers at 10 times the load</h3>
+<p><strong>Given:</strong> 2,000 requests per second; 1% of requests hit a seller error at about 150 ms; the code uses gather, so seller-d (200 ms) and seller-e (900 ms) are left running each time.</p>
+<p><strong>Step 1.</strong> Failing requests per second: 2,000 × 0.01 = 20.</p>
+<p><strong>Step 2.</strong> Each leaves seller-e's connection open from 150 ms to 900 ms: 0.75 s. Left-over seller-e connections open at once: 20 × 0.75 = 15.</p>
+<p><strong>Step 3.</strong> If seller-e degrades and a third of requests fail early while seller-e hangs for 30 s, that is 2,000 × 0.33 × 30 ≈ 20,000 connections, far past a 1,024 file descriptor limit (Part 2).</p>
+<p><strong>Result:</strong> left-over calls cost little when failures are rare and calls are short, and take the process down exactly when a downstream is in trouble, which is when they pile up. TaskGroup cancels them; with gather, the code must cancel them itself.</p>
+<h3>What breaks, how you see it, and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Errors as usual; later, slow or failing requests when a downstream degrades</td><td>Open connections per downstream staying high after errors; the downstream logging requests the gateway already answered; "Task exception was never retrieved" in logs</td><td>Run fan-out in a TaskGroup; or, with gather, cancel the remaining Tasks in a <code>finally</code>; or <code>return_exceptions=True</code> plus a deadline</td></tr>
+</tbody>
+</table></div>
+<div class="ts-trap">
+<p><strong>Official guidance on both tools.</strong> <span class="ts-claim" data-claim="c10" data-src="s1">The docs note that TaskGroup gives stronger safety guarantees than gather(): if a task raises, TaskGroup cancels the remaining tasks and gather() does not.</span> And the docs warn about what can still break a TaskGroup: <span class="ts-claim" data-claim="c54" data-src="s1">The docs warn that TaskGroup and asyncio.timeout() are implemented with cancellation internally and might misbehave if a coroutine swallows CancelledError.</span> <strong>What the user sees:</strong> a request that hangs past its deadline. <strong>Signal:</strong> requests slower than the budget, and a seller call that keeps running after its Task was cancelled. <strong>Fix:</strong> <span class="ts-claim" data-claim="c55" data-src="s1">The docs recommend try/finally for clean-up, and say a caught CancelledError should generally be propagated once clean-up is complete.</span> Page 4 shows this trap on the gateway.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The request already failed, so whatever its other calls do afterwards does not matter."</p>
+<p><strong>Why it is wrong:</strong> every left-over call holds a connection, a file descriptor and a slot on the downstream, and its own failure may go unread. The solved example shows them piling up during exactly the incident you are trying to survive.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>gather (default): the first error returns at once; the other calls keep running.</li>
+<li>TaskGroup: the other calls are cancelled and cleaned up before the error is raised.</li>
+<li>Leftovers pile up when a downstream is slow; watch open connections per downstream.</li>
+</ul>
+</div>
+<p class="ts-takeaway">When one call fails, gather returns the error and abandons the other calls still running, while a TaskGroup cancels and cleans them up first.</p>
+<div class="ts-predict" data-claims="c7 c13">
+<p class="q">In the program, seller-e fails instead of seller-c (at 900 ms) and every other seller is healthy. When does each version raise, and what is still running at that moment?</p>
+<div class="ts-reveal"><p>Both raise at about 900 ms, and nothing else is running: seller-a to seller-d have all answered by 200 ms. gather raises SellerError; the TaskGroup raises ExceptionGroup([SellerError]). The two tools only differ when a failure arrives while other calls are still in flight.</p></div>
+</div>
+</section>
+
+<section class="ts-part" id="burst-500" data-rung="4" data-min="12">
+<h2>500 calls at once: the file descriptor wall, and a group that fails together</h2>
+<p class="ts-bridge">Last part: gather leaves calls running after a failure. Still unsolved: what happens when the gateway starts far more calls at once than the process can hold open?</p>
+<p class="ts-problem">A sale starts at 10:00. In the first instant, 100 requests arrive together: 500 seller calls. The gateway's process is allowed 256 open files. Without a cap, the gateway tries to open 500 connections at once.</p>
+<h3>Introduction</h3>
+<p>Part 2 showed that every socket is a file descriptor and that a process past its limit gets EMFILE, "Too many open files". This part combines that with this page's TaskGroup: one EMFILE inside a group fails the whole group. The program sends 500 calls to seller-a from a process whose limit is lowered to 256, first with no cap, then with a Semaphore of 50.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>No cap.</strong> All 500 Tasks run their first step in the same loop iteration; each tries to create a socket.</li>
+<li>About the first 250 get one (a few descriptors are already in use). The rest fail at once with OSError EMFILE.</li>
+<li>The first failure makes the TaskGroup cancel every other Task, including the calls that did get a connection.</li>
+<li>The group raises an ExceptionGroup of EMFILE errors. No call is answered.</li>
+<li><strong>Cap of 50.</strong> Only 50 sockets are open at any moment. The other calls wait for a slot, and all 500 are answered, 50 at a time.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="burst.py" data-file="burst.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (Linux)" data-file="out/burst.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The calls run in a child process that lowers its own soft limit to 256, so the seller servers in the parent process are not affected.</li>
+<li>No cap: 0 of 500 answered. Every error in the group is EMFILE.</li>
+<li>Cap of 50: 500 of 500 answered in about 900 ms (10 rounds of 50 calls of about 80 ms each, plus connection set-up), with never more than 50 connections open.</li>
+</ol>
+<h3>Solved example: sizing the cap for gateway v4</h3>
+<p><strong>Given:</strong> 2,000 requests per second (10 times Part 1's load). Each request holds its five calls for 80, 120, 150, 200 and 250 ms (seller-e is cut at the deadline). File descriptor limit 1,024 per process.</p>
+<p><strong>Step 1.</strong> Call-seconds per request: 0.08 + 0.12 + 0.15 + 0.20 + 0.25 = 0.80.</p>
+<p><strong>Step 2.</strong> Calls in flight on average = arrivals per second × call-seconds per request = 2,000 × 0.80 = 1,600 (Part 2's number).</p>
+<p><strong>Step 3.</strong> 1,600 is above 1,024, so one process cannot hold them all. A cap of, say, 800 keeps the process alive, but then calls wait for slots, and with the deadline around the wait, many calls time out.</p>
+<p><strong>Step 4.</strong> Spread the load: with 4 processes (Part 1's "one loop per core"), each sees 500 requests per second and 500 × 0.80 = 400 calls in flight, well under a cap of 800 and the 1,024 limit.</p>
+<p><strong>Result:</strong> the cap protects the process; the arithmetic decides whether the cap is big enough for the load. If calls in flight at peak are above the cap, the gateway must have more processes, a higher descriptor limit, or shorter calls.</p>
+<h3>What breaks, how you see it, and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Cause</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>A burst with no cap</td><td>Every request in the burst fails at once, even for healthy sellers</td><td>EMFILE ("Too many open files") in logs; open descriptors at the limit</td><td>A Semaphore sized from the arithmetic; a higher descriptor limit; more processes</td></tr>
+<tr><td>A raw OSError allowed into the group</td><td>One failed connect cancels the request's other calls</td><td>Requests failing with ExceptionGroups of OSError</td><td>Catch expected connection errors per call, as gateway v4 does</td></tr>
+<tr><td>A bad client sending a flood of requests</td><td>Real shoppers' requests wait for slots or time out</td><td>Slot wait time rising; requests per client</td><td>The cap protects the process; a per-client rate limit in front of the gateway protects fairness</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "How do you choose the concurrency limit for a fan-out?"</p>
+<p><strong>What a strong senior answer contains:</strong> start from Little's law, calls in flight ≈ arrival rate × time each call is held, using the deadline as the upper bound on time held. Compare that with three ceilings: the file descriptor limit, the client library's pool size, and what each downstream can take. If the arithmetic exceeds a ceiling, change the design (more processes, shorter deadlines, a per-downstream cap) rather than only raising the number. Then load-test and watch slot wait time.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Without a cap, the calls that fit will succeed and only the extra ones will fail."</p>
+<p><strong>Why it is wrong:</strong> inside a TaskGroup the first EMFILE cancels everything, including the calls that got a connection. The program answered 0 of 500, not about 250. Expected errors must be caught per call, and the cap must stop the burst before the limit is reached.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>No cap + a burst → EMFILE; inside a TaskGroup, the whole group fails.</li>
+<li>Calls in flight ≈ requests per second × call-seconds per request: 1,600 at 10 times the load.</li>
+<li>Cap below the descriptor limit; add processes when the arithmetic needs more.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A burst without a cap runs straight into the file descriptor limit, and inside a TaskGroup one EMFILE cancels every call; a Semaphore sized from the arithmetic keeps the burst below the wall.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">This needs Part 2 and this page. The process limit is 1,024 descriptors. A burst of 1,500 seller calls starts inside one TaskGroup with no cap, and each call catches only SellerError. What does the gateway answer?</p>
+<ol>
+<li data-why="Calls that got a socket are not allowed to finish: the first EMFILE fails the group and the group cancels them.">About 1,000 answers; the rest are reported as failed</li>
+<li>Nothing for any of these requests: the uncaught EMFILE errors fail the TaskGroup, which cancels every other call</li>
+<li data-why="EMFILE is raised at once when a socket cannot be created; the calls do not wait for descriptors to become free.">All 1,500 answers, just later, because calls wait for free descriptors</li>
+</ol>
+<p class="ts-why">Part 2: past the limit, socket creation fails with OSError EMFILE. This page: an exception that leaves a Task fails the TaskGroup, which cancels every remaining Task. Catching only SellerError lets the OSError escape.</p>
+</div>
+</section>
+
+<section class="ts-part" id="pool-wait" data-rung="4" data-min="12">
+<h2>When every slot is taken: where the deadline starts decides who waits</h2>
+<p class="ts-bridge">Last part: a cap keeps a burst below the descriptor limit. Still unsolved: a cap makes calls wait for a slot. What does that wait do to the 250 ms budget?</p>
+<p class="ts-problem">20 requests arrive together at a gateway whose shared cap is 10 calls. A developer has put <code>asyncio.timeout(0.25)</code> inside <code>async with limit</code>, around each seller call. Every call is cut at 250 ms, yet the slowest request answers after 1,770 ms.</p>
+<h3>Introduction</h3>
+<p>A cap is a connection pool in miniature, and running out of slots is pool exhaustion. When the pool is exhausted, calls queue. The question is whether time spent in the queue counts against the request's budget. It is the same question as HTTPX's pool timeout and aiohttp's connect timeout in the production-defaults part.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>100 calls want slots; 10 get them (requests 1 and 2, all five sellers); 90 wait in line.</li>
+<li><strong>Timer after the wait.</strong> A call's 250 ms starts only when it gets a slot. A call that waited 1,500 ms in line still gets a full 250 ms afterwards. Requests finish late, one after another.</li>
+<li><strong>Deadline around the wait (gateway v4).</strong> Each request's deadline is fixed at its start. A call still in line at 250 ms is cut there, and its request answers with whatever it has.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="pool_wait.py" data-file="pool_wait.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/pool_wait.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>TimerAfterTheWait</code> changes only the order of two lines in gateway v4's <code>_ask()</code>: the cap first, then a relative timeout.</li>
+<li>Timer after the wait: 18 of 20 requests take longer than 250 ms, and the slowest takes about 1,770 ms. Every request gets an offer, but too late to matter.</li>
+<li>Gateway v4: no request takes longer than 250 ms, but 16 of 20 answer with no offer, because the cap is too small for this burst.</li>
+</ol>
+<h3>Solved example: gateway v4 with 20 requests and a cap of 10</h3>
+<p><strong>Given:</strong> slots are handed out first in, first out. Requests 1 and 2 hold the first 10 slots at 0 ms. Every deadline is at 250 ms.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Time</th><th>Slots freed by</th><th>Slots go to</th><th>Those calls end at</th></tr></thead>
+<tbody>
+<tr><td>80 ms</td><td>seller-a of requests 1 and 2</td><td>request 3: seller-a, seller-b</td><td>160 ms (offer), 200 ms (offer)</td></tr>
+<tr><td>120 ms</td><td>seller-b of requests 1 and 2</td><td>request 3: seller-c, seller-d</td><td>cut at 250 ms (would be 270 and 320)</td></tr>
+<tr><td>150 ms</td><td>seller-c of requests 1 and 2</td><td>request 3: seller-e; request 4: seller-a</td><td>cut at 250 ms; 230 ms (offer)</td></tr>
+<tr><td>160–230 ms</td><td>request 3's and 4's fast calls, requests 1 and 2's seller-d</td><td>request 4's other calls, request 5's seller-a</td><td>all would end after 250 ms: cut</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> requests 1, 2, 3 and 4 get an offer by 250 ms; requests 5 to 20 get none: 16 of 20, as the program printed. The deadline did its job (nobody waited past 250 ms); the cap was simply too small: 20 requests × 0.80 call-seconds = 16 call-seconds of work in a 0.25 s window needs about 64 slots, not 10.</p>
+<h3>What breaks, how you see it, and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Mistake</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Timer starts after the wait for a slot</td><td>Answers far past the budget during peaks, all with full results</td><td>p99 latency far above the budget; time waiting for a slot</td><td>One deadline per request, entered before the cap (<code>timeout_at</code> outside <code>async with limit</code>)</td></tr>
+<tr><td>Cap too small for the load</td><td>Fast answers with no offers ("no seller answered")</td><td>Calls timed out while still waiting for a slot; slots always full</td><td>Size the cap: calls in flight ≈ rate × call-seconds; more processes</td></tr>
+<tr><td>One shared cap, one slow seller</td><td>Fast sellers time out because seller-e's calls hold most slots</td><td>Slot holders by seller</td><td>A cap per seller as well (aiohttp's <code>limit_per_host</code>), so one seller cannot take every slot</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Every call has a 250 ms timeout, so every request finishes within 250 ms."</p>
+<p><strong>Why it is wrong:</strong> a timeout on the call does not cover the time spent waiting to make the call. In the program, every call was cut at 250 ms, yet requests took up to about 1,770 ms, because most of their time was spent in line.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A full cap means calls wait in line; that wait must count against the request's deadline.</li>
+<li>Deadline before the cap: never late, possibly empty. Timer after the cap: always full, possibly very late.</li>
+<li>Empty answers within budget mean the cap is too small for the load.</li>
+</ul>
+</div>
+<p class="ts-takeaway">When the cap is full, calls wait in line, so the request's deadline must start before the wait for a slot, or the budget is silently exceeded.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">With the timer after the wait, how long can a single seller call take, at most, from the moment its request arrived?</p>
+<ol>
+<li>The time it waited for a slot plus 250 ms, with no fixed upper bound</li>
+<li data-why="The 250 ms only starts once the call has a slot, so it does not limit the wait before that.">250 ms</li>
+<li data-why="The cap limits calls in flight, not how long a call can wait for a slot.">250 ms × the cap of 10 = 2,500 ms</li>
+</ol>
+<p class="ts-why">The timeout starts after the slot is taken. Time in line has no limit of its own, so the total is the wait plus up to 250 ms.</p>
+</div>
+</section>
+
+<section class="ts-part" id="downstream-overload" data-rung="4" data-min="13">
+<h2>Overloading the seller: work done for nobody</h2>
+<p class="ts-bridge">Last part: the deadline must start before the wait for a slot. Still unsolved: the cap so far protects the gateway. What protects the seller, and why does that matter to the gateway?</p>
+<p class="ts-problem">seller-c can work on 10 requests at a time, 150 ms each. A burst of 50 calls arrives, and another 400 ms later. The gateway cuts every call at 250 ms. Without a cap, seller-c answers 10 calls of the first burst and none of the second, and stays busy for 1,500 ms doing work the gateway threw away.</p>
+<h3>Introduction</h3>
+<p>Part 2 noted that cancelling a call stops our waiting, not the seller's work. This part measures the consequence. A seller that cannot keep up builds a queue; the gateway cuts calls at the deadline, but the seller still works through its queue, on calls nobody will read. The next burst then waits behind all of that dead work.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A downstream is <dfn data-def="A service is overloaded when work arrives faster than it can finish it, so a queue grows and every request waits longer.">overloaded</dfn> when work arrives faster than it can finish it, so a queue grows and every request waits longer. <dfn data-def="Work a downstream finishes for a request the caller has already given up on.">Wasted work</dfn> is work it finishes for calls the caller has already given up on.</p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>No cap.</strong> At 0 ms the gateway sends all 50 calls. seller-c starts 10; 40 wait in its queue.</li>
+<li>At 150 ms the first 10 answer. At 250 ms the gateway cuts the other 40, but they are still in seller-c's queue, and it works through them until 750 ms.</li>
+<li>At 400 ms the second burst arrives and queues behind them. Its calls only start at 750 ms, after their 650 ms deadline: none is answered, and seller-c works on them too, until 1,500 ms.</li>
+<li><strong>Cap of 10, deadline around the wait.</strong> The gateway sends only 10 calls at a time. At 150 ms they answer and the next 10 are sent; at 250 ms those 10 are cut (seller-c finishes them anyway, by 300 ms) and the 30 still waiting for a slot are dropped without ever being sent.</li>
+<li>The second burst at 400 ms finds seller-c idle: 10 answers at 550 ms, the next 10 are cut at 650 ms, and the rest are never sent.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="sellers_load.py" data-file="sellers_load.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="overload.py" data-file="overload.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/overload.txt" data-verified="ran"></div>
+<p><strong>Explanation of the programs</strong></p>
+<ol>
+<li><code>LimitedSeller</code> is a test harness, like Part 2's <code>sellers_net.py</code>: 10 worker threads take connections from a queue, and each job takes 150 ms whether or not the gateway is still waiting.</li>
+<li>In <code>overload.py</code>, <code>one()</code> puts the deadline around both the wait for a slot and the call, as gateway v4 does.</li>
+<li>No cap: 10 useful answers out of 100 jobs, and seller-c busy until about 1,500 ms.</li>
+<li>Cap of 10: 20 useful answers out of 40 jobs, and seller-c idle again by about 700 ms.</li>
+</ol>
+<h3>Solved example</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th></th><th>No cap</th><th>Cap of 10, deadline around the wait</th></tr></thead>
+<tbody>
+<tr><td>Calls sent to seller-c</td><td>100</td><td>40</td></tr>
+<tr><td>Answered in time (burst 1 + burst 2)</td><td>10 + 0 = 10</td><td>10 + 10 = 20</td></tr>
+<tr><td>Wasted work</td><td>100 − 10 = 90 jobs</td><td>40 − 20 = 20 jobs</td></tr>
+<tr><td>seller-c busy until</td><td>about 1,500 ms</td><td>about 700 ms</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the cap, matched to what the seller can take, doubles the useful answers and cuts the wasted work from 90 to 20 jobs. Calls that cannot be answered in time are dropped at the gateway, where they cost nothing, instead of at the seller, where they cost a worker for 150 ms each.</p>
+<h3>Signals for this rung</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Calls left running after a failure (gather)</td><td>Later slowness when a downstream degrades</td><td>Open connections per downstream after errors</td><td>TaskGroup, or cancel leftovers</td></tr>
+<tr><td>Burst past the descriptor limit</td><td>Whole bursts of requests fail</td><td>EMFILE; open descriptors near the limit</td><td>Semaphore sized by arithmetic; more processes</td></tr>
+<tr><td>Timer after the wait for a slot</td><td>Answers far past the budget</td><td>p99 latency; time waiting for a slot</td><td>Deadline before the cap</td></tr>
+<tr><td>Cap too small</td><td>Empty answers within the budget</td><td>Calls timing out while waiting for a slot</td><td>Size the cap; more processes</td></tr>
+<tr><td>Downstream overloaded</td><td>Empty answers from one seller, lasting after the burst ends</td><td>The seller's latency and queue length; timeouts per seller; the gateway's calls in flight to it</td><td>A cap per seller at or below its capacity; deadline around the wait</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your gateway times out calls to a slow downstream after 250 ms. Is the downstream protected?"</p>
+<p><strong>What a strong senior answer contains:</strong> no. A timeout stops the caller's waiting, not the downstream's work, so without a cap the downstream keeps working on abandoned calls and its queue grows. The fix is to bound concurrency per downstream near its capacity and to drop calls that cannot start in time before sending them. The candidate adds that retries without a cap make it worse, which is a later page's subject (backpressure, Part 6).</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "When the gateway cancels a call at the deadline, the seller stops working on it."</p>
+<p><strong>Why it is wrong:</strong> cancellation is local, as Part 2 showed: it throws CancelledError into our coroutine and closes our end of the connection. <code>LimitedSeller</code> finished all 100 jobs without a cap, 90 of them for nobody.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A timeout ends our wait; the seller still does the work.</li>
+<li>No cap: the seller's queue grows, and the next burst waits behind dead work.</li>
+<li>Cap per seller near its capacity, with the deadline around the wait, so hopeless calls are never sent.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Without a cap, calls the gateway has already given up on still queue up at the seller and delay the next burst; a cap matched to the seller's capacity drops them before they are sent.</p>
+<div class="ts-explain" data-points="gather leaves the other calls running after a failure; TaskGroup cancels them|A burst with no cap hits the file descriptor limit, and one EMFILE fails the whole group|The deadline must start before the wait for a slot|A timeout ends our wait but not the seller's work, so the cap must protect the seller too">
+<p class="q">In your own words: name the ways a fan-out breaks at 10 times the load that this rung covered, and the fix and signal for each.</p>
+<div class="ts-model"><p>With gather, a failure returns at once and leaves the other calls running, so connections pile up when a downstream degrades; use a TaskGroup and watch open connections per downstream. A burst with no cap opens more sockets than the descriptor limit allows, and inside a TaskGroup one EMFILE cancels everything; size a Semaphore from calls in flight ≈ rate × call-seconds and watch for EMFILE. A cap makes calls wait in line, so the deadline must be entered before the wait, or requests run far past the budget; watch p99 and slot wait time. And a timeout only ends our wait, so without a cap per seller an overloaded seller keeps working on abandoned calls and the next burst queues behind them; watch the seller's latency and timeouts per seller.</p></div>
+</div>
+</section>
+<section class="ts-part" id="choose-tool" data-rung="5" data-min="13">
+<h2>gather, TaskGroup, as_completed or wait: which one to pick</h2>
+<p class="ts-bridge">Last part: without a cap, a slow seller keeps working on calls nobody reads. Still unsolved: this page has four ways to run calls together. Which one fits which job?</p>
+<p class="ts-problem">Four services, four needs. The gateway needs every seller's outcome within 250 ms. A search page wants to show results as each shard answers. A health checker needs "the first replica that answers". An old batch job uses <code>asyncio.wait()</code> and has occasionally left calls running for hours.</p>
+<h3>Introduction</h3>
+<p>The fourth tool, <code>asyncio.wait()</code>, is the lowest-level one. It is shown here with a short program because it appears in older code and behaves differently from the other three on timeouts, and then all four are compared.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c56" data-src="s1">asyncio.wait() runs Tasks and Futures concurrently and returns two sets, (done, pending).</span> <span class="ts-claim" data-claim="c58" data-src="s1">return_when can be FIRST_COMPLETED, FIRST_EXCEPTION or ALL_COMPLETED, which is the default.</span> <span class="ts-claim" data-claim="c57" data-src="s1">wait() does not raise TimeoutError: tasks not done at the timeout are returned in the pending set, and unlike wait_for(), wait() does not cancel them.</span> <span class="ts-claim" data-claim="c59" data-src="s1">Since Python 3.11, passing coroutine objects to wait() directly is forbidden, and if wait() itself is cancelled, the futures it was given are not cancelled.</span></p>
+</div>
+<h3>Program: asyncio.wait()</h3>
+<div class="ts-code" data-lang="python" data-title="wait_demo.py" data-file="wait_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/wait_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>FIRST_COMPLETED</code> returns at 80 ms with seller-a done.</li>
+<li>The second <code>wait()</code> starts at 80 ms, so its 0.25 s timeout ends at 80 + 250 = 330 ms, not at 250 ms: a <code>wait()</code> timeout is relative to each call of <code>wait()</code>, not a request deadline.</li>
+<li>seller-e is returned in <code>pending</code>, still running; <code>wait()</code> cancelled nothing. The program cancels it itself.</li>
+</ol>
+<h3>Difference between the four tools</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Tool</th><th>Results come back</th><th>When one call fails</th><th>On a timeout</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>TaskGroup</td><td>When the block ends; read each Task</td><td><span class="ts-claim" data-claim="c13" data-src="s1">The first time a task in the group fails with an exception other than CancelledError, the remaining tasks are cancelled, no further tasks can be added, and the task running the async with body is also cancelled if the body is still active.</span></td><td>Put <code>timeout</code>/<code>timeout_at</code> around or inside; cut calls are cancelled</td><td>The default for new fan-out code: every call must be finished or cancelled before you move on</td></tr>
+<tr><td><code>gather()</code></td><td>One list, in argument order</td><td><span class="ts-claim" data-claim="c7" data-src="s1">With return_exceptions=False, the default, the first exception is immediately propagated to the task awaiting gather(), and the other awaitables are not cancelled and continue to run.</span></td><td>None of its own; wrap it in a timeout (cancelling gather cancels its children)</td><td>Older code, or a small fixed set of calls with <code>return_exceptions=True</code> under a deadline</td></tr>
+<tr><td><code>as_completed()</code></td><td>One at a time, in finishing order</td><td>Raised when you reach that call</td><td><span class="ts-claim" data-claim="c32" data-src="s1">With a timeout, as_completed() raises TimeoutError if the timeout occurs before all awaitables are done.</span> The others keep running.</td><td>First good answer wins, or progress as results arrive; cancel the rest yourself</td></tr>
+<tr><td><code>wait()</code></td><td>Two sets: done and pending</td><td>Stays in <code>done</code>; with FIRST_EXCEPTION, returns early</td><td>No exception; pending Tasks keep running</td><td>You need the done/pending split or FIRST_COMPLETED, and you will cancel the pending ones yourself</td></tr>
+</tbody>
+</table></div>
+<h3>Decision rules</h3>
+<ol>
+<li>Default: a TaskGroup, with a deadline (<code>timeout_at</code>) and a cap (Semaphore), and expected failures returned as values.</li>
+<li>Need each result as it arrives: <code>as_completed()</code> over Tasks created with <code>tg.create_task</code> inside a TaskGroup. Cancel the rest once you have your answer; the block's end then waits until they have all finished cleaning up.</li>
+<li>Maintaining old code with <code>gather()</code> or <code>wait()</code>: add a deadline, and a <code>finally</code> that cancels whatever is not done.</li>
+<li>Only one awaitable: <code>timeout()</code> or <code>wait_for()</code>, no grouping tool at all.</li>
+</ol>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Why did Python add TaskGroup when gather already existed?"</p>
+<p><strong>What a strong senior answer contains:</strong> gather has no ownership: when one call fails, the error returns while the other calls keep running, and nothing guarantees that they finish or that their errors are read. TaskGroup is structured concurrency: every Task belongs to a block, the block does not end until every Task is done, and a failure cancels the rest and reports all errors as an ExceptionGroup. The trade-off: a TaskGroup fails as a unit, so partial-result fan-outs must catch their expected errors per call, as gateway v4 does.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>asyncio.wait(tasks, timeout=0.25)</code> is the same as putting a 250 ms timeout on the tasks."</p>
+<p><strong>Why it is wrong:</strong> it only stops <em>waiting</em>. It raises nothing, cancels nothing, and its timeout counts from when <code>wait()</code> was called. The batch job in the problem left calls running for hours because nothing cancelled the pending set.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>TaskGroup: owns its Tasks; the default for new code.</li>
+<li>gather: argument order; leaves calls running on failure.</li>
+<li>as_completed: finishing order; cancel the rest yourself.</li>
+<li>wait: done and pending sets; no exception and no cancelling on timeout.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Use a TaskGroup with a deadline and a cap by default; reach for as_completed for results in finishing order, and treat gather and wait as tools that never clean up after themselves.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c31 c56 c57">
+<p class="q">A health checker must return the first of three replicas that answers, within 1 s, and leave nothing running. Which is the best fit?</p>
+<ol>
+<li data-why="gather waits for all three replicas (or raises at the first failure); it never returns 'the first one to answer'.">gather() of the three calls, inside asyncio.timeout(1)</li>
+<li data-why="wait() returns the first done Task, but leaves the other two running unless the code cancels them; on its own it does not meet 'leave nothing running'.">asyncio.wait(tasks, timeout=1, return_when=FIRST_COMPLETED) on its own</li>
+<li>The three calls as Tasks in a TaskGroup inside asyncio.timeout(1), reading them with as_completed() and cancelling the rest once the first answers</li>
+</ol>
+<p class="ts-why">as_completed gives the first answer; the explicit cancel stops the other two, and the TaskGroup guarantees that the block does not end until they are finished. The timeout bounds the whole thing at 1 s.</p>
+</div>
+</section>
+
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: call 500 APIs, answer within 1 s, take nothing down</h2>
+<p class="ts-bridge">Last part: a TaskGroup with a deadline and a cap is the default. Still unsolved: can you design and defend it under pressure, with numbers, the way an interviewer will ask?</p>
+<p class="ts-problem">"Your service must call 500 internal APIs for one report, return within 1 second, and must not take down the APIs or itself. Design it." Most answers stop at "use asyncio.gather". A senior answer names the cap, the deadline, what happens to failures, and the arithmetic.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. The first is worked in full and checked with a program against a stub API with 100 workers. Try each prompt before opening the reference answer.</p>
+<h3>Prompt 1: 500 calls, 1 second, nothing taken down</h3>
+<ol class="ts-steps">
+<li><strong>State the assumptions.</strong> The API has 100 workers; normally a call takes 40 ms. Other clients use it too, so this report may use at most 50 slots.</li>
+<li><strong>Cap.</strong> One Semaphore of 50 for this report's calls. 500 calls ÷ 50 = 10 rounds; at 40 ms each, about 400 ms plus connection set-up.</li>
+<li><strong>Deadline.</strong> One <code>timeout_at(start + 1.0)</code> per call, entered before the wait for a slot, so no call waits or runs past 1 s.</li>
+<li><strong>Failures.</strong> Each call returns "answered", "timed out" or "failed" as a value; expected errors never cancel the other 499. Bugs still escape and fail the group.</li>
+<li><strong>Ownership.</strong> All 500 in one TaskGroup, so nothing is left running when the report is returned.</li>
+<li><strong>Degraded case.</strong> If the API slows to 180 ms a call, 5 rounds fit in 1 s (5 × 180 = 900 ms): 250 answers, 250 timed out, still at 1 s, and never more than 50 calls on the API.</li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="fan_out_500.py" data-file="fan_out_500.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/fan_out_500.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The stub API is <code>LimitedSeller</code> from the overload part, with 100 workers.</li>
+<li>Healthy: all 500 answered in about half a second (10 rounds of about 40 ms plus set-up), with at most 50 in flight.</li>
+<li>Slow: exactly the arithmetic of step 6: 250 answered and 250 timed out at 1 s, still at most 50 in flight. The report is partial, on time, and the API was never given more than half of its workers.</li>
+</ol>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it sets the cap from the downstream's capacity, not from a guess; it puts one deadline around the wait and the call; it says how partial results are reported; it does the arithmetic for the degraded case (500 ÷ 50 × 180 ms = 1,800 ms, so only half fit); and it says what is given up: a partial report rather than a late or failed one, and less speed than the API could give if this report were its only client.</p>
+</div>
+<div class="ts-explain" data-points="Cap the calls in flight from the downstream's capacity, here 50 of 100 workers|One deadline per call, entered before the wait for a slot|Expected failures are returned as values so they do not cancel the rest|All calls in one TaskGroup so nothing outlives the report|Degraded case: 5 rounds of 180 ms fit in 1 s, so about half the answers">
+<p class="q">Answer prompt 1 in your own words, with the numbers.</p>
+<div class="ts-model"><p>Start every call in one TaskGroup, so nothing outlives the report. Each call takes a slot from a Semaphore of 50, half of the API's 100 workers, so other clients keep their share. Each call enters timeout_at(start + 1 s) before waiting for its slot, so no call waits or runs past the second. Expected failures and timeouts are returned as values, so one bad call does not cancel the other 499; bugs still fail the group. At 40 ms per call, 10 rounds of 50 take about half a second. If the API slows to 180 ms, only 5 rounds fit in the second, so about 250 calls answer and 250 are reported as timed out: a partial report on time, with the API never overloaded.</p></div>
+</div>
+<h3>Prompt 2: "Our fan-out uses gather and sometimes hangs for minutes"</h3>
+<div class="ts-predict" data-claims="c7 c63">
+<p class="q">The code is <code>results = await asyncio.gather(*calls)</code> with an HTTP client on default settings. Name the two most likely causes and the fix.</p>
+<div class="ts-reveal"><p>First, there is no request deadline: gather has no timeout of its own, and the client's default (for aiohttp, 300 seconds in total) is far longer than the request's budget, so one stuck downstream holds the request for minutes. Second, when a call fails, gather returns the error but leaves the other calls running, so stuck calls accumulate. Fix: run the calls in a TaskGroup inside one asyncio.timeout or timeout_at for the request, return expected errors as values, and cap calls in flight. The trade-off is a partial answer at the deadline instead of a complete one late.</p></div>
+</div>
+<h3>Prompt 3: "Where does the deadline go?"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">A colleague writes <code>async with limit:</code> and then <code>async with asyncio.timeout(1):</code> around each call. The report has a 1 s promise. What goes wrong at peak, and what is the one-line fix?</p>
+<div class="ts-reveal"><p>The timer starts only after a call gets a slot, so time spent waiting in line is not counted: at peak, calls wait for slots and then still get a full second each, and the report runs well past 1 s (the pool-wait part measured requests at about 1,770 ms against a 250 ms budget). The fix is to swap the two lines and use one absolute deadline: <code>async with asyncio.timeout_at(deadline):</code> outside <code>async with limit:</code>.</p></div>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A higher cap always makes the fan-out faster."</p>
+<p><strong>Why it is wrong:</strong> past the downstream's capacity, a higher cap only moves the queue from the gateway to the downstream, where abandoned calls still cost work (the overload part: 90 wasted jobs without a cap, 20 with one). The cap should match what the downstream can take, not what the gateway can send.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Cap from the downstream's capacity; deadline around the wait and the call; failures as values; one TaskGroup.</li>
+<li>Rounds = calls ÷ cap; time ≈ rounds × call time; compare with the deadline.</li>
+<li>Say what is given up: partial results on time instead of complete results late.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A senior fan-out answer is four decisions and one sum: a cap from the downstream's capacity, a deadline around the wait, failures as values, one TaskGroup, and calls ÷ cap × call time against the deadline.</p>
+</section>
+
+<section class="ts-part" id="whats-next" data-rung="5" data-min="7">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: the ways async services fail in production even with every tool on this page in place, which the next page is about.</p>
+<p class="ts-problem">Gateway v4 answers seller-b at 1,199 in 250 ms with seller-e reported as timed out, under a cap shared by every request, with nothing left running. It still assumes that every seller call cooperates: that nothing blocks the loop, that no coroutine swallows a cancellation, and that every Task is owned by a group.</p>
+<h3>What this page added</h3>
+<ul>
+<li>Why two awaits in a row take the sum (80 + 120 = 200 ms) and Tasks started first take the longest (120 ms).</li>
+<li>Coroutine objects vs Tasks; <code>create_task</code>; <code>gather</code> and its argument order and failure rules.</li>
+<li>TaskGroup: structured concurrency, built from Part 2's set of Tasks, done callbacks and one Future; ExceptionGroup and <code>except*</code>.</li>
+<li><code>as_completed()</code> for results in finishing order, and eager tasks (3.12) that start inside <code>create_task()</code>.</li>
+<li>A Semaphore to cap calls in flight; <code>timeout</code>, <code>timeout_at</code> and <code>wait_for</code>, built on a <code>call_at</code> timer and <code>Task.cancel()</code>.</li>
+<li>Gateway v4: TaskGroup + shared cap + one deadline per request, entered before the wait; expected failures as values.</li>
+<li>What breaks at 10 times the load: leftovers after gather, EMFILE in a burst, a timer after the wait, a cap that is too small, an overloaded seller. And how to size the cap.</li>
+</ul>
+<h3>What is still broken</h3>
+<ul>
+<li><strong>Blocking calls.</strong> A synchronous call inside a seller coroutine still freezes every Task, and the timeout's timer cannot fire while the loop is blocked (Part 1).</li>
+<li><strong>Swallowed cancellation.</strong> <span class="ts-claim" data-claim="c54" data-src="s1">The docs warn that TaskGroup and asyncio.timeout() are implemented with cancellation internally and might misbehave if a coroutine swallows CancelledError.</span> An <code>except Exception</code> or <code>except BaseException</code> in the wrong place breaks gateway v4's deadline.</li>
+<li><strong>Lost tasks and silent timeouts.</strong> Tasks created outside a group, forgotten awaits, and a TimeoutError caught by an over-broad handler and logged as "seller failed" still slip through.</li>
+</ul>
+<h3>Next: Part 4 — The six traps that break async services</h3>
+<p>Part 4 breaks gateway v4 on purpose, one trap at a time: forgotten awaits, blocking calls, lost tasks, gather leaks, swallowed cancellation and silent timeouts. For each it shows what the shopper sees, the signal that reveals it, and the fix.</p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: run calls together with a TaskGroup, cap them with a Semaphore, cut them with timeout_at.</li>
+<li>Still broken: blocking calls, swallowed cancellation, lost tasks and silent timeouts.</li>
+<li>Part 4: the six traps, on gateway v4.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v4 now runs its calls in a group, under a shared cap and a real deadline; Part 4 shows the production traps that can still break those guarantees.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway across Parts 1 to 3 in the order they were built.</p>
+<ol>
+<li>v0: blocking calls one after another, 1,450 ms</li>
+<li>v1 on the toy loop: five tasks on one thread, 900 ms, answer at the 250 ms budget</li>
+<li>v2: the toy loop plus a selector, the same answers from real sockets</li>
+<li>v3: asyncio streams and Tasks, with a hand-made budget and hand-made waiting</li>
+<li>v4: a TaskGroup, a shared Semaphore and one timeout_at deadline per request</li>
+</ol>
+<p class="ts-why">Each version fixes one problem of the one before it: the sum of waits, fake I/O, the hand-written loop, and finally the hand-made waiting, the missing cap and the hand-made budget.</p>
+</div>
+</section>

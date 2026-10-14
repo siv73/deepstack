@@ -1,0 +1,12 @@
+-- TaskGroup, every seller answers --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+  900 ms  seller-e answered 1,149
+all done after 900 ms: 1,249, 1,199, 1,229, 1,215, 1,149
+-- TaskGroup, seller-c fails --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+ExceptionGroup after 150 ms: (SellerError('seller-c failed'),)
+cancelled by the group: ['seller-d', 'seller-e']

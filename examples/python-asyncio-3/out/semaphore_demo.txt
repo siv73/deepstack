@@ -1,0 +1,11 @@
+    0 ms  seller-a starts (1 in flight)
+    0 ms  seller-b starts (2 in flight)
+    0 ms  seller-c starts (3 in flight)
+   80 ms  seller-a answered 1,249
+   80 ms  seller-d starts (3 in flight)
+  120 ms  seller-b answered 1,199
+  120 ms  seller-e starts (3 in flight)
+  150 ms  seller-c answered 1,229
+  280 ms  seller-d answered 1,215
+ 1020 ms  seller-e answered 1,149
+all done after 1,020 ms; most in flight at once: 3

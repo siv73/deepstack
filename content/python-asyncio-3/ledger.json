@@ -1,0 +1,1978 @@
+{
+ "verified": "2026-10-14",
+ "volatility": "evolving",
+ "strict": false,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "asyncio: Coroutines and Tasks",
+   "url": "https://docs.python.org/3.14/library/asyncio-task.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s2",
+   "title": "asyncio: Synchronization Primitives",
+   "url": "https://docs.python.org/3.14/library/asyncio-sync.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s3",
+   "title": "asyncio: Exceptions",
+   "url": "https://docs.python.org/3.14/library/asyncio-exceptions.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s4",
+   "title": "The Python Language Reference: Compound statements (except* clause)",
+   "url": "https://docs.python.org/3.14/reference/compound_stmts.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s5",
+   "title": "What's New In Python 3.11",
+   "url": "https://docs.python.org/3.14/whatsnew/3.11.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s6",
+   "title": "What's New In Python 3.12",
+   "url": "https://docs.python.org/3.14/whatsnew/3.12.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s7",
+   "title": "What's New In Python 3.13",
+   "url": "https://docs.python.org/3.14/whatsnew/3.13.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s9",
+   "title": "CPython 3.14 source: Lib/asyncio/taskgroups.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/taskgroups.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s10",
+   "title": "CPython 3.14 source: Lib/asyncio/timeouts.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/timeouts.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s11",
+   "title": "CPython 3.14 source: Lib/asyncio/tasks.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s12",
+   "title": "CPython 3.14 source: Lib/asyncio/locks.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/locks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s13",
+   "title": "HTTPX: Resource Limits",
+   "url": "https://www.python-httpx.org/advanced/resource-limits/",
+   "kind": "primary",
+   "publisher": "Encode (HTTPX project)",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s14",
+   "title": "HTTPX: Timeouts",
+   "url": "https://www.python-httpx.org/advanced/timeouts/",
+   "kind": "primary",
+   "publisher": "Encode (HTTPX project)",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s15",
+   "title": "aiohttp: Client Reference",
+   "url": "https://docs.aiohttp.org/en/stable/client_reference.html",
+   "kind": "primary",
+   "publisher": "aio-libs (aiohttp project)",
+   "accessed": "2026-10-14"
+  },
+  {
+   "id": "s16",
+   "title": "aiohttp: Client Quickstart (Timeouts)",
+   "url": "https://docs.aiohttp.org/en/stable/client_quickstart.html",
+   "kind": "primary",
+   "publisher": "aio-libs (aiohttp project)",
+   "accessed": "2026-10-14"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "The docs say that calling a coroutine function does not schedule it to run; it only creates a coroutine object.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Coroutines: 'simply calling a coroutine will not schedule it'",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Coroutines: 'simply calling a coroutine will not schedule it'",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "In the docs' own example, awaiting say_after(1, ...) and then say_after(2, ...) takes about 3 seconds, and creating both as Tasks first takes about 2.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Coroutines: awaiting on a coroutine / create_task example output",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Coroutines: awaiting on a coroutine / create_task example output",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "asyncio.create_task() wraps a coroutine into a Task and schedules its execution; it raises RuntimeError if there is no running loop in the current thread.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Creating tasks: create_task()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Creating tasks: create_task()",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "The docs say to save a reference to the Task that create_task() returns, because the event loop keeps only weak references to tasks.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Creating tasks: create_task() important box",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Creating tasks: create_task() important box",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "gather() runs its awaitables concurrently, and any coroutine passed to it is automatically scheduled as a Task.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Running tasks concurrently: gather()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Running tasks concurrently: gather()",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "If all succeed, gather() returns a list of results in the order of the awaitables passed, not necessarily the order in which the results arrived.",
+   "sources": [
+    "s1",
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather(): result order; tasks.py gather docstring",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "gather(): result order; tasks.py gather docstring",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather(): result order; tasks.py gather docstring",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "gather(): result order; tasks.py gather docstring",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "With return_exceptions=False, the default, the first exception is immediately propagated to the task awaiting gather(), and the other awaitables are not cancelled and continue to run.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather(): return_exceptions False",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather(): return_exceptions False",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "With return_exceptions=True, exceptions are treated the same as successful results and placed in the result list.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather(): return_exceptions True",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather(): return_exceptions True",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "If gather() itself is cancelled, every submitted awaitable that has not completed yet is also cancelled.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather(): if gather() is cancelled",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather(): if gather() is cancelled",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "The docs note that TaskGroup gives stronger safety guarantees than gather(): if a task raises, TaskGroup cancels the remaining tasks and gather() does not.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather(): note on TaskGroup",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather(): note on TaskGroup",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Cancelling gather() after it has already raised a child's exception does not cancel the other awaitables.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "gather(): second note",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "gather(): second note",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "asyncio.TaskGroup, added in Python 3.11, is an asynchronous context manager holding a group of tasks: tasks are added with its create_task() method, and all of them are awaited when the context manager exits.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: class TaskGroup, versionadded 3.11",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: class TaskGroup, versionadded 3.11",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "The first time a task in the group fails with an exception other than CancelledError, the remaining tasks are cancelled, no further tasks can be added, and the task running the async with body is also cancelled if the body is still active.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: paragraph 'The first time any of the tasks'",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: paragraph 'The first time any of the tasks'",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "Once all tasks have finished, the failures other than CancelledError are combined into an ExceptionGroup or BaseExceptionGroup, which is raised.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: 'Once all tasks have finished'",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: 'Once all tasks have finished'",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "If a task fails with KeyboardInterrupt or SystemExit, the group still cancels and waits for the remaining tasks, then re-raises that exception instead of an exception group.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: two base exceptions treated specially",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: two base exceptions treated specially",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "If the body of the async with block raises, this is treated as if a task failed: the remaining tasks are cancelled and waited for, and the body's exception, unless it is CancelledError, is included in the group.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: body exits with an exception",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: body exits with an exception",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "The create_task() docs recommend TaskGroup because it keeps a strong reference to each task, awaits them and propagates their exceptions.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Creating tasks: important box, last paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Creating tasks: important box, last paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "In CPython 3.14's taskgroups.py, a TaskGroup keeps its tasks in a set, adds a done callback to each task, and its __aexit__ awaits a Future that the done callback completes once the set is empty.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "TaskGroup.__init__ (_tasks), create_task (add_done_callback), _aexit (_on_completed_fut), _on_task_done",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 source (Lib/asyncio, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "TaskGroup.__init__ (_tasks), create_task (add_done_callback), _aexit (_on_completed_fut), _on_task_done",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "When a task in the group fails, that done callback cancels every task that is not done yet and then cancels the parent task, which interrupts the await in the async with body.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "TaskGroup._on_task_done and _abort",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 source (Lib/asyncio, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "TaskGroup._on_task_done and _abort",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "Python 3.11's release notes recommend TaskGroup for new code over using create_task() and gather() directly.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "asyncio: TaskGroup bullet",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "asyncio: TaskGroup bullet",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "If the group is not active (not yet entered, already finished, or shutting down), TaskGroup.create_task() raises RuntimeError; since Python 3.13 it also closes the given coroutine.",
+   "sources": [
+    "s1",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "TaskGroup.create_task, versionchanged 3.13",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "TaskGroup.create_task, versionchanged 3.13",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "TaskGroup.create_task, versionchanged 3.13",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "TaskGroup.create_task, versionchanged 3.13",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "TaskGroup's handling of simultaneous internal and external cancellations, and of cancellation counts, was improved in Python 3.13.",
+   "sources": [
+    "s1",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups: versionchanged 3.13; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Task groups: versionchanged 3.13; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups: versionchanged 3.13; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Task groups: versionchanged 3.13; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "Terminating a task group early is not natively supported; the docs show adding a task that raises a custom exception and catching it with except*.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Terminating a task group",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Terminating a task group",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "ExceptionGroup, BaseExceptionGroup and the except* syntax were added in Python 3.11 (PEP 654).",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "PEP 654: Exception Groups and except*",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "PEP 654: Exception Groups and except*",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "An except* clause matches by type against the exceptions inside the group: each clause splits the group into a matching subgroup, which its body handles, and a non-matching subgroup, which goes on to the next except* clause.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "except* clause",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "except* clause",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "After all except* clauses have run, the exceptions no clause matched propagate on as a new exception group.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "except* clause: merged exception group propagates",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "except* clause: merged exception group propagates",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "A try statement can have except clauses or except* clauses but not both, and break, continue and return cannot appear in an except* clause.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "except* clause: first and last paragraphs",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "except* clause: first and last paragraphs",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "as_completed() runs the awaitables concurrently and returns an object that can be iterated to get their results as they finish.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Waiting primitives: as_completed()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Waiting primitives: as_completed()",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "With async for, as_completed() yields the original Task or Future objects as they finish, which makes it easy to tell which call finished.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "as_completed(): asynchronous iteration",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "as_completed(): asynchronous iteration",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "Async iteration of as_completed() was added in Python 3.13; before that it was only a plain iterator, which yields new coroutines that must be awaited to get each result.",
+   "sources": [
+    "s1",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "as_completed(): versionchanged 3.13, plain iterator paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "as_completed(): versionchanged 3.13, plain iterator paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "as_completed(): versionchanged 3.13, plain iterator paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "as_completed(): versionchanged 3.13, plain iterator paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "as_completed() does not cancel the remaining tasks: if a timeout occurs or the iteration is cancelled, they continue to run.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "as_completed(): last paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "as_completed(): last paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "With a timeout, as_completed() raises TimeoutError if the timeout occurs before all awaitables are done.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "as_completed(): TimeoutError paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "as_completed(): TimeoutError paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "With eager_task_factory, added in Python 3.12, coroutines begin running synchronously during Task construction, and a task is scheduled on the event loop only if it blocks.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Eager task factory",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Eager task factory",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "The docs name coroutines that use caching or memoization to avoid real I/O as a common case where eager execution helps.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Eager task factory: 'A common example'",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Eager task factory: 'A common example'",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "The docs call eager execution a semantic change: a coroutine that returns or raises without blocking is never scheduled to the event loop, and the application's task execution order is likely to change.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Eager task factory: note",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Eager task factory: note",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "The Task constructor's eager_start parameter was added in Python 3.12, and asyncio.create_task() accepts eager_start since 3.14; when it is not passed, the mode set by the loop's task factory is used.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task: versionchanged 3.12; create_task: eager_start, versionchanged 3.14",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task: versionchanged 3.12; create_task: eager_start, versionchanged 3.14",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "Python 3.12's release notes say opting an event loop in to eager task execution makes some use-cases 2x to 5x faster.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "asyncio: eager_task_factory bullet",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "asyncio: eager_task_factory bullet",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "A Semaphore manages a counter that each acquire() decrements and each release() increments; the counter can never go below zero, and acquire() waits while it is zero until some task calls release().",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Semaphore",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Semaphore",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "The preferred way to use a Semaphore is async with, which the docs show is equivalent to await acquire(), then the block in a try, with release() in the finally.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Semaphore: preferred way",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Semaphore: preferred way",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "Semaphore(value) starts the counter at value, 1 by default, and raises ValueError if value is less than 0.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Semaphore: value argument",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Semaphore: value argument",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "BoundedSemaphore raises ValueError in release() if the counter would go above its initial value; a plain Semaphore allows more release() calls than acquire() calls.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Semaphore.release(); BoundedSemaphore",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Semaphore.release(); BoundedSemaphore",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "asyncio's synchronization primitives are not thread-safe, and their methods take no timeout argument; the docs point to asyncio.wait_for() for timeouts.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Synchronization Primitives: introduction",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Synchronization Primitives: introduction",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "In CPython 3.14's locks.py, an acquire() that has to wait puts a Future on the Semaphore's deque of waiters, and release() wakes the first waiter that is not done, so waiters get slots in first-in, first-out order.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Semaphore.acquire, release, _wake_up_next",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 source (Lib/asyncio, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Semaphore.acquire, release, _wake_up_next",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "asyncio.timeout(delay) returns an asynchronous context manager; if the work inside takes longer than delay seconds, it cancels the current task and turns the resulting CancelledError into a TimeoutError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: timeout()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: timeout()",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "That TimeoutError can only be caught outside the async with block.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: timeout() note",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: timeout() note",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "delay can be None for no limit; the deadline can be changed later with reschedule(), and expired() says whether the context manager exceeded its deadline.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: timeout(); class Timeout",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: timeout(); class Timeout",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "asyncio.timeout_at(when) is like asyncio.timeout(), except that when is the absolute time to stop waiting, measured on the event loop's clock.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: timeout_at(); class Timeout",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: timeout_at(); class Timeout",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "Timeout context managers can be safely nested; asyncio.timeout() and timeout_at() were added in Python 3.11.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: versionadded 3.11",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: versionadded 3.11",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "In CPython 3.14's timeouts.py, timeout(delay) creates Timeout(loop.time() + delay); entering it schedules a callback with loop.call_at() for that time, the callback calls the task's cancel(), and leaving the block cancels that timer.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "timeout(), Timeout.reschedule, Timeout._on_timeout",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 source (Lib/asyncio, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "timeout(), Timeout.reschedule, Timeout._on_timeout",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "wait_for(aw, timeout) cancels aw and raises TimeoutError when the timeout occurs, and it waits until aw is actually cancelled, so the total wait can exceed the timeout.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Timeouts: wait_for()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Timeouts: wait_for()",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "Since Python 3.12, wait_for() is implemented using asyncio.timeout(), and a coroutine passed to it is no longer wrapped in a Task when the timeout is positive.",
+   "sources": [
+    "s1",
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "wait_for(): versionchanged 3.12; tasks.py wait_for",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "wait_for(): versionchanged 3.12; tasks.py wait_for",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "wait_for(): versionchanged 3.12; tasks.py wait_for",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "wait_for(): versionchanged 3.12; tasks.py wait_for",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "Since Python 3.11, wait_for() raises the built-in TimeoutError, and asyncio.TimeoutError is a deprecated alias of it.",
+   "sources": [
+    "s1",
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "wait_for(): versionchanged 3.11; asyncio-exceptions TimeoutError",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "wait_for(): versionchanged 3.11; asyncio-exceptions TimeoutError",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "wait_for(): versionchanged 3.11; asyncio-exceptions TimeoutError",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "wait_for(): versionchanged 3.11; asyncio-exceptions TimeoutError",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "Python 3.11's release notes recommend asyncio.timeout() over using wait_for() directly in new code.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "asyncio: timeout() bullet",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "asyncio: timeout() bullet",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "The docs warn that TaskGroup and asyncio.timeout() are implemented with cancellation internally and might misbehave if a coroutine swallows CancelledError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "The docs recommend try/finally for clean-up, and say a caught CancelledError should generally be propagated once clean-up is complete.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task cancellation",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c56",
+   "text": "asyncio.wait() runs Tasks and Futures concurrently and returns two sets, (done, pending).",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Waiting primitives: wait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Waiting primitives: wait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c57",
+   "text": "wait() does not raise TimeoutError: tasks not done at the timeout are returned in the pending set, and unlike wait_for(), wait() does not cancel them.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "wait(): timeout paragraphs",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "wait(): timeout paragraphs",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c58",
+   "text": "return_when can be FIRST_COMPLETED, FIRST_EXCEPTION or ALL_COMPLETED, which is the default.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "wait(): return_when table",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "wait(): return_when table",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c59",
+   "text": "Since Python 3.11, passing coroutine objects to wait() directly is forbidden, and if wait() itself is cancelled, the futures it was given are not cancelled.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "wait(): versionchanged 3.11; cancelled paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "wait(): versionchanged 3.11; cancelled paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c65",
+   "text": "Python 3.13's release notes say that before this change, when two nested task groups both had a child task fail at the same time, the outer group could hang.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "asyncio: Improve the behavior of TaskGroup",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "asyncio: Improve the behavior of TaskGroup",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c66",
+   "text": "Python 3.13's release notes say that closing that coroutine prevents a RuntimeWarning about it never being awaited.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "asyncio: TaskGroup.create_task on an inactive TaskGroup",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 documentation source (Doc/*.rst, commit 6909287)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "asyncio: TaskGroup.create_task on an inactive TaskGroup",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c60",
+   "text": "HTTPX's connection pool defaults to max_connections=100 and max_keepalive_connections=20, with idle keep-alive connections expiring after 5 seconds.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Resource Limits",
+     "result": "supported",
+     "method": "verbatim read of the HTTPX documentation source (docs/advanced/*.md, commit b5addb6)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Resource Limits",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c61",
+   "text": "HTTPX raises a TimeoutException after 5 seconds of network inactivity by default, and has separate connect, read, write and pool timeouts; the pool timeout limits the wait for a connection from the pool and raises PoolTimeout.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Timeouts: intro; Fine tuning the configuration",
+     "result": "supported",
+     "method": "verbatim read of the HTTPX documentation source (docs/advanced/*.md, commit b5addb6)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Timeouts: intro; Fine tuning the configuration",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c62",
+   "text": "aiohttp's TCPConnector allows 100 simultaneous connections by default (limit=100) and has no per-host limit by default (limit_per_host=0).",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "TCPConnector: limit, limit_per_host",
+     "result": "supported",
+     "method": "verbatim read of the aiohttp documentation source (docs/*.rst, commit f4b1558)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "TCPConnector: limit, limit_per_host",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c63",
+   "text": "aiohttp's default timeout is a total of 300 seconds (5 minutes) for the whole operation.",
+   "sources": [
+    "s15",
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "ClientSession: timeout parameter; Quickstart: Timeouts",
+     "result": "supported",
+     "method": "verbatim read of the aiohttp documentation source (docs/*.rst, commit f4b1558)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "ClientSession: timeout parameter; Quickstart: Timeouts",
+     "result": "supported",
+     "method": "verbatim read of the aiohttp documentation source (docs/*.rst, commit f4b1558)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "ClientSession: timeout parameter; Quickstart: Timeouts",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "ClientSession: timeout parameter; Quickstart: Timeouts",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  },
+  {
+   "id": "c64",
+   "text": "aiohttp's connect timeout covers getting a connection from the pool, including waiting for a free connection when the pool limits are exceeded; it is not set (None) by default.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "ClientTimeout.connect",
+     "result": "supported",
+     "method": "verbatim read of the aiohttp documentation source (docs/*.rst, commit f4b1558)",
+     "at": "2026-10-14T00:40"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "ClientTimeout.connect",
+     "result": "supported",
+     "method": "fresh verbatim read of the release-tag copy on raw.githubusercontent.com (CPython v3.14.8 Doc/*.rst and Lib/asyncio; HTTPX 0.28.1 docs; aiohttp v3.14.5 docs); anchor phrases located with a script and each claim judged against the surrounding text. WebFetch of the rendered pages was not available in this session",
+     "at": "2026-10-14T04:26"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "asyncio.Semaphore is documented as fair (first-in, first-out).",
+   "reason": "the docs do not promise an order; the page states the first-in, first-out behaviour only as what CPython 3.14's locks.py does (c43), and the tests check it"
+  },
+  {
+   "text": "A TaskGroup can be stopped with a built-in cancel or stop method.",
+   "reason": "no such method in Python 3.14; the docs' own recipe (c23) is taught instead"
+  },
+  {
+   "text": "uvloop or eager tasks make the gateway faster.",
+   "reason": "the gateway's time is waiting on sellers; no source measures this workload, so the page makes no speed claim beyond the release-note figure (c37)"
+  }
+ ]
+}

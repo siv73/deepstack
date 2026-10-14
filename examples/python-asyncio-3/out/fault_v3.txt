@@ -1,0 +1,4 @@
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  200 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; failed: seller-c (SellerError: seller-c failed); missed: seller-e
