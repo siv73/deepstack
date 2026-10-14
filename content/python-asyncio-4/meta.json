@@ -36,7 +36,7 @@
    "slug": "python-asyncio-3"
   },
   {
-   "label": "Python async, Part 4: six traps that break async services",
+   "label": "Python async, Part 4: the six traps that break async services",
    "why": "this page: forgotten awaits, blocking calls (seller-e's sync SDK, CPU work), lost tasks, gather leaks, swallowed cancellation and silent timeouts, with debug mode and static checks to find them; gateway v5",
    "slug": "python-asyncio-4"
   },
