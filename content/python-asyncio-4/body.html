@@ -1029,7 +1029,7 @@
 <li>When a timeout and a TaskGroup both cancel the same Task, how does each know which cancellation is its own? The docs mention <code>uncancel()</code>; this page only said not to call it.</li>
 <li>Some work must finish even when the request is cancelled, such as sending a full batch of counts. How is that protected, and what does protecting it cost?</li>
 </ul>
-<h3>Next: Part 5 — Cancellation in depth</h3>
+<h3>Next: <a href="../python-asyncio-5/index.html">Part 5 — Cancellation in depth</a></h3>
 <p>Part 5 follows a cancellation from <code>Task.cancel()</code> to the end of the coroutine: what happens to seller-e at the deadline, cancellation counts and <code>uncancel()</code>, clean-up that is itself cancelled, and <code>asyncio.shield()</code> for work that must finish.</p>
 <div class="ts-note" data-label="Points to remember">
 <ul>

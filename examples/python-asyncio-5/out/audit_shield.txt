@@ -1,0 +1,8 @@
+-- 1. plain await: the shopper hangs up 10 ms into a 40 ms write --
+  handler cancelled=True; at 10 ms: rows=[]
+  at 60 ms: rows=0, lost=1
+-- 2. the write in an owned Task, awaited through shield() --
+  handler cancelled=True; at 10 ms: rows=[]
+  at 60 ms: rows=1, lost=0
+-- 3. shield(), but the process shuts down 10 ms into the write --
+  after asyncio.run returned: rows=0, lost=1

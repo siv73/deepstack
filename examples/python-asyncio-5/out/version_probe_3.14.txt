@@ -1,0 +1,5 @@
+Python 3.14
+1. cancel() then uncancel() before any await: the next await ran normally
+2. a refused cancel, then a failing TaskGroup: CancelledError at the next await after the group
+3. a shielded write fails after its caller left: asyncio reported ['ConnectionError exception in shielded future']
+4. a hang-up while a failing group cleans up: CancelledError at the audit write: the hang-up was kept

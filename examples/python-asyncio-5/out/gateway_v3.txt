@@ -1,0 +1,13 @@
+-- wait for every seller --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+  900 ms  seller-e answered 1,149
+cheapest: seller-e at 1,149 after 900 ms
+-- stop at the 250 ms budget --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; missed: seller-e

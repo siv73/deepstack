@@ -52,7 +52,7 @@ def test_meta_keeps_the_series_plan_and_links_all_four_pages():
         assert other[3].get("slug") == "python-asyncio-4"
     page3 = (CONTENT.parent / "python-asyncio-3" / "body.html").read_text()
     assert '<a href="../python-asyncio-4/index.html">' in page3
-    assert "Next: Part 5" in BODY and "python-asyncio-5/index.html" not in BODY  # page 5 does not exist yet
+    assert '<a href="../python-asyncio-5/index.html">Part 5' in BODY  # "Next: Part 5" links to page 5
 
 
 def test_every_example_program_with_output_is_on_the_page():

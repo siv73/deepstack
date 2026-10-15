@@ -1,0 +1,12 @@
+-- shopper-1 waits for the answer --
+   90 ms  seller-a answered 1,249
+  130 ms  seller-b answered 1,199
+  160 ms  seller-c answered 1,229
+  210 ms  seller-d answered 1,215
+shopper-1 got "seller-b 1199" after 280 ms
+-- shopper-2 hangs up at 100 ms --
+   80 ms  seller-a answered 1,249
+  120 ms  shopper-2's request ended: audit row written, 0 seller calls still waiting
+        seller-e's SDK thread ended at 250 ms: its own timeout, set from the deadline
+audit rows: ['shopper-1 kettle-1l: seller-b at 1,199 after 250 ms', 'shopper-2 kettle-1l: hung up after 100 ms']
+hang-ups counted: 1 | background failures: none

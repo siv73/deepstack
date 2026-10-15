@@ -38,7 +38,8 @@
   },
   {
    "label": "Python async, Part 5: cancellation in depth",
-   "why": "what really happens to seller-e at the deadline, shield, and cancellation bookkeeping"
+   "why": "what really happens to seller-e at the deadline, shield, and cancellation bookkeeping",
+   "slug": "python-asyncio-5"
   },
   {
    "label": "Python async, Part 6: bounding work: queues and backpressure",

@@ -1,0 +1,1253 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="9">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Gateway v5 from Part 4 answers seller-b at 1,199 in 250 ms with seller-e marked as timed out. It survives the six traps. But it only ever stops work for one reason, its own deadline. A shopper who closes the app at 100 ms is not a reason it knows about: the gateway goes on asking sellers for a shopper who is no longer there.</p>
+<h3>Introduction</h3>
+<p>This is Part 5 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Parts 1 to 4 are the prerequisites for this page. This part recaps them in one screen; if any line below is unfamiliar, read that part first.</p>
+<h3>What Parts 1 to 4 built</h3>
+<ol>
+<li>The five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149). The right answer within 250 ms is seller-b at 1,199, with seller-e missing.</li>
+<li>Part 1: one after another the waits add up to 1,450 ms; overlapped on one thread, 900 ms. A paused generator can be stopped from outside with <code>throw()</code> or <code>close()</code>, and its <code>finally</code> still runs.</li>
+<li>Part 2: asyncio's loop, Futures and Tasks. A Task drives its coroutine one step at a time with <code>send()</code> or <code>throw()</code>, parks it on a Future between steps, and is woken through a done callback scheduled with <code>call_soon</code>.</li>
+<li>Part 3: a TaskGroup owns the five seller calls, a Semaphore caps them, and one <code>timeout_at</code> deadline per request cuts them. A timeout is a timer that calls <code>Task.cancel()</code>.</li>
+<li>Part 4: six traps and their fixes, including the fifth: catching CancelledError and carrying on breaks every deadline above it. Gateway v5 adds seller-e's sync SDK in a thread pool of its own, ranking in a process pool, and per-seller counts sent by an owned background Task.</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>seller-e's thread runs to 900 ms after its call was cut at 250 ms. Nothing on the gateway's side can stop it.</li>
+<li>Part 4 only said "let CancelledError through". It never showed what happens inside a Task between <code>cancel()</code> and the end of its <code>finally</code>, or what a <code>finally</code> that awaits does.</li>
+<li>A timeout and a TaskGroup can both cancel the same Task. How each knows which cancellation is its own was left open.</li>
+<li>Some work must finish even when its request is cancelled. Part 4 had no tool for it.</li>
+</ul>
+<h3>What this page adds</h3>
+<p>Rungs 1 and 2 follow one cancellation from the moment it is asked for to the moment the Task is done, through the same Task stepping Part 2 traced for a result. Rung 3 builds gateway v6 on it. Two things change in the running system from this page on, and later pages keep them:</p>
+<ol>
+<li><strong>Shoppers reach the gateway over TCP, and the gateway notices when they hang up.</strong> A shopper sends one line, such as <code>shopper-1 kettle-1l</code>, and reads one line back. If the shopper closes the connection first, the gateway cancels everything the request started.</li>
+<li><strong>Every request leaves one audit row.</strong> An audit store, reached over the network, keeps one row per request: the answer given, or the time the shopper hung up. The write takes about 20 ms, and it must finish even if the request is cancelled while it runs.</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 5 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "one TCP connection", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "tg", "label": "Run together", "sub": "Part 3: group · cap · deadline", "col": 1, "row": 0},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2},
+ {"id": "sdk", "label": "SDK threads", "sub": "Part 4: seller-e's own pool", "col": 3, "row": 3},
+ {"id": "cpu", "label": "Process pool", "sub": "Part 4: ranking offers", "col": 1, "row": 3},
+ {"id": "met", "label": "Metrics service", "sub": "Part 4: counts per seller", "col": 0, "row": 0},
+ {"id": "watch", "label": "Hang-up watch", "sub": "Part 5: stops the request", "col": 3, "row": 0, "step": 4},
+ {"id": "audit", "label": "Audit store", "sub": "Part 5: one row per request", "col": 0, "row": 3, "step": 4}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "shopper-1 kettle-1l", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "tg", "label": "starts and bounds the calls", "step": 2},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 2},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 2},
+ {"from": "gw", "to": "sdk", "step": 3},
+ {"from": "sdk", "to": "se", "label": "sync SDK call", "step": 3},
+ {"from": "gw", "to": "cpu", "step": 3},
+ {"from": "gw", "to": "met", "label": "background flush", "step": 3},
+ {"from": "watch", "to": "gw", "label": "shopper left: cancel all", "step": 4, "dashed": true},
+ {"from": "gw", "to": "audit", "step": 4}],
+ "captions": [
+ "The request: the shopping app now sends one line over its own TCP connection, and the gateway asks sellers a to d over theirs.",
+ "Parts 2 and 3, unchanged: asyncio's loop runs the waits, and a TaskGroup, a shared cap and one deadline bound the seller calls.",
+ "Part 4, unchanged: seller-e is reached through its sync SDK in a pool of its own, ranking runs in processes, and counts go out in the background.",
+ "New on this page: a watcher Task notices when the shopper closes the connection and cancels the whole request, and every request writes one audit row through asyncio.shield()."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Step 1 is the request. The only change is that the shopper's request is now a line on a TCP connection that the shopper can close at any moment.</li>
+<li>Steps 2 and 3 are Parts 2, 3 and 4, unchanged. This page does not replace any of them; it decides how all of them stop.</li>
+<li>Step 4 highlights the two new pieces. The watcher reads the shopper's connection and cancels the request when it closes. The audit write is the one piece of work that must not be cancelled with it. Every other piece in the picture, seller calls, the SDK's thread, the ranking and the metrics, is something the cancellation has to reach or decide not to reach.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Part 4 already covered cancellation: let CancelledError through and clean up in finally."</p>
+<p><strong>Why it is wrong:</strong> that rule tells you what not to do inside a coroutine. It does not tell you when the exception arrives, what a cancelled Task looks like before it arrives, what a <code>finally</code> that awaits does, how a deadline tells its own cancel from a shopper's, or how to protect work that must finish. Each of those decides whether gateway v6 behaves, and each is measured on this page.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v5: a TaskGroup, a shared cap, one deadline, seller-e's SDK in its own threads; seller-b at 1,199 in 250 ms.</li>
+<li>Still broken: nothing stops when the shopper leaves; seller-e's thread runs to 900 ms; no way to protect work that must finish.</li>
+<li>New in the system: shoppers on TCP connections that can close, a hang-up watcher, and one audit row per request.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 5 keeps gateway v5 and teaches it to stop: when its deadline passes, when its shopper leaves, and for everything except the audit row that must survive both.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">This needs Part 3. In gateway v5, the 250 ms deadline cuts seller-e's call. Which piece of code actually calls <code>Task.cancel()</code> on seller-e's Task?</p>
+<ol>
+<li data-why="The TaskGroup cancels its other Tasks only when one of them fails with an exception; a timed-out seller is returned as a value, so the group never has to.">The TaskGroup, because seller-e failed</li>
+<li data-why="The loop never decides to cancel anything on its own; it only runs the callbacks it was given.">The event loop, because the Task ran too long</li>
+<li>A callback that <code>asyncio.timeout_at</code> scheduled for the deadline when the block was entered</li>
+</ol>
+<p class="ts-why">Part 3 opened the timeout: entering the block puts one timer on the heap, and when it is due the timer's callback calls <code>cancel()</code> on the current Task. This page follows what that call does next.</p>
+</div>
+</section>
+<section class="ts-part" id="stopping-is-the-job" data-rung="1" data-min="11">
+<h2>Starting Tasks is easy; stopping them is the job</h2>
+<p class="ts-bridge">Last part: Part 5 teaches the gateway to stop. Still unsolved: is stopping worth a whole page? What does it cost when the gateway does not stop?</p>
+<p class="ts-problem">A shopper on a slow train opens the app, asks for the kettle's price, and closes the app 100 ms later. Gateway v5, behind a plain TCP server, does not notice. It asks all five sellers, ranks the offers, records the counts, and writes an answer to a connection nobody is reading.</p>
+<h3>Introduction</h3>
+<p>Parts 1 to 4 were about starting work: overlapping waits, running calls together, capping them. Each of those tools makes it cheap to start more work. None of them stops work by itself. A Task runs until its coroutine returns, raises, or is cancelled, and in asyncio only one of those three is under the control of whoever started it. This part measures what gateway v5 does after its shopper has gone.</p>
+<h3>Comparison</h3>
+<p>Consider ordering a meal by phone, then calling back two minutes later to cancel. A good restaurant tells the kitchen at once: the cook stops, the half-chopped onions go to the next order, and the delivery rider is not sent. A bad one takes the cancellation at the till and tells nobody; the meal is cooked, packed and driven to an empty house.</p>
+<ul>
+<li>The phone call to cancel = the shopper closing the connection.</li>
+<li>Telling the kitchen = cancelling the request's Tasks.</li>
+<li>The cook stopping at the next natural pause = a coroutine stopping at its next <code>await</code>.</li>
+<li>The meal already in the oven = work in a thread or at a seller, which a cancellation cannot reach.</li>
+</ul>
+<p>The comparison stops working here: a cook who is told to stop can stop mid-chop. A coroutine can only be stopped at an <code>await</code>, and the coroutine itself decides what to do when the request to stop arrives.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="Asking running work to stop because its result is no longer wanted; in asyncio, a request to a Task, delivered into its coroutine as a CancelledError at an await.">Cancellation</dfn> is stopping work whose result is no longer wanted. In asyncio it is a request made to a Task with <code>Task.cancel()</code>, which the Task delivers into its coroutine as a CancelledError exception. A <dfn data-def="The reason a request's work should stop: its deadline passing, its client leaving, a sibling call failing, or the process shutting down.">stop reason</dfn> is why the work is no longer wanted: the deadline passed, the client left, a sibling call failed, or the process is shutting down.</p>
+</div>
+<p>Gateway v5 knows two stop reasons: its own deadline (Part 3) and a seller call that fails with a bug (the TaskGroup, Part 3). This page adds the third, the shopper leaving, and the hardest one of all: the work that must finish even when everything else stops.</p>
+<h3>Program</h3>
+<p>The program puts gateway v5 behind a plain TCP server. A shopper sends one request line and hangs up 100 ms later. The server never reads from the connection again, so it never learns that the shopper left.</p>
+<div class="ts-code" data-lang="python" data-title="hangup_cost.py" data-file="hangup_cost.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/hangup_cost.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>Deaf</code> is gateway v6, which this page builds, with its two new behaviours switched back to gateway v5's: nobody watches the shopper's connection, and seller-e's SDK keeps its own 5-second timeout. Its <code>serve()</code> reads one line, computes the answer and writes it.</li>
+<li>The shopper hangs up at 100 ms. Every line after that is work for nobody: seller-b, seller-c and seller-d answer at 120 to 210 ms, the answer is ready at 270 ms, and it is written to a closed connection.</li>
+<li>seller-e's SDK thread is busy until about 900 ms. That thread belongs to a pool of four (Part 4), so for 800 ms a quarter of seller-e's capacity served a shopper who had gone.</li>
+<li>Times on real sockets vary by a few milliseconds; the tests accept any run within 60 ms of this one.</li>
+</ol>
+<h3>Solved example: the cost of one hang-up</h3>
+<p><strong>Given:</strong> the run above. The shopper left at 100 ms.</p>
+<p><strong>Step 1. Seller connections open after the hang-up.</strong> seller-b from 100 to 120 ms (20 ms), seller-c to 150 ms (50 ms), seller-d to 200 ms (100 ms), and the wait for seller-e until the 250 ms deadline (150 ms). Total: 20 + 50 + 100 + 150 = 320 ms of open connections.</p>
+<p><strong>Step 2. Thread time after the hang-up.</strong> seller-e's thread from 100 to 900 ms: 800 ms.</p>
+<p><strong>Step 3. At 10 times Part 1's load.</strong> Suppose 2,000 requests per second, and 1 shopper in 10 hangs up at about 100 ms: 200 hang-ups per second. Open connections for nobody, on average: 200 × 0.32 = 64. seller-e's threads: 200 × 0.8 = 160 thread-seconds of work wanted every second, against a pool that has 4 threads, so the pool is full of abandoned calls and every live request's seller-e call waits in its queue.</p>
+<p><strong>Result:</strong> a request that nobody wants keeps 0.32 connection-seconds and 0.8 thread-seconds busy. At 10 times the load that is 64 connections and a permanently full seller-e pool, spent entirely on shoppers who have gone.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "When the client disconnects, the server notices and stops the handler."</p>
+<p><strong>Why people hold it:</strong> some frameworks do exactly that, and a closed connection feels like something the server must see.</p>
+<p><strong>Why it is wrong:</strong> handler code learns that the shopper left only by reading the connection, or later when a write to it fails. The program above never reads again after the request line, so its code learns nothing, and at 270 ms it writes the answer into a connection nobody reads. Noticing a hang-up is code someone has to write, and stopping the work afterwards is more code.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Cancellation is stopping work whose result is no longer wanted; in asyncio, a request to a Task delivered as CancelledError.</li>
+<li>Gateway v5 stops for its deadline and for a failing sibling, never for a shopper who leaves.</li>
+<li>One hang-up at 100 ms costs 320 ms of open seller connections and 800 ms of seller-e's thread.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Every tool so far makes starting work cheap; a gateway that cannot stop work its shopper no longer wants pays for every hang-up in connections and threads.</p>
+<div class="ts-explain" data-points="The server never reads the connection again, so it never learns that the shopper left|Every seller call, the ranking and the metrics still run, for nobody|seller-e's thread is held until 900 ms, a quarter of its pool|At 10 times the load the waste becomes tens of connections and a full pool">
+<p class="q">In your own words: what does gateway v5 do after a shopper hangs up at 100 ms, and why does it matter at 2,000 requests per second?</p>
+<div class="ts-model"><p>Nothing reads the shopper's connection after the request line, so the gateway never learns the shopper left. It keeps waiting on sellers b, c and d, waits for seller-e until the deadline, ranks the offers, records the counts and writes the answer to a closed socket at 270 ms, while seller-e's thread stays busy until 900 ms. That is 0.32 connection-seconds and 0.8 thread-seconds per abandoned request. If 200 shoppers a second hang up, about 64 seller connections are open for nobody at any moment and seller-e's 4-thread pool is permanently full of abandoned calls.</p></div>
+</div>
+</section>
+<section class="ts-part" id="cancel-is-a-request" data-rung="2" data-min="11">
+<h2>cancel() asks; it does not stop anything</h2>
+<p class="ts-bridge">Last part: a gateway that cannot stop pays for every hang-up. Still unsolved: when code calls <code>task.cancel()</code>, what has actually happened by the time the call returns?</p>
+<p class="ts-problem">An engineer adds <code>task.cancel()</code> for seller-e at the deadline, then on the next line logs "seller-e stopped" and releases seller-e's slot in the cap. The log is wrong, and the slot is released while seller-e's coroutine is still parked in its <code>await</code>, holding its connection.</p>
+<h3>Introduction</h3>
+<p>Part 3 said a timeout is a timer that calls <code>Task.cancel()</code>. This part looks at that one call: what it returns, what it changes inside the Task, and what it leaves for later. The short answer is in the title. The long answer decides how every later part of this page works.</p>
+<h3>Comparison</h3>
+<p>A manager emails a colleague: "please drop the report you are writing". Sending the email takes a second and succeeds at once. The colleague reads it when they next look up from the keyboard, and then decides what to do: save the draft and stop, or reply "almost done, finishing it".</p>
+<ul>
+<li>Sending the email = <code>task.cancel()</code>, which returns True at once.</li>
+<li>The colleague looking up = the coroutine reaching its next <code>await</code>.</li>
+<li>Saving the draft and stopping = a <code>finally</code> block, then letting CancelledError out.</li>
+<li>"Almost done, finishing it" = a coroutine that catches CancelledError and carries on.</li>
+</ul>
+<p>The comparison stops working here: the colleague might ignore the email for an hour. A parked coroutine receives the request in the very next turn of the loop; the delay is only as long as the step that is running.</p>
+<h3>Definitions</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="A request made with Task.cancel() that has been accepted but not yet delivered into the coroutine; the Task is not done and not cancelled yet.">pending cancellation</dfn> is a cancel request the Task has accepted but not yet delivered into its coroutine. <span class="ts-claim" data-claim="c1" data-src="s1">Task.cancel() arranges for a CancelledError to be thrown into the wrapped coroutine on the next cycle of the event loop, and returns False if the Task is already done or cancelled, True otherwise.</span></p>
+</div>
+<p><span class="ts-claim" data-claim="c2" data-src="s1">The docs say that, unlike Future.cancel(), Task.cancel() does not guarantee that the Task will be cancelled, because the coroutine can suppress the exception; suppressing it completely is not common and is actively discouraged.</span> <span class="ts-claim" data-claim="c4" data-src="s1">The docs call a Task cancelled when cancellation was requested with cancel() and the wrapped coroutine propagated the CancelledError thrown into it.</span> So "cancelled" is a state the coroutine reaches by letting the exception out, not a state <code>cancel()</code> sets.</p>
+<h3>Working: what cancel() does, in CPython 3.14's tasks.py</h3>
+<ol class="ts-steps">
+<li><strong>Refuse if finished.</strong> A Task that is already done returns False and nothing changes.</li>
+<li><strong>Count the request.</strong> <span class="ts-claim" data-claim="c3" data-src="s2">In CPython 3.14's tasks.py, Task.cancel() adds one to the Task's count of cancellation requests, cancels the Future the Task is waiting on if there is one and that succeeds, and otherwise sets a flag so that its next step throws CancelledError in.</span> The count is the subject of the bookkeeping parts later on this page.</li>
+<li><strong>Return True.</strong> Nothing of the coroutine has run. The Task is not done, and <code>cancelled()</code> is still False.</li>
+<li><strong>Deliver later.</strong> In a later turn of the loop the Task takes a step that throws CancelledError into the coroutine. The next part traces that step.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: a finished Task has a result or an exception already; cancelling it would erase an outcome someone may still read.</li>
+<li>Step 2: counting, instead of a yes/no flag, lets several parties cancel the same Task and later take back only their own request.</li>
+<li>Steps 3 and 4: the caller of <code>cancel()</code> is itself running on the loop's only thread. The coroutine it cancels cannot run until the caller gives the thread back.</li>
+</ul>
+<h3>Program</h3>
+<p>The program parks a coroutine standing in for seller-e on a 900 ms sleep, cancels it at 250 ms, and prints the Task's state right after <code>cancel()</code> and again one turn of the loop later.</p>
+<div class="ts-code" data-lang="python" data-title="cancel_request.py" data-file="cancel_request.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/cancel_request.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>cancel()</code> returns True. Right after it, the Task is not done and not cancelled, and its count of requests is 1. The <code>finally</code> has not run.</li>
+<li><code>await asyncio.sleep(0)</code> gives the loop one turn. During that turn the Task's next step throws CancelledError in, the <code>finally</code> prints, and the exception leaves the coroutine.</li>
+<li>One turn later the Task is done and cancelled. The count stays at 1: a finished Task keeps its record.</li>
+<li>A second <code>cancel()</code> returns False: the Task is already done.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> the engineer's code from the problem, cancelling seller-e at 250 ms and releasing its slot on the next line.</p>
+<p><strong>Step 1.</strong> At 250 ms, <code>cancel()</code> returns True. seller-e's coroutine is still parked on its read, with its connection open.</p>
+<p><strong>Step 2.</strong> The next line releases the slot. Another call takes it at once, so for one turn of the loop the cap of calls in flight is exceeded by one.</p>
+<p><strong>Step 3.</strong> In the next turn, seller-e's coroutine receives CancelledError, its <code>finally</code> closes the connection, and its <code>async with</code> releases the slot a second time.</p>
+<p><strong>Result:</strong> the cap is now one too high for good. This is why gateway v4 never releases anything by hand after a cancel: the <code>async with</code> inside the cancelled coroutine releases its own slot, exactly once, when the CancelledError passes through it.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>cancel()</code> returned True, so the Task has stopped."</p>
+<p><strong>Why it is wrong:</strong> True means the request was accepted. The program shows the Task not done and not cancelled right after <code>cancel()</code>. It stops, if it stops at all, in a later turn of the loop, after its clean-up, and only if its coroutine lets CancelledError out.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>cancel()</code> returns True if the request was accepted, False if the Task was already done.</li>
+<li>It counts the request and cancels the Future the Task waits on; the coroutine sees nothing yet.</li>
+<li>The Task is cancelled only after the coroutine lets the CancelledError out.</li>
+</ul>
+</div>
+<p class="ts-takeaway"><code>cancel()</code> only records a request and arranges for it to be delivered; the Task stops later, at the coroutine's next await, and only if the coroutine agrees.</p>
+<div class="ts-predict" data-claims="c1 c4">
+<p class="q">A Task is parked on <code>await asyncio.sleep(10)</code>. Code calls <code>t.cancel()</code> and, on the very next line, without any <code>await</code> in between, prints <code>t.done()</code> and <code>t.cancelled()</code>. What does it print?</p>
+<div class="ts-reveal"><p><code>False False</code>. The request is recorded and the Future the Task waits on is cancelled, but the Task's coroutine has not run: the code that called <code>cancel()</code> still holds the loop's only thread. Only after that code reaches an <code>await</code> can the Task take the step that throws CancelledError in, and only once the coroutine lets the exception out is the Task done and cancelled.</p></div>
+</div>
+</section>
+<section class="ts-part" id="where-the-error-comes-from" data-rung="2" data-min="15">
+<h2>Where the CancelledError comes from: Part 2's Task steps, with a cancel</h2>
+<p class="ts-bridge">Last part: <code>cancel()</code> records a request and returns. Still unsolved: who turns that request into an exception inside the coroutine, at which line, and when?</p>
+<p class="ts-problem">seller-e's coroutine is parked in <code>await reader.readline()</code>. At 250 ms the deadline timer calls <code>cancel()</code>. The coroutine's <code>finally</code> must run at that <code>await</code> line, in this request's Task, before the TaskGroup can report the request as done. Three objects from Part 2 make that happen: the Future the coroutine waits on, the Task's wake-up callback, and the loop's ready queue.</p>
+<h3>Introduction</h3>
+<p>Part 2 traced a Task through two steps with a result: the coroutine parks on a Future, a timer fills the Future, the Task's wake-up is queued with <code>call_soon</code>, and the next step resumes the coroutine with <code>send()</code>. A cancel uses the same path, with one difference at each end: the Future is cancelled instead of filled, and the next step uses <code>throw()</code> instead of <code>send()</code>. This part traces it with the same printing Future Part 2 used.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Park.</strong> As in Part 2, the coroutine awaits a Future, the Future travels up to the Task, and the Task adds its wake-up to the Future as a done callback.</li>
+<li><strong>Cancel the Future.</strong> The deadline timer calls <code>task.cancel("deadline")</code>, which cancels the Future the Task is parked on (last part, step 2).</li>
+<li><strong>Queue the wake-up.</strong> <span class="ts-claim" data-claim="c5" data-src="s5">In CPython 3.14's futures.py, cancelling a pending Future marks it cancelled and schedules each of its done callbacks with call_soon.</span> The Task's wake-up is now in the ready queue.</li>
+<li><strong>Turn the cancelled Future into an exception.</strong> <span class="ts-claim" data-claim="c6" data-src="s2">In CPython 3.14's tasks.py, the Task's wake-up reads the Future's result; if that raises, as it does with CancelledError for a cancelled Future, the next step throws the exception into the coroutine with coro.throw().</span></li>
+<li><strong>Clean up.</strong> The exception appears at the <code>await</code> line where the coroutine is parked. Its <code>except</code> and <code>finally</code> blocks run.</li>
+<li><strong>Finish as cancelled.</strong> <span class="ts-claim" data-claim="c7" data-src="s2">In CPython 3.14's tasks.py, a step that ends with CancelledError leaving the coroutine cancels the Task; a coroutine that returns while a cancel has been requested but not yet thrown in also leaves the Task cancelled, not finished with its result.</span> The Task's own done callbacks, such as a TaskGroup's, are then scheduled like any Future's.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Steps 2 and 3: the Task does not need a second way to be woken. Cancelling the Future it waits on reuses the wake-up it already left there.</li>
+<li>Step 4: the exception is raised by reading the Future's result, exactly as an error set on the Future would be, so both reach the coroutine the same way.</li>
+<li>Step 5: <code>throw()</code> raises the exception at the line where the coroutine paused, which is where its <code>try</code> blocks are. Part 1's generators taught this with <code>gen.throw()</code>.</li>
+<li>Step 6: marking the Task cancelled only after the coroutine lets the exception out is what makes <code>cancelled()</code> honest.</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="A cancel at the deadline, through the Task's steps">
+<script type="application/json">
+{"actors": [
+ {"id": "loop", "label": "Loop", "sub": "ready queue + timers"},
+ {"id": "task", "label": "Task", "sub": "seller-e"},
+ {"id": "coro", "label": "Coroutine", "sub": "ask_seller_e()"},
+ {"id": "fut", "label": "Future", "sub": "the reader's waiter"}],
+ "steps": [
+ {"from": "coro", "to": "task", "label": "yields the Future", "dashed": true, "note": "As in Part 2: the coroutine awaits the Future and it travels up to the Task."},
+ {"from": "task", "to": "fut", "label": "add_done_callback(wake-up)", "note": "The Task leaves its wake-up on the Future. The step ends; the loop runs other work."},
+ {"from": "loop", "to": "task", "label": "timer at 250 ms: cancel('deadline')", "note": "The deadline's timer callback asks the Task to cancel. The Task counts the request."},
+ {"from": "task", "to": "fut", "label": "cancel('deadline')", "note": "The Task cancels the Future it is parked on. cancel() then returns True to the timer."},
+ {"from": "fut", "to": "loop", "label": "call_soon(wake-up)", "dashed": true, "note": "Cancelling the Future schedules its done callbacks. The wake-up waits in the ready queue."},
+ {"from": "loop", "to": "task", "label": "run wake-up, next step", "note": "Next iteration: the wake-up reads the Future's result, which raises CancelledError."},
+ {"from": "task", "to": "coro", "label": "throw(CancelledError)", "note": "The step throws the exception in at the await line. except and finally blocks run there."},
+ {"from": "coro", "to": "task", "label": "CancelledError escapes", "dashed": true, "note": "The coroutine lets it out. The Task marks itself cancelled and schedules its own done callbacks."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 and 2 are Part 2's first step, unchanged. The Task is parked; nothing about it says it will ever be cancelled.</li>
+<li>Steps 3 and 4 happen inside one callback, the timer's. When <code>cancel()</code> returns, the Future is cancelled and the wake-up is queued, but the coroutine has not run.</li>
+<li>Step 5 is the same <code>call_soon</code> that delivered seller-b's 1,199 in Part 2. Cancelling is filling the Future with "cancelled" instead of a price.</li>
+<li>Steps 6 to 8 are the Task's second step. The only difference from Part 2's second step is <code>throw()</code> instead of <code>send()</code>.</li>
+</ol>
+<h3>Program 1: the trace</h3>
+<p>The program is Part 2's <code>task_steps.py</code> with a deadline. Its <code>LoudFuture</code> also prints when it is cancelled.</p>
+<div class="ts-code" data-lang="python" data-title="cancel_trace.py" data-file="cancel_trace.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/cancel_trace.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>At 0 ms the coroutine parks and the Future reports the wake-up being added: steps 1 and 2.</li>
+<li>At 250 ms the Future reports <code>cancel()</code> before the timer prints that <code>task.cancel()</code> returned True: the Future is cancelled inside <code>task.cancel()</code>. Right after, the Task is not done and its count is 1.</li>
+<li>Then, in the next iteration, the exception arrives at the <code>await</code>, carrying the message <code>'deadline'</code>, and the <code>finally</code> runs. <span class="ts-claim" data-claim="c8" data-src="s1">The msg passed to cancel() has been propagated from the cancelled Task to its awaiter since Python 3.11.</span> A message such as <code>"deadline"</code> or <code>"shopper hung up"</code> is the cheapest way to make a cancellation's stop reason visible in logs.</li>
+</ol>
+<h3>Program 2: three places a cancel can land</h3>
+<p>The trace showed the usual case, a Task parked on a Future. Two other cases follow from step 2 of the last part, where <code>cancel()</code> finds no Future to cancel and sets a flag instead.</p>
+<div class="ts-code" data-lang="python" data-title="where_cancel_lands.py" data-file="where_cancel_lands.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/where_cancel_lands.txt" data-verified="ran"></div>
+<h3>Solved example</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>When cancel() is called</th><th>What cancel() does</th><th>Where CancelledError appears</th><th>What runs</th></tr></thead>
+<tbody>
+<tr><td>1. The Task is parked at an <code>await</code></td><td>Cancels the Future it waits on</td><td>At that <code>await</code>, in the next iteration</td><td>The code before the <code>await</code> already ran; <code>except</code> and <code>finally</code> run</td></tr>
+<tr><td>2. The Task was created but has not taken its first step</td><td>Sets the flag; the first step is already queued</td><td>Thrown in before the first line of the body</td><td>Nothing of the body, not even its <code>try</code></td></tr>
+<tr><td>3. The Task is running (it cancels itself, as a TaskGroup does to its parent)</td><td>Sets the flag</td><td>At its next <code>await</code>; if it returns first, the Task ends cancelled and the return value is dropped</td><td>All the code up to that point</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the program's three lines match the three rows. In case 2 the log is empty: a request cancelled before its first step never opens a connection, so there is nothing to clean up. In case 3 the coroutine ran to its <code>return</code>, yet the Task is cancelled.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>cancel()</code> interrupts the coroutine wherever it is, like a signal."</p>
+<p><strong>Why it is wrong:</strong> the coroutine is never running when another piece of code calls <code>cancel()</code> on it: the loop has one thread, and the caller is using it. The exception can only arrive when the Task next takes a step, which starts at an <code>await</code> (or before the first line). Code between two awaits always runs to the next <code>await</code>.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>cancel() cancels the Future the Task waits on; that schedules the Task's wake-up with call_soon.</li>
+<li>The wake-up reads the cancelled Future, and the next step throws CancelledError in at the <code>await</code>.</li>
+<li>Cancelled before the first step: the body never runs. Cancelled while running: the next <code>await</code>, or a cancelled Task even if it returns.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A cancel travels the same road as a result in Part 2: the Future it waits on is cancelled, the wake-up is queued, and the next step throws CancelledError in at the await.</p>
+<div class="ts-order" data-claims="c3 c5 c6 c7">
+<p class="q">Put the cancellation of seller-e's parked Task in order.</p>
+<ol>
+<li>The deadline's timer calls <code>task.cancel()</code>, which counts the request</li>
+<li>The Task cancels the Future it is parked on</li>
+<li>Cancelling the Future schedules the Task's wake-up with <code>call_soon</code></li>
+<li>In the next iteration the wake-up reads the Future's result, which raises CancelledError</li>
+<li>The next step throws CancelledError in at the <code>await</code>; <code>finally</code> runs</li>
+<li>CancelledError leaves the coroutine and the Task marks itself cancelled</li>
+</ol>
+<p class="ts-why">Everything up to the queued wake-up happens inside the timer's callback; the rest happens in the Task's next step, one iteration later.</p>
+</div>
+<div class="ts-explain" data-points="cancel() cancels the Future the parked Task waits on|Cancelling the Future schedules the Task's wake-up with call_soon, as filling it would|The wake-up reads the cancelled Future, and the step throws CancelledError in with throw()|The Task is cancelled only when the exception leaves the coroutine">
+<p class="q">In your own words: how does a <code>cancel()</code> called from a timer become an exception at seller-e's <code>await reader.readline()</code>?</p>
+<div class="ts-model"><p>The timer's callback calls cancel(), which counts the request and cancels the Future seller-e's Task is parked on. Cancelling that Future schedules its done callbacks with call_soon, and one of them is the Task's wake-up. In the next iteration the wake-up reads the Future's result, which raises CancelledError, and the Task's next step throws that exception into the coroutine at the await where it paused. The coroutine's finally closes the connection, the exception leaves the coroutine, and only then does the Task mark itself cancelled.</p></div>
+</div>
+</section>
+<section class="ts-part" id="finally-cleanup" data-rung="2" data-min="11">
+<h2>Clean-up in finally: it runs, it may await, and a second cancel cuts it short</h2>
+<p class="ts-bridge">Last part: CancelledError is thrown in at the <code>await</code> where the Task is parked. Still unsolved: what can the code that catches it, or the <code>finally</code> it passes through, safely do?</p>
+<p class="ts-problem">seller-e's coroutine is cancelled at 250 ms. Its <code>finally</code> calls <code>writer.close()</code> and then <code>await writer.wait_closed()</code>, which on a slow network takes 20 ms. Is that second line allowed in a coroutine that has just been cancelled, and will it be cancelled too?</p>
+<h3>Introduction</h3>
+<p>Every seller call since Part 2 closes its connection in a <code>finally</code>, and that <code>finally</code> awaits. Part 4's rule was "clean up in finally and let the exception travel". This part shows exactly what that clean-up gets: how long it may take, what can interrupt it, and why the rule says "let it travel" rather than "never catch it".</p>
+<h3>Definitions</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="Code that releases what a coroutine holds (connections, slots, locks, temporary files) and runs on success, on failure and on cancellation, normally in a finally block.">Clean-up</dfn> is the code that releases what a coroutine holds, such as connections, slots and locks, whichever way it ends. <span class="ts-claim" data-claim="c9" data-src="s1">The docs recommend try/finally blocks to perform clean-up, and say that a CancelledError that is explicitly caught should generally be propagated when clean-up is complete.</span> <span class="ts-claim" data-claim="c10" data-src="s8">The exceptions reference says CancelledError can be caught to perform custom operations when Tasks are cancelled, that in almost all situations it must be re-raised, and that it is a subclass of BaseException rather than Exception since Python 3.8.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>The exception arrives</strong> at the <code>await</code>, as traced in the last part. The cancel request has now been delivered.</li>
+<li><strong>An <code>except CancelledError</code> block may run</strong>, to log the stop reason or record a metric, and then ends with a bare <code>raise</code>.</li>
+<li><strong>The <code>finally</code> block runs.</strong> It may contain <code>await</code>: the Task keeps stepping normally, because the request was delivered once and nothing has asked again.</li>
+<li><strong>A second <code>cancel()</code></strong>, if one comes while the clean-up is waiting, is delivered at that clean-up's <code>await</code>, and the rest of the <code>finally</code> is skipped.</li>
+<li><strong>The exception leaves the coroutine</strong> and the Task ends cancelled.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: catching to log is fine; the bare <code>raise</code> is what keeps the deadline and the TaskGroup working (Part 4, trap 5).</li>
+<li>Step 3: an awaiting clean-up is allowed and common. Its cost is time: whoever waits for this Task waits for the clean-up too.</li>
+<li>Step 4: clean-up is not protected. Anything that must finish whatever happens needs a different tool, which rung 3 builds.</li>
+</ul>
+<h3>Program</h3>
+<p>The program cancels a coroutine standing in for seller-e at 250 ms. Its <code>finally</code> awaits 20 ms to close the connection. The second run cancels it again at 260 ms, in the middle of that clean-up.</p>
+<div class="ts-code" data-lang="python" data-title="cleanup.py" data-file="cleanup.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/cleanup.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>One cancel: the <code>except</code> logs and re-raises at 250 ms, the <code>finally</code> starts closing at 250 ms and finishes at 270 ms, and only then is the Task done. The await inside <code>finally</code> was not cancelled.</li>
+<li>Two cancels: the second arrives at 260 ms, at the clean-up's own <code>await</code>. "connection closed" is never printed, and the Task is done at 260 ms.</li>
+<li><code>asyncio.wait([task])</code> waits for the Task without awaiting it directly, so the CancelledError stays inside the Task instead of being raised into <code>run()</code>. Part 3 showed that <code>wait()</code> raises nothing.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> gateway v5's seller calls, each closing its connection in <code>finally</code> with <code>await writer.wait_closed()</code>, cut by the 250 ms deadline inside a TaskGroup.</p>
+<p><strong>Step 1.</strong> At 250 ms seller-e's call receives CancelledError at its <code>readline()</code>.</p>
+<p><strong>Step 2.</strong> Its <code>finally</code> awaits the close. On a local connection that is quick; on a congested network, or with a clean-up that talks to the seller, it can take much longer.</p>
+<p><strong>Step 3.</strong> The TaskGroup waits for every Task to be done, including this one's clean-up, so the request answers at 250 ms plus the close time.</p>
+<p><strong>Result:</strong> a clean-up that awaits is safe and correct, and its time is added to the answer. A clean-up that awaits something slow is the fourth rung's subject: the deadline fires on time and the answer is still late.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A cancelled coroutine cannot await anything; every await after the cancel raises CancelledError again."</p>
+<p><strong>Why it is wrong:</strong> a cancel request is delivered once. After that, the coroutine's awaits behave normally, as the 20 ms close in the program shows, until someone calls <code>cancel()</code> again. The opposite belief is just as wrong: clean-up is not shielded, and a second cancel cuts it short.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Clean-up goes in <code>finally</code>; an <code>except CancelledError</code> that logs must end with <code>raise</code>.</li>
+<li>Clean-up may await; it is not re-cancelled unless <code>cancel()</code> is called again.</li>
+<li>A second cancel interrupts the clean-up at its <code>await</code>; whoever waits for the Task also waits for its clean-up.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Clean-up in finally runs after a cancel and may await normally, but it costs the waiter its full duration and a second cancel can cut it off.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The program's <code>finally</code> is changed to await 50 ms instead of 20 ms, and the second cancel still comes at 260 ms. At what time is the Task done, and is "connection closed" printed?</p>
+<div class="ts-reveal"><p>Done at 260 ms, and "connection closed" is not printed. The first cancel is delivered at 250 ms and the clean-up starts its 50 ms wait, which would end at 300 ms. The second cancel at 260 ms is delivered at that wait, the rest of the <code>finally</code> is skipped, and the CancelledError leaves the coroutine at 260 ms.</p></div>
+</div>
+</section>
+<section class="ts-part" id="counting-cancels" data-rung="2" data-min="11">
+<h2>Who asked? The count of cancel requests: cancelling() and uncancel()</h2>
+<p class="ts-bridge">Last part: clean-up runs after a cancel and may await. Still unsolved: in gateway v6 three different parties can cancel the same request Task. How does each one later find out whether a cancellation was its own?</p>
+<p class="ts-problem">At 250 ms the deadline fires. In the same turn of the loop the shopper hangs up, and the hang-up watcher cancels the request too. The deadline must not answer "seller-e timed out, here is seller-b at 1,199" to a shopper who has gone; it must let the shopper's cancellation through. To decide, it needs to know that someone else asked as well.</p>
+<h3>Introduction</h3>
+<p>A yes/no flag cannot answer "was anyone else asking?". Since Python 3.11 every Task keeps a count instead: each <code>cancel()</code> adds one, and a party that cancelled and then handled its own cancellation takes one away. This part defines the count and the two methods that read and lower it. The next two parts show how <code>asyncio.timeout</code> and TaskGroup use them.</p>
+<h3>Comparison</h3>
+<p>A meeting room has a "please leave" counter on the door. Each person who needs the room presses it once. When one of them gets what they wanted, they press "undo" once. Whoever is inside checks the counter on their way out: if it is back to zero, the requests have all been dealt with; if it is still above zero, someone else is still waiting for the room.</p>
+<ul>
+<li>Pressing the counter = <code>cancel()</code>.</li>
+<li>Undo = <code>uncancel()</code>.</li>
+<li>Reading the counter = <code>cancelling()</code>.</li>
+</ul>
+<p>The comparison stops working here: the counter does not record who pressed it. Each party must remember for itself what the count was before it pressed.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c11" data-src="s1"><dfn data-def="Task.cancelling(): how many cancel requests are pending for a Task, the number of cancel() calls less the number of uncancel() calls.">Task.cancelling()</dfn> returns the number of pending cancellation requests to the Task: the number of cancel() calls less the number of uncancel() calls.</span></li>
+<li><span class="ts-claim" data-claim="c12" data-src="s1 s7"><dfn data-def="Task.uncancel(): lowers a Task's count of cancel requests by one and returns what is left; used by asyncio's timeouts and TaskGroups to take back their own request.">Task.uncancel()</dfn> decrements that count and returns the remaining number; cancelling() and uncancel() were added in Python 3.11, mainly for asyncio's own use, notably by TaskGroup, and are not expected in end-user code.</span></li>
+<li><span class="ts-claim" data-claim="c13" data-src="s1 s6">Since Python 3.13, when uncancel() brings the count down to zero, a CancelledError that an earlier cancel() arranged but that has not yet been thrown into the Task is withdrawn.</span></li>
+</ol>
+<p><span class="ts-claim" data-claim="c14" data-src="s1">The docs say that code which suppresses cancellation by catching CancelledError needs to call uncancel() to remove the cancellation state.</span> Rung 4 shows what happens when it does not.</p>
+<h3>Working: the rule every user of the count follows</h3>
+<ol class="ts-steps">
+<li><strong>Remember the count</strong> when you start the work you may cancel.</li>
+<li><strong>Cancel</strong> when your reason to stop arrives. The count goes up by one.</li>
+<li><strong>Take your request back</strong> with <code>uncancel()</code> once your cancellation has done its job, that is, once the CancelledError has reached your code.</li>
+<li><strong>Compare.</strong> If the count is back to what you remembered, the cancellation was yours alone: handle it, for example by raising TimeoutError. If it is higher, someone else also asked: let CancelledError travel on.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: the Task may already carry requests from outside when you start; only the difference is yours.</li>
+<li>Step 3: without taking your request back, the count stays raised after you have handled it, and the next party to compare will believe an outside request is still waiting.</li>
+<li>Step 4: this comparison is the whole point of counting. It is how a deadline avoids reporting "timed out" for a request whose shopper has gone.</li>
+</ul>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> a request Task with no requests pending, a 250 ms deadline around its seller calls, and a shopper who hangs up at 250 ms in the same turn of the loop.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Event</th><th>Count</th><th>Who knows what</th></tr></thead>
+<tbody>
+<tr><td>Deadline block entered; it remembers the count</td><td>0</td><td>The deadline remembers 0</td></tr>
+<tr><td>The deadline's timer calls <code>cancel()</code></td><td>1</td><td></td></tr>
+<tr><td>The hang-up watcher calls <code>cancel()</code></td><td>2</td><td></td></tr>
+<tr><td>CancelledError reaches the deadline's exit; it calls <code>uncancel()</code></td><td>1</td><td>1 is above the 0 it remembered: someone else asked</td></tr>
+<tr><td>The deadline lets CancelledError travel on</td><td>1</td><td>The hang-up watcher's request is still recorded</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the deadline does not report a timeout; the shopper's cancellation reaches the code above it with the count at 1. The next part runs exactly this case.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.11 and 3.12.</strong> <code>cancelling()</code> and <code>uncancel()</code> exist, but <code>uncancel()</code> only lowers the count: a CancelledError that was arranged but not yet thrown is still thrown at the next <code>await</code>, even when the count is back to zero. The change in 3.13 is the claim above; the version probe in rung 4 measures both behaviours.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>uncancel()</code> stops a cancellation that is already on its way, so it is a clean way to ignore one."</p>
+<p><strong>Why it is wrong:</strong> it lowers a count. On 3.11 and 3.12 it does not stop an exception that is already arranged, and on every version it cannot take back one that was already thrown in. Its job is bookkeeping for the party that asked: after its own cancellation has arrived and been handled, it takes its request off the record.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>cancelling()</code> = cancel() calls minus uncancel() calls; added in 3.11, meant for asyncio's own tools.</li>
+<li>The rule: remember the count, cancel, take your request back with <code>uncancel()</code>, compare.</li>
+<li>Since 3.13, reaching zero also withdraws a CancelledError that was arranged but not yet thrown.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A Task counts cancel requests so that each party can take back its own and tell, from what is left, whether someone else still wants the Task to stop.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c11 c12">
+<p class="q">A request Task's count is 1 because the shopper hung up. A timeout entered earlier fires: it cancels (count 2), the CancelledError reaches its exit, and it calls <code>uncancel()</code>. What does <code>uncancel()</code> return, and what should the timeout do?</p>
+<ol>
+<li data-why="uncancel() lowers the count by one, from 2 to 1; it does not reset it to zero.">0; raise TimeoutError</li>
+<li>1; the shopper's request is still pending, so let CancelledError travel on</li>
+<li data-why="The count tells the timeout that another request exists; swallowing the exception would hide the shopper's cancellation.">1; swallow the CancelledError, because the timeout handled its own</li>
+</ol>
+<p class="ts-why">The count went 1, 2, then back to 1. A count above the value the timeout started from means another party asked, so the cancellation must keep travelling.</p>
+</div>
+</section>
+<section class="ts-part" id="timeout-bookkeeping" data-rung="2" data-min="13">
+<h2>How asyncio.timeout uses the count: TimeoutError only for its own cancel</h2>
+<p class="ts-bridge">Last part: each party remembers the count, cancels, takes its request back and compares. Still unsolved: does <code>asyncio.timeout</code> really work that way, and what does the shopper's hang-up at the deadline actually produce?</p>
+<p class="ts-problem">Part 3 said a timeout cancels the Task and turns the CancelledError into TimeoutError outside the block. Gateway v4 counts every TimeoutError as "seller-e timed out". If the deadline turned every CancelledError into a TimeoutError, a request whose shopper hung up at 250 ms would be counted as a timeout and would carry on to rank offers for nobody.</p>
+<h3>Introduction</h3>
+<p>This part reads the timeout's code in CPython 3.14's timeouts.py with the count in mind, then runs two cases: the deadline alone, and the deadline plus a hang-up in the same turn of the loop.</p>
+<h3>Working: the timeout's three moments</h3>
+<ol class="ts-steps">
+<li><strong>Enter.</strong> <span class="ts-claim" data-claim="c16" data-src="s3">In CPython 3.14's timeouts.py, entering the block records the Task's cancelling() count and schedules a callback for the deadline (with call_soon if it has already passed) that calls cancel() on the Task.</span></li>
+<li><strong>Fire.</strong> At the deadline the callback cancels the Task. From here the CancelledError travels as traced two parts back, through the body's <code>finally</code> blocks.</li>
+<li><strong>Exit.</strong> <span class="ts-claim" data-claim="c17" data-src="s3">On exit after the deadline fired, the timeout calls uncancel(); only if the count is then at or below the value it recorded and a CancelledError is leaving the block does it raise TimeoutError in its place.</span> In every other case the exception leaving the block travels on unchanged.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: recording the count at entry is "remember the count" from the last part. A request that already carried a cancel from outside does not confuse the timeout.</li>
+<li>Step 3: the comparison is what keeps a shopper's hang-up from being reported as a timeout, and what keeps a nested inner timeout from swallowing an outer one.</li>
+</ul>
+<h3>Program</h3>
+<p>The program prints the count at each moment, in three cases. This part explains cases 1 and 2; the next part explains case 3.</p>
+<div class="ts-code" data-lang="python" data-title="bookkeeping.py" data-file="bookkeeping.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/bookkeeping.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Case 1: the count is 0 at entry, 1 inside when the deadline's cancel arrives, and 0 again outside. The timeout took its request back, found the count at its recorded 0, and raised TimeoutError.</li>
+<li>Case 2: <code>loop.call_at(cm.when(), me.cancel)</code> schedules a second cancel for the timeout's own deadline, standing in for the hang-up watcher. Both timer callbacks run in the same iteration, before the Task's next step, so the coroutine sees one CancelledError while the count is 2.</li>
+<li>At exit the timeout's <code>uncancel()</code> leaves 1, which is above the 0 it recorded. It raises nothing of its own; the CancelledError travels on, the function lets it out, and the request's Task ends cancelled with the shopper's request still on the count.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> gateway v6's seller call for seller-d, inside <code>timeout_at(start + 0.25)</code>, entered with count 0.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What happens</th><th>Count at exit, after uncancel()</th><th>Exception leaving the block</th><th>Gateway records</th></tr></thead>
+<tbody>
+<tr><td>seller-d answers at 200 ms</td><td>0 (the timer never fired, no uncancel)</td><td>none</td><td>offer 1,215</td></tr>
+<tr><td>The deadline fires; nothing else</td><td>0</td><td>TimeoutError</td><td>seller-d timed out</td></tr>
+<tr><td>The deadline fires and the shopper hangs up</td><td>1</td><td>CancelledError</td><td>nothing: the request stops</td></tr>
+<tr><td>The shopper hangs up at 100 ms; the deadline never fires</td><td>1 (no uncancel by the timeout)</td><td>CancelledError</td><td>nothing: the request stops</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> only a cancel that was the timeout's own becomes a TimeoutError. Any other cancel passes through the timeout untouched, which is why gateway v6 can let the shopper's hang-up travel through every seller call's deadline.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.11 and 3.12.</strong> <span class="ts-claim" data-claim="c18" data-src="s17 s14 s18">In CPython 3.11 and 3.12's timeouts.py, the exit converts only when the exception leaving the block is exactly CancelledError; from 3.13 it also converts subclasses of CancelledError, and when a different exception leaves a block whose deadline fired, it inserts a TimeoutError into that exception's context chain, in front of the CancelledError found there.</span> The count comparison itself is the same in all four versions, and cases 1 and 2 of the program print the same lines on 3.11, 3.12, 3.13 and 3.14.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Inside an <code>asyncio.timeout</code> block, any cancellation comes out as TimeoutError."</p>
+<p><strong>Why it is wrong:</strong> only the timeout's own cancellation does, and only when nobody else asked at the same time. A shopper's hang-up, a TaskGroup failure elsewhere, or a shutdown leaves the block as CancelledError, as case 2 shows. Code that catches TimeoutError to report "seller timed out" therefore never mislabels a hang-up.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>The timeout records the count at entry and its timer calls <code>cancel()</code>.</li>
+<li>At exit it calls <code>uncancel()</code>; TimeoutError only if the count is back at the recorded value and CancelledError is leaving.</li>
+<li>A cancel from anyone else, even in the same turn as the deadline, leaves the block as CancelledError.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A timeout raises TimeoutError only for the cancel it made itself, and it knows which one that was by comparing the count after taking its own request back.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c16 c17">
+<p class="q">This needs Part 3. A request has an outer <code>timeout(0.25)</code> and, inside it, a seller call in <code>timeout(0.1)</code>. At 100 ms the inner one fires. What leaves the inner block, and what does the outer timeout see?</p>
+<ol>
+<li>TimeoutError leaves the inner block; the outer timeout never fired, so it sees no exception if the code catches that TimeoutError</li>
+<li data-why="The outer timeout's timer is due at 250 ms; nothing has made it fire at 100 ms.">CancelledError, because the outer timeout also asked</li>
+<li data-why="Each timeout records the count at its own entry: the inner one recorded 0, took its request back, found 0, and converted.">CancelledError, because the count is above zero</li>
+</ol>
+<p class="ts-why">The inner timeout entered with count 0, cancelled (1), took its request back (0), and found the count at its recorded value, so it raised TimeoutError. Part 3's nested example answered seller-b at 220 ms this way.</p>
+</div>
+</section>
+<section class="ts-part" id="taskgroup-bookkeeping" data-rung="2" data-min="12">
+<h2>How TaskGroup uses the count: cancelling its own body, and only that</h2>
+<p class="ts-bridge">Last part: a timeout converts only its own cancel. Still unsolved: a TaskGroup also cancels the Task that runs its body when a child fails. How does it stop that cancellation from leaking into the code after the group, and what does it do when the shopper has hung up at the same time?</p>
+<p class="ts-problem">In gateway v6, seller-c sends a malformed price, its Task fails with ValueError, and the request's TaskGroup cancels its other seller calls and the request Task itself. The request handler catches the ExceptionGroup and answers "502: bad price data". That only works if the group's own cancel of the request Task stays inside the group.</p>
+<h3>Introduction</h3>
+<p>Part 3 showed the outside of this: on the first failure, a TaskGroup cancels the remaining Tasks and the Task running the <code>async with</code> body, then raises an ExceptionGroup. Part 3 also showed its inside, a set of Tasks, a done callback each and one Future. This part adds the count to that picture.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>The <dfn data-def="The Task that runs a TaskGroup's async with block; the group cancels it to interrupt the body when a child fails.">parent task</dfn> of a TaskGroup is the Task running its <code>async with</code> block. <span class="ts-claim" data-claim="c19" data-src="s1">The docs say that the first time a task in the group fails with an exception other than CancelledError, the remaining tasks are cancelled, and if the body of the async with block is still active the task containing it is cancelled too; that CancelledError interrupts an await but does not bubble out of the async with statement.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>A child fails.</strong> Its done callback, run through the loop as in Part 3, records the error, cancels the other children and, unless the group is already shutting down, cancels the parent task and notes that it did.</li>
+<li><strong>The body is interrupted.</strong> The parent's CancelledError arrives at whatever the body is awaiting, as traced earlier on this page, and reaches the group's exit.</li>
+<li><strong>The group waits</strong> until every child is done, including their clean-up.</li>
+<li><strong>The group takes its request back.</strong> <span class="ts-claim" data-claim="c20" data-src="s4">In CPython 3.14's taskgroups.py, a group that cancelled its parent calls uncancel() on it at exit, and propagates the CancelledError only if cancel requests remain after that and no child failed.</span></li>
+<li><strong>The group raises</strong> its ExceptionGroup of the children's failures.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: noting that it cancelled the parent is the "remember" half of the rule; without it the group could not tell its request from the shopper's.</li>
+<li>Step 4: without <code>uncancel()</code>, the count would stay at 1 after the group, and every timeout or group later in the same request would believe an outside cancel was still waiting.</li>
+<li>Step 5: the handler sees one ExceptionGroup, not a CancelledError, so it can answer "502" as gateway v6 does.</li>
+</ul>
+<h3>The case the docs call out: a group cancelled from outside that must also raise</h3>
+<p>If the shopper hangs up while the group is still cleaning up after a child's failure, the group has both a CancelledError to pass on and an ExceptionGroup to raise, and a single <code>raise</code> can carry only one. <span class="ts-claim" data-claim="c21" data-src="s1 s6">Since Python 3.13, a task group that is cancelled from outside and must also raise an ExceptionGroup calls the parent task's cancel() method, so that a CancelledError is raised at the next await and the cancellation is not lost.</span> <span class="ts-claim" data-claim="c22" data-src="s6">Python 3.13's release notes say the same change made task groups preserve the cancellation count, and that before it, when two nested groups both had a child fail at the same time, the outer group could hang.</span></p>
+<h3>Solved example: case 3 of bookkeeping.py</h3>
+<p><strong>Given:</strong> case 3 of the last part's program: a group whose one child raises ValueError while the body awaits a 1-second sleep. Output lines 9 and 10.</p>
+<p><strong>Step 1.</strong> The child fails; the group cancels the parent: count 0 → 1. The body's sleep receives CancelledError, and the body prints <code>cancelling=1</code>.</p>
+<p><strong>Step 2.</strong> At exit the group calls <code>uncancel()</code>: count 1 → 0. No requests remain, so it does not propagate the CancelledError.</p>
+<p><strong>Step 3.</strong> It raises <code>ExceptionGroup([ValueError])</code>; the <code>except*</code> handles it and prints <code>cancelling=0</code>.</p>
+<p><strong>Result:</strong> the group's cancellation lived exactly as long as the group. The code after it starts with a clean count, which is what lets one request use several groups and timeouts one after another.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.11 and 3.12.</strong> <span class="ts-claim" data-claim="c23" data-src="s15">In CPython 3.12's taskgroups.py, a group that cancelled its parent calls uncancel() on it at the start of its exit, before waiting for the children, and never cancels the parent again after raising.</span> Simple cases like case 3 behave the same. But a shopper who hangs up while a failing group is still cleaning up is lost on 3.11 and 3.12: the version probe in rung 4 (line 4) measures the request writing its audit row and answering "502" as if the shopper were still there, where 3.13 and 3.14 deliver the CancelledError at the next await.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "When a TaskGroup fails, its parent task has been cancelled, so the code after the group will get CancelledError too."</p>
+<p><strong>Why it is wrong:</strong> the group cancels its parent only to interrupt the body, then takes that request back with <code>uncancel()</code> and raises the ExceptionGroup instead. Case 3 shows the count back at 0 after the group. CancelledError reaches the code after the group only if someone else also asked.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>On a child's failure, the group cancels the other children and its parent task, and notes that it did.</li>
+<li>At exit it calls <code>uncancel()</code> on the parent; CancelledError travels on only if other requests remain.</li>
+<li>Since 3.13, a group cancelled from outside that must raise an ExceptionGroup re-cancels its parent, so the outside cancel is not lost.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A TaskGroup's own cancel of its parent is taken back at the group's exit, so only a cancel someone else made can leave the group as CancelledError.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c20 c21">
+<p class="q">On Python 3.14, a request's TaskGroup has a failing child, and while the group waits for its other children to clean up, the shopper hangs up and the request is cancelled. The handler has <code>except* ValueError: reply = "502"</code> and then <code>await audit.write(reply)</code>. What happens?</p>
+<ol>
+<li data-why="The group's uncancel() leaves the shopper's request on the count, so the outside cancellation is not lost.">The handler writes the audit row and returns "502"</li>
+<li data-why="An ExceptionGroup and a CancelledError cannot both be raised by one raise; the group raises the ExceptionGroup and re-cancels the parent.">The group raises CancelledError and the except* never runs</li>
+<li>The except* runs and sets the reply, then the CancelledError the group re-arranged arrives at <code>await audit.write(...)</code></li>
+</ol>
+<p class="ts-why">The group raises the ExceptionGroup, which the handler handles, and because a request from outside remains it re-cancels the parent. The cancel arrives at the next await, the audit write, which is why gateway v6 protects that write.</p>
+</div>
+</section>
+<section class="ts-part" id="gateway-v6" data-rung="3" data-min="16">
+<h2>Gateway v6: when the shopper hangs up, every seller call stops</h2>
+<p class="ts-bridge">Last part: a TaskGroup takes back its own cancel of its parent. Still unsolved: putting the mechanism to work. How does gateway v6 notice a hang-up, and how does one cancel reach five seller calls, seller-e's thread and the audit row?</p>
+<p class="ts-problem">Shopper-2 hangs up at 100 ms. Gateway v6 must stop all seller calls within a turn or two of the loop, write the audit row "hung up after 100 ms", report no timeout and no failure, and leave nothing running except what it cannot reach. Gateway v5, in rung 1, kept working until 270 ms and its thread until 900 ms.</p>
+<h3>Introduction</h3>
+<p>Gateway v6 is gateway v5 with three additions. A watcher Task reads the shopper's connection and raises an exception when it closes; the request runs in a TaskGroup next to that watcher, so the group's own cancellation, from the last part, stops the request. The deadline is passed down to seller-e's SDK. And every request writes an audit row through an owned Task behind <code>asyncio.shield()</code>, which the next parts explain.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Read the request</strong> line, then open a TaskGroup in <code>serve()</code>.</li>
+<li><strong>Start the watcher.</strong> <code>watch_for_hang_up()</code> awaits <code>reader.read(1)</code>. A shopper sends nothing after its request, so this read returns only when the connection closes, and then the watcher raises <code>ClientGone</code>.</li>
+<li><strong>Run the request in the group's body</strong>: <code>await self.handle(...)</code>, which runs gateway v5's <code>compare()</code> with its own TaskGroup of seller calls.</li>
+<li><strong>On a hang-up</strong>, the watcher's failure makes the outer group cancel its parent, which is the Task running <code>serve()</code>. The CancelledError arrives inside <code>compare()</code>, whose inner group cancels the five seller calls and waits for their clean-up.</li>
+<li><strong><code>handle()</code> catches the CancelledError</strong> only to write the audit row "hung up after 100 ms", then re-raises.</li>
+<li><strong>The outer group takes its cancel back</strong> and raises <code>ExceptionGroup([ClientGone])</code>, which <code>except*</code> handles. The connection is closed in <code>finally</code>.</li>
+<li><strong>When the answer comes first</strong>, the body cancels the watcher and writes the answer; the group then has nothing to report.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 2: a hang-up is only visible to code that reads the connection. The watcher is that code, and nothing else.</li>
+<li>Step 4: putting the request in the same group as the watcher reuses the group's cancellation instead of a hand-made one. <span class="ts-claim" data-claim="c24" data-src="s1">The docs say terminating a task group is not natively supported by the standard library, and show how to do it: add a task that raises an exception to the group, and ignore that exception outside it.</span> The watcher is that task.</li>
+<li>Step 5: the audit row is written while the request is being cancelled. A plain <code>await</code> there would be safe from this cancel, which has already been delivered, but not from a second one; the next parts show why the write goes through <code>shield()</code>.</li>
+<li>Step 6: because the group takes its own cancel back, the server Task ends normally and can close the connection cleanly. No timeout reports the hang-up: each seller call's deadline sees a cancel that is not its own and lets it through (the timeout part).</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="Shopper-2 hangs up at 100 ms">
+<script type="application/json">
+{"actors": [
+ {"id": "shop", "label": "Shopper-2", "sub": "TCP connection"},
+ {"id": "watch", "label": "Watcher", "sub": "read(1)"},
+ {"id": "serve", "label": "serve()", "sub": "outer TaskGroup body"},
+ {"id": "sell", "label": "Seller calls", "sub": "inner TaskGroup"},
+ {"id": "audit", "label": "Audit store", "sub": "20 ms write"}],
+ "steps": [
+ {"from": "shop", "to": "serve", "label": "shopper-2 kettle-1l", "note": "The request line arrives. serve() opens its TaskGroup with the watcher in it and runs the request in the body."},
+ {"from": "serve", "to": "sell", "label": "five calls, one deadline", "note": "Inside compare(), gateway v5's inner TaskGroup starts the five seller calls under the 250 ms deadline."},
+ {"from": "shop", "to": "watch", "label": "closes at 100 ms: read(1) returns b''", "dashed": true, "note": "The watcher's read returns empty bytes: the connection is closed. It raises ClientGone."},
+ {"from": "watch", "to": "serve", "label": "ClientGone: group cancels its body", "note": "The outer group's done callback cancels the parent task, the one running serve(). Count: 0 to 1."},
+ {"from": "serve", "to": "sell", "label": "CancelledError reaches compare()", "note": "The inner group cancels the four calls still waiting. Each one's finally closes its connection; seller-e's executor Future is cancelled."},
+ {"from": "serve", "to": "audit", "label": "shielded write: hung up after 100 ms", "note": "handle() catches the CancelledError only to write the audit row through an owned Task, then re-raises."},
+ {"from": "audit", "to": "serve", "label": "committed at about 120 ms", "dashed": true, "note": "The write takes 20 ms. The CancelledError then leaves handle() and the outer group's body."},
+ {"over": ["serve"], "label": "uncancel: 1 to 0; except* ClientGone", "note": "The outer group takes its cancel back, raises ExceptionGroup([ClientGone]), and serve() handles it and closes the connection."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 and 2 are a normal request. Nothing about the request knows that a watcher exists.</li>
+<li>Steps 3 and 4 turn a closed connection into a cancellation, using only the TaskGroup's rule from Part 3: an unexpected exception in one Task cancels the rest, including the body.</li>
+<li>Step 5 is the cancel travelling down: through <code>compare()</code>'s inner group to every seller call, each one stopping at its <code>await</code> as traced earlier on this page.</li>
+<li>Steps 6 to 8 are the only work allowed after the hang-up: one audit row, then the group's bookkeeping.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v6.py" data-file="gateway_v6.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_v6.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Shopper-1 waits and gets seller-b at 1,199. The answer reaches the shopper at about 280 ms: the 250 ms seller deadline, then ranking, the outcome counts and the 20 ms audit write. The budget is for the sellers; the audit row is the one step that sits on the answer's path.</li>
+<li>Shopper-2 hangs up at 100 ms. seller-a's answer at 80 ms is the last seller line printed. The report line comes at about 120 ms, after the 20 ms audit write, with 0 seller calls still waiting: the inner group had already cancelled all of them and waited for their clean-up.</li>
+<li>seller-e's SDK thread ends at about 250 ms, not 900 ms. A hang-up cannot reach that thread (the next part), but the deadline was passed down as the SDK's own timeout, so the thread gives up when the request would have.</li>
+<li>The audit store has two rows, one per shopper, and the hang-up count is 1: the signal a dashboard needs. Nothing failed in the background.</li>
+</ol>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Point</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>Noticing a hang-up</td><td>A watcher reads one byte; the shopper never sends more</td><td>The web framework's disconnect handling, because HTTP clients may send more bytes on the same connection (the next request, a body)</td></tr>
+<tr><td>Stop reason</td><td>An exception type, <code>ClientGone</code>, and a hang-up counter</td><td>The same, plus a message on every <code>cancel()</code> you call yourself, and a metric per stop reason</td></tr>
+<tr><td>Seller-e's thread</td><td>The remaining budget passed down as the SDK's socket timeout</td><td>The same, wherever a library accepts a timeout; the deadline is passed down to every call that can take one</td></tr>
+<tr><td>Work after a hang-up</td><td>One audit row</td><td>Only what must survive the request, each piece decided on purpose (rung 5)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c34" data-src="s12">aiohttp's documentation says that with web handler cancellation enabled, the handler task is cancelled when the client disconnects, which can reduce load when no client is left to receive the response and helps against DoS attacks by requiring an attacker to keep a connection open to waste server resources.</span> <span class="ts-claim" data-claim="c35" data-src="s13">Its run_app() takes a handler_cancellation parameter that defaults to False; the parameter was added in aiohttp 3.9, and cancelling was the default behaviour before aiohttp 3.7.</span></p>
+</div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "A client disconnects halfway through a request that fans out to five services. What does your async service do, and what does it cost if it does nothing?"</p>
+<p><strong>What a strong senior answer contains:</strong> by default the handler cannot know, so the fan-out finishes for nobody: open connections and threads for every abandoned request, which at scale is a full pool. The fix turns the disconnect into a cancellation of the request's Task (a watcher in the request's TaskGroup, or the framework's option), lets it reach every call through structured concurrency, passes the deadline down to anything a cancel cannot reach, and counts hang-ups as their own stop reason. The candidate names the trade-off: some work must survive the disconnect, and it must be chosen and protected explicitly.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "To stop the request when the client leaves, cancel each seller call's Task one by one."</p>
+<p><strong>Why it is wrong:</strong> the seller calls belong to a TaskGroup inside <code>compare()</code>; cancelling the one Task that runs the request is enough, because the CancelledError reaches the group, and the group cancels its own children and waits for them. Cancelling children by hand duplicates the group's work and can miss a call started a moment later.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A watcher reads the connection and raises <code>ClientGone</code> when it closes; the request shares a TaskGroup with it.</li>
+<li>The group cancels the request; the cancel reaches every seller call through the inner group; each deadline lets it through.</li>
+<li>The deadline is passed down to seller-e's SDK; the audit row is written through an owned Task behind <code>shield()</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v6 turns a closed connection into one cancel of the request's Task, and structured concurrency carries that cancel to every seller call, with the audit row as the one deliberate exception.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c17 c19">
+<p class="q">This needs Part 3. In gateway v6, shopper-2 hangs up at 100 ms. seller-b's call is inside <code>timeout_at(start + 0.25)</code> inside the inner TaskGroup. What does seller-b's call return or raise, and what does the gateway record for seller-b?</p>
+<ol>
+<li data-why="The timeout's timer has not fired at 100 ms, so it has no request of its own to convert.">TimeoutError; seller-b is counted as timed out</li>
+<li>It raises CancelledError, which the timeout lets through; nothing is recorded for seller-b, because the whole request stops</li>
+<li data-why="A cancellation is not a seller failure; gateway v4's except clauses catch SellerError and OSError, and CancelledError is neither.">A SellerError value; seller-b is counted as failed</li>
+</ol>
+<p class="ts-why">The deadline never fired, so its exit has nothing to convert and the CancelledError travels through. The inner group's children end cancelled, the request never reaches the outcome counting, and the audit row records the hang-up instead.</p>
+</div>
+</section>
+<section class="ts-part" id="what-cancel-cannot-reach" data-rung="3" data-min="12">
+<h2>What a cancel cannot reach: threads, processes and the seller's own work</h2>
+<p class="ts-bridge">Last part: one cancel stops every seller call in gateway v6. Still unsolved: "every seller call" meant every coroutine. seller-e's call is a thread, and every seller's work happens on another machine. What does a cancel do to those?</p>
+<p class="ts-problem">At 250 ms gateway v5's deadline cancels seller-e's call. The gateway stops waiting at once, but seller-e's SDK thread keeps waiting on its socket until 900 ms, holding one of the pool's four threads for 650 ms. Part 4 measured this and called the pool size a limit on waste. Can the waste be removed instead?</p>
+<h3>Introduction</h3>
+<p>A cancellation is an exception thrown into a coroutine at an <code>await</code>. Anything that is not a coroutine on this loop has no <code>await</code> for it to land on: a thread blocked in a system call, a process running Python code, a seller working on a request. For each of these, the gateway can stop waiting, but the work itself stops only if it was told in advance when to give up.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="Handing a piece of work the time at which its result stops being useful, as a timeout or deadline argument, so that it gives up by itself.">Deadline propagation</dfn> is passing the time at which a result stops being useful down to every piece of work that cannot be cancelled, as a timeout it enforces by itself.</p>
+</div>
+<h3>Working: what happens to each piece at the deadline</h3>
+<ol class="ts-steps">
+<li><strong>The asyncio side.</strong> seller-e's call awaits the Future that <code>run_in_executor()</code> returned. The deadline cancels it, and the gateway stops waiting at 250 ms.</li>
+<li><strong>The executor side.</strong> <span class="ts-claim" data-claim="c26" data-src="s19 s5">In CPython 3.14, run_in_executor() returns an asyncio Future chained to the executor's own future, and cancelling the asyncio Future calls cancel() on the executor's future.</span> <span class="ts-claim" data-claim="c25" data-src="s9">A concurrent.futures call that is currently being executed cannot be cancelled: cancel() then returns False.</span> A call still waiting in the pool's queue is cancelled and never runs; a running one carries on.</li>
+<li><strong>The thread itself.</strong> It is blocked in the SDK's socket read, and only the socket can end that wait: <span class="ts-claim" data-claim="c27" data-src="s10">socket.create_connection()'s timeout parameter sets the timeout on the socket before it connects; in timeout mode an operation that cannot complete within it raises socket.timeout, a deprecated alias of TimeoutError since Python 3.10.</span></li>
+<li><strong>The seller.</strong> Part 3 measured it: a seller keeps working on a request whose caller has gone. Only the seller's own limits, or a deadline the protocol carries to it, can stop that work.</li>
+</ol>
+<p><strong>Why each piece needs its own answer</strong></p>
+<ul>
+<li>Step 2: a thread cannot be interrupted from Python, so the executor can only cancel calls that have not started.</li>
+<li>Step 3: the SDK's 5-second timeout was chosen by its vendor for "do not hang forever", not for a 250 ms budget, which is Part 3's lesson about client libraries again.</li>
+</ul>
+<h3>Program</h3>
+<p>The program makes the same seller-e call twice under a 250 ms deadline: once with the SDK's own 5-second timeout, once with the deadline passed down as the SDK's timeout. It waits for the thread to finish and prints when it really ended.</p>
+<div class="ts-code" data-lang="python" data-title="thread_deadline.py" data-file="thread_deadline.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/thread_deadline.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Both runs cut the gateway's wait at 250 ms and both asyncio Futures are cancelled: from the request's point of view the two are identical.</li>
+<li>With the SDK's own timeout the thread ends at 900 ms, when seller-e answers. The answer goes nowhere.</li>
+<li>With the deadline passed down, the thread's socket read gives up at about 250 ms with TimeoutError, inside the thread. Nobody reads that exception: the asyncio Future it would have filled was cancelled already. The thread is free 650 ms earlier.</li>
+<li><code>sync_sdk.py</code> gained an optional per-call <code>timeout</code> for this, and records when each call ended; its earlier behaviour, and Part 4's tests, are unchanged.</li>
+</ol>
+<h3>Solved example: seller-e's pool at 10 times the load</h3>
+<p><strong>Given:</strong> 2,000 requests per second, each calling seller-e, and a pool of 4 threads. Every seller-e call is cut by the deadline.</p>
+<p><strong>Step 1. Without propagation.</strong> Each started call holds its thread for 900 ms. The pool starts at most 4 calls per 0.9 s, about 4.4 per second; every other call waits in the queue and is dropped by its deadline. The pool is always full.</p>
+<p><strong>Step 2. With propagation.</strong> Each started call holds its thread for at most the time left in its budget, about 0.25 s. The pool now starts 4 calls per 0.25 s, 16 per second, and is still always full: seller-e never answers within 250 ms.</p>
+<p><strong>Result:</strong> propagation frees each thread 650 ms sooner, so the same pool runs about 3.6 times as many calls (16 against 4.4 per second) with no extra threads, but for a seller that cannot answer in time those calls are still wasted. Propagation removes waste; it does not make seller-e useful. That decision is Part 4's: cache seller-e's prices, or drop it from the request path.</p>
+<div class="ts-legacy">
+<p><strong>socket.timeout.</strong> Older code catches <code>socket.timeout</code>. It is the same class as <code>TimeoutError</code> since Python 3.10, as the claim above says, so both <code>except</code> clauses catch it; new code should use <code>TimeoutError</code>.</p>
+</div>
+<div class="ts-trap">
+<p><strong>A socket timeout limits each operation, not the whole call.</strong> The SDK connects, sends, then reads, and the timeout applies to each of those separately. Passing 0.25 s bounds the read that matters here, but a slow connect followed by a slow read could take up to twice as long. When a library offers a total deadline, pass that; when it offers only per-operation timeouts, pass the remaining budget and keep the pool small.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Cancelling the Task that awaits <code>run_in_executor()</code> stops the function running in the thread."</p>
+<p><strong>Why it is wrong:</strong> it stops the wait. A call that is already running in the thread cannot be cancelled; only a call still in the queue is dropped. The program shows the thread running to 900 ms after its Future was cancelled at 250 ms, unless the function itself was given a timeout.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A cancel lands only on a coroutine's <code>await</code>; threads, processes and sellers never see it.</li>
+<li>Cancelling run_in_executor()'s Future drops a call still queued in a thread pool, but not a running one.</li>
+<li>Pass the remaining budget down as the timeout of anything a cancel cannot reach: seller-e's thread then ends at 250 ms instead of 900 ms.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A cancel stops the gateway's wait, not the work behind it; work in threads, processes and other services stops early only if the deadline was passed down to it beforehand.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c25 c26">
+<p class="q">This needs Part 4. Gateway v6's seller-e pool has 4 threads, all running calls for other requests. Shopper-7's seller-e call is waiting in the pool's queue when shopper-7 hangs up. What happens to shopper-7's call, and to the 4 running calls?</p>
+<ol>
+<li>Shopper-7's call is cancelled while still queued, so it never runs; the 4 running calls go on until their own socket timeouts, the remaining budgets passed down to them</li>
+<li data-why="A running concurrent.futures call cannot be cancelled; only the gateway's wait for it is cancelled.">All 5 are stopped, because the hang-up cancels every Future of the request</li>
+<li data-why="Cancelling the asyncio Future calls cancel() on the linked executor future, and that succeeds for a call that has not started.">Shopper-7's call runs later anyway, when a thread frees up, and its answer is thrown away</li>
+</ol>
+<p class="ts-why">The hang-up cancels the asyncio Future, whose cancel is passed to the executor's future. That succeeds for a call still waiting in the queue, so it never runs. A call already running cannot be cancelled, which is why each one was given its own timeout.</p>
+</div>
+</section>
+<section class="ts-part" id="audit-shield" data-rung="3" data-min="13">
+<h2>The audit row that must be written: an owned Task behind shield()</h2>
+<p class="ts-bridge">Last part: work a cancel cannot reach needs the deadline passed down. Still unsolved: the opposite case. The audit write is a coroutine, so a cancel reaches it easily. How does gateway v6 keep it from being cancelled with its request?</p>
+<p class="ts-problem">Shopper-2 gets the answer computed at 250 ms, and gateway v6 starts the audit write before sending it. 10 ms into the write, the shopper hangs up. If the write is cancelled between its insert and its commit, the store throws the row away, and the audit trail has no record that this answer was ever given.</p>
+<h3>Introduction</h3>
+<p>Some work is part of a request but must outlive it: an audit row, a payment confirmation, the last batch of counts. asyncio's tool for this is <code>asyncio.shield()</code>. Used alone it has gaps, which the next part measures; used with an owned Task, from Part 4's <code>spawn()</code>, it does exactly one job well. This part shows that job.</p>
+<h3>Comparison</h3>
+<p>A courier hands a signed parcel to a reception desk. The person who ordered it then leaves the building. The desk still signs the delivery book and keeps the parcel: the order's owner leaving does not undo a delivery already in progress. But the desk itself closes at 6 pm, and then nothing is signed for anyone.</p>
+<ul>
+<li>The person leaving = the handler being cancelled.</li>
+<li>The desk finishing the delivery = the shielded write going on.</li>
+<li>The desk closing at 6 pm = the process shutting down (next part).</li>
+</ul>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="asyncio.shield(aw): an awaitable whose cancellation does not cancel the Task inside it; the caller still gets CancelledError.">asyncio.shield()</dfn> protects an awaitable from being cancelled by the coroutine that awaits it. <span class="ts-claim" data-claim="c28" data-src="s1">If aw is a coroutine, shield() schedules it as a Task; if the coroutine containing the await is cancelled, the Task running inside shield() is not cancelled, but the await expression in the caller still raises CancelledError.</span> <span class="ts-claim" data-claim="c29" data-src="s1">The docs say to save a reference to tasks passed to shield(), because the event loop keeps only weak references and a task that isn't referenced elsewhere may be garbage collected before it is done.</span></p>
+</div>
+<h3>Working: gateway v6's <code>_audit()</code></h3>
+<ol class="ts-steps">
+<li><strong>Start the write as an owned Task:</strong> <code>task = spawn(self.audit.write(row), name="audit")</code>. Part 4's <code>spawn()</code> keeps a strong reference in a set and reads the Task's outcome in a done callback, logging and counting any failure.</li>
+<li><strong>Wait for it through a shield:</strong> <code>await asyncio.shield(task)</code>. If nothing cancels the handler, this returns when the row is committed, and the answer is sent after the audit row exists.</li>
+<li><strong>If the handler is cancelled now</strong>, its <code>await</code> raises CancelledError at once. The write Task is not cancelled; it goes on to its commit.</li>
+<li><strong>The handler's CancelledError travels on</strong>, through <code>serve()</code>'s TaskGroup, as in gateway v6's part.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: a Task created inside <code>shield()</code> from a coroutine has no owner. If the handler is cancelled, nobody holds it and nobody reads its failure; <code>spawn()</code> fixes both.</li>
+<li>Step 2: waiting, rather than firing and forgetting, keeps the rule "no answer without its audit row".</li>
+<li>Step 3: this is the only thing shield does. It changes nothing for the caller and everything for the inner Task.</li>
+</ul>
+<h3>Program</h3>
+<p>The program writes one audit row, with a write that takes 40 ms, and cancels the handler 10 ms in. Run 1 awaits the write directly; run 2 uses gateway v6's owned Task behind <code>shield()</code>.</p>
+<div class="ts-code" data-lang="python" data-title="audit.py" data-file="audit.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="audit_shield.py" data-file="audit_shield.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/audit_shield.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>AuditStore.write()</code> inserts, then commits. A CancelledError between the two moves the row to <code>lost</code>, standing in for the store rolling the insert back.</li>
+<li>Run 1: the handler and the write are the same coroutine, so the hang-up cancels the write. At 60 ms there are no rows and one lost row.</li>
+<li>Run 2: the handler is cancelled at 10 ms just the same, and <code>cancelled=True</code> is printed at once. The write is its own Task, so it commits at 40 ms: one row, none lost.</li>
+<li>Run 3 is the next part's subject.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> gateway v6 at 2,000 requests per second; the audit write takes 20 ms; 1 shopper in 10 hangs up at a random moment during the 270 ms a request takes.</p>
+<p><strong>Step 1.</strong> Hang-ups per second: 2,000 × 0.1 = 200.</p>
+<p><strong>Step 2.</strong> Share of hang-ups that land during the success-path audit write: 20 ms out of 270 ms, about 7.4%. That is about 15 hang-ups per second.</p>
+<p><strong>Step 3.</strong> Without the shield, each of those cancels the write: about 15 missing audit rows per second, 1.3 million a day. With it, none.</p>
+<p><strong>Result:</strong> a 20 ms window looks too small to matter, and at this load it loses over a million rows a day. A rule like "every answer has an audit row" holds only if the write cannot be cancelled by the request it records.</p>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "A request handler writes an audit record before responding. Clients sometimes disconnect mid-request. How do you guarantee the record?"</p>
+<p><strong>What a strong senior answer contains:</strong> the write must not share the request's cancellation: run it as its own owned Task and await it through <code>asyncio.shield()</code>, so a disconnect cancels the handler's wait but not the write. Then the limits, without being asked: shield does not survive a process shutdown or crash, does not protect a Task that the request's own TaskGroup owns, and does not read a failure that happens after the caller left; so the Task needs an owner that logs its failures, shutdown must wait for such Tasks, and anything that must survive a crash goes to a durable outbox written in the same transaction as the business data.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>await asyncio.shield(task)</code> makes the handler ignore the cancellation and wait for the write."</p>
+<p><strong>Why it is wrong:</strong> the handler is cancelled as usual: its <code>await</code> raises CancelledError immediately, as run 2 prints at 10 ms. Only the inner Task is protected. A handler that must still wait would have to catch the CancelledError around the shield, which is refusing a cancel, rung 4's first trap.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>shield()</code> protects the inner Task from the caller's cancellation; the caller still gets CancelledError at once.</li>
+<li>Start the protected work with <code>spawn()</code>: a strong reference and a done callback that reads its failure.</li>
+<li>A 20 ms unprotected write at 2,000 requests per second with 10% hang-ups loses about 15 rows a second.</li>
+</ul>
+</div>
+<p class="ts-takeaway">shield() lets a request be cancelled without cancelling the work inside it, and an owned Task makes sure that work is kept alive and its failure is heard.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c28">
+<p class="q">In run 2, when is the line <code>handler cancelled=True</code> printed, and when is the row committed?</p>
+<ol>
+<li data-why="shield() does not make the caller wait: its await raises CancelledError as soon as the caller is cancelled.">Both at 40 ms: the handler waits for the shielded write, then ends cancelled</li>
+<li>The handler is cancelled at 10 ms; the row is committed at 40 ms by the write's own Task</li>
+<li data-why="That is run 1, with a plain await: the write and the handler share one cancellation.">The handler is cancelled at 10 ms and the row is lost</li>
+</ol>
+<p class="ts-why">The caller's await raises CancelledError at once, so the handler is done at 10 ms. The shield only stopped that cancellation from reaching the inner Task, which commits on its own schedule.</p>
+</div>
+</section>
+<section class="ts-part" id="shield-limits" data-rung="3" data-min="13">
+<h2>What shield() does not protect</h2>
+<p class="ts-bridge">Last part: an owned Task behind <code>shield()</code> survives its handler's cancellation. Still unsolved: what else can stop that Task, and who hears about it when it fails?</p>
+<p class="ts-problem">A team wraps every "must finish" write in <code>asyncio.shield()</code> and stops worrying. Then audit rows go missing on every deploy; a refactor that moved the write into the request's TaskGroup loses rows on every hang-up; and when the audit store is down, the failures appear in no dashboard.</p>
+<h3>Introduction</h3>
+<p>shield() blocks exactly one path: the caller's cancellation travelling into the inner Task. Every other way a Task can be stopped or lost is untouched. This part measures four of them.</p>
+<h3>Working: four ways shielded work is still lost</h3>
+<ol class="ts-steps">
+<li><strong>Its own owner cancels it.</strong> If the inner Task belongs to a TaskGroup, the group cancels it directly when the group aborts: the shield is not in that path. <span class="ts-claim" data-claim="c30" data-src="s1">The docs say that if the shielded work is cancelled by other means, from within itself, that also cancels shield().</span> A TaskGroup cancelling its own child is another such means, as case 1 below measures.</li>
+<li><strong>The caller stops waiting.</strong> A timeout around <code>await shield(task)</code> cancels the caller, which gets TimeoutError; the work goes on with nobody waiting for its result.</li>
+<li><strong>The process shuts down.</strong> <span class="ts-claim" data-claim="c31" data-src="s11">In CPython 3.14's runners.py, when the main coroutine finishes, asyncio.run cancels every task that is still running and runs the loop until they have all finished.</span> A shielded Task is still running, so it is cancelled like any other. A crash or a kill stops it with no clean-up at all.</li>
+<li><strong>It fails after the caller has gone.</strong> <span class="ts-claim" data-claim="c32" data-src="s20">In CPython 3.14.0 to 3.14.8's tasks.py, once the awaiting caller has been cancelled, shield() no longer passes the inner task's outcome on; if the task later fails, shield() reports "&lt;exception&gt; exception in shielded future" to the loop's exception handler.</span> <span class="ts-claim" data-claim="c38" data-src="s2">The 3.14 branch after 3.14.8 no longer has that report: shield() stops passing the outcome on and reports nothing.</span> Either way, no code of yours sees the failure unless the Task has an owner that reads it.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="shield_limits.py" data-file="shield_limits.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/shield_limits.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Case 1: the write is created with <code>tg.create_task()</code> in the handler's group. The hang-up cancels the handler; the group aborts and cancels its own children, the write included. No row, one lost.</li>
+<li>Case 2: a 10 ms timeout around the shield raises TimeoutError at 10 ms while the write is still running; it commits at 40 ms anyway.</li>
+<li>Case 3: the store refuses the connection 30 ms in, after the handler was cancelled at 10 ms. <code>spawn()</code>'s done callback counts the failure under its name, which is what a dashboard can alert on. Whether asyncio also logs it depends on the version, as the box below says.</li>
+<li>Run 3 of the last part's program is case 4: <code>main()</code> returns 10 ms into the write, <code>asyncio.run</code> cancels the shielded Task during shutdown, and the row is lost.</li>
+</ol>
+<h3>Difference: what shield() does and does not protect</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Threat to the work</th><th>Protected by shield()?</th><th>What protects it</th></tr></thead>
+<tbody>
+<tr><td>The caller (handler) is cancelled</td><td>Yes</td><td>shield()</td></tr>
+<tr><td>A timeout around the caller fires</td><td>Yes; the caller stops waiting</td><td>shield(); decide whether anyone needs the result</td></tr>
+<tr><td>The Task's own TaskGroup aborts</td><td>No</td><td>Create the Task outside the request's group, with <code>spawn()</code></td></tr>
+<tr><td>The Task is garbage collected</td><td>No</td><td>A strong reference (<code>spawn()</code>)</td></tr>
+<tr><td>It fails after the caller left</td><td>No; at most a log line</td><td>An owner that reads and counts the failure (<code>spawn()</code>)</td></tr>
+<tr><td>Graceful shutdown (<code>asyncio.run</code> ends, a deploy)</td><td>No</td><td>Shutdown that waits for owned Tasks first (Part 8)</td></tr>
+<tr><td>Crash or kill</td><td>No</td><td>A durable outbox or queue (rung 5)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-legacy">
+<p><strong>Python 3.11 to 3.13, and 3.14 after 3.14.8.</strong> <span class="ts-claim" data-claim="c33" data-src="s16">In CPython 3.13's tasks.py, when the caller is cancelled first, shield() only removes its own callback from the inner task, so nothing of shield()'s reads or reports the task's later failure.</span> An inner Task that nobody else owns is then reported only when it is destroyed, as "Task exception was never retrieved"; line 3 of the version probe in rung 4 prints that on 3.12, and the "exception in shielded future" message on 3.14.6, the version this page ran. With <code>spawn()</code> the failure is counted on every version.</p>
+</div>
+<div class="ts-trap">
+<p><strong>Official guidance: shielded work dies at shutdown.</strong> <span class="ts-claim" data-claim="c36" data-src="s12">aiohttp's documentation recommends against asyncio.shield() for work that must survive a client disconnect, because the shielded task cannot be tracked by the application and may be cancelled during application shutdown; it points to aiojobs, whose shield tracks the inner task and waits for it during clean-up.</span> In gateway v6, <code>spawn()</code>'s set of running Tasks is that tracking; Part 8 makes shutdown wait for it.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A shielded Task cannot be cancelled."</p>
+<p><strong>Why it is wrong:</strong> it cannot be cancelled by the coroutine awaiting the shield. Its own TaskGroup, a direct <code>task.cancel()</code>, and <code>asyncio.run</code>'s shutdown all still cancel it, and a crash ends it without any clean-up. Cases 1 and 4 above lose the row with the shield in place.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>shield() blocks one path: the caller's cancel. Not the Task's group, not shutdown, not a crash.</li>
+<li>Create must-finish Tasks outside the request's TaskGroup, with an owner that keeps and reads them.</li>
+<li>Whether asyncio logs a failure after the caller left depends on the version (3.14.0 to 3.14.8 do, at once); an owner counts it on all.</li>
+</ul>
+</div>
+<p class="ts-takeaway">shield() protects work from its caller only; ownership, a shutdown that waits, and a durable record protect it from everything else.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c31 c28">
+<p class="q">Gateway v6 is deployed. The old process receives its stop signal, <code>main()</code> returns, and one audit write started 5 ms earlier is still in flight behind <code>shield()</code>. Its handler was not cancelled. What happens to the row?</p>
+<ol>
+<li data-why="shield() only blocks the caller's cancellation travelling inward; asyncio.run's shutdown cancels the inner Task directly.">It is written: shielded work survives shutdown</li>
+<li data-why="The handler awaits the shield, so the handler is cancelled as well; there is no special waiting for shielded work in asyncio.run.">asyncio.run waits for it because a handler is still awaiting it</li>
+<li>asyncio.run cancels every task still running, the write included, and the row is lost unless shutdown waited for owned Tasks first</li>
+</ol>
+<p class="ts-why">asyncio.run cancels all tasks still running when main() returns. A shielded Task is one of them; shield() is not in that path. Only a shutdown that first waits for <code>spawn()</code>'s running set saves the row, which is Part 8.</p>
+</div>
+</section>
+<section class="ts-part" id="refusing-a-cancel" data-rung="4" data-min="13">
+<h2>Refusing a cancel, and the bookkeeping you break</h2>
+<p class="ts-bridge">Last part: shield() protects work from its caller only. Still unsolved: the opposite mistake. What happens when a coroutine decides, by itself, that a cancel does not apply to it?</p>
+<p class="ts-problem">A price cache is slow today: 50 ms. Someone gives it a 20 ms limit by hand: a timer that calls <code>cancel()</code> on the current Task, and an <code>except CancelledError: return None</code> that falls back to the sellers. It works in every test. In production, shoppers who hang up during that lookup are never noticed, and some requests later end with nothing but CancelledError.</p>
+<h3>Introduction</h3>
+<p>Part 4's trap 5 caught CancelledError by accident, with a broad <code>except</code>. This part looks at code that catches it on purpose, to implement its own small timeout. It is the most common reason people reach for <code>uncancel()</code>, and it fails in two ways: it cannot tell its own cancel from anyone else's, and, without <code>uncancel()</code>, it leaves the count raised for code that runs later in the same Task.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>To <dfn data-def="To catch a CancelledError and continue instead of letting it leave the coroutine; the Task then does not end cancelled.">refuse a cancel</dfn> is to catch CancelledError and carry on instead of letting it leave the coroutine. <span class="ts-claim" data-claim="c15" data-src="s1">The docs warn that TaskGroup and asyncio.timeout() are implemented using cancellation internally and might misbehave if a coroutine swallows CancelledError, and that user code should not generally call uncancel().</span></p>
+</div>
+<h3>Working: what a refusal changes</h3>
+<ol class="ts-steps">
+<li><strong>The cancel is delivered</strong> and caught. The coroutine continues; the Task will not end cancelled.</li>
+<li><strong>The count stays raised.</strong> <code>cancelling()</code> is 1 for the rest of the Task's life unless someone calls <code>uncancel()</code>.</li>
+<li><strong>The catch cannot see who asked.</strong> A cancel from the hand-made timer and a cancel from the shopper's hang-up look identical at the <code>except</code>.</li>
+<li><strong>With <code>uncancel()</code></strong> the count is right again, but step 3 is unchanged: the shopper's cancel is still refused, and now erased from the count as well.</li>
+</ol>
+<h3>Program</h3>
+<p>Three versions of the 20 ms cache limit, each in a request handler that then asks the sellers. First nobody else cancels; then the shopper hangs up 10 ms into the lookup.</p>
+<div class="ts-code" data-lang="python" data-title="refuse_cancel.py" data-file="refuse_cancel.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/refuse_cancel.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>With nobody else cancelling, all three skip the cache at 20 ms and ask the sellers. Only the count differs: the hand-made version without <code>uncancel()</code> leaves it at 1.</li>
+<li>When the shopper hangs up at 10 ms, both hand-made versions catch the shopper's cancel as if it were their own timer's, skip the cache and go on to ask the sellers for nobody. The Task ends normally, <code>cancelled=False</code>.</li>
+<li>In <code>asyncio.timeout(0.02)</code> the hang-up's cancel arrives before the timeout's own timer has fired, so at its exit the timeout has nothing to convert, and the hang-up stops the request: <code>cancelled=True</code>. It needs no <code>uncancel()</code> in user code, because it does that bookkeeping itself.</li>
+</ol>
+<h3>What breaks, how you see it, and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Refusal</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Hand-made limit, no <code>uncancel()</code></td><td>Hang-ups ignored; later, some requests end in CancelledError with no cause (next part)</td><td>Hang-ups counted by the server but not by the handler; requests whose only error is CancelledError</td><td><code>asyncio.timeout()</code> around the lookup, TimeoutError caught outside it</td></tr>
+<tr><td>Hand-made limit with <code>uncancel()</code></td><td>Hang-ups ignored</td><td>Work done after the shopper left (seller calls, audit rows saying "answered" for gone shoppers)</td><td>The same</td></tr>
+<tr><td>Broad <code>except</code> (Part 4, trap 5)</td><td>Requests far over budget</td><td>Latency above the budget with no timeouts counted</td><td>Catch by name; re-raise CancelledError</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "When is it acceptable to catch CancelledError and not re-raise it?"</p>
+<p><strong>What a strong senior answer contains:</strong> almost never in application code. Catching it to log or clean up is fine if the handler ends with <code>raise</code>. To give up on one slow step, put the step in <code>asyncio.timeout()</code> and catch TimeoutError outside it: the timeout knows its own cancel from a client's or a shutdown's, and does the <code>uncancel()</code> bookkeeping. If suppression is truly intended (a Task that must treat one specific cancel as "stop the current item, keep the worker"), call <code>uncancel()</code> and accept that the code can no longer tell who asked. The candidate mentions that the consequences differ between 3.11/3.12 and 3.13+.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Calling <code>uncancel()</code> after catching the CancelledError makes refusing safe."</p>
+<p><strong>Why it is wrong:</strong> it makes the count right, nothing more. The program's second version keeps the count at 0 and still swallows the shopper's hang-up, because at the <code>except</code> it cannot tell whose cancel it caught. Only a tool that remembers the count before it cancels, as <code>asyncio.timeout</code> does, can tell.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Refusing a cancel catches every cancel, not just yours: hang-ups and shutdowns are swallowed with it.</li>
+<li>Without <code>uncancel()</code> the count stays at 1 for the rest of the Task.</li>
+<li>For "give up on this step", use <code>asyncio.timeout()</code> and catch TimeoutError outside it.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A hand-made timeout that refuses its cancel also refuses everyone else's, and without uncancel() it leaves a false record that a cancel is still pending.</p>
+<div class="ts-predict" data-claims="c16 c17">
+<p class="q">In the program's last line, the shopper hangs up at 10 ms, inside <code>asyncio.timeout(0.02)</code>. The timeout's own timer would fire at 20 ms. Trace the count and say why the request stops instead of falling back to the sellers.</p>
+<div class="ts-reveal"><p>At entry the timeout records 0. The hang-up's <code>cancel()</code> at 10 ms makes it 1, and the CancelledError reaches the cache lookup's <code>await</code>. When it leaves the block, the timeout's timer has not fired, so the timeout cancels its timer, calls no <code>uncancel()</code>, and has nothing to convert: the CancelledError leaves the block unchanged, the <code>except TimeoutError</code> does not match, and the handler's Task ends cancelled at 10 ms.</p></div>
+</div>
+</section>
+<section class="ts-part" id="stale-cancellation" data-rung="4" data-min="14">
+<h2>A stale cancel: the request that fails with only CancelledError</h2>
+<p class="ts-bridge">Last part: refusing a cancel without <code>uncancel()</code> leaves the count at 1. Still unsolved: the count is only a number. When does a wrong number hurt, and how does it show up?</p>
+<p class="ts-problem">On Python 3.14, about one request in a thousand fails with no error in the logs except CancelledError. No shopper hung up and no deadline fired. The requests have two things in common: the price cache was slow for them, and a seller sent malformed data. On a test machine with Python 3.12 the same requests return a clean "502".</p>
+<h3>Introduction</h3>
+<p>A refused cancel is not a one-time mistake. The count it leaves behind is read again by every timeout and every TaskGroup that runs later in the same Task, and each of them assumes that a raised count means somebody outside is still waiting for the Task to stop. This part shows the TaskGroup acting on that false record.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="A cancel request still on a Task's count after the reason for it is gone, usually because someone refused a cancel without calling uncancel(); later code treats it as a live request.">stale cancel request</dfn> is a request that is still on a Task's count after the reason for it is gone, usually because a coroutine refused a cancel without calling <code>uncancel()</code>. Later code cannot tell it from a live request.</p>
+</div>
+<h3>Working: how a stale request ends a later request on 3.13 and 3.14</h3>
+<ol class="ts-steps">
+<li>The hand-made cache limit refuses its own cancel at 20 ms. Count: 1.</li>
+<li>The handler calls <code>compare()</code>. seller-c answers <code>seller-c 12x9</code>; parsing the price raises ValueError, a bug, so it fails the inner TaskGroup.</li>
+<li>The group cancels its parent, the handler's Task, to interrupt its body. Count: 2.</li>
+<li>At exit the group takes its request back. Count: 1. A request remains, so the group believes an outside cancel is pending.</li>
+<li>The group must raise its ExceptionGroup, so, as the TaskGroup part showed, it re-cancels its parent to keep that "outside" cancel from being lost.</li>
+<li>The handler's <code>except* ValueError</code> sets the reply "502". The re-arranged CancelledError arrives at its next <code>await</code>, the audit write, and the request ends cancelled: no reply, no audit row.</li>
+</ol>
+<h3>Program</h3>
+<p>The program runs the handler three times against real sellers with seller-c sending a malformed price, once with each cache limit from the last part.</p>
+<div class="ts-code" data-lang="python" data-title="stale_cancel.py" data-file="stale_cancel.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/stale_cancel.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>running_sellers(garbled={"seller-c"})</code> makes seller-c send a price that is not a number. Gateway v4's <code>_ask()</code> catches seller errors and connection errors, not ValueError, so the bug fails the group, as it should.</li>
+<li>With the stale request, the shopper gets nothing and the audit row is lost: steps 4 to 6 above.</li>
+<li>With <code>uncancel()</code> or with <code>asyncio.timeout</code>, the count is 0 when the group runs; the group takes its own request back to 0, does not re-cancel, and the shopper gets "502" with its audit row.</li>
+</ol>
+<h3>The same programs on four Python versions</h3>
+<p>Part of this behaviour changed in 3.13, so the page measured it on each version with one small probe. Line 2 is this part's case; lines 1 and 4 are the 3.13 changes from the bookkeeping parts; line 3 is the shield report from the last rung, which also differs between 3.14 patch releases.</p>
+<div class="ts-code" data-lang="python" data-title="version_probe.py" data-file="version_probe.py" data-verified="ran"></div>
+<div class="ts-tabs">
+<div data-tab="Python 3.12"><div class="ts-code" data-lang="text" data-title="Output on Python 3.12" data-file="out/version_probe_3.12.txt" data-verified="ran"></div></div>
+<div data-tab="Python 3.14"><div class="ts-code" data-lang="text" data-title="Output on Python 3.14" data-file="out/version_probe_3.14.txt" data-verified="ran"></div></div>
+</div>
+<p><strong>Explanation of the outputs</strong></p>
+<ol>
+<li>Line 2: on 3.12 the stale request is harmless here, because a 3.12 group never re-cancels its parent; on 3.14 it ends the request. 3.11 prints the same as 3.12, and 3.13 the same as 3.14; the tests run the probe on every version installed.</li>
+<li>Line 4 is the other side of the same change: a real hang-up during a failing group's clean-up is lost on 3.12 and kept on 3.14. The 3.13 change made groups honour the count; a wrong count is then acted on too.</li>
+</ol>
+<div class="ts-legacy">
+<p><strong>Upgrading from 3.11 or 3.12.</strong> Code that refuses cancels without <code>uncancel()</code> may have run for years without visible harm, and starts ending requests with CancelledError after an upgrade to 3.13 or later. Before upgrading, search for <code>except asyncio.CancelledError</code> and <code>except CancelledError</code> blocks that do not end in <code>raise</code>, and for hand-made timers that call <code>cancel()</code> on the current Task.</p>
+</div>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What the user sees</th><th>Signal to watch</th><th>How to confirm</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>No answer at all, rarely, after an unrelated error was already handled</td><td>Requests whose only exception is CancelledError, with no hang-up and no timeout counted for them</td><td>Log <code>asyncio.current_task().cancelling()</code> when a request starts its fan-out: above 0 in a request nobody has cancelled means a stale request</td><td>Replace refusals with <code>asyncio.timeout()</code>; where a refusal must stay, call <code>uncancel()</code></td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A CancelledError with no hang-up and no timeout must be a bug in asyncio or in the framework."</p>
+<p><strong>Why it is wrong:</strong> the CancelledError is delivered on purpose: a TaskGroup saw a raised count and protected what it took for an outside cancel. The bug is the refusal earlier in the same Task that left the count raised, often in a different module from where the error appears.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A refused cancel without <code>uncancel()</code> leaves a stale request that every later timeout and TaskGroup in the Task reads.</li>
+<li>On 3.13 and later a failing TaskGroup re-cancels its parent when requests remain: the request then ends with only CancelledError.</li>
+<li>Signal: CancelledError with no hang-up or timeout counted; check <code>cancelling()</code> at the start of the fan-out.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A stale cancel request is a false record that someone wants the Task stopped, and since 3.13 TaskGroups act on it, ending an unrelated request long after the refusal that caused it.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c37 c17">
+<p class="q">This needs Part 3. A team removes the cache limit and the stale-cancel failures stop. A month later a new handler wraps a slow cache call in <code>asyncio.wait_for(cache.get(item), 0.02)</code> and catches TimeoutError. Do the failures come back?</p>
+<ol>
+<li>No: wait_for takes back its own cancel request, so no stale count is left</li>
+<li data-why="wait_for cancels and converts its own cancel; it does not leave the count raised, so the later group has nothing to re-cancel for.">Yes: wait_for cancels the Task, so the count stays at 1</li>
+<li data-why="Catching TimeoutError outside a timeout is the correct pattern; the stale count came from catching CancelledError.">Yes: catching TimeoutError is just another refusal</li>
+</ol>
+<p class="ts-why"><span class="ts-claim" data-claim="c37" data-src="s1">Since Python 3.12, wait_for() is implemented using asyncio.timeout().</span> The timeout records the count, takes its own request back with uncancel() and converts only its own cancel, so the count is 0 when the later TaskGroup runs.</p>
+</div>
+</section>
+<section class="ts-part" id="slow-cleanup" data-rung="4" data-min="12">
+<h2>Clean-up that awaits too long: the deadline fires on time, the answer is late</h2>
+<p class="ts-bridge">Last part: a stale request ends a later request. Still unsolved: rung 2 said clean-up may await and that whoever waits for the Task waits for its clean-up too. What does that cost when the clean-up is slow?</p>
+<p class="ts-problem">A seller asks its callers to tell it when they give up, so it can stop working on the request. Someone adds that call to seller-e's clean-up: on CancelledError, send "cancel my request" to seller-e, then re-raise. seller-e takes 400 ms to answer that call too. From then on every request answers at 650 ms, though the deadline still fires at 250 ms and seller-e is still counted as timed out.</p>
+<h3>Introduction</h3>
+<p>Every tool on the request path waits for its Tasks to finish, clean-up included: a timeout's block cannot exit before the CancelledError leaves it, and a TaskGroup cannot exit before every child is done. So clean-up time is added, in full, to the time the request takes after its deadline. This part measures it and bounds it.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>At 250 ms seller-e's deadline fires and CancelledError arrives at its <code>readline()</code>.</li>
+<li>The <code>except</code> awaits the 400 ms notice. The cancel was delivered once; nothing interrupts the notice.</li>
+<li>At 650 ms the notice ends, the CancelledError leaves the timeout's block, and the timeout turns it into TimeoutError: seller-e is counted as timed out, correctly.</li>
+<li>Only now is seller-e's Task done, and the TaskGroup, which waits for all five, lets the request answer.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="slow_cleanup.py" data-file="slow_cleanup.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/slow_cleanup.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>WithCleanup</code> is gateway v4 with one change: its seller call awaits a clean-up on CancelledError before re-raising, as clean-up should.</li>
+<li>Unbounded, the answer is right (seller-b at 1,199, seller-e timed out) and arrives at 650 ms: 250 ms of deadline plus 400 ms of clean-up.</li>
+<li>Bounded to 20 ms with its own <code>asyncio.timeout</code>, the clean-up gives up on the notice and the answer arrives at 270 ms. The inner timeout inside the <code>except</code> works because it records the count (1, from the deadline) when it is entered, and converts only its own cancel; the deadline's CancelledError then continues with the bare <code>raise</code>.</li>
+</ol>
+<h3>Solved example: the signal that separates the three "late answer" bugs</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Cause</th><th>Latency</th><th>seller-e's timeout counted?</th><th><code>expired()</code> of its deadline</th></tr></thead>
+<tbody>
+<tr><td>Swallowed cancel (Part 4, trap 5)</td><td>about 1,200 ms</td><td>No</td><td>True</td></tr>
+<tr><td>Blocking call (Part 4, trap 2)</td><td>about 900 ms</td><td>No</td><td>False</td></tr>
+<tr><td>Slow clean-up (this part)</td><td>about 650 ms</td><td>Yes</td><td>True</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> "latency above the budget while timeouts are counted" points at clean-up, because the deadline worked and the time went after it. A per-Task metric makes it direct: the time from <code>cancel()</code> to the Task being done, the cancellation latency, should be near zero.</p>
+<h3>The fix, and its cost</h3>
+<ul>
+<li><strong>Bound it:</strong> give clean-up its own short timeout, as in the program. The cost is a clean-up that sometimes does not finish; it must be safe to skip.</li>
+<li><strong>Move it off the path:</strong> start the notice with <code>spawn()</code> and do not await it. The request is not delayed at all; the notice now needs an owner, as every background Task does (Part 4).</li>
+<li><strong>Keep clean-up local:</strong> closing sockets, releasing slots and dropping buffers are fast; network calls in clean-up are the slow ones.</li>
+</ul>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The deadline fired at 250 ms, so the request is over at 250 ms."</p>
+<p><strong>Why it is wrong:</strong> the deadline starts the stop; the request is over when the last Task has finished stopping. The program counts seller-e as timed out, which is true, and answers at 650 ms, which is also true. A deadline bounds the wait, never the clean-up after it.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Timeouts and TaskGroups wait for clean-up; slow clean-up is added in full after the deadline.</li>
+<li>Signal: latency above the budget with timeouts counted; cancellation latency well above zero.</li>
+<li>Fix: bound clean-up with its own timeout, move slow parts to an owned background Task, keep clean-up local.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A deadline bounds the wait, not the clean-up after it, so every await in clean-up must be short, bounded, or moved off the request's path.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">Dashboards show p99 latency at 640 ms against a 250 ms budget, the timeout count for one seller close to 100%, CPU at 20%, and loop lag near zero. Which cause fits best?</p>
+<ol>
+<li data-why="A swallowed cancel stops the timeout from converting, so timeouts would not be counted.">A swallowed CancelledError in a retry wrapper</li>
+<li data-why="A blocking call holds the loop's thread, so loop lag would spike; here it is near zero.">A blocking call in that seller's client</li>
+<li>Clean-up that awaits something slow after the deadline fires</li>
+</ol>
+<p class="ts-why">Timeouts are counted, so the deadline fired and converted; loop lag is near zero, so nothing holds the thread. The time is spent after the deadline, in clean-up the TaskGroup waits for.</p>
+</div>
+</section>
+<section class="ts-part" id="hang-ups-at-scale" data-rung="4" data-min="14">
+<h2>Hang-ups at 10 times the load, and a client that hangs up on purpose</h2>
+<p class="ts-bridge">Last part: slow clean-up makes a timely deadline produce a late answer. Still unsolved: what all of this does at 2,000 requests per second, when hang-ups come in bursts, or from someone doing it on purpose.</p>
+<p class="ts-problem">A sale page refreshes itself every few seconds, and each refresh abandons the previous request. A misbehaving client opens a connection, sends a request line and closes it, a thousand times a second. Gateway v5 does the full fan-out for every one of them; gateway v6 must not.</p>
+<h3>Introduction</h3>
+<p>Rung 1 measured one hang-up. This part measures a burst on both gateways, then does the arithmetic at 10 times the load, and covers the client that makes hang-ups its attack.</p>
+<h3>Program</h3>
+<p>Ten shoppers send their request and hang up 50 ms later. The program counts the seller calls still in progress 10 ms after the last hang-up, and the seller-e SDK threads still busy at 300 ms.</p>
+<div class="ts-code" data-lang="python" data-title="hangup_load.py" data-file="hangup_load.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/hangup_load.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Gateway v5 behind a plain server: 50 seller calls are still in progress at 60 ms, all 5 calls of all 10 abandoned requests, and seller-e's 4 SDK threads are still busy at 300 ms. They stay busy until about 900 ms.</li>
+<li>Gateway v6: 0 calls in progress at 60 ms and 0 threads busy at 300 ms. Each watcher cancelled its request; the 6 seller-e calls still queued in the pool were dropped, and the 4 that had started gave up at their passed-down deadlines.</li>
+</ol>
+<h3>Solved example: 10 times the load</h3>
+<p><strong>Given:</strong> 2,000 requests per second; 10% of shoppers hang up, on average 100 ms in. Per abandoned request, gateway v5 keeps 0.32 connection-seconds of seller calls and 0.8 thread-seconds of seller-e's pool busy for nobody (rung 1). Gateway v6 stops within a loop turn or two of the hang-up.</p>
+<p><strong>Step 1.</strong> Abandoned requests: 2,000 × 0.1 = 200 per second.</p>
+<p><strong>Step 2. Gateway v5, connections.</strong> 200 × 0.32 = 64 seller connections open for nobody at any moment, each also a file descriptor (Part 2) and a slot under the shared cap (Part 3).</p>
+<p><strong>Step 3. Gateway v5, seller-e's pool.</strong> 200 × 0.8 = 160 thread-seconds wanted per second from 4 threads: the pool is full of abandoned calls, and live requests' seller-e calls wait in its queue.</p>
+<p><strong>Step 4. Gateway v6.</strong> Seller calls stop at the hang-up: about 0 connections for nobody. Thread time per abandoned call drops from 0.8 s to at most the 0.15 s left in its budget at 100 ms, because the deadline was passed down: 200 × 0.15 = 30 thread-seconds a second, still more than 4 threads can give, but no longer outlasting the request.</p>
+<p><strong>Result:</strong> what breaks first at 10 times the load on gateway v5 is seller-e's pool, then the shared cap. Gateway v6 removes the connection waste entirely and cuts the thread waste by more than 80%; what remains is Part 4's lesson that seller-e does not belong on the request path.</p>
+<h3>The client that hangs up on purpose</h3>
+<p>A client that opens a connection, sends a request and closes it at once costs it almost nothing and costs gateway v5 a full fan-out: five seller calls, a thread for 900 ms, ranking and counts. At 1,000 such requests per second that is 1,000 × 0.8 = 800 thread-seconds of seller-e's time wanted each second. On gateway v6 the request is cancelled as soon as the watcher reads the end of the connection, so the attacker has to keep each connection open for as long as it wants the gateway to work, which is the point aiohttp's documentation makes for its own handler cancellation (in gateway v6's part). Rate limits per client, in front of the gateway, are still needed; cancellation only removes the leverage.</p>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Hang-ups not propagated (gateway v5)</td><td>Live requests slow or partial during bursts of abandoned ones</td><td>Seller calls and SDK threads busy while the server's open connections fall; hang-up count from the server, not the handler</td><td>A hang-up watcher in the request's TaskGroup, or the framework's handler cancellation</td></tr>
+<tr><td>Work a cancel cannot reach</td><td>A full thread pool, slow seller-e for everyone</td><td>Executor queue length; threads busy past the request's deadline</td><td>Pass the remaining budget down as every library's timeout</td></tr>
+<tr><td>Hang-up flood from one client</td><td>Real shoppers wait for slots</td><td>Hang-ups per client; requests per client</td><td>Cancellation plus per-client rate limits in front of the gateway</td></tr>
+<tr><td>Cancellations without a stop reason</td><td>Nothing; incidents are hard to read</td><td>CancelledError in logs with no message; no metric per reason</td><td>A message on every <code>cancel()</code> you call; counters for hang-ups, deadlines, failures, shutdowns</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Hang-ups are rare, so propagating them is an optimisation for later."</p>
+<p><strong>Why it is wrong:</strong> hang-ups arrive in bursts exactly when load is highest: refreshing pages, retrying clients, timeouts at a load balancer in front of the gateway. And anyone who notices that a request is expensive and a hang-up is free can send them deliberately. Without propagation each one costs a full fan-out; the program shows 50 seller calls and 4 threads serving 10 shoppers who had gone.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>10 abandoned requests: gateway v5 keeps 50 seller calls and 4 SDK threads busy; gateway v6 keeps 0 and 0.</li>
+<li>At 2,000 requests per second with 10% hang-ups, v5 holds about 64 connections for nobody and fills seller-e's pool.</li>
+<li>Cancellation removes the leverage of a hang-up flood; rate limits per client are still needed.</li>
+</ul>
+</div>
+<p class="ts-takeaway">At 10 times the load, hang-ups are a steady stream of abandoned requests, and only a gateway that propagates them keeps its connections and threads for shoppers who are still there.</p>
+<div class="ts-explain" data-points="A refused cancel catches the shopper's cancel too, and without uncancel() leaves a stale request|On 3.13 and later a stale request makes a failing TaskGroup end the request with only CancelledError|Clean-up that awaits is added in full after the deadline; bound it or move it off the path|Without propagation every hang-up costs a full fan-out; with it, only what the deadline passed down">
+<p class="q">In your own words: name the ways cancellation breaks that this rung covered, and for each one the signal you would watch.</p>
+<div class="ts-model"><p>Refusing a cancel, by hand-made timeouts that catch CancelledError, swallows the shopper's hang-ups along with the intended cancel; the signal is work done for shoppers who left. Without uncancel() it also leaves a stale request on the count, and on 3.13 and later a TaskGroup that later fails in the same request re-cancels it, so the request ends with only CancelledError; the signal is CancelledError with no hang-up or timeout counted. Clean-up that awaits something slow is added in full after the deadline; the signal is latency above the budget while timeouts are counted, and a high time from cancel() to done. And without propagating hang-ups, every abandoned request costs a full fan-out and a thread; the signal is seller calls and threads busy while client connections fall.</p></div>
+</div>
+</section>
+<section class="ts-part" id="choose-the-tool" data-rung="5" data-min="12">
+<h2>Work that must finish: shield, an owned Task, or a durable outbox</h2>
+<p class="ts-bridge">Last part: cancellation, propagated, keeps the gateway's resources for live shoppers. Still unsolved: for the work that must not be cancelled, which of the three tools on this page should a team pick?</p>
+<p class="ts-problem">Three teams each have one piece of must-finish work. The gateway team has its audit row. The checkout team has an order confirmation e-mail. The analytics team has the per-seller counts. All three say "use shield()". At most one of them is right.</p>
+<h3>Introduction</h3>
+<p>Every tool for must-finish work answers two questions differently: does the request wait for the work, and what can still destroy the work? The comparison below puts the three options from this page, plus the plain <code>await</code> they replace, against the threats the last rungs measured.</p>
+<h3>Definitions</h3>
+<ol>
+<li>An <dfn data-def="A background Task started with a helper that keeps a strong reference and reads its outcome in a done callback, so it cannot be collected early and its failure is logged and counted.">owned Task</dfn> is a background Task started with Part 4's <code>spawn()</code>: a strong reference in a set, and a done callback that reads, logs and counts its failure. The request does not wait for it.</li>
+<li>A <dfn data-def="A table written in the same database transaction as the business change, holding work still to be done; a separate worker reads it and does the work, retrying until it succeeds.">durable outbox</dfn> is a table written in the same database transaction as the change it belongs to, listing work still to be done; a separate worker reads it and does that work, retrying until it succeeds. A durable queue plays the same role when the work starts outside a database.</li>
+</ol>
+<h3>Difference between the four ways to run must-finish work</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Option</th><th>Request waits for it?</th><th>Survives the request's cancel</th><th>Survives graceful shutdown</th><th>Survives a crash</th><th>Cost</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>Plain <code>await</code></td><td>Yes</td><td>No</td><td>No</td><td>No</td><td>Nothing</td><td>The work may be lost along with its request</td></tr>
+<tr><td>Owned Task behind <code>shield()</code> (gateway v6's audit)</td><td>Yes, unless cancelled</td><td>Yes</td><td>Only if shutdown waits for owned Tasks (Part 8)</td><td>No</td><td>A helper, a shutdown step, the write's time on the answer path</td><td>The answer must not leave before the work is done, a lost record on a crash is acceptable</td></tr>
+<tr><td>Owned Task, not awaited (gateway v5's counts)</td><td>No</td><td>Yes</td><td>Only if shutdown waits for owned Tasks</td><td>No</td><td>A helper; failures only in logs and counters</td><td>The request should not wait, and losing a little on a crash is acceptable</td></tr>
+<tr><td>Durable outbox or queue</td><td>Only for the local write</td><td>Yes</td><td>Yes</td><td>Yes, once committed</td><td>A table or a broker, a worker, retries, duplicates (at-least-once)</td><td>The work must happen exactly as promised, whatever happens to the process</td></tr>
+</tbody>
+</table></div>
+<h3>Decision rules</h3>
+<ul>
+<li><strong>Ask first whether the work may be lost.</strong> If losing it on a crash is unacceptable, no in-process tool is enough: write it durably, in the same transaction as the change it belongs to.</li>
+<li><strong>If it may be lost on a crash, ask whether the answer must wait for it.</strong> If yes: owned Task behind <code>shield()</code>. If no: owned Task, not awaited.</li>
+<li><strong>Never</strong> shield a bare coroutine, or a Task the request's own TaskGroup owns.</li>
+<li><strong>Every in-process option needs shutdown to wait</strong> for owned Tasks before the loop closes; Part 8 builds that.</li>
+</ul>
+<h3>Solved example: the three teams</h3>
+<p><strong>Given:</strong> the three pieces of work from the problem.</p>
+<p><strong>Step 1. Audit row.</strong> The rule is "no answer without its row", so the answer waits; a row lost in a crash is a gap the audit team accepts, because the crash itself is logged. Owned Task behind <code>shield()</code>, as gateway v6 does.</p>
+<p><strong>Step 2. Order confirmation.</strong> It must be sent exactly once per order whatever happens, and the shopper should not wait for an e-mail server. An outbox row written with the order, and a worker that sends and retries; the e-mail service must tolerate a duplicate after a retry.</p>
+<p><strong>Step 3. Per-seller counts.</strong> Losing a second of counts on a crash is harmless, and no request should wait. Owned Task, not awaited, as gateway v5's flusher.</p>
+<p><strong>Result:</strong> one team should use shield(), one an owned background Task, and one an outbox. "Use shield()" was right for the audit row only.</p>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Why not use a durable outbox for everything that must finish?"</p>
+<p><strong>What a strong senior answer contains:</strong> because it costs a table or broker, a worker, retries and duplicate handling, and moves the work out of the request: the answer can no longer say the work is done. Use it where a lost or doubled action costs money or trust (a payment, an e-mail, an order event). For records whose loss on a crash is acceptable, an owned Task is simpler, and shield() adds "the answer waits for it". The candidate states the guarantee each gives: shield and owned Tasks survive cancellation, not crashes; an outbox survives crashes, at the price of at-least-once delivery.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "shield() is the asyncio way to make work reliable."</p>
+<p><strong>Why it is wrong:</strong> shield() makes work independent of one caller's cancellation. Reliability against shutdown needs an owner that shutdown waits for, and reliability against a crash needs the work written somewhere durable before it is promised. The table's last three columns are where shield() and an outbox differ.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Must survive a crash: durable outbox or queue, at-least-once, with duplicates handled.</li>
+<li>May be lost on a crash, answer waits: owned Task behind shield(); answer does not wait: owned Task.</li>
+<li>Every in-process option needs a shutdown that waits for owned Tasks.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Pick by what may destroy the work: shield() handles a caller's cancel, an owner and a waiting shutdown handle the rest of the process, and only a durable outbox handles a crash.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">A payment service must call the bank's API exactly once per payment and confirm to the client only after the bank has accepted it. Requests are sometimes cancelled by client disconnects and the service is redeployed daily. Which design fits?</p>
+<ol>
+<li data-why="A shielded Task survives the disconnect but not a crash or an unwaited shutdown, so a payment could be lost after the client was told nothing, or worse, after it was charged.">An owned Task behind shield(), awaited before confirming</li>
+<li>Write a payment row and an outbox row in one transaction, let a worker call the bank with an idempotency key and retries, and confirm when the row says accepted</li>
+<li data-why="Not awaiting means the client could be told nothing about the outcome, and a crash still loses the call.">An owned Task, not awaited, that calls the bank</li>
+</ol>
+<p class="ts-why">A payment must survive crashes and deploys and must not happen twice. Only a durable record written with the payment survives a crash, and an idempotency key makes the worker's retries safe. The client can wait on the row's status instead of on a coroutine.</p>
+</div>
+</section>
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: stopping work in an async service</h2>
+<p class="ts-bridge">Last part: pick a must-finish tool by what may destroy the work. Still unsolved: explaining cancellation out loud, with the mechanism, the numbers and the trade-offs, the way an interviewer asks.</p>
+<p class="ts-problem">"What happens when you cancel an asyncio Task?" Most answers say "it raises CancelledError". A senior answer says where, when, who decides, how the deadline and the TaskGroup know it was theirs, and what cannot be reached at all.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. Each draws on this page and at least one earlier part. Try each before opening the reference answer.</p>
+<h3>Prompt 1: "Walk me through task.cancel()"</h3>
+<div class="ts-predict" data-claims="c3 c5 c6 c7 c17">
+<p class="q">seller-e's Task is parked in <code>await reader.readline()</code> inside <code>asyncio.timeout_at(deadline)</code>. The deadline passes. Walk through everything from the timer to the gateway recording "seller-e timed out".</p>
+<div class="ts-reveal"><p>The timeout's timer callback runs in the loop and calls <code>task.cancel()</code>. That counts the request (cancelling goes from 0 to 1), cancels the waiter Future the Task is parked on and returns True; nothing of the coroutine has run. Cancelling the Future schedules the Task's wake-up with <code>call_soon</code>. In the next iteration the wake-up reads the Future's result, which raises CancelledError, and the Task's step throws it into the coroutine at the <code>readline()</code> await. The coroutine's <code>finally</code> closes the connection; the exception leaves the coroutine and reaches the timeout's exit, which calls <code>uncancel()</code>, finds the count back at the 0 it recorded at entry, and raises TimeoutError instead. The seller call catches TimeoutError and returns it as a value, and the gateway records a timeout. Trade-off worth naming: the gateway stopped waiting, but seller-e's own work, and any thread behind the call, carry on unless the deadline was passed down to them.</p></div>
+</div>
+<h3>Prompt 2: "Design for disconnects and must-finish work"</h3>
+<div class="ts-explain" data-points="The disconnect becomes one cancel of the request's Task, which a TaskGroup carries to every call|Deadlines are passed down to threads and libraries a cancel cannot reach|The ledger write is an owned Task behind shield(), created outside the request's group|Deploys: shutdown waits for owned Tasks; anything that must survive a crash goes to an outbox">
+<p class="q">A ticket-booking API fans out to four suppliers per search and writes a ledger row for every booking. Clients disconnect often, and the service is deployed hourly. Design how searches stop and how ledger rows survive, and say what each choice gives up.</p>
+<div class="ts-model"><p>Each request runs in a TaskGroup next to a watcher (or the framework's handler cancellation), so a disconnect cancels the request's Task and the group carries that cancel to all four supplier calls, each stopping at its await and closing its connection in finally. Every call that a cancel cannot reach, such as a blocking SDK in a thread, gets the remaining budget as its own timeout. The ledger write is started as an owned Task, outside the request's group, and awaited through shield(), so a disconnect cancels the handler's wait but not the write; that costs the write's time on the answer path. Deploys: shutdown first waits for the owned Tasks, with a limit, so hourly deploys do not cut writes. If a booking must never be lost even on a crash, the ledger row is written in the booking's own transaction, or as an outbox row a worker processes, which gives up "the answer means it is written" for at-least-once delivery.</p></div>
+</div>
+<h3>Prompt 3: "After upgrading to Python 3.13, some requests fail with only CancelledError"</h3>
+<div class="ts-predict" data-claims="c21 c14 c15">
+<p class="q">After an upgrade from 3.12 to 3.13, about one request in a thousand ends with only CancelledError. Nothing hung up and no timeout fired. What do you suspect, how do you confirm it, and how do you fix it?</p>
+<div class="ts-reveal"><p>A refused cancel earlier in the same Task: some code catches CancelledError and continues without <code>uncancel()</code>, often a hand-made timeout around a cache or a retry. That leaves a stale request on the count. Since 3.13, a TaskGroup that later fails in the same Task and still sees requests pending re-cancels its parent so as not to lose them, so the next await after the handled ExceptionGroup raises CancelledError. On 3.12 the group never re-cancelled, which is why the bug was invisible before. Confirm by logging <code>cancelling()</code> at the start of the fan-out (above 0 in a request nobody cancelled) and by searching for <code>except CancelledError</code> without <code>raise</code>. Fix by replacing hand-made limits with <code>asyncio.timeout()</code> and catching TimeoutError outside it. Trade-off: none worth keeping; the refusal also swallowed real hang-ups.</p></div>
+</div>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it treats cancellation as a request that travels (a count, a Future cancelled, a wake-up queued, an exception thrown at an await) rather than as a kill; it names the stop reasons and how each tool tells its own cancel from another's; it uses numbers (a hang-up at 100 ms costs 0.32 connection-seconds and 0.8 thread-seconds; clean-up turns 250 ms into 650 ms); and it states what each protection does not cover: shield against shutdown and crashes, cancel against threads and other services.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "In an interview, 'cancel raises CancelledError inside the task' is a complete answer."</p>
+<p><strong>Why it is wrong:</strong> it skips everything that goes wrong in production: when the exception arrives (only at an await), who can refuse it (the coroutine), how a timeout or group knows it was theirs (the count), what is out of reach (threads, other services), and what must be protected from it (must-finish work). Interviewers probe exactly those gaps.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>cancel() → count + cancelled Future → wake-up via call_soon → throw at the await → finally → done.</li>
+<li>Disconnect → one cancel of the request Task → TaskGroup carries it; deadlines passed down; must-finish work protected deliberately.</li>
+<li>"Only CancelledError" after 3.13: look for refused cancels and stale counts.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A senior answer about cancellation follows the request from cancel() to done, names who decides at each step, and says what no cancel can reach.</p>
+</section>
+<section class="ts-part" id="whats-next" data-rung="5" data-min="7">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: everything so far stops work that is no longer wanted. Nothing yet limits work that is wanted, but arrives faster than it can be done.</p>
+<p class="ts-problem">Gateway v6 answers seller-b at 1,199 in 250 ms, stops every seller call within a loop turn or two when the shopper hangs up, gives seller-e's thread the request's deadline, and writes every audit row. But in a sale, 3,000 requests a second arrive at a gateway that can finish 2,000: the extra 1,000 wait for slots under the shared cap, their deadlines fire while they wait, and they answer "no offer" after doing nothing useful.</p>
+<h3>What this page added</h3>
+<ul>
+<li>Why stopping is the job: a hang-up at 100 ms cost gateway v5 0.32 connection-seconds and 0.8 thread-seconds.</li>
+<li>cancel() as a request, traced through Part 2's Task steps: a count, a cancelled Future, a wake-up via <code>call_soon</code>, CancelledError thrown in at the await; where it lands in the three cases.</li>
+<li>Clean-up in finally: it may await, it is not re-cancelled, a second cancel cuts it short.</li>
+<li><code>cancelling()</code> and <code>uncancel()</code>, and how <code>asyncio.timeout</code> and TaskGroup use them to convert or absorb only their own cancel; the 3.11 to 3.13 differences, measured.</li>
+<li>Gateway v6: a hang-up watcher in the request's TaskGroup, the deadline passed down to seller-e's SDK, and an audit row written by an owned Task behind <code>shield()</code>; what shield does not protect.</li>
+<li>What breaks: refused cancels, stale cancel requests that end a later request with only CancelledError, clean-up that turns 250 ms into 650 ms, and hang-ups at 10 times the load.</li>
+<li>shield vs an owned Task vs a durable outbox, chosen by what may destroy the work.</li>
+</ul>
+<h3>What is still broken</h3>
+<p>Every tool so far decides when to stop work. None decides how much work to accept:</p>
+<ul>
+<li>When requests arrive faster than sellers answer, they wait for slots under the cap, and their deadlines fire in the line: fast, empty answers, at full cost to the process.</li>
+<li>Nothing tells a caller "too busy, come back later" before the work starts; there is no bounded line of waiting work and no rule for what to drop.</li>
+<li>The metrics flusher and the audit writes are owned Tasks with no limit on how many can pile up if their store slows down.</li>
+</ul>
+<h3>Next: Part 6 — Bounding work: queues and backpressure</h3>
+<p>Part 6 keeps gateway v6 and gives it a bounded queue in front of the seller calls, a rule for rejecting work it cannot finish in time, and backpressure that slows producers instead of letting waiting work grow without limit.</p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: how work stops, from cancel() to done, and how must-finish work survives it.</li>
+<li>Still broken: work that is wanted but arrives faster than it can finish.</li>
+<li>Part 6: bounded queues, load shedding and backpressure on gateway v6.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v6 stops cleanly for every reason it knows; Part 6 makes it refuse, early and cheaply, the work it could never finish.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway from the toy loop to this page in the order they were built.</p>
+<ol>
+<li>v1 on the toy loop: five tasks on one thread, 900 ms, answer at the 250 ms budget</li>
+<li>v2: the toy loop plus a selector, the same answers from real sockets</li>
+<li>v3: asyncio streams and Tasks, with a hand-made budget and hand-made waiting</li>
+<li>v4: a TaskGroup, a shared Semaphore and one timeout_at deadline per request</li>
+<li>v5: seller-e's sync SDK in its own thread pool, ranking in a process pool, watched background metrics</li>
+<li>v6: a hang-up watcher that cancels the request, the deadline passed down to seller-e's SDK, a shielded audit row</li>
+</ol>
+<p class="ts-why">Each version fixes what the one before it could not do: fake I/O, the hand-written loop, the hand-made waiting and budget, the traps the loop cannot detect, and finally work that nobody wants any more.</p>
+</div>
+</section>

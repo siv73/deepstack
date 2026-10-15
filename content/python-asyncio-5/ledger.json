@@ -1,0 +1,1629 @@
+{
+ "verified": "2026-10-15",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "asyncio: Coroutines and Tasks",
+   "url": "https://docs.python.org/3.14/library/asyncio-task.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s2",
+   "title": "CPython 3.14 source: Lib/asyncio/tasks.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s3",
+   "title": "CPython 3.14 source: Lib/asyncio/timeouts.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/timeouts.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s4",
+   "title": "CPython 3.14 source: Lib/asyncio/taskgroups.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/taskgroups.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s5",
+   "title": "CPython 3.14 source: Lib/asyncio/futures.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s6",
+   "title": "What's New In Python 3.13",
+   "url": "https://docs.python.org/3.14/whatsnew/3.13.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s7",
+   "title": "What's New In Python 3.11",
+   "url": "https://docs.python.org/3.14/whatsnew/3.11.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s8",
+   "title": "asyncio: Exceptions",
+   "url": "https://docs.python.org/3.14/library/asyncio-exceptions.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s9",
+   "title": "concurrent.futures: Launching parallel tasks",
+   "url": "https://docs.python.org/3.14/library/concurrent.futures.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s10",
+   "title": "socket: Low-level networking interface",
+   "url": "https://docs.python.org/3.14/library/socket.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s11",
+   "title": "CPython 3.14 source: Lib/asyncio/runners.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/runners.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s12",
+   "title": "aiohttp 3.14.5 documentation: Web Server Advanced (web_advanced.rst)",
+   "url": "https://github.com/aio-libs/aiohttp/blob/v3.14.5/docs/web_advanced.rst",
+   "kind": "primary",
+   "publisher": "aiohttp (aio-libs)",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s13",
+   "title": "aiohttp 3.14.5 documentation: Web Server Reference (web_reference.rst)",
+   "url": "https://github.com/aio-libs/aiohttp/blob/v3.14.5/docs/web_reference.rst",
+   "kind": "primary",
+   "publisher": "aiohttp (aio-libs)",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s14",
+   "title": "CPython 3.12.15 source: Lib/asyncio/timeouts.py",
+   "url": "https://github.com/python/cpython/blob/v3.12.15/Lib/asyncio/timeouts.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s15",
+   "title": "CPython 3.12.15 source: Lib/asyncio/taskgroups.py",
+   "url": "https://github.com/python/cpython/blob/v3.12.15/Lib/asyncio/taskgroups.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s16",
+   "title": "CPython 3.13.16 source: Lib/asyncio/tasks.py",
+   "url": "https://github.com/python/cpython/blob/v3.13.16/Lib/asyncio/tasks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s17",
+   "title": "CPython 3.11.17 source: Lib/asyncio/timeouts.py",
+   "url": "https://github.com/python/cpython/blob/v3.11.17/Lib/asyncio/timeouts.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s18",
+   "title": "CPython 3.13.16 source: Lib/asyncio/timeouts.py",
+   "url": "https://github.com/python/cpython/blob/v3.13.16/Lib/asyncio/timeouts.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s19",
+   "title": "CPython 3.14 source: Lib/asyncio/base_events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/base_events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  },
+  {
+   "id": "s20",
+   "title": "CPython 3.14.8 source: Lib/asyncio/tasks.py",
+   "url": "https://github.com/python/cpython/blob/v3.14.8/Lib/asyncio/tasks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-15"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "Task.cancel() arranges for a CancelledError to be thrown into the wrapped coroutine on the next cycle of the event loop, and returns False if the Task is already done or cancelled, True otherwise.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › cancel(msg=None)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › cancel(msg=None)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › cancel(msg=None)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "The docs say that, unlike Future.cancel(), Task.cancel() does not guarantee that the Task will be cancelled, because the coroutine can suppress the exception; suppressing it completely is not common and is actively discouraged.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › cancel(msg=None), second paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › cancel(msg=None), second paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › cancel(msg=None), second paragraph",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "In CPython 3.14's tasks.py, Task.cancel() adds one to the Task's count of cancellation requests, cancels the Future the Task is waiting on if there is one and that succeeds, and otherwise sets a flag so that its next step throws CancelledError in.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Task.cancel()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "The docs call a Task cancelled when cancellation was requested with cancel() and the wrapped coroutine propagated the CancelledError thrown into it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › cancelled()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › cancelled()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › cancelled()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "In CPython 3.14's futures.py, cancelling a pending Future marks it cancelled and schedules each of its done callbacks with call_soon.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Future.cancel() and Future.__schedule_callbacks()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Future.cancel() and Future.__schedule_callbacks()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Future.cancel() and Future.__schedule_callbacks()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "In CPython 3.14's tasks.py, the Task's wake-up reads the Future's result; if that raises, as it does with CancelledError for a cancelled Future, the next step throws the exception into the coroutine with coro.throw().",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Task.__wakeup() and Task.__step_run_and_handle_result()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Task.__wakeup() and Task.__step_run_and_handle_result()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Task.__wakeup() and Task.__step_run_and_handle_result()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "In CPython 3.14's tasks.py, a step that ends with CancelledError leaving the coroutine cancels the Task; a coroutine that returns while a cancel has been requested but not yet thrown in also leaves the Task cancelled, not finished with its result.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Task.__step_run_and_handle_result(): except StopIteration / except CancelledError",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Task.__step_run_and_handle_result(): except StopIteration / except CancelledError",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Task.__step_run_and_handle_result(): except StopIteration / except CancelledError",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "The msg passed to cancel() has been propagated from the cancelled Task to its awaiter since Python 3.11.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › cancel(): versionchanged 3.11",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › cancel(): versionchanged 3.11",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › cancel(): versionchanged 3.11",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "The docs recommend try/finally blocks to perform clean-up, and say that a CancelledError that is explicitly caught should generally be propagated when clean-up is complete.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task cancellation (section)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task cancellation (section)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task cancellation (section)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "The exceptions reference says CancelledError can be caught to perform custom operations when Tasks are cancelled, that in almost all situations it must be re-raised, and that it is a subclass of BaseException rather than Exception since Python 3.8.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "CancelledError, versionchanged 3.8",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "CancelledError, versionchanged 3.8",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "CancelledError, versionchanged 3.8",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Task.cancelling() returns the number of pending cancellation requests to the Task: the number of cancel() calls less the number of uncancel() calls.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › cancelling()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › cancelling()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › cancelling()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "Task.uncancel() decrements that count and returns the remaining number; cancelling() and uncancel() were added in Python 3.11, mainly for asyncio's own use, notably by TaskGroup, and are not expected in end-user code.",
+   "sources": [
+    "s1",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › uncancel(), versionadded 3.11; What's New 3.11 › asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Task object › uncancel(), versionadded 3.11; What's New 3.11 › asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › uncancel(), versionadded 3.11; What's New 3.11 › asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Task object › uncancel(), versionadded 3.11; What's New 3.11 › asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › uncancel(), versionadded 3.11; What's New 3.11 › asyncio",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Task object › uncancel(), versionadded 3.11; What's New 3.11 › asyncio",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "Since Python 3.13, when uncancel() brings the count down to zero, a CancelledError that an earlier cancel() arranged but that has not yet been thrown into the Task is withdrawn.",
+   "sources": [
+    "s1",
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › uncancel(), versionchanged 3.13; What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Task object › uncancel(), versionchanged 3.13; What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › uncancel(), versionchanged 3.13; What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Task object › uncancel(), versionchanged 3.13; What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › uncancel(), versionchanged 3.13; What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Task object › uncancel(), versionchanged 3.13; What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "The docs say that code which suppresses cancellation by catching CancelledError needs to call uncancel() to remove the cancellation state.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task object › uncancel(), paragraph on suppressing cancellation",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task object › uncancel(), paragraph on suppressing cancellation",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task object › uncancel(), paragraph on suppressing cancellation",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The docs warn that TaskGroup and asyncio.timeout() are implemented using cancellation internally and might misbehave if a coroutine swallows CancelledError, and that user code should not generally call uncancel().",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task cancellation (section), second paragraph",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task cancellation (section), second paragraph",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task cancellation (section), second paragraph",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "In CPython 3.14's timeouts.py, entering the block records the Task's cancelling() count and schedules a callback for the deadline (with call_soon if it has already passed) that calls cancel() on the Task.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Timeout.__aenter__(), Timeout.reschedule(), Timeout._on_timeout()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Timeout.__aenter__(), Timeout.reschedule(), Timeout._on_timeout()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Timeout.__aenter__(), Timeout.reschedule(), Timeout._on_timeout()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "On exit after the deadline fired, the timeout calls uncancel(); only if the count is then at or below the value it recorded and a CancelledError is leaving the block does it raise TimeoutError in its place.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Timeout.__aexit__()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Timeout.__aexit__()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Timeout.__aexit__()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "In CPython 3.11 and 3.12's timeouts.py, the exit converts only when the exception leaving the block is exactly CancelledError; from 3.13 it also converts subclasses of CancelledError, and when a different exception leaves a block whose deadline fired, it inserts a TimeoutError into that exception's context chain, in front of the CancelledError found there.",
+   "sources": [
+    "s17",
+    "s14",
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "Timeout.__aexit__() and Timeout._insert_timeout_error() (3.11.17, 3.12.15, 3.13.16)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "The docs say that the first time a task in the group fails with an exception other than CancelledError, the remaining tasks are cancelled, and if the body of the async with block is still active the task containing it is cancelled too; that CancelledError interrupts an await but does not bubble out of the async with statement.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups › paragraph after the example",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups › paragraph after the example",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task groups › paragraph after the example",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "In CPython 3.14's taskgroups.py, a group that cancelled its parent calls uncancel() on it at exit, and propagates the CancelledError only if cancel requests remain after that and no child failed.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "TaskGroup._on_task_done() and TaskGroup._aexit()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "TaskGroup._on_task_done() and TaskGroup._aexit()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "TaskGroup._on_task_done() and TaskGroup._aexit()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Since Python 3.13, a task group that is cancelled from outside and must also raise an ExceptionGroup calls the parent task's cancel() method, so that a CancelledError is raised at the next await and the cancellation is not lost.",
+   "sources": [
+    "s1",
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Task groups › 'cancelled externally and also must raise'; What's New 3.13 › asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Task groups › 'cancelled externally and also must raise'; What's New 3.13 › asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Task groups › 'cancelled externally and also must raise'; What's New 3.13 › asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Task groups › 'cancelled externally and also must raise'; What's New 3.13 › asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Task groups › 'cancelled externally and also must raise'; What's New 3.13 › asyncio",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Task groups › 'cancelled externally and also must raise'; What's New 3.13 › asyncio",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "Python 3.13's release notes say the same change made task groups preserve the cancellation count, and that before it, when two nested groups both had a child fail at the same time, the outer group could hang.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "What's New 3.13 › asyncio (TaskGroup item)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "In CPython 3.12's taskgroups.py, a group that cancelled its parent calls uncancel() on it at the start of its exit, before waiting for the children, and never cancels the parent again after raising.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "TaskGroup._aexit() (3.12.15)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "TaskGroup._aexit() (3.12.15)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "TaskGroup._aexit() (3.12.15)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "The docs say terminating a task group is not natively supported by the standard library, and show how to do it: add a task that raises an exception to the group, and ignore that exception outside it.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Terminating a task group",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Terminating a task group",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Terminating a task group",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "A concurrent.futures call that is currently being executed cannot be cancelled: cancel() then returns False.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Future objects › cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Future objects › cancel()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "Future objects › cancel()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "In CPython 3.14, run_in_executor() returns an asyncio Future chained to the executor's own future, and cancelling the asyncio Future calls cancel() on the executor's future.",
+   "sources": [
+    "s19",
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "BaseEventLoop.run_in_executor() returns futures.wrap_future(); _chain_future() › _call_check_cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "BaseEventLoop.run_in_executor() returns futures.wrap_future(); _chain_future() › _call_check_cancel()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "BaseEventLoop.run_in_executor() returns futures.wrap_future(); _chain_future() › _call_check_cancel()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "BaseEventLoop.run_in_executor() returns futures.wrap_future(); _chain_future() › _call_check_cancel()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "BaseEventLoop.run_in_executor() returns futures.wrap_future(); _chain_future() › _call_check_cancel()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "BaseEventLoop.run_in_executor() returns futures.wrap_future(); _chain_future() › _call_check_cancel()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "socket.create_connection()'s timeout parameter sets the timeout on the socket before it connects; in timeout mode an operation that cannot complete within it raises socket.timeout, a deprecated alias of TimeoutError since Python 3.10.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "create_connection(); Notes on socket timeouts › timeout mode; exception socket.timeout",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "create_connection(); Notes on socket timeouts › timeout mode; exception socket.timeout",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "create_connection(); Notes on socket timeouts › timeout mode; exception socket.timeout",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "If aw is a coroutine, shield() schedules it as a Task; if the coroutine containing the await is cancelled, the Task running inside shield() is not cancelled, but the await expression in the caller still raises CancelledError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "The docs say to save a reference to tasks passed to shield(), because the event loop keeps only weak references and a task that isn't referenced elsewhere may be garbage collected before it is done.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw), Important note",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw), Important note",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw), Important note",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "The docs say that if the shielded work is cancelled by other means, from within itself, that also cancels shield().",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw), 'cancelled by other means'",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw), 'cancelled by other means'",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Shielding from cancellation › shield(aw), 'cancelled by other means'",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "In CPython 3.14's runners.py, when the main coroutine finishes, asyncio.run cancels every task that is still running and runs the loop until they have all finished.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "_cancel_all_tasks() and Runner.close()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "_cancel_all_tasks() and Runner.close()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "_cancel_all_tasks() and Runner.close()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "In CPython 3.14.0 to 3.14.8's tasks.py, once the awaiting caller has been cancelled, shield() no longer passes the inner task's outcome on; if the task later fails, shield() reports \"<exception> exception in shielded future\" to the loop's exception handler.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "shield() › _inner_done_callback, _outer_done_callback; _log_on_exception()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "shield() › _inner_done_callback, _outer_done_callback; _log_on_exception()",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "shield() › _inner_done_callback, _outer_done_callback; _log_on_exception()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "In CPython 3.13's tasks.py, when the caller is cancelled first, shield() only removes its own callback from the inner task, so nothing of shield()'s reads or reports the task's later failure.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "shield() › _outer_done_callback (3.13.16)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "shield() › _outer_done_callback (3.13.16)",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "shield() › _outer_done_callback (3.13.16)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "aiohttp's documentation says that with web handler cancellation enabled, the handler task is cancelled when the client disconnects, which can reduce load when no client is left to receive the response and helps against DoS attacks by requiring an attacker to keep a connection open to waste server resources.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Peer disconnection › Web handler cancellation",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Peer disconnection › Web handler cancellation",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "Peer disconnection › Web handler cancellation",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "Its run_app() takes a handler_cancellation parameter that defaults to False; the parameter was added in aiohttp 3.9, and cancelling was the default behaviour before aiohttp 3.7.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "run_app() › handler_cancellation parameter and versionadded 3.9",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "run_app() › handler_cancellation parameter and versionadded 3.9",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "run_app() › handler_cancellation parameter and versionadded 3.9",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "aiohttp's documentation recommends against asyncio.shield() for work that must survive a client disconnect, because the shielded task cannot be tracked by the application and may be cancelled during application shutdown; it points to aiojobs, whose shield tracks the inner task and waits for it during clean-up.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "Web handler cancellation › warning on asyncio.shield",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "Web handler cancellation › warning on asyncio.shield",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "Web handler cancellation › warning on asyncio.shield",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "Since Python 3.12, wait_for() is implemented using asyncio.timeout().",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "wait_for() › versionchanged 3.12",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch documentation sources (Doc/*.rst) and Lib/asyncio on raw.githubusercontent.com, the v3.11.17, v3.12.15 and v3.13.16 tags for version differences, and aiohttp's v3.14.5 docs; each fact also run on Python 3.11.15, 3.12.13, 3.13.14 and 3.14.6 where it describes behaviour",
+     "at": "2026-10-15T09:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "wait_for() › versionchanged 3.12",
+     "result": "supported",
+     "method": "fresh verbatim read of release-tag copies (CPython v3.14.8 Doc and Lib/asyncio, v3.13.16, v3.12.15, v3.11.17, aiohttp v3.14.5); each page sentence judged against the located passage",
+     "at": "2026-10-15T09:25"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "wait_for() › versionchanged 3.12",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "The 3.14 branch after 3.14.8 no longer has that report: shield() stops passing the outcome on and reports nothing.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "shield() › _outer_done_callback (3.14 branch head, PY_VERSION 3.14.8+; no _log_on_exception)",
+     "result": "supported",
+     "method": "verbatim read of the 3.14 branch head's Lib/asyncio/tasks.py (PY_VERSION 3.14.8+): no _log_on_exception in shield()",
+     "at": "2026-10-15T09:58"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "shield() › _outer_done_callback (3.14 branch head, PY_VERSION 3.14.8+; no _log_on_exception)",
+     "result": "supported",
+     "method": "fresh verbatim read of shield() on the 3.14 branch head; v3.14.0 and v3.14.5 tags checked to still contain the report",
+     "at": "2026-10-15T10:02"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "shield() › _outer_done_callback (3.14 branch head, PY_VERSION 3.14.8+; no _log_on_exception)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; verbatim reads of CPython v3.14.8, v3.13.16, v3.12.15, v3.11.17 and the 3.14 branch head, aiohttp v3.14.5, plus behaviour runs on 3.11 to 3.14; wording fixed where it flagged a missing condition, and c32 pinned to 3.14.0-3.14.8",
+     "at": "2026-10-15T09:55"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "asyncio's stream transport notices a closed connection and marks the reader at end of file even if the handler never reads.",
+   "reason": "true of the selector transport in the source, but not needed; the page states only what the handler's code can learn"
+  },
+  {
+   "text": "Cancelling run_in_executor()'s Future also drops calls still queued in a ProcessPoolExecutor.",
+   "reason": "ProcessPoolExecutor moves some pending calls into its call queue and marks them running before a worker takes them; the page limits the statement to thread pools"
+  },
+  {
+   "text": "Web frameworks other than aiohttp cancel the handler when the client disconnects.",
+   "reason": "not researched against those frameworks' own docs; the page cites aiohttp only"
+  },
+  {
+   "text": "uncancel() on 3.11 and 3.12 leaves an arranged CancelledError in place (as a sourced claim).",
+   "reason": "kept as a measured result of version_probe.py on 3.11.15 and 3.12.13, not stated as a documented guarantee"
+  }
+ ]
+}
