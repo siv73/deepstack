@@ -1,0 +1,7 @@
+selector: EpollSelector
+   80 ms  ready: seller-a  read: seller-a 1249
+  120 ms  ready: seller-b  read: seller-b 1199
+  150 ms  ready: seller-c  read: seller-c 1229
+  200 ms  ready: seller-d  read: seller-d 1215
+  900 ms  ready: seller-e  read: seller-e 1149
+select() calls: 5

@@ -1,0 +1,1299 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="9">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Gateway v6 from Part 5 answers seller-b at 1,199 in 250 ms, stops every seller call when its shopper hangs up, and writes one audit row per request. It decides well when to stop work. It never decides how much work to accept: every connection that arrives gets a Task, whether or not the gateway can finish it.</p>
+<h3>Introduction</h3>
+<p>This is Part 6 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Parts 1 to 5 are the prerequisites for this page. This part recaps them in one screen; if any line below is unfamiliar, read that part first.</p>
+<h3>What Parts 1 to 5 built</h3>
+<ol>
+<li>The five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149). The right answer within 250 ms is seller-b at 1,199, with seller-e missing.</li>
+<li>Part 1: one after another the waits add up to 1,450 ms; overlapped on one thread, 900 ms.</li>
+<li>Part 2: asyncio's loop, Futures and Tasks. A coroutine that waits is parked on a Future; whoever fills the Future wakes it with a callback scheduled by <code>call_soon</code>.</li>
+<li>Part 3: a TaskGroup owns the five seller calls, a Semaphore shared by every request caps calls in flight, and one <code>timeout_at</code> deadline per request covers both the wait for a slot and the call. Calls in flight ≈ arrival rate × time each is held: about 1,600 at 2,000 requests a second.</li>
+<li>Part 4: seller-e's sync SDK runs in a thread pool of 4, ranking runs in a process pool of 2 at about 1 ms of CPU per request, and background Tasks are owned with <code>spawn()</code>.</li>
+<li>Part 5: a watcher cancels the request when the shopper hangs up, the deadline is passed down to seller-e's SDK, and the audit row is written by an owned Task behind <code>shield()</code>.</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>When requests arrive faster than the gateway can finish them, nothing refuses any of them. They wait, and the gateway has no rule for how long or how many.</li>
+<li>One shared cap serves all five sellers, so one slow seller can hold slots the others need.</li>
+<li>Audit writes pile up as Tasks if the audit store slows down; nothing slows the requests that produce them.</li>
+</ul>
+<h3>What this page adds</h3>
+<p>Rungs 1 and 2 explain why work must be bounded and how asyncio's queues bound it. Rung 3 builds gateway v7 on that. Three things change in the running system from this page on, and later pages keep them:</p>
+<ol>
+<li><strong>A front door that can say no.</strong> When the gateway already has as many requests in progress as it can finish, a new request gets the one-line reply <code>busy</code> at once, before any work is done. On HTTP that reply would be a 503.</li>
+<li><strong>A cap and a short line per seller, and a rate limit for seller-d.</strong> A seller whose line is full is skipped for that request instead of waited for.</li>
+<li><strong>Audit rows go through a bounded queue</strong> to a fixed pool of writer Tasks. If the store slows down, the requests waiting for their rows slow down with it, and the front door starts saying no.</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 6 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "one TCP connection", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "tg", "label": "Run together", "sub": "Part 3: group · cap · deadline", "col": 1, "row": 0},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2},
+ {"id": "sdk", "label": "SDK threads", "sub": "Part 4: seller-e's own pool", "col": 3, "row": 3},
+ {"id": "cpu", "label": "Process pool", "sub": "Part 4: ranking offers", "col": 1, "row": 3},
+ {"id": "met", "label": "Metrics service", "sub": "Part 4: counts per seller", "col": 0, "row": 0},
+ {"id": "watch", "label": "Hang-up watch", "sub": "Part 5: stops the request", "col": 3, "row": 0},
+ {"id": "audit", "label": "Audit store", "sub": "Part 5: one row per request", "col": 0, "row": 3},
+ {"id": "limits", "label": "Seller limits", "sub": "Part 6: cap · line · rate", "col": 3, "row": 1, "step": 5}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "shopper-1 kettle-1l", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "tg", "label": "starts and bounds the calls", "step": 2},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 2},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 2},
+ {"from": "gw", "to": "sdk", "step": 3},
+ {"from": "sdk", "to": "se", "label": "sync SDK call", "step": 3},
+ {"from": "gw", "to": "cpu", "step": 3},
+ {"from": "gw", "to": "met", "label": "background flush", "step": 3},
+ {"from": "watch", "to": "gw", "label": "shopper left: cancel all", "step": 4, "dashed": true},
+ {"from": "gw", "to": "audit", "step": 4},
+ {"from": "gw", "to": "app", "label": "busy: refused at once", "step": 5, "dashed": true},
+ {"from": "tg", "to": "limits", "step": 5}],
+ "captions": [
+ "The request: the shopping app sends one line over its own TCP connection, and the gateway asks sellers a to d over theirs.",
+ "Parts 2 and 3, unchanged: asyncio's loop runs the waits, and a TaskGroup, a cap and one deadline bound the seller calls.",
+ "Part 4, unchanged: seller-e is reached through its sync SDK in a pool of its own, ranking runs in processes, and counts go out in the background.",
+ "Part 5, unchanged: a watcher cancels the request when the shopper hangs up, and every request writes one audit row.",
+ "New on this page: the front door answers busy when the gateway is full; each seller gets its own cap, a short line and, for seller-d, a rate limit; audit rows wait in a bounded queue for a fixed pool of writers."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 to 4 are Parts 1 to 5, unchanged. This page removes none of them.</li>
+<li>Step 5 highlights the three new pieces. The dashed arrow back to the shopping app is the new reply, <code>busy</code>, sent before any seller is asked. The new box on the right holds the per-seller limits that replace the single shared cap. The audit store's box is unchanged; what changes is how rows reach it, through a bounded queue and a fixed pool of writers, which the rung 3 parts build.</li>
+<li>Every new piece answers the same question in a different place: when there is more work than capacity, what happens to the extra?</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Part 3's Semaphore already bounds the gateway's work."</p>
+<p><strong>Why it is wrong:</strong> the Semaphore bounds calls in flight to the sellers. It does not bound the requests waiting for a slot, the requests waiting for the ranking processes, or the audit writes. Each of those is a line, and this page measures what happens to a line that nobody bounds.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v6: TaskGroup, shared cap, one deadline, hang-up watch, shielded audit row; seller-b at 1,199 in 250 ms.</li>
+<li>Still broken: nothing refuses work, one cap for five sellers, audit writes without a limit.</li>
+<li>New: a front door that answers busy, per-seller limits, and a bounded audit queue.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 6 keeps gateway v6 and gives it a limit at every line where work can wait: the front door, each seller, and the audit trail.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">This needs Part 3. Gateway v6 has one Semaphore of 1,600 shared by all requests, and each request's deadline covers the wait for a slot. 3,000 requests a second arrive. How long can a seller call wait for a slot, at most?</p>
+<ol>
+<li data-why="A Semaphore has no size limit on its line and no timeout of its own; it is the deadline around the wait that ends it.">As long as it takes; the Semaphore's line has no limit</li>
+<li>Until its request's 250 ms deadline, which cancels the wait</li>
+<li data-why="The deadline is entered before the wait for a slot, so the wait counts against the 250 ms and nothing restarts it.">250 ms for the wait, then another 250 ms for the call</li>
+</ol>
+<p class="ts-why">Part 3 placed <code>timeout_at</code> around both the wait and the call. A call still waiting at the deadline is cancelled in line. So the seller stage holds each request for 250 ms at most; the next part asks which stage has no such limit.</p>
+</div>
+</section>
+<section class="ts-part" id="work-in-work-out" data-rung="1" data-min="13">
+<h2>Work in, work out: why memory climbs during a seller outage</h2>
+<p class="ts-bridge">Last part: Part 6 puts a limit at every line where work can wait. Still unsolved: why does a line need a limit at all, if every request eventually leaves it?</p>
+<p class="ts-problem">Sale day, 2,000 requests a second. At 11:00 seller-c stops answering: it accepts connections and never replies. Shoppers see answers without seller-c's price and press refresh, so arrivals rise to 3,000 a second. The gateway's memory, normally a few MB of request state, passes 400 MB in the first minute and 4 GB by 11:10, when the process is killed. Every seller call was still cut at 250 ms the whole time.</p>
+<h3>Introduction</h3>
+<p>The gateway is a chain of stages: read the request, call the sellers, rank the offers, write the audit row, answer. Each stage holds some requests at any moment. This part gives one rule for how many, applies it stage by stage to the outage above, and finds the stage that grew. The rule is ordinary arithmetic; the surprise is which stage it points at.</p>
+<h3>Comparison</h3>
+<p>Consider a ticket counter at a railway station. Two clerks each serve one passenger a minute. If two passengers arrive a minute, the line stays short. If three arrive a minute, the line grows by one passenger every minute, for as long as the rush lasts. It does not matter how polite the clerks are or how fast the passengers walk: in minus out, per minute, is the growth.</p>
+<ul>
+<li>The clerks = the ranking processes, which finish 2,000 requests a second.</li>
+<li>Passengers arriving = shoppers' requests, 3,000 a second.</li>
+<li>The line = requests waiting for a ranking process, each holding its connection and its Task.</li>
+</ul>
+<p>The comparison stops working here: a passenger in a long line can see it and leave. A request in the gateway's ranking line is invisible to the shopper, who sees only a spinner.</p>
+<h3>Definitions</h3>
+<ol>
+<li>The <dfn data-def="How many requests arrive at a stage per second.">arrival rate</dfn> of a stage is how many requests reach it per second.</li>
+<li>Its <dfn data-def="The most requests a stage can finish per second.">capacity</dfn> is the most requests it can finish per second.</li>
+<li>Its <dfn data-def="How many requests a stage holds at one moment: waiting for it or being worked on.">in progress</dfn> count is how many requests it holds at one moment, waiting or being worked on.</li>
+</ol>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="In a stage that is keeping up: requests in progress = arrival rate × average time each request spends in the stage.">Little's law</dfn>: in a stage that keeps up, requests in progress = arrival rate × average time each request spends in the stage. Parts 3 and 4 used it to size the cap and the thread pool. When arrivals exceed capacity the stage does not keep up, and in progress grows by (arrival rate − capacity) every second instead.</p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>List the stages</strong> a request passes through, and for each one ask: what limits the time a request can spend here?</li>
+<li><strong>A stage with a deadline</strong> holds each request for at most the deadline, so in progress ≤ arrival rate × deadline, however slow its downstream is.</li>
+<li><strong>A stage that keeps up</strong> holds arrival rate × its normal time.</li>
+<li><strong>A stage without a deadline that does not keep up</strong> grows by (arrivals − capacity) every second, and each request in it waits longer than the one before.</li>
+<li><strong>Multiply by the memory one waiting request holds</strong> to turn requests into bytes.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: the outage is at a seller, but the growth can be anywhere downstream of the extra arrivals; only a stage-by-stage list finds it.</li>
+<li>Steps 2 and 3: they clear the stages that cannot grow, so attention goes to the one that can.</li>
+<li>Steps 4 and 5: they give the two numbers an incident needs, how fast memory grows and how long the newest request will wait.</li>
+</ul>
+<h3>Program 1: what one waiting request costs</h3>
+<p>The program accepts 1,000 real connections, reads one request line from each, and parks every request in a line it never leaves. It counts the Python memory the 1,000 requests hold.</p>
+<div class="ts-code" data-lang="python" data-title="request_cost.py" data-file="request_cost.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/request_cost.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The shoppers run in a separate process, so only the server side of each connection is counted.</li>
+<li>Each waiting request holds a transport, a stream reader and writer with their buffers, a Task and its coroutine frame: about 7 KB of Python memory. A request of gateway v6 holds more (a TaskGroup, a watcher Task, its offers), so 7 KB is a floor, not an estimate. The kernel's socket buffers are not counted at all.</li>
+<li><code>asyncio.shield(line)</code> keeps the shared Future from being cancelled when the program ends and cancels the waiting Tasks.</li>
+</ol>
+<h3>Program 2: the stages during the outage</h3>
+<div class="ts-code" data-lang="python" data-title="work_in_work_out.py" data-file="work_in_work_out.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/work_in_work_out.txt" data-verified="ran"></div>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> 3,000 requests a second during the outage; ranking finishes 2,000 a second (2 processes × 1 ms each, Part 4); every seller call is cut at 250 ms; 7 KB per waiting request.</p>
+<p><strong>Step 1. Seller stage.</strong> It has a deadline. In progress = 3,000 × 0.25 = 750 requests, the same in minute 1 as in minute 10. seller-c's outage changes what those requests contain (no seller-c price), not how many there are.</p>
+<p><strong>Step 2. Ranking stage.</strong> It has no deadline: <code>compare()</code> awaits <code>run_in_executor()</code> with no timeout. Growth = 3,000 − 2,000 = 1,000 requests every second. After 1 minute: 60,000 waiting.</p>
+<p><strong>Step 3. Memory.</strong> 60,000 × 7 KB = 420,000 KB, about 410 MB. After 10 minutes: 600,000 requests, about 4,100 MB.</p>
+<p><strong>Step 4. Waiting time.</strong> A request that joins a line of 60,000 waits 60,000 ÷ 2,000 = 30 s for ranking. Every answer after the first second of the rush is useless, and still costs the full fan-out to the sellers first.</p>
+<p><strong>Step 5. With a limit at the door.</strong> Admit only what ranking can finish: in progress = 2,000 × 0.28 s = 560 requests, about 3.8 MB, and 1,000 requests a second are told "busy" before any seller is asked.</p>
+<p><strong>Result:</strong> the seller outage did not grow the seller stage, which Part 3's deadline caps. It raised arrivals, and the extra work piled up at the first stage without a deadline, the ranking line: 1,000 requests a second, 410 MB a minute, until the process died.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "An awaiting coroutine costs almost nothing, so an async service can let requests wait."</p>
+<p><strong>Why people hold it:</strong> Part 1 measured that a parked coroutine is far cheaper than a thread, which is true.</p>
+<p><strong>Why it is wrong:</strong> cheap per request is not free per minute. At 7 KB each, a line that grows by 1,000 requests a second costs 410 MB a minute, and the waiting time grows just as fast. Cheap waiting only delays the moment the arithmetic wins.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>In a stage that keeps up: in progress = arrival rate × time in the stage (Little's law).</li>
+<li>A deadline caps a stage's time, so it caps the stage's memory, whatever the outage.</li>
+<li>A stage without a deadline that cannot keep up grows by (in − out) per second: here 1,000 requests, about 7 MB, every second.</li>
+</ul>
+</div>
+<p class="ts-takeaway">When work arrives faster than a stage finishes it, the difference piles up every second at the first stage that has no limit, and memory and waiting time grow until something is killed.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Arrivals during the outage are 2,400 a second instead of 3,000. Everything else is the same. How many requests wait for ranking after 5 minutes, about how much memory do they hold, and how long does a new request wait?</p>
+<div class="ts-reveal"><p>Growth = 2,400 − 2,000 = 400 a second. After 300 s: 120,000 requests. Memory ≈ 120,000 × 7 KB = 840,000 KB, about 820 MB. A new request waits 120,000 ÷ 2,000 = 60 s. A smaller excess only slows the growth; it does not stop it.</p></div>
+</div>
+</section>
+<section class="ts-part" id="bound-or-refuse" data-rung="1" data-min="11">
+<h2>Three answers to too much work: wait, slow down, or say no</h2>
+<p class="ts-bridge">Last part: extra work piles up at the first stage without a limit. Still unsolved: once a limit is reached, what should happen to the next piece of work?</p>
+<p class="ts-problem">The ranking line is given a limit of 600 requests. Request 601 arrives. It can wait anyway, somewhere else; the code that produced it can be made to pause; or it can be refused at once. Each choice moves the extra work to a different place, and each is right for a different kind of producer.</p>
+<h3>Introduction</h3>
+<p>Every bounded system makes the same decision at its limit. This part names the three possible answers, so that the rest of the page can apply each one where it fits. The test for each is the same: where does the extra work go, and who pays for it?</p>
+<h3>Comparison</h3>
+<p>A small restaurant kitchen can cook 40 meals an hour. On a busy night:</p>
+<ul>
+<li>It can take every order and cook them in turn. Orders placed at 8 pm arrive at 10 pm, cold, to tables that have left. That is <strong>waiting without limit</strong>.</li>
+<li>The waiter can stop taking orders while the kitchen has 10 tickets on the rail, and take the next one when a ticket clears. Guests already seated simply wait for the waiter. That is <strong>backpressure</strong>.</li>
+<li>The host can tell new guests at the door "we are full tonight", before they sit down. That is <strong>load shedding</strong>.</li>
+</ul>
+<p>The comparison stops working here: a restaurant's guests decide for themselves to try elsewhere. A program's caller does only what its code says, so the reply must tell it clearly what happened and when to try again.</p>
+<h3>Definitions</h3>
+<ol>
+<li><dfn data-def="Letting extra work wait in an unbounded line; memory and waiting time grow for as long as arrivals exceed capacity.">Waiting without limit</dfn> keeps every piece of extra work in an unbounded line. Nothing is refused; memory and waiting time grow for as long as the overload lasts.</li>
+<li><dfn data-def="Making a producer wait when the next stage is full, so the producer runs at the speed of the slowest stage after it.">Backpressure</dfn> makes the producer wait when the next stage is full, so the producer runs at the speed of the slowest stage after it. The extra work stays with the producer, which has not made it yet.</li>
+<li><dfn data-def="Refusing work at the edge, quickly and cheaply, when accepting it would exceed capacity, so the work that is accepted still finishes in time.">Load shedding</dfn> refuses work at the edge, quickly and cheaply, when accepting it would exceed capacity. The extra work goes back to the caller, with a reply that says so.</li>
+<li><dfn data-def="Useful completed work per second: answers that arrive in time to be used.">Goodput</dfn> is the useful work finished per second: answers that arrive in time to be used. Throughput counts every answer, late or not.</li>
+</ol>
+<h3>Working: how to pick for a given producer</h3>
+<ol class="ts-steps">
+<li><strong>Ask whether the producer can wait.</strong> A batch job, a stream reader or a background writer can pause without anyone noticing. A shopper waiting for a price cannot pause usefully: after 250 ms the answer is worthless.</li>
+<li><strong>If it can wait, use backpressure.</strong> Bound the line and make the producer wait for room. The extra work is never made, or stays in a durable place upstream (a stream's log, a file).</li>
+<li><strong>If it cannot, shed at the edge.</strong> Refuse before any expensive work is done, with a reply the caller understands, such as HTTP 503.</li>
+<li><strong>Never wait without limit</strong> for work that has a deadline: every request in the line is paid for at full cost and answered too late.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: the same limit means a pause to one producer and a failure to another; the producer decides.</li>
+<li>Step 3: shedding early is what keeps goodput up. A request refused at the door costs almost nothing; a request refused after the fan-out has cost five seller calls.</li>
+<li>Step 4: the last part's ranking line is the cost of skipping this step.</li>
+</ul>
+<h3>Solved example: the three answers on the outage</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Answer</th><th>Where the extra 1,000 a second go</th><th>Memory after 10 minutes</th><th>What shoppers get</th></tr></thead>
+<tbody>
+<tr><td>Wait without limit (gateway v6's ranking line)</td><td>Into the line</td><td>About 4,100 MB, then the process dies</td><td>Answers after up to 300 s, then nothing</td></tr>
+<tr><td>Backpressure on the shoppers</td><td>Stay in the shoppers' apps, which cannot send</td><td>About 3.8 MB</td><td>A spinner with no end and no reason; every shopper slows down, not only the extra ones</td></tr>
+<tr><td>Shed at the door (gateway v7)</td><td>Back to the app, as "busy"</td><td>About 3.8 MB</td><td>2,000 a second answered in about 280 ms; 1,000 a second told "busy" in about 0 ms</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> for shoppers, shedding is the only answer that keeps answers in time. Backpressure is the right answer one level down, for producers inside the gateway that can wait, such as the audit trail, which rung 3 builds.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Refusing requests is a failure; a good system accepts everything and catches up."</p>
+<p><strong>Why it is wrong:</strong> during an overload, a system that accepts everything does not catch up: the line grows by the excess every second, and every request in it is answered late, so goodput falls toward zero while throughput looks normal. Refusing the excess is what lets the rest be answered in time.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Three answers at a limit: wait without limit, backpressure (the producer waits), load shedding (refuse at the edge).</li>
+<li>Producers that can pause get backpressure; callers with deadlines get shed, early and cheaply.</li>
+<li>Goodput counts only answers in time; overload with unlimited waiting drives it toward zero.</li>
+</ul>
+</div>
+<p class="ts-takeaway">At a limit, work can wait without end, make its producer wait, or be refused at the door; requests with deadlines should be refused early, and only producers that can pause should be slowed.</p>
+<div class="ts-explain" data-points="In progress = arrival rate × time in the stage; without a deadline, an overloaded stage grows by in minus out every second|The growth here is 1,000 requests a second at about 7 KB each, at the ranking line, the first stage without a limit|Backpressure slows producers that can wait; load shedding refuses callers that cannot, before any work|Shedding keeps goodput up because accepted requests still finish within the budget">
+<p class="q">In your own words: why did the gateway's memory climb during seller-c's outage, and which of the three answers should the gateway give the extra shoppers, and why?</p>
+<div class="ts-model"><p>The outage raised arrivals from 2,000 to 3,000 a second, but ranking can finish only 2,000. The seller stage stayed at 750 requests because every seller call has a 250 ms deadline, but the ranking line has no deadline, so it grew by 1,000 requests every second, about 410 MB a minute at 7 KB each, and every request in it waited longer than the last. Shoppers cannot usefully wait past 250 ms, so the gateway should shed: admit only what it can finish, about 560 requests in progress, and tell the rest "busy" at once, before calling any seller. Backpressure belongs to producers that can pause, like an internal writer.</p></div>
+</div>
+</section>
+<section class="ts-part" id="queue-basics" data-rung="2" data-min="11">
+<h2>asyncio.Queue: a line with or without a limit</h2>
+<p class="ts-bridge">Last part: bound the line, then wait, slow down or refuse at the limit. Still unsolved: what does asyncio give us to build a bounded line, and what do its operations do at the limit?</p>
+<p class="ts-problem">A developer writes <code>rows = asyncio.Queue()</code> for the gateway's audit rows and moves on. During the outage the audit store slows down, and the queue holds 100,000 rows. <code>rows.full()</code> returns False the whole time, so the dashboard that alerts on "queue full" never fires.</p>
+<h3>Introduction</h3>
+<p>asyncio's queue is the standard way for coroutines to hand work to each other: one side puts items in, the other takes them out, and either side can wait. Its one setting, <code>maxsize</code>, decides which of the last part's answers it gives. This part covers the operations and what each does when it cannot go ahead.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>An <dfn data-def="asyncio.Queue: a first-in, first-out line of items for coroutines; with maxsize above 0, put() waits while it is full.">asyncio.Queue</dfn> is a line of items shared by coroutines. <span class="ts-claim" data-claim="c1" data-src="s1">asyncio.Queue is a first in, first out queue; if maxsize is less than or equal to zero its size is infinite, and if maxsize is greater than 0, await put() blocks when the queue reaches maxsize until an item is removed by get().</span> <span class="ts-claim" data-claim="c2" data-src="s1">With maxsize=0, the default, full() never returns True.</span></p>
+</div>
+<h3>Working: the operations</h3>
+<ol class="ts-steps">
+<li><strong><code>await put(item)</code></strong> adds the item, or waits for room if the queue is full.</li>
+<li><strong><code>put_nowait(item)</code></strong> adds the item or fails at once. <span class="ts-claim" data-claim="c3" data-src="s1">put_nowait() raises QueueFull if no free slot is immediately available, and get_nowait() raises QueueEmpty if no item is immediately available.</span></li>
+<li><strong><code>await get()</code></strong> takes the oldest item, or waits for one if the queue is empty. <code>get_nowait()</code> takes one or fails at once.</li>
+<li><strong><code>qsize()</code>, <code>empty()</code>, <code>full()</code></strong> report the state. On one event loop no other coroutine runs between a check and the next line, so a check followed by an operation, with no <code>await</code> between them, sees the same state.</li>
+</ol>
+<p><strong>Why both forms exist</strong></p>
+<ul>
+<li>The waiting forms, <code>put()</code> and <code>get()</code>, give backpressure and idle workers: the waiting side is parked and costs nothing until the other side acts.</li>
+<li>The <code>_nowait</code> forms give the caller the decision at the limit. <code>put_nowait()</code> raising QueueFull is exactly the moment to shed.</li>
+</ul>
+<p><span class="ts-claim" data-claim="c4" data-src="s1">asyncio queues are not thread-safe, and their methods have no timeout parameter; the docs point to asyncio.wait_for() for queue operations with a timeout.</span> Gateway code from Part 3 on uses <code>asyncio.timeout()</code> around the await for the same job.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="queue_basics.py" data-file="queue_basics.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/queue_basics.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The queue without a limit takes 100,000 items and still reports <code>full=False</code>: nothing about it will ever push back.</li>
+<li>With <code>maxsize=2</code>, the third <code>put_nowait()</code> raises QueueFull at once, and the caller is free to decide what to do.</li>
+<li>The third <code>put()</code> instead waits. The queue's printed form shows <code>_putters[1]</code>: one producer is parked. The next part opens that up.</li>
+<li>One <code>get()</code> makes room; the parked <code>put()</code> finishes and <code>request-3</code> is in the queue behind <code>request-2</code>, in arrival order.</li>
+</ol>
+<h3>Solved example: which call at the gateway's limits</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Producer</th><th>Can it wait?</th><th>Call</th><th>At the limit</th></tr></thead>
+<tbody>
+<tr><td>A shopper's request at the front door</td><td>No, it has 250 ms</td><td><code>put_nowait()</code>, or a count checked before starting</td><td>QueueFull: reply "busy"</td></tr>
+<tr><td>A request handing over its audit row</td><td>Yes, briefly; its answer waits for the row anyway</td><td><code>await put()</code></td><td>The handler waits: backpressure</td></tr>
+<tr><td>A worker taking the next row</td><td>Yes, it has nothing else to do</td><td><code>await get()</code></td><td>Parked until a row arrives</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the same queue gives backpressure or shedding depending on which form of <code>put</code> the producer calls.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "An asyncio.Queue is bounded by default, like a real line."</p>
+<p><strong>Why it is wrong:</strong> the default <code>maxsize</code> is 0, which means no limit. The program puts 100,000 items in such a queue and <code>full()</code> is still False. A limit exists only if you pass one.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>asyncio.Queue()</code> has no limit; <code>full()</code> is never True for it.</li>
+<li><code>put()</code>/<code>get()</code> wait; <code>put_nowait()</code>/<code>get_nowait()</code> raise QueueFull/QueueEmpty at once.</li>
+<li>Not thread-safe; no timeout parameter: wrap the await in <code>asyncio.timeout()</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">asyncio.Queue is a line for coroutines that is unbounded unless given a maxsize; at the limit, put() waits and put_nowait() refuses, and the producer picks which.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c1 c2 c3">
+<p class="q">A queue is created with <code>asyncio.Queue(maxsize=0)</code>. 50,000 items are put with <code>put_nowait()</code> and nobody calls <code>get()</code>. What happens?</p>
+<ol>
+<li data-why="maxsize=0 does not mean zero room; it means no limit.">The first put_nowait() raises QueueFull, because maxsize is 0</li>
+<li data-why="No limit means put() never needs to wait, and put_nowait() never needs to refuse.">put_nowait() raises QueueFull once memory runs low</li>
+<li>All 50,000 are accepted, and full() stays False</li>
+</ol>
+<p class="ts-why">A maxsize of 0 or less means the size is infinite, so there is never a full queue to refuse with, and full() never returns True.</p>
+</div>
+</section>
+<section class="ts-part" id="put-waits" data-rung="2" data-min="12">
+<h2>How a full queue slows its producer: put() parked on a Future</h2>
+<p class="ts-bridge">Last part: <code>await put()</code> waits when the queue is full. Still unsolved: what exactly waits, what wakes it, and what that does to a producer that is faster than its consumer?</p>
+<p class="ts-problem">The gateway produces an audit row every 10 ms. The audit writer needs 30 ms per row. In 300 ms the producer makes 30 rows and the writer finishes 9. With no limit, 20 rows wait and the count rises by 2 every 30 ms for as long as the rate gap lasts.</p>
+<h3>Introduction</h3>
+<p>Part 2 showed the one way anything waits in asyncio: a coroutine is parked on a Future, and someone else fills it. A full queue uses the same mechanism. This part follows one <code>put()</code> through it and then measures the effect on a producer that is three times faster than its consumer.</p>
+<h3>Working: one put() on a full queue, in CPython 3.14's queues.py</h3>
+<ol class="ts-steps">
+<li><strong>The queue is full.</strong> <span class="ts-claim" data-claim="c5" data-src="s2">In CPython 3.14's queues.py, a put() that finds the queue full appends a new Future to the queue's deque of waiting putters and awaits it; get_nowait() wakes the first waiting putter that is not done, and the woken put() checks for room again before adding its item. put_nowait() wakes waiting getters the same way.</span></li>
+<li><strong>The producer is parked.</strong> Its Task waits on that Future exactly as Part 2's Tasks waited on a socket's Future. It uses no CPU and runs no code.</li>
+<li><strong>A consumer takes an item.</strong> <code>get()</code> removes the oldest item and sets the first putter's Future's result.</li>
+<li><strong>The producer wakes</strong> in a later turn of the loop, finds room, adds its item, and goes on to make the next one.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: a parked producer makes nothing new. That is the whole effect of backpressure: the work that would have been made is never made yet.</li>
+<li>Step 3: putters are woken in the order they parked, so several producers share the room fairly.</li>
+<li>Step 4: the check is repeated after waking because another coroutine might have filled the room first.</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="A full queue parks its producer">
+<script type="application/json">
+{"actors": [
+ {"id": "prod", "label": "Producer", "sub": "makes audit rows"},
+ {"id": "q", "label": "Queue", "sub": "maxsize=3, full"},
+ {"id": "fut", "label": "Future", "sub": "the putter's waiter"},
+ {"id": "wr", "label": "Writer", "sub": "30 ms a row"}],
+ "steps": [
+ {"from": "prod", "to": "q", "label": "await put(row-13)", "note": "The queue already holds 3 rows, so it is full."},
+ {"from": "q", "to": "fut", "label": "create, append to putters", "note": "put() makes a Future, adds it to the deque of waiting putters and awaits it."},
+ {"over": ["prod"], "label": "parked: makes nothing", "note": "The producer's Task waits on the Future. No rows are made while it waits."},
+ {"from": "wr", "to": "q", "label": "get(): takes row-10", "note": "The writer finishes a row and takes the oldest one waiting."},
+ {"from": "q", "to": "fut", "label": "set_result(None)", "note": "get_nowait() wakes the first putter that is not done."},
+ {"from": "fut", "to": "prod", "label": "wake-up via call_soon", "dashed": true, "note": "As in Part 2: filling the Future schedules the producer's Task to run again."},
+ {"from": "prod", "to": "q", "label": "room again: row-13 added", "note": "The woken put() checks for room, adds its row, and the producer moves on."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 to 3 are Part 2's park, with the queue in the place of a socket: the Future is the only thing that connects the producer to the moment room appears.</li>
+<li>Steps 4 to 6 are Part 2's wake-up: the writer's <code>get()</code> fills the Future and the loop schedules the producer.</li>
+<li>Step 7 is why the producer's speed now equals the writer's: it can add one row only after the writer has removed one.</li>
+</ol>
+<h3>Program</h3>
+<p>The producer makes a row every 10 ms; one writer takes 30 ms per row. The program runs for 300 ms without a limit, then with <code>maxsize=3</code>.</p>
+<div class="ts-code" data-lang="python" data-title="backpressure.py" data-file="backpressure.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/backpressure.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>No limit: the producer keeps its schedule, a row at 5, 15, 25 … ms, and makes 30. The writer finishes 9 (at 35, 65 … 275 ms) and is writing the 10th, so 20 wait. No <code>put()</code> ever waited.</li>
+<li><code>maxsize=3</code>: once 3 rows wait and 1 is being written, every <code>put()</code> waits for the writer, up to 30 ms. The producer makes 13 rows: 9 written, 1 being written, 3 waiting. It has been slowed to the writer's speed.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> producer 100 rows a second, writer 33 rows a second, one hour of this.</p>
+<p><strong>Step 1. No limit.</strong> Growth = 100 − 33 = 67 rows a second; after an hour, about 240,000 rows waiting, the newest one about 2 hours behind.</p>
+<p><strong>Step 2. maxsize=3.</strong> At most 3 rows wait, the newest about 120 ms behind (4 rows × 30 ms). The producer makes 33 rows a second.</p>
+<p><strong>Result:</strong> the limit does not make the writer faster. It moves the waiting back into the producer, where, for a producer that can pause, it costs nothing.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A bounded queue drops the items that do not fit."</p>
+<p><strong>Why it is wrong:</strong> <code>await put()</code> drops nothing; it waits until there is room. Dropping happens only if the producer calls <code>put_nowait()</code> and decides to drop on QueueFull. The program's bounded run loses no rows; it makes fewer, later.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A full queue parks each <code>put()</code> on its own Future in a deque of putters; <code>get()</code> wakes the first one.</li>
+<li>A parked producer makes nothing, so it runs at the consumer's speed: 13 rows instead of 30 in 300 ms.</li>
+<li>Backpressure moves the waiting into the producer; it drops nothing.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A bounded queue slows a fast producer by parking its put() on a Future that only a consumer's get() can fill.</p>
+<div class="ts-order" data-claims="c5">
+<p class="q">Put one <code>put()</code> on a full queue in order.</p>
+<ol>
+<li>put() finds the queue full</li>
+<li>put() appends a new Future to the deque of waiting putters and awaits it</li>
+<li>A consumer's get() removes the oldest item</li>
+<li>get_nowait() sets the result of the first waiting putter's Future</li>
+<li>The producer's Task runs again, finds room and adds its item</li>
+</ol>
+<p class="ts-why">The producer can only add its item after a consumer has removed one, which is what ties the producer's speed to the consumer's.</p>
+</div>
+</section>
+<section class="ts-part" id="worker-pools" data-rung="2" data-min="12">
+<h2>A fixed number of workers: the queue's other half</h2>
+<p class="ts-bridge">Last part: a bounded queue parks a fast producer. Still unsolved: on the other side of the queue, how many consumers should there be, and how does anyone know when all the work is finished?</p>
+<p class="ts-problem">Nine audit rows wait to be written, 20 ms each. One writer takes 180 ms. Starting a Task per row would take 20 ms but would also start 900 Tasks for 900 rows, 900 connections to the audit store, and no limit at all. The answer in between is a fixed number of writer Tasks.</p>
+<h3>Introduction</h3>
+<p>A queue on its own only holds work. A <dfn data-def="A fixed number of long-lived Tasks that each loop forever: take an item from a queue, do the work, mark it done.">worker pool</dfn> is a fixed number of long-lived Tasks that each repeat the same loop: take an item, do the work, mark it done. The number of workers is a concurrency limit, like Part 3's Semaphore, and the queue in front of them is the line. This part builds the loop and the bookkeeping that tells the producer when everything is finished.</p>
+<h3>Comparison</h3>
+<p>Three bank tellers serve one line of customers. Each teller calls "next" when free. The manager wants to lock the door only when every customer has been served, not just called.</p>
+<ul>
+<li>The tellers = the worker Tasks; three tellers = a limit of three at once.</li>
+<li>Calling "next" = <code>await queue.get()</code>.</li>
+<li>Saying "done" when a customer leaves = <code>queue.task_done()</code>.</li>
+<li>The manager waiting to lock up = <code>await queue.join()</code>.</li>
+</ul>
+<p>The comparison stops working here: the bank can see its tellers. A worker that crashes silently looks, from the queue's side, exactly like a worker that is still busy.</p>
+<h3>Definitions</h3>
+<div class="ts-note" data-label="Definition">
+<p>The <dfn data-def="The queue's count of items put but not yet marked done with task_done(); join() waits until it is zero.">unfinished count</dfn> is the queue's count of items put but not yet marked done. <span class="ts-claim" data-claim="c6" data-src="s1">join() blocks until all items have been received and processed: the count of unfinished tasks goes up whenever an item is added to the queue and goes down whenever a consumer calls task_done(); when it drops to zero, join() unblocks.</span> <span class="ts-claim" data-claim="c7" data-src="s1">task_done() raises ValueError if it is called more times than there were items placed in the queue.</span></p>
+</div>
+<p>So <code>get()</code> alone does not lower the count. An item is finished only when its worker says so.</p>
+<h3>Working: the worker loop</h3>
+<ol class="ts-steps">
+<li><strong><code>item = await queue.get()</code></strong>: park until there is work.</li>
+<li><strong>Do the work</strong> inside <code>try</code>.</li>
+<li><strong><code>queue.task_done()</code> in <code>finally</code></strong>: the item is finished whether the work succeeded, failed or was cancelled.</li>
+<li><strong>Loop.</strong> The worker never ends by itself; something must stop it (the next part).</li>
+<li><strong>The producer</strong> puts the items and then <code>await queue.join()</code> to learn that all of them are finished.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 3: if <code>task_done()</code> is skipped once, the count never returns to zero and <code>join()</code> never returns. Rung 4 measures that hang.</li>
+<li>Step 5: <code>join()</code> waits for the work to be done, not for the queue to be empty. An empty queue only means every item has been taken.</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="A bounded queue and a worker pool">
+<script type="application/json">
+{"nodes": [
+ {"id": "prod", "label": "Producer", "sub": "request handlers", "col": 0, "row": 1},
+ {"id": "q", "label": "Queue", "sub": "maxsize = the line", "col": 1, "row": 1},
+ {"id": "w1", "label": "Writer 1", "col": 2, "row": 0},
+ {"id": "w2", "label": "Writer 2", "col": 2, "row": 1},
+ {"id": "w3", "label": "Writer 3", "col": 2, "row": 2},
+ {"id": "store", "label": "Audit store", "sub": "20 ms a write", "col": 3, "row": 1, "step": 2}],
+ "edges": [
+ {"from": "prod", "to": "q", "label": "await put()", "step": 1},
+ {"from": "q", "to": "w1", "label": "get()", "step": 1},
+ {"from": "q", "to": "w2", "label": "get()", "step": 1},
+ {"from": "q", "to": "w3", "label": "get()", "step": 1},
+ {"from": "w1", "to": "store", "step": 2},
+ {"from": "w2", "to": "store", "label": "one write each", "step": 2},
+ {"from": "w3", "to": "store", "step": 2},
+ {"from": "w2", "to": "q", "label": "task_done()", "dashed": true, "step": 3},
+ {"from": "q", "to": "prod", "label": "join() returns at 0", "dashed": true, "step": 3}],
+ "captions": [
+ "The producer puts rows into one queue; three writer Tasks take them out, one at a time each.",
+ "Each writer works on one row at a time, so at most three writes reach the store at once: the pool's size is the concurrency limit.",
+ "Each writer calls task_done() when its row is finished. When every row put has been marked done, join() returns to the producer."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Step 1: one line, many workers. The workers compete for items; whichever is free first takes the next one.</li>
+<li>Step 2: three workers means three writes at once, never four, however many rows wait.</li>
+<li>Step 3: the dashed arrows are the bookkeeping. They carry no rows; they carry "finished".</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="workers.py" data-file="workers.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/workers.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>One writer: 9 rows × 20 ms = 180 ms. Three writers: three rows at a time, 3 rounds × 20 ms = 60 ms, three rows each.</li>
+<li><code>join()</code> returns when the ninth <code>task_done()</code> is called, not when the queue becomes empty, which happened 20 ms earlier when the last rows were taken.</li>
+<li>The writers are still parked in <code>get()</code> afterwards, so the program cancels them. The next part gives them a cleaner way to end.</li>
+</ol>
+<h3>Solved example: sizing the gateway's audit writers</h3>
+<p><strong>Given:</strong> 2,000 requests a second, one audit row each, 20 ms a write.</p>
+<p><strong>Step 1. Writers needed.</strong> Writes in progress = 2,000 × 0.020 = 40, by Little's law. Fewer than 40 writers and the queue grows; 40 is the minimum.</p>
+<p><strong>Step 2. Headroom.</strong> Sizing at exactly 40 leaves no room for a slow minute; 50 writers runs them at 80% busy.</p>
+<p><strong>Step 3. The line.</strong> A row may wait for a writer only as long as its request can afford. If 20 ms of waiting is acceptable: 2,000 × 0.020 = 40 rows in the queue.</p>
+<p><strong>Result:</strong> about 50 writers and a queue of about 40. If the store slows to 40 ms a write, 50 writers can finish only 1,250 rows a second, the queue fills, and the request handlers wait in <code>put()</code>: the backpressure rung 3 turns into "busy" at the front door.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>join()</code> returns when the queue is empty."</p>
+<p><strong>Why it is wrong:</strong> it returns when the unfinished count is zero, which needs one <code>task_done()</code> per item put. In the program the queue was empty 20 ms before <code>join()</code> returned, while the last three rows were still being written.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A worker pool is N Tasks looping get → work → task_done; N is the concurrency limit.</li>
+<li><code>join()</code> waits for task_done() on every item put; put task_done() in <code>finally</code>.</li>
+<li>Workers needed ≈ items per second × seconds per item (40 for 2,000 rows at 20 ms), plus headroom.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A fixed pool of worker Tasks behind a queue caps how much work runs at once, and task_done() with join() tells the producer when every item is finished.</p>
+<div class="ts-predict" data-claims="c6">
+<p class="q">Five writers, 20 rows, 20 ms each. How long does <code>await queue.join()</code> take, and how long after the queue becomes empty does it return?</p>
+<div class="ts-reveal"><p>20 rows ÷ 5 writers = 4 rounds of 20 ms, so about 80 ms. The queue becomes empty at about 60 ms, when the last five rows are taken; join() returns about 20 ms later, when the last of them is marked done with task_done().</p></div>
+</div>
+</section>
+<section class="ts-part" id="queue-shutdown" data-rung="2" data-min="11">
+<h2>Ending a worker pool: Queue.shutdown()</h2>
+<p class="ts-bridge">Last part: workers loop forever on <code>get()</code>. Still unsolved: when the producer has nothing more to send, how do the workers find out and end by themselves, after finishing what is queued?</p>
+<p class="ts-problem">The gateway is stopping. Its audit queue still holds 3 rows, and 2 writers are each writing one. Cancelling the writers loses all 5 rows. Waiting forever is not an option either. The stop code needs a way to say "no more rows are coming; finish the queued ones and stop".</p>
+<h3>Introduction</h3>
+<p>Up to Python 3.12 there was no built-in way to say that, and every codebase invented one. Python 3.13 added it to the queue itself. This part shows the built-in way and the older one you will still read in existing code.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>To <dfn data-def="Queue.shutdown(): mark a queue as closed, so puts fail and gets fail once it is empty (or at once, with immediate=True).">shut down</dfn> a queue is to tell both sides that no new items will come. <span class="ts-claim" data-claim="c8" data-src="s1">Queue.shutdown() puts the queue into shutdown mode: later put() calls raise QueueShutDown and blocked put() callers are woken to raise it; with immediate=False, the default, items already in the queue can still be taken with get(), and once the queue is empty, get() raises QueueShutDown.</span> <span class="ts-claim" data-claim="c10" data-src="s1 s3">Queue.shutdown() and the QueueShutDown exception were added in Python 3.13.</span></p>
+</div>
+<p><span class="ts-claim" data-claim="c9" data-src="s1">With immediate=True the queue is drained at once, the unfinished count is reduced by the number of items drained, join() callers are unblocked if that count reaches zero, and blocked get() callers raise QueueShutDown; the docs warn that this unblocks join() even when no work was done on the drained items.</span></p>
+<h3>Working: a pool that ends itself</h3>
+<ol class="ts-steps">
+<li><strong>Each worker catches QueueShutDown around <code>get()</code></strong> and returns. That is its only way out of the loop.</li>
+<li><strong>The producer calls <code>queue.shutdown()</code></strong> when it has nothing more to add.</li>
+<li><strong>Workers keep taking</strong> the items still queued; each <code>task_done()</code> lowers the count as usual.</li>
+<li><strong>When the queue is empty</strong>, each worker's next <code>get()</code> raises QueueShutDown and the worker returns.</li>
+<li><strong>The producer awaits <code>join()</code></strong> and then the worker Tasks, all of which have ended normally.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: without it, QueueShutDown would end the worker with an exception instead of a clean return.</li>
+<li>Step 3: the default mode loses nothing that was accepted; only new items are refused.</li>
+<li>Step 5: the workers end by returning, not by being cancelled, so a worker that was in the middle of a write finishes it.</li>
+</ul>
+<h3>Program</h3>
+<p>Two writers, five rows, 10 ms each. At 15 ms, with row-2 and row-3 being written and row-4 waiting, the queue is shut down, once in each mode.</p>
+<div class="ts-code" data-lang="python" data-title="shutdown_demo.py" data-file="shutdown_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/shutdown_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Both runs refuse <code>row-5</code> after the shutdown with QueueShutDown.</li>
+<li>Default mode: row-4, still waiting at 15 ms, is written; all 5 rows are written and both writers return by themselves.</li>
+<li><code>immediate=True</code>: row-4 is drained unwritten. Row-2 and row-3 were already being written, so they finish; <code>join()</code> waits for those two <code>task_done()</code> calls only.</li>
+</ol>
+<h3>Solved example: which mode for which stop</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Situation</th><th>Mode</th><th>Rows waiting in the queue</th></tr></thead>
+<tbody>
+<tr><td>A deploy: stop accepting, finish what was accepted</td><td><code>shutdown()</code></td><td>Written</td></tr>
+<tr><td>The store is down and every write would fail</td><td><code>shutdown(immediate=True)</code></td><td>Dropped; count them and log them</td></tr>
+<tr><td>A test that must end now</td><td><code>shutdown(immediate=True)</code></td><td>Dropped</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the default mode is the one that keeps the audit trail's promise; gateway v7's <code>stop()</code> uses it, and Part 8 adds a time limit around it.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.11 and 3.12: one stop marker per worker.</strong> On these versions <code>Queue</code> has no <code>shutdown</code>; the program fails with AttributeError on 3.12. Existing code ends a pool by putting one special object per worker behind the real items; each worker returns when it takes one. It works, but every producer must know how many workers there are, and a marker put while the queue is full waits like any item. Code that only runs on 3.13 or later should use <code>shutdown()</code>.</p>
+</div>
+<div class="ts-code" data-lang="python" data-title="sentinel_legacy.py" data-file="sentinel_legacy.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (3.11 to 3.14)" data-file="out/sentinel_legacy.txt" data-verified="ran"></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>shutdown()</code> stops the workers immediately."</p>
+<p><strong>Why it is wrong:</strong> in the default mode it only stops new items. The workers finish every queued item first and end when <code>get()</code> finds the queue empty. Even <code>immediate=True</code> does not interrupt an item a worker already took; it drops only those still waiting.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>shutdown()</code> (3.13+): puts fail at once; gets go on until the queue is empty, then raise QueueShutDown.</li>
+<li><code>immediate=True</code> drops waiting items and lowers the count by them; items already taken still finish.</li>
+<li>On 3.11 and 3.12: one stop marker per worker, put behind the real items.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Queue.shutdown() lets a worker pool finish what was accepted and end by itself, which is the clean alternative to cancelling workers mid-write.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c8">
+<p class="q">A queue holds 4 items, and both of its 2 workers are busy writing. The producer calls <code>queue.shutdown()</code> and then another producer calls <code>await queue.put(x)</code>. What happens to the 4 items and to the put?</p>
+<ol>
+<li>The 4 items are still handed out to the workers; the put raises QueueShutDown</li>
+<li data-why="Dropping waiting items is what immediate=True does; the default keeps them for get().">The 4 items are dropped; the put raises QueueShutDown</li>
+<li data-why="After shutdown the queue can no longer grow; put() raises instead of waiting or adding.">The put adds x behind the 4 items, and get() raises only after all 5 are taken</li>
+</ol>
+<p class="ts-why">The default mode lets get() keep taking what was already queued and makes every later put raise QueueShutDown.</p>
+</div>
+</section>
+<section class="ts-part" id="priority-lifo" data-rung="2" data-min="10">
+<h2>Changing who goes first: PriorityQueue and LifoQueue</h2>
+<p class="ts-bridge">Last part: a worker pool can end itself with <code>shutdown()</code>. Still unsolved: every queue so far serves items in arrival order. What if some work matters more, or the oldest work is the least useful?</p>
+<p class="ts-problem">During a sale, a shopper at checkout asks for a final price while 500 browsing shoppers are already waiting. In arrival order the checkout request waits behind all of them. And under heavy overload, the oldest requests in a line are the ones whose shoppers have most likely given up.</p>
+<h3>Introduction</h3>
+<p>asyncio has two variants of the queue that change only the order items come out. Everything else from the last four parts, <code>maxsize</code>, put and get, task_done, join and shutdown, works the same. This part shows the orders and the one trap in priority order.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c11" data-src="s1"><dfn data-def="asyncio.PriorityQueue: a queue that hands out the entry with the lowest priority value first.">PriorityQueue</dfn> retrieves entries in priority order, lowest first, and its entries are typically tuples of the form (priority_number, data); <dfn data-def="asyncio.LifoQueue: a queue that hands out the most recently added entry first.">LifoQueue</dfn> retrieves the most recently added entries first.</span></li>
+<li><span class="ts-claim" data-claim="c12" data-src="s2">In CPython 3.14's queues.py, PriorityQueue keeps its items in a list managed with heapq.heappush() and heapq.heappop().</span> A heap orders items by comparing them with <code>&lt;</code>, so it compares whole entries: the priority first, and the data whenever two priorities are equal.</li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Queue</strong>: the oldest item first. Fair, and right when every item is worth the same.</li>
+<li><strong>LifoQueue</strong>: the newest item first. Under overload, the newest request is the one whose shopper is most likely still waiting.</li>
+<li><strong>PriorityQueue</strong>: the lowest priority number first. Put <code>(priority, data)</code>; equal priorities fall back to comparing the data.</li>
+<li><strong>The tie-breaker.</strong> Put <code>(priority, n, data)</code> with <code>n</code> from a counter. Equal priorities then compare by <code>n</code>, which is always comparable and keeps arrival order within a priority.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="queue_order.py" data-file="queue_order.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/queue_order.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The same three arrivals come out in arrival order, in reverse, and checkout first (priority 0), then the other two in arrival order.</li>
+<li>Two entries with the same priority and a <code>Request</code> object each make the heap compare two Requests, which have no order: TypeError.</li>
+<li>The failed put is not undone: <code>qsize()</code> is 2, so the heap stored the entry before the comparison failed. <span class="ts-claim" data-claim="c13" data-src="s2">In CPython 3.14's queues.py, put_nowait() raises the unfinished count only after the item has been stored, so an exception while storing leaves the count unchanged.</span> The queue now holds an item that <code>join()</code> does not wait for. Treat a TypeError from a PriorityQueue as a broken queue, not a refused item.</li>
+<li>With a counter as the second element, the same requests go in without error and come out checkout first.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> a line of 500 browsing requests (priority 1) and one checkout request (priority 0) arriving last; one worker, 10 ms each.</p>
+<p><strong>Step 1. Queue.</strong> The checkout request is 501st: it waits 500 × 10 ms = 5 s.</p>
+<p><strong>Step 2. PriorityQueue.</strong> It is next: it waits at most for the item being worked on, 10 ms.</p>
+<p><strong>Step 3. The cost.</strong> Every browsing request now waits 10 ms longer, and if checkout requests keep coming faster than the worker finishes them, browsing requests are never served at all.</p>
+<p><strong>Result:</strong> priority moves waiting from important work to other work; it does not remove waiting. It needs a bounded queue and shedding behind it, or the low-priority line grows without limit.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A PriorityQueue compares only the priority number."</p>
+<p><strong>Why it is wrong:</strong> it compares whole entries, as a heap does. With equal priorities the next element is compared, and if that is an object without an order, the put raises TypeError, as the program shows, and leaves the queue inconsistent. The counter as the second element prevents it.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Queue: oldest first. LifoQueue: newest first. PriorityQueue: lowest number first.</li>
+<li>Use <code>(priority, counter, item)</code> so equal priorities never compare the items.</li>
+<li>Priority reorders the wait; without a bound, low-priority work can wait forever.</li>
+</ul>
+</div>
+<p class="ts-takeaway">LifoQueue and PriorityQueue change only who leaves the line first; a priority queue needs a tie-breaking counter and still needs a bound.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c11 c12">
+<p class="q">A PriorityQueue receives <code>(1, {"shopper": "a"})</code> and then <code>(1, {"shopper": "b"})</code>. What happens on the second put?</p>
+<ol>
+<li data-why="Equal priorities are not kept in arrival order by the heap; it compares the next element of the tuples.">It is stored behind the first, in arrival order</li>
+<li>It raises TypeError, because the heap compares the two dicts, which have no order</li>
+<li data-why="The queue has no rule for equal priorities; the heap's comparison decides, and dicts cannot be compared with &lt;.">It replaces the first, because the priorities are equal</li>
+</ol>
+<p class="ts-why">The heap compares whole tuples; with equal first elements it compares the dicts, and <code>&lt;</code> is not defined between dicts. A counter between the priority and the data avoids it. And the failed put is not clean: the second entry stays in the heap, uncounted by join(), as the program showed.</p>
+</div>
+</section>
+<section class="ts-part" id="load-shedding" data-rung="3" data-min="13">
+<h2>The front door: refusing a request before any work is done</h2>
+<p class="ts-bridge">Last part: priority and LIFO change who goes first. Still unsolved: for shoppers, who cannot usefully wait, how does gateway v7 refuse the extra requests, and what does the refusal say?</p>
+<p class="ts-problem">3,000 requests a second arrive; the gateway can finish 2,000. Gateway v6 accepts all of them and the ranking line grows by 1,000 a second. Gateway v7 must instead answer the extra 1,000 at once, in about 0 ms, without asking a single seller, and in a form the shopping app knows how to handle.</p>
+<h3>Introduction</h3>
+<p>Load shedding at the front door needs three decisions: what to count, where the limit sits, and what to reply. The count must be cheap and checked before any expensive step. The limit comes from Little's law. The reply comes from HTTP, which already has a status for "too busy, try later".</p>
+<h3>Definitions</h3>
+<ol>
+<li><dfn data-def="The most requests the gateway lets be in progress at once; a request that arrives when the limit is reached is refused at once.">max_requests</dfn> is the most requests gateway v7 lets be in progress at once. A request that arrives when the limit is reached is refused before its request line is acted on.</li>
+<li><span class="ts-claim" data-claim="c14" data-src="s5">HTTP's 503 (Service Unavailable) status means the server is currently unable to handle the request because of a temporary overload or scheduled maintenance, which will likely be alleviated after some delay, and the server MAY send a Retry-After header field suggesting how long the client should wait before retrying.</span></li>
+<li><span class="ts-claim" data-claim="c15" data-src="s5">Retry-After's value is either an HTTP date or a number of seconds to wait; sent with a 503, it says how long the service is expected to be unavailable to the client.</span></li>
+<li><span class="ts-claim" data-claim="c16" data-src="s6">The 429 (Too Many Requests) status means the user has sent too many requests in a given amount of time, and its response MAY include a Retry-After header saying how long to wait before a new request.</span> So 503 says "I am overloaded"; 429 says "you, this caller, are over your limit".</li>
+</ol>
+<p>The gateway's line protocol has no status codes, so gateway v7 replies with the line <code>busy</code>. Behind an HTTP front end, the same decision would be a 503 with Retry-After:</p>
+<div class="ts-code" data-lang="http" data-title="The same refusal over HTTP" data-verified="spec" data-claims="c14 c15">
+<pre><code>HTTP/1.1 503 Service Unavailable
+Retry-After: 1</code></pre>
+</div>
+<h3>Working: gateway v7's <code>serve()</code></h3>
+<ol class="ts-steps">
+<li><strong>Check the count first.</strong> When a connection arrives, compare <code>in_progress</code> with <code>max_requests</code>, before anything else.</li>
+<li><strong>If full, refuse.</strong> Count the refusal, read the request line (so that closing does not reset a connection with unread data), write <code>busy</code>, close. No seller, no ranking, no audit row.</li>
+<li><strong>If not full, admit.</strong> Add one to <code>in_progress</code>, run gateway v6's <code>serve()</code> unchanged, and subtract one in <code>finally</code>.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: a refusal is cheap only if it comes before the expensive steps. Refusing after the fan-out would save the ranking but not the five seller calls.</li>
+<li>Step 2: the reply must be distinct from a failure, so the app can back off instead of reporting an error.</li>
+<li>Step 3: <code>finally</code> keeps the count right when a request ends by hang-up, cancellation or error. The check and the increment have no <code>await</code> between them, so on one event loop no other request can slip in between; Part 7 returns to what changes when such a check spans an <code>await</code>.</li>
+</ul>
+<h3>Solved example: choosing max_requests</h3>
+<p><strong>Given:</strong> ranking finishes 2,000 requests a second per process; an admitted request is in the gateway about 0.28 s (250 ms of sellers, then ranking, counts and the audit row).</p>
+<p><strong>Step 1.</strong> At capacity, requests in progress = 2,000 × 0.28 = 560, by Little's law.</p>
+<p><strong>Step 2.</strong> A limit well above 560 admits more than ranking can finish, and the ranking line grows again; a limit well below 560 refuses work the gateway could have done. Round to 600 and watch two signals: ranking wait time (should stay near zero) and the refusal rate.</p>
+<p><strong>Step 3.</strong> At 3,000 arrivals a second, about 1,000 a second are refused, each in about the time it takes to read one line.</p>
+<p><strong>Result:</strong> <code>max_requests = 600</code>. Memory stays near 600 × 7 KB ≈ 4 MB for admitted requests, whatever the arrival rate.</p>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c18" data-src="s7">Google's SRE book describes load shedding as dropping some proportion of load as a server approaches overload, and gives as an example a server returning HTTP 503 to incoming requests when more than a given number of client requests are in flight.</span> Gateway v7's front door is that rule, with <code>busy</code> in place of 503.</p>
+</div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your service is at 150% of capacity. Do you queue the extra requests or reject them?"</p>
+<p><strong>What a strong senior answer contains:</strong> reject the excess at the edge, early and cheaply, because a queue cannot drain while arrivals exceed capacity: it only grows, and everything in it is answered late. The candidate sizes the in-flight limit with Little's law, replies 503 with Retry-After so clients back off, keeps refusals out of the error rate but alerts on them, and states the trade-off: some users get "try again" so that the rest get a timely answer. A short queue is fine only for bursts shorter than the budget.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Load shedding means the server is broken."</p>
+<p><strong>Why it is wrong:</strong> a 503 under overload is the server working as designed: it protects the requests it has accepted. The broken behaviour is the one from the work-in, work-out part, where every request is accepted and goodput falls toward zero.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Count requests in progress; check before any expensive step; refuse when the count is at the limit.</li>
+<li>Limit ≈ capacity × time in the gateway: 2,000 × 0.28 ≈ 560, rounded to 600.</li>
+<li>Reply 503 with Retry-After when the server is overloaded; 429 when one caller is over its own limit.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v7 counts the requests it has in progress and refuses the next one at the door with "busy", the line protocol's 503, before any seller is asked.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c14 c16">
+<p class="q">One shopping app has a bug and sends 50 requests a second; everyone else is normal, and the gateway is well below capacity. The gateway limits each app to 10 requests a second. Which reply fits the extra 40?</p>
+<ol>
+<li data-why="503 says the server is overloaded; here it is not, and every other caller is being served.">503 Service Unavailable with Retry-After</li>
+<li data-why="Closing the connection gives the client no reason and no time to wait, so a buggy client retries at once.">No reply: close the connection</li>
+<li>429 Too Many Requests, with Retry-After</li>
+</ol>
+<p class="ts-why">429 means this caller has sent too many requests in a given time. 503 means the server itself cannot handle requests right now, which is not the case.</p>
+</div>
+</section>
+<section class="ts-part" id="seller-limits" data-rung="3" data-min="13">
+<h2>A cap and a short line for each seller</h2>
+<p class="ts-bridge">Last part: the front door refuses requests the gateway cannot finish. Still unsolved: inside an admitted request, the five seller calls still share one cap. What stops one slow seller from taking the slots the others need?</p>
+<p class="ts-problem">Part 3 sized one shared cap at 1,600 calls for 2,000 requests a second. During seller-c's outage each seller-c call holds its slot for the full 250 ms instead of 150 ms, so seller-c alone needs 500 slots instead of 300. The extra 200 come out of the same 1,600 that seller-a, seller-b and seller-d need, and their calls start waiting in line behind seller-c's.</p>
+<h3>Introduction</h3>
+<p>Part 3's table of fixes already named the remedy: a cap per seller as well as the shared one, so one seller cannot take every slot. Gateway v7 builds it, and adds the bound this page is about: each cap gets a short line, and a call that finds the line full is skipped for this request instead of waiting.</p>
+<h3>Comparison</h3>
+<p>A food court has five counters. With one shared line for all five, a counter that is slow today holds up people who want the other four. With one line per counter, the slow counter's line grows and the others keep moving; and a sign that says "line full, try later" keeps the slow counter's line from filling the hall.</p>
+<ul>
+<li>A counter = a seller; its staff = its cap.</li>
+<li>Its own line = the waiters on its Semaphore.</li>
+<li>"Line full" = skipping that seller for this request.</li>
+</ul>
+<p>The comparison stops working here: a person in a food court wants one counter. A gateway request wants all five sellers and is happy with four, so skipping one seller costs one price, not the whole request.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A separate limit for each downstream, so that one slow or failing downstream cannot use up capacity the others need.">bulkhead</dfn> is a separate limit for each downstream, so that one slow downstream cannot use up capacity the others need. Each seller's Semaphore is a bulkhead.</li>
+<li><span class="ts-claim" data-claim="c17" data-src="s4">Semaphore.locked() returns True if the semaphore cannot be acquired immediately.</span> <span class="ts-claim" data-claim="c19" data-src="s8">In CPython 3.14's locks.py, locked() is also True while any waiter that is not cancelled is in line, even if the counter is above zero, so a newcomer cannot go ahead of the line.</span></li>
+</ol>
+<h3>Working: <code>SellerLimits.call()</code></h3>
+<ol class="ts-steps">
+<li><strong>Line full?</strong> If the seller's cap cannot be taken at once and its line already holds <code>max_waiting</code> calls, raise <code>Skipped</code> at once.</li>
+<li><strong>Rate?</strong> If the seller has a rate limit and no token is free, raise <code>Skipped</code> at once (next part).</li>
+<li><strong>Join the line</strong>: count the call as waiting and <code>await cap.acquire()</code>. The request's <code>timeout_at</code> deadline, which the caller entered first, still covers this wait.</li>
+<li><strong>Call the seller</strong> and release the slot in <code>finally</code>.</li>
+<li><strong>Gateway v7's <code>_ask()</code></strong> returns a <code>Skipped</code> as a value, like a timeout: the seller is missing from this answer, and the answer is marked partial.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: the line's length bounds how many calls can wait; the deadline already bounds how long, but a long line means most of its calls are cut anyway, after holding a Task for 250 ms each.</li>
+<li>Step 3: the deadline around the wait is Part 3's rule; without it the line would bound the count but not the time.</li>
+<li>Step 5: a skipped seller is an expected outcome of a limit, not an error, so it must not fail the TaskGroup.</li>
+</ul>
+<div class="ts-code" data-lang="python" data-title="limits.py" data-file="limits.py" data-verified="ran"></div>
+<h3>Program</h3>
+<p>Ten requests ask seller-c at once. Its cap is 3 and its line is 2; each request has a 250 ms deadline.</p>
+<div class="ts-code" data-lang="python" data-title="seller_line.py" data-file="seller_line.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/seller_line.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Calls 1 to 3 take the slots at 0 ms and answer at 150 ms.</li>
+<li>Calls 4 and 5 wait in line. They get slots at 150 ms; their answers would come at 300 ms, after the deadline, so the deadline cuts them at 250 ms.</li>
+<li>Calls 6 to 10 find the cap locked and the line full, and are skipped at 0 ms. They cost nothing: no Task waits, no connection is opened.</li>
+</ol>
+<h3>Solved example: sizing the caps for 2,000 requests a second</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Seller</th><th>Time held</th><th>Calls in flight needed</th><th>Cap</th><th>Line</th></tr></thead>
+<tbody>
+<tr><td>seller-a</td><td>80 ms</td><td>2,000 × 0.08 = 160</td><td>200</td><td>small; it rarely fills</td></tr>
+<tr><td>seller-b</td><td>120 ms</td><td>240</td><td>300</td><td>small</td></tr>
+<tr><td>seller-c</td><td>150 ms</td><td>300</td><td>200, its own limit (below)</td><td>133</td></tr>
+<tr><td>seller-d</td><td>200 ms</td><td>400</td><td>500</td><td>small</td></tr>
+<tr><td>seller-e</td><td>cut at 250 ms</td><td>500</td><td>4, its thread pool (Part 4)</td><td>0</td></tr>
+</tbody>
+</table></div>
+<p><strong>Step 1.</strong> Calls in flight = rate × time held, per seller (Little's law). The caps add a margin above it.</p>
+<p><strong>Step 2. seller-c.</strong> Suppose seller-c's contract says it can work on 200 calls at once. The cap is then 200, below the 300 needed: with a 150 ms call it finishes 200 ÷ 0.15 ≈ 1,333 calls a second.</p>
+<p><strong>Step 3. seller-c's line.</strong> A waiting call can wait at most 250 − 150 = 100 ms and still answer in time. In 100 ms seller-c's slots free about 133 times, so a line longer than 133 holds only calls that will be cut. Line = 133; about 1 request in 3 skips seller-c.</p>
+<p><strong>Step 4. seller-e.</strong> Its cap equals its thread pool and its line is 0, so a call is either started at once or skipped. The executor's own queue, which has no limit, is never used.</p>
+<p><strong>Result:</strong> five caps that add up to about 1,200 instead of one of 1,600, and during seller-c's outage its 200 slots fill and its extra calls are skipped at 0 ms, while seller-a, seller-b and seller-d keep their own slots.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A per-seller cap protects us; the size of its line does not matter, because the deadline cuts every wait anyway."</p>
+<p><strong>Why it is wrong:</strong> the deadline bounds each wait, not how many waits there are. With no limit on the line, every request in a burst parks a Task and a cap waiter for up to 250 ms, and in the program calls 4 and 5 show that a place in a long line often ends in a cut anyway. A line sized to what can still finish in time skips the rest at 0 ms.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>One cap per seller (a bulkhead): one slow seller fills only its own slots.</li>
+<li>Cap ≈ rate × time held, or the seller's own limit if lower; line ≈ what can still finish within the budget.</li>
+<li>A call that finds the cap locked and the line full is skipped at once, and reported as missing from the answer.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v7 gives each seller its own cap and a line no longer than what can still finish in time, so a slow seller costs only its own price, not everyone's slots.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c17 c19">
+<p class="q">seller-c's Semaphore has a counter of 1 (one free slot) and two waiters in line that are not cancelled. A new call checks <code>cap.locked()</code>. What does it return, and why?</p>
+<ol>
+<li data-why="The counter is above zero, but locked() also looks at the line, so newcomers do not overtake waiters.">False, because one slot is free</li>
+<li>True, because waiters that are not cancelled are in line, and a newcomer may not go ahead of them</li>
+<li data-why="locked() does not raise; it reports whether acquire() would have to wait.">It raises, because the line is not empty</li>
+</ol>
+<p class="ts-why">In CPython 3.14, locked() is True when the counter is 0 or when any waiter that is not cancelled is in line. Waiters already in line are served first, in the order they arrived (Part 3).</p>
+</div>
+</section>
+<section class="ts-part" id="rate-limits" data-rung="3" data-min="12">
+<h2>Calls per second, not calls at once: a rate limit for seller-d</h2>
+<p class="ts-bridge">Last part: each seller has its own cap and line. Still unsolved: seller-d's contract does not say "200 calls at once"; it says "at most 20 calls a second". A cap cannot express that. What can?</p>
+<p class="ts-problem">seller-d allows the gateway 20 calls a second, with bursts of up to 5, and answers 429 Too Many Requests above that. Each call takes 200 ms, so a cap of 4 would allow 4 ÷ 0.2 = 20 calls a second while seller-d is healthy. But on a day seller-d answers in 50 ms, the same cap of 4 allows 80 calls a second, and the gateway breaks the contract.</p>
+<h3>Introduction</h3>
+<p>A cap limits calls at once; a rate limit limits calls per unit of time. Little's law links them: calls at once = rate × time per call. When the time per call changes, a cap keeps calls at once fixed and lets the rate move, while a rate limit keeps the rate fixed and lets calls at once move. A contract stated as a rate needs a rate limit.</p>
+<h3>Comparison</h3>
+<p>A ticket machine at a museum hands out one entry ticket every 3 seconds and can hold up to 5 tickets ready. A school group that arrives after a quiet hour takes the 5 ready tickets at once; after that, people get a ticket only as fast as the machine prints them.</p>
+<ul>
+<li>Printing a ticket every 3 seconds = the rate.</li>
+<li>The 5 ready tickets = the burst.</li>
+<li>Taking a ticket = <code>try_take()</code>.</li>
+</ul>
+<p>The comparison stops working here: a person without a ticket waits by the machine. Gateway v7 never waits for a token, because a token that arrives after the request's deadline is useless; it skips seller-d instead.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="A rate limiter that holds up to `burst` tokens, refills them at `rate` per second, and allows a call only by taking one token.">token bucket</dfn> holds up to <em>burst</em> tokens and refills at <em>rate</em> tokens per second; a call is allowed only if it can take a token. Over any period, it allows at most <em>burst</em> + <em>rate</em> × the period's length calls.</p>
+</div>
+<h3>Working: <code>TokenBucket.try_take()</code></h3>
+<ol class="ts-steps">
+<li><strong>Refill</strong>: add <em>rate</em> × the time since the last call, up to <em>burst</em>.</li>
+<li><strong>Take</strong>: if at least one token is there, remove one and allow the call.</li>
+<li><strong>Otherwise refuse at once.</strong> <code>SellerLimits.call()</code> turns that into <code>Skipped</code>.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: refilling on demand, from the elapsed time, needs no timer and no background Task.</li>
+<li>Step 3: waiting for a token would build one more line in front of seller-d, which the deadline would cut anyway. The check has no <code>await</code> in it, so on one event loop two requests cannot both take the last token.</li>
+</ul>
+<div class="ts-code" data-lang="python" data-title="ratelimit.py" data-file="ratelimit.py" data-verified="ran"></div>
+<h3>Program</h3>
+<p>The gateway asks seller-d 50 times in one second, once every 20 ms, against a bucket of rate 20 and burst 5.</p>
+<div class="ts-code" data-lang="python" data-title="rate_demo.py" data-file="rate_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/rate_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The first 7 calls are allowed: the bucket starts with 5 tokens and gains 0.4 every 20 ms, so it runs out at the eighth call.</li>
+<li>From then on 2 calls in every 5 are allowed: 0.4 tokens per 20 ms is one token per 50 ms, 20 a second.</li>
+<li>24 of 50 allowed in one second: the burst of 5 plus about 19 refilled tokens, within the limit of 5 + 20 × 1 = 25.</li>
+</ol>
+<h3>Difference between a cap and a rate limit</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Point</th><th>Cap (Semaphore)</th><th>Rate limit (token bucket)</th></tr></thead>
+<tbody>
+<tr><td>Limits</td><td>Calls at once</td><td>Calls per second</td></tr>
+<tr><td>When the seller slows down</td><td>The rate falls by itself: fewer calls finish per second</td><td>Calls at once rise: rate × the longer time</td></tr>
+<tr><td>When the seller speeds up</td><td>The rate rises, possibly past a contract</td><td>The rate stays at the limit</td></tr>
+<tr><td>Protects</td><td>Our connections, Tasks and the seller's workers</td><td>A quota stated per second, and the seller's front end</td></tr>
+<tr><td>Gateway v7</td><td>Every seller</td><td>seller-d, as well as its cap</td></tr>
+</tbody>
+</table></div>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> 2,000 requests a second, each wanting seller-d; seller-d's contract allows 1,500 calls a second with bursts of 100.</p>
+<p><strong>Step 1.</strong> 500 calls a second find no token and skip seller-d: 1 request in 4 answers without seller-d's 1,215. seller-b's 1,199 is still the best price, so the answer is unchanged for every request that reached seller-b.</p>
+<p><strong>Step 2. The cap as well.</strong> At 200 ms per call, 1,500 calls a second are 300 at once. If seller-d slows to 1 s per call, the rate limit alone would let calls at once grow to 1,500; seller-d's cap of 500 stops that, and the rate then falls to 500 a second.</p>
+<p><strong>Result:</strong> the rate limit keeps the contract; the cap keeps the gateway's own resources bounded when seller-d slows down. Each covers the case the other misses.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A concurrency limit of 4 on a 200 ms call is the same thing as a rate limit of 20 a second."</p>
+<p><strong>Why it is wrong:</strong> they agree only while the call takes exactly 200 ms. At 50 ms the cap of 4 allows 80 calls a second; at 1 s it allows 4. A rate stated in a contract needs a limiter that counts time, not calls in flight.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Calls at once = rate × time per call: a cap fixes the first, a rate limit fixes the second.</li>
+<li>Token bucket: burst tokens, refilled at rate per second; take one per call; at most burst + rate × time.</li>
+<li>Gateway v7 never waits for a token; a seller without one is skipped for this request.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A rate limit holds calls per second to a contract whatever the seller's speed, while a cap holds calls at once; seller-d needs both.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The bucket is rate 20, burst 5, and full. Nothing is asked for 2 seconds; then 30 requests arrive at the same instant. How many are allowed?</p>
+<div class="ts-reveal"><p>5. The bucket never holds more than the burst, however long it was idle, and 30 calls at the same instant leave no time to refill. The other 25 skip seller-d.</p></div>
+</div>
+</section>
+<section class="ts-part" id="audit-queue" data-rung="3" data-min="12">
+<h2>Backpressure inside the gateway: the audit queue</h2>
+<p class="ts-bridge">Last part: seller-d gets a rate limit as well as a cap. Still unsolved: Part 5's audit writes. Each request starts one as an owned Task behind <code>shield()</code>, and nothing limits how many run at once. What happens when the audit store slows down?</p>
+<p class="ts-problem">The audit store slows from 20 ms to 200 ms a write. Gateway v6 still starts one write Task per request, 2,000 a second; by Little's law 2,000 × 0.2 = 400 writes are in flight at once against a store that was sized for 40. The store slows further, and the write Tasks of shoppers who hung up keep running, uncounted by anything.</p>
+<h3>Introduction</h3>
+<p>The audit write is the one producer in the gateway that can wait: every answer already waits for its row (Part 5's rule "no answer without its row"). So it is the place for backpressure. Rows go into a bounded queue served by a fixed pool of writers; when the store slows, the queue fills, the requests waiting for their rows slow down, they stay in progress longer, and the front door starts refusing new requests. The overload travels back to the edge, where it is cheap to refuse.</p>
+<h3>Working: <code>AuditQueue</code></h3>
+<ol class="ts-steps">
+<li><strong><code>write(row)</code></strong>, which gateway v6's <code>_audit()</code> already calls through its owned, shielded Task, makes a Future for "committed", puts <code>(row, future)</code> into the queue with <code>await put()</code>, and awaits the Future.</li>
+<li><strong>A full queue parks that put()</strong>: the request's Task waits for room, as in the put-waits part.</li>
+<li><strong>Each of the fixed writers</strong> loops: <code>get()</code>, write to the store, set the Future's result (or its exception, so the request hears about a failure), and <code>task_done()</code> in <code>finally</code>.</li>
+<li><strong><code>close()</code></strong> calls <code>shutdown()</code>, waits for <code>join()</code>, then for the writers, which return on QueueShutDown. Gateway v7's <code>stop()</code> calls it.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: the put and the wait happen inside the shielded Task from Part 5, so a shopper hanging up while the row waits for room does not lose the row.</li>
+<li>Step 3: setting the exception on the Future replaces the per-write failure report that each owned Task gave in Part 5; the owned Task awaiting the Future still reads it, so <code>spawn()</code> still counts it.</li>
+<li>Step 4: the default shutdown writes every queued row before the writers end.</li>
+</ul>
+<div class="ts-code" data-lang="python" data-title="audit_queue.py" data-file="audit_queue.py" data-verified="ran"></div>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="The audit store slows: overload travels back to the front door">
+<script type="application/json">
+{"actors": [
+ {"id": "app", "label": "New shopper", "sub": "arrives at 300 ms"},
+ {"id": "door", "label": "Front door", "sub": "max_requests"},
+ {"id": "req", "label": "Admitted requests", "sub": "waiting for their rows"},
+ {"id": "q", "label": "Audit queue", "sub": "bounded"},
+ {"id": "store", "label": "Audit store", "sub": "200 ms a write"}],
+ "steps": [
+ {"from": "store", "to": "q", "label": "writers finish 10 rows a second", "dashed": true, "note": "Two writers at 200 ms each finish 10 rows a second instead of 100."},
+ {"from": "req", "to": "q", "label": "await put(row): queue full", "note": "The queue fills; each request's put() parks until a writer takes a row."},
+ {"over": ["req"], "label": "stay in progress longer", "note": "Requests that would have finished at 280 ms now wait for their row, so in_progress stays at the limit."},
+ {"from": "app", "to": "door", "label": "shopper-11 kettle-1l", "note": "A new request arrives while the gateway is full."},
+ {"from": "door", "to": "app", "label": "busy", "dashed": true, "note": "in_progress equals max_requests, so the request is refused at once, before any seller is asked."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Step 1 is the cause: the store's capacity falls tenfold.</li>
+<li>Steps 2 and 3 are backpressure: the queue does not grow past its limit; the waiting moves into the requests.</li>
+<li>Steps 4 and 5 are shedding: the requests stuck behind the store fill the front door's count, and new requests are refused instead of starting fan-outs whose rows could not be written in time anyway.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> 2,000 requests a second, 50 writers, a queue of 40, <code>max_requests</code> 600; the store slows from 20 ms to 200 ms a write.</p>
+<p><strong>Step 1. Writers' capacity.</strong> 50 ÷ 0.2 = 250 rows a second, down from 2,500.</p>
+<p><strong>Step 2. What fills.</strong> The queue's 40 places fill within a fraction of a second; then each finished request waits in <code>put()</code>. In-progress requests climb to 600.</p>
+<p><strong>Step 3. What the door does.</strong> With 600 in progress, admitted requests leave only as fast as their rows are written, 250 a second, so the door admits about 250 a second and refuses the other 1,750.</p>
+<p><strong>Step 4. Memory.</strong> At most 600 requests, 40 queued rows and 50 writers, whatever the store does.</p>
+<p><strong>Result:</strong> the slow store costs throughput, which no design can avoid, but not memory or unbounded Tasks: gateway v6 would have had 400 writes in flight, growing, while gateway v7 has 50 writes and refuses the rest at the door in about 0 ms.</p>
+<div class="ts-trap">
+<p><strong>Backpressure needs a bound on every line it passes through.</strong> The audit queue is bounded, but if the front door were not, the parked puts would simply move the pile-up into requests waiting at <code>put()</code>, 2,000 more every second. Backpressure inside a service is only safe when the edge sheds: here, <code>max_requests</code>.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Putting the audit write behind a queue makes it asynchronous, so requests no longer wait for it."</p>
+<p><strong>Why it is wrong:</strong> each request still awaits its own row's Future, because the rule "no answer without its row" has not changed. The queue changes how many writes run at once and where the waiting happens, not whether the answer waits. Not waiting at all would be Part 5's owned Task without <code>shield()</code>, with its own trade-off.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>The audit trail is a producer that can wait: bounded queue + fixed writers + <code>await put()</code>.</li>
+<li>A slow store fills the queue, holds requests in progress, and the front door refuses the excess.</li>
+<li>Backpressure inside is safe only with shedding at the edge.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v7's audit rows go through a bounded queue to a fixed pool of writers, so a slow store slows the requests that need it and the front door turns the rest away.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">This needs Part 5. A shopper hangs up while its request's audit row is parked in <code>await queue.put()</code> because the audit queue is full. What happens to the row?</p>
+<ol>
+<li data-why="The put runs inside the owned Task that _audit() shields; the hang-up cancels the handler's wait, not that Task.">The hang-up cancels the put and the row is lost</li>
+<li data-why="A full queue never drops items; put() only waits for room.">The queue drops the row because it is full</li>
+<li>The handler is cancelled at once, but the shielded write Task keeps waiting for room, puts the row and waits for it to be written</li>
+</ol>
+<p class="ts-why">Part 5's <code>_audit()</code> runs <code>audit.write(row)</code> as an owned Task behind <code>shield()</code>. In gateway v7 that Task is what waits in <code>put()</code>, so the shopper's cancellation reaches only the handler's wait.</p>
+</div>
+</section>
+<section class="ts-part" id="gateway-v7" data-rung="3" data-min="16">
+<h2>Gateway v7: every limit together</h2>
+<p class="ts-bridge">Last part: audit rows go through a bounded queue with backpressure. Still unsolved: putting the front door, the seller limits and the audit queue into one gateway and watching them work together under a crowd and a slow store.</p>
+<p class="ts-problem">30 shoppers arrive at once at a gateway with room for 10 requests. Later the audit store slows to 200 ms a write while 10 shoppers are being served and 10 more arrive. Gateway v7 must answer the ones it admits with seller-b at 1,199, refuse the rest at once, skip sellers whose limits are reached, and lose no audit row.</p>
+<h3>Introduction</h3>
+<p>Gateway v7 is gateway v6 with three changes, all from this rung: <code>serve()</code> checks <code>max_requests</code> first; <code>_ask()</code> goes through <code>SellerLimits</code> instead of Part 3's single shared cap; and the audit store is reached through <code>AuditQueue</code>. Everything else, the TaskGroup, the deadline, the hang-up watcher, seller-e's pool, ranking, metrics and the shielded audit Task, is gateway v6's code, unchanged. The numbers are small so the limits are easy to see: room for 10 requests, seller-c's cap 3 with a line of 2, seller-e's cap 4 with no line, seller-d at 20 calls a second with bursts of 5, and 2 audit writers.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v7.py" data-file="gateway_v7.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_v7.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>The crowd.</strong> 10 shoppers are admitted and all get seller-b at 1,199. The last answer comes at about 340 ms rather than 280 ms because 10 requests share 2 ranking processes and 2 audit writers. 20 shoppers are told <code>busy</code>, all within about 50 ms, the time it takes to open 30 connections; none of them caused a seller call.</li>
+<li><strong>The skipped calls</strong> match the limits exactly: seller-c had 3 slots and a line of 2, so 5 of 10 were skipped; seller-d's bucket held 5 tokens, so 5 were skipped; seller-e had 4 slots and no line, so 6 were skipped. Skipping seller-e made those 6 requests faster, since they no longer waited until 250 ms for a seller that never answers in time.</li>
+<li><strong>The slow store.</strong> At 300 ms all 10 admitted requests are still in progress: 2 rows are being written and 8 wait in the audit queue. The 10 later shoppers are refused at about 0 ms. The first 10 are answered as their rows are written, two every 200 ms; the first rows were queued at about 150 ms, so the last answer comes at about 150 + 5 × 200 ≈ 1,150 ms.</li>
+<li><strong>The audit trail</strong> has 20 rows, one per admitted request, and no background failures. <code>stop()</code> shut the audit queue down and waited for it.</li>
+</ol>
+<h3>Testing the program</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Case</th><th>Expected</th><th>Test</th></tr></thead>
+<tbody>
+<tr><td>30 at once, room for 10</td><td>10 answered, 20 busy</td><td><code>test_gateway_v7_counts_are_exact</code></td></tr>
+<tr><td>Seller limits</td><td>seller-c 5, seller-d 5, seller-e 6 skipped</td><td>the same test</td></tr>
+<tr><td>Slow audit store</td><td>10 in progress, 8 rows queued at 300 ms; 10 refused</td><td>the same test</td></tr>
+<tr><td>Times</td><td>within 60 ms of the recorded run</td><td><code>test_timed_output_matches_within_tolerance</code></td></tr>
+<tr><td>Earlier pages' gateways</td><td>unchanged</td><td>every test from Parts 1 to 5, in this folder</td></tr>
+</tbody>
+</table></div>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td><code>max_requests</code></td><td>10</td><td>Capacity × time in the gateway, about 600 per process at 2,000 a second; confirmed by a load test</td></tr>
+<tr><td>Refusal</td><td>The line <code>busy</code></td><td>503 with Retry-After for overload; 429 with Retry-After for a caller over its own limit</td></tr>
+<tr><td>Seller caps and lines</td><td>3 and 2 for seller-c</td><td>Rate × time held, or the seller's own limit if lower; line = what can still finish in the budget</td></tr>
+<tr><td>Rate limits</td><td>One bucket per process</td><td>The contract divided by the number of processes, or one shared limiter (rung 4)</td></tr>
+<tr><td>Audit queue</td><td>2 writers, 8 places</td><td>Writers = rate × write time plus headroom (about 50); a queue no longer than the wait a request can afford</td></tr>
+<tr><td>Signals</td><td>Printed counts</td><td>Refusals per second, skips per seller and reason, queue depth, time in queue, in-progress count</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Design the overload behaviour of an API gateway that fans out to five vendors with different speeds and contracts."</p>
+<p><strong>What a strong senior answer contains:</strong> a limit at every line. An in-flight limit at the edge, sized by Little's law, that sheds with 503 and Retry-After. A cap per vendor (a bulkhead) with a short line sized to what can still finish within the deadline, so one slow vendor costs only its own answer. A rate limiter where a contract is per second, alongside the cap, because each misses a case the other covers. Backpressure only for internal producers that can wait, behind the edge limit. Deadlines that cover every wait. And the metrics that show each limit firing. The trade-off, stated: some shoppers get "busy" and some answers are partial, so that admitted answers stay within the budget.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "With all these limits, gateway v7 answers fewer shoppers than gateway v6."</p>
+<p><strong>Why it is wrong:</strong> under overload gateway v6 answers every shopper eventually and almost none in time, as the work-in, work-out part computed. Gateway v7 answers fewer shoppers, all of them in time. Below capacity the limits never fire, and the two gateways behave the same.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v7 = gateway v6 + a front-door limit + per-seller caps, lines and a rate + a bounded audit queue.</li>
+<li>In the run: 10 of 30 admitted and answered; 20 busy in about 50 ms; 16 seller calls skipped at once.</li>
+<li>A slow store held requests in progress, and the door refused new ones, with no row lost.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v7 bounds every place work can wait, so under a crowd or a slow store it answers what it admits in time and refuses the rest at once.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In the crowd run, seller-c's line is raised from 2 to 7, with its cap still 3. How many of the 10 admitted requests get seller-c's price, and what happens to the others?</p>
+<div class="ts-reveal"><p>Still 3. Calls 1 to 3 answer at 150 ms. Calls 4 to 6 get slots at 150 ms but would answer at 300 ms, so the 250 ms deadline cuts them; calls 7 to 10 are still waiting in line at 250 ms and are cut there. The run with a line of 2 was 3 answered, 2 cut, 5 skipped; this one is 3 answered, 7 cut, 0 skipped: 5 free skips became 5 more cuts, each holding a Task for 250 ms. Even the line of 2 was too long for this cap: a call that waits for a slot starts at 150 ms at the earliest and needs 150 ms more, past the deadline, so the line that fits here is 0.</p></div>
+</div>
+</section>
+<section class="ts-part" id="worker-hangs" data-rung="4" data-min="12">
+<h2>The worker loop that hangs forever</h2>
+<p class="ts-bridge">Last part: gateway v7 bounds every line. Still unsolved: what goes wrong in production with queues and workers, starting with the most common bug of all.</p>
+<p class="ts-problem">A deploy of gateway v7 never finishes. Its <code>stop()</code> waits in the audit queue's <code>join()</code>, and the old process is killed by the orchestrator after its grace period, every time. The audit store had rejected one row with a constraint error an hour earlier. Nothing was logged about it until the process was killed.</p>
+<h3>Introduction</h3>
+<p>The worker loop is four lines long, and the order of those lines decides whether one bad item stops the whole pool forever. This part reproduces the hang with the gateway's audit writers, shows why it is silent, and lists the fixes, each of which closes a different gap.</p>
+<h3>Working: how one bad row hangs join()</h3>
+<ol class="ts-steps">
+<li><strong>The writer takes row-2</strong> with <code>get()</code>. The unfinished count does not change; it went up when row-2 was put.</li>
+<li><strong>The store raises</strong> for row-2. The writer's loop has <code>task_done()</code> after the write, not in <code>finally</code>, so the exception skips it.</li>
+<li><strong>The writer's Task ends with the exception.</strong> Nobody awaits it, so nothing reports the failure while the process runs.</li>
+<li><strong>The other writer finishes every remaining row</strong>, and the queue is empty. The unfinished count is still 1, for row-2.</li>
+<li><strong><code>join()</code> waits for that count to reach zero.</strong> It never will.</li>
+</ol>
+<p><strong>Why it is silent</strong></p>
+<ul>
+<li>The queue is empty and every other row was written, so queue depth and write rate look healthy.</li>
+<li>The failure lives in a Task nobody reads: Part 4's trap 3, inside a worker pool.</li>
+</ul>
+<h3>Program</h3>
+<p>Two audit writers, six rows; the store rejects row-2. The first run has <code>task_done()</code> after the work; the second has it in <code>finally</code>. <code>join()</code> gets one second.</p>
+<div class="ts-code" data-lang="python" data-title="worker_hang.py" data-file="worker_hang.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/worker_hang.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>First run: five rows written, the queue empty, one writer dead with <code>BadRow</code>, and <code>join()</code> still waiting after 1 s. Without the timeout it would wait until the process is killed.</li>
+<li>Second run: the same five rows, the bad row counted as finished by <code>finally</code>, both writers alive, <code>join()</code> returns.</li>
+<li>The program reads each dead writer's exception itself; in the gateway, writers started with <code>spawn()</code> report it at once.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c20" data-src="s1">The worker in the asyncio queue documentation's own example calls task_done() after its work, not in a finally block, and the example stops its workers by cancelling them after join() returns.</span> That is fine for its <code>asyncio.sleep()</code>, which cannot fail. Copied into a worker whose work can raise, it is the first run above.</p>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Gap</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><code>task_done()</code> skipped on an exception</td><td>Deploys that never finish; batch jobs that never end</td><td>Unfinished count above zero with an empty queue; <code>join()</code> time</td><td><code>task_done()</code> in <code>finally</code></td></tr>
+<tr><td>A worker dies and nobody notices</td><td>Throughput falls by 1 ÷ pool size per dead worker; then the queue fills</td><td>Live workers per pool; failures counted by name</td><td>Start workers with <code>spawn()</code> or in a TaskGroup; catch per-item errors inside the loop</td></tr>
+<tr><td><code>join()</code> without a limit</td><td>A stop that hangs until killed</td><td>Stop duration; kills by the orchestrator</td><td><code>async with asyncio.timeout(...)</code> around <code>join()</code>; Part 8 makes this the shutdown budget</td></tr>
+<tr><td>Bad rows dropped silently</td><td>Missing audit rows nobody can explain</td><td>Rejected rows per reason</td><td>Log and count each, or move it to a separate "rejected" list for later</td></tr>
+</tbody>
+</table></div>
+<div class="ts-trap">
+<p><strong>A worker that dies inside a TaskGroup takes the others with it.</strong> If the writers are children of one TaskGroup and a write raises out of the loop, the group cancels every other writer, by design (Part 3). That turns a silent hang into a loud stop, which is better, but it also stops writing every row behind the bad one. Catch per-item errors inside the loop, count them, and let only bugs in the loop itself end a worker.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If the queue is empty and workers are idle, <code>join()</code> must return."</p>
+<p><strong>Why it is wrong:</strong> <code>join()</code> watches the unfinished count, not the queue. The program's first run has an empty queue, one idle writer and a count of 1 that will never fall: one <code>task_done()</code> was skipped.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>task_done()</code> in <code>finally</code>, always; otherwise one exception hangs <code>join()</code> forever.</li>
+<li>Owned workers (<code>spawn()</code> or a TaskGroup), per-item errors caught and counted inside the loop.</li>
+<li>Every <code>join()</code> gets a time limit; alert on live workers and unfinished-with-empty-queue.</li>
+</ul>
+</div>
+<p class="ts-takeaway">One exception between get() and a task_done() that is not in finally leaves join() waiting forever with an empty queue, so task_done() belongs in finally and every join() needs a time limit.</p>
+<div class="ts-predict" data-claims="c6">
+<p class="q">Three writers started with <code>create_task()</code> (not in a TaskGroup), 30 rows, <code>task_done()</code> after the work (not in <code>finally</code>). Rows 4, 9 and 17 make the store raise. What happens to <code>await queue.join()</code>, and how many rows are written?</p>
+<div class="ts-reveal"><p>join() never returns. Each bad row kills the writer that took it and skips one task_done(). After the third failure no writers are left; the rows not yet taken stay in the queue, and the unfinished count stays well above zero. How many rows were written depends on timing, but nothing is written after the third writer dies, and the caller sees no error.</p></div>
+</div>
+</section>
+<section class="ts-part" id="standing-queue" data-rung="4" data-min="13">
+<h2>A queue that hides overload until latency explodes</h2>
+<p class="ts-bridge">Last part: a skipped <code>task_done()</code> hangs <code>join()</code>. Still unsolved: a queue can be bounded, correct and still wrong. What does a bound that is too large do to a service with deadlines?</p>
+<p class="ts-problem">A team adds a bounded queue of 10,000 requests in front of 5 workers to "absorb bursts". Workers finish 100 requests a second; for two seconds 150 a second arrive. Nothing is refused, no error is logged, CPU is normal, and 4 of every 5 answers arrive after their 250 ms budget.</p>
+<h3>Introduction</h3>
+<p>A queue's limit should match how long its items can afford to wait, not how much memory there is. A limit far above that turns the queue into a <dfn data-def="A queue that stays long during overload, so that every item waits the full length of the line and is answered after its deadline.">standing queue</dfn>: during an overload it stays long, every item waits the full length of the line, and the service answers every request, late. This part measures one, then fixes it two ways.</p>
+<h3>Working: why the big queue answers late</h3>
+<ol class="ts-steps">
+<li><strong>Arrivals exceed capacity</strong> by 50 a second, so the queue grows by 50 a second (the work-in, work-out part).</li>
+<li><strong>Each new arrival waits</strong> queue length ÷ capacity: after one second, 50 ÷ 100 = 0.5 s, already twice the budget.</li>
+<li><strong>Workers keep busy</strong> on requests whose budget has passed. Every finished request is late, and every late one cost the same work as a timely one.</li>
+<li><strong>Nothing looks wrong</strong> to the usual checks: no refusals, no exceptions, CPU at its normal level. Only latency and time in queue show it.</li>
+</ol>
+<h3>Program</h3>
+<p>The same arrivals, twice: a queue of 10,000 that does no check, then a queue of 10 whose workers also drop any request that can no longer finish within its 250 ms.</p>
+<div class="ts-code" data-lang="python" data-title="standing_queue.py" data-file="standing_queue.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/standing_queue.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Queue of 10,000: every request is accepted and answered; 60 on time (the first fraction of a second), 240 late. The queue held about 100 requests when arrivals stopped, and the longest wait was about 1 s: four budgets.</li>
+<li>Queue of 10: about 208 answered on time, none late, about 92 told "busy" in about 0 ms. The longest wait is about 100 ms (10 places ÷ 100 a second), so every admitted request still has time to finish.</li>
+<li>The deadline check dropped nothing here, because the queue is already short enough. It guards the case the size cannot: work whose service time varies, or a pause that holds the workers.</li>
+</ol>
+<h3>Solved example: the goodput of each queue</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Queue</th><th>Work done</th><th>On time (goodput)</th><th>Refused at once</th><th>Longest wait</th></tr></thead>
+<tbody>
+<tr><td>10,000, no check</td><td>300 requests</td><td>60</td><td>0</td><td>about 1,040 ms</td></tr>
+<tr><td>10, deadline checked</td><td>about 208 requests</td><td>about 208</td><td>about 92</td><td>about 100 ms</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the small queue did about a third less work and gave more than three times as many useful answers. Size = capacity × the wait a request can afford: 100 a second × 0.1 s = 10.</p>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c21" data-src="s7">Google's SRE book says queued requests consume memory and increase latency, that a queue ten times the size of the thread pool can turn a 100 ms request into a 1.1 s one when full, and that for steady traffic a queue of about 50% of the thread pool size or less is usually better, because it rejects excess load early; for bursty traffic it ties the size to the threads in use, the time per request, and the size and frequency of the bursts.</span> <span class="ts-claim" data-claim="c22" data-src="s7">It also says a server should check the deadline left at each stage before doing more work on a request.</span></p>
+</div>
+<h3>Two more fixes for when the queue is already long</h3>
+<ul>
+<li><strong>Serve newest first.</strong> Under a long overload, the newest request is the one whose shopper is most likely still waiting; a LifoQueue (the priority-and-LIFO part) serves it first, and dropping by time in queue removes the ones already given up on.</li>
+<li><strong>Measure time in queue</strong>, not only depth: depth 100 means 1 s at 100 a second but 0.1 s at 1,000 a second. Time in queue is the number to compare with the budget.</li>
+</ul>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c23" data-src="s7">The SRE book suggests changing the queue from first-in, first-out to last-in, first-out, or using the controlled delay (CoDel) algorithm, to drop requests that are unlikely to be worth processing because the user has probably given up.</span></p>
+</div>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Standing queue</td><td>Every answer late during peaks; no errors</td><td>Time in queue near or above the budget; p99 latency; goodput falling while throughput holds</td><td>Size the queue to capacity × affordable wait; shed the rest</td></tr>
+<tr><td>Stale work done anyway</td><td>The same, plus wasted downstream calls</td><td>Requests started with less budget left than their service time</td><td>Check the deadline left when taking an item; drop if it cannot finish</td></tr>
+<tr><td>FIFO under long overload</td><td>Only answers for shoppers who already gave up</td><td>Hang-ups or client timeouts among served requests</td><td>LIFO or CoDel-style dropping by time in queue</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A bigger queue makes the service more reliable, because fewer requests are refused."</p>
+<p><strong>Why it is wrong:</strong> it refuses fewer and answers fewer in time. In the program the big queue refused none and answered 60 of 300 on time; the small one refused about 92 and answered about 208 on time. A queue absorbs a burst shorter than the budget; it cannot absorb an overload, it can only make it late.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Queue size = capacity × the wait a request can afford; beyond that, every item is late.</li>
+<li>Watch time in queue and goodput; depth, CPU and error rate all look normal in a standing queue.</li>
+<li>Check the deadline when taking an item; under long overload prefer LIFO or dropping by age.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A queue larger than the wait its requests can afford turns overload into a standing line where every answer is late, so size it to the budget and refuse the rest.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c21">
+<p class="q">A service has 50 workers, each finishing a request in 100 ms, and a queue of 500 in front of them. During a long overload the queue stays full. How long does a request wait in the queue, and what is the smallest change that brings it under a 200 ms budget?</p>
+<ol>
+<li>500 ÷ 500 a second = 1 s; cut the queue to about 25, half the workers (50 ms of waiting, 150 ms in all), and shed the rest</li>
+<li data-why="More workers raise capacity, but the queue stays full during the overload, so the wait only shrinks in proportion; doubling workers still leaves 500 ms.">The wait is 100 ms; add 50 workers to be safe</li>
+<li data-why="Doubling the queue doubles the wait during an overload; it never shortens it.">The wait is 1 s; double the queue so fewer requests are refused</li>
+</ol>
+<p class="ts-why">50 workers × 10 requests a second each = 500 a second, so a full queue of 500 is 1 s of waiting. A queue of 25, the SRE book's half of the pool, is 50 ms of waiting, so a request is done in about 150 ms, inside the 200 ms budget.</p>
+</div>
+</section>
+<section class="ts-part" id="ten-x" data-rung="4" data-min="14">
+<h2>What breaks first at 10 times the load, and the clients that make it worse</h2>
+<p class="ts-bridge">Last part: a queue sized beyond the budget makes every answer late. Still unsolved: gateway v7 at ten times the sale's traffic, run as many processes, with real clients that retry and one that misbehaves.</p>
+<p class="ts-problem">The sale grows to 20,000 requests a second, served by 10 gateway v7 processes behind a load balancer, each with the settings sized for 2,000 a second. Within minutes seller-d answers 429 to most calls, seller-c's latency triples, refusals double although traffic did not, and one shopping app's build sends 5,000 requests a second by itself.</p>
+<h3>Introduction</h3>
+<p>Every limit on this page was sized for one process. Some of them are really limits of something shared: a seller's contract, a seller's capacity. Others interact with clients: a refusal invites a retry. This part goes through what breaks, in the order it breaks.</p>
+<h3>Working: the order things break</h3>
+<ol class="ts-steps">
+<li><strong>Limits that belong to a seller, counted per process.</strong> seller-d's bucket allows 1,500 calls a second in each process: 15,000 a second in total against a contract of 1,500. seller-c's cap of 200 per process sends up to 2,000 calls at once to a seller that can work on 200. Both sellers are overloaded by the gateway's own limits.</li>
+<li><strong>Retries on refusals.</strong> If the shopping app retries "busy" at once, every refusal comes back within milliseconds; refused traffic doubles, then triples, without one more shopper.</li>
+<li><strong>One client takes the front door.</strong> The misbehaving build's 5,000 requests a second fill the in-flight limits of the processes it reaches, and real shoppers are refused in its place.</li>
+<li><strong>Only then the gateway's own capacity</strong>: ranking at 2,000 a second per process, which the front door already protects.</li>
+</ol>
+<h3>Solved example: the fixes, with numbers</h3>
+<p><strong>Step 1. Divide shared limits by the number of processes.</strong> seller-d: 1,500 ÷ 10 = 150 a second per process, burst 10. seller-c: 200 ÷ 10 = 20 at once per process. With processes added or removed during the day, a fixed split drifts; one limiter shared by every process (a separate service or store all processes ask) keeps the total exact, at the cost of a network call per token.</p>
+<p><strong>Step 2. Tell clients when to come back.</strong> Reply 503 with Retry-After (the front-door part), and have the app wait that long plus a random extra before retrying. 1,000 refusals a second that come back spread over 1 to 2 s add about 1,000 a second, not a doubling every few milliseconds.</p>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c24" data-src="s7">Google's SRE book says to always use randomized exponential backoff when scheduling retries, and to consider a server-wide retry budget, giving 60 retries per minute in a process as an example.</span></p>
+</div>
+<p><strong>Step 3. Limit each client before the global limit.</strong> A token bucket per app build or API key, 429 with Retry-After when it runs out (the front-door part's 429). The misbehaving build gets its share, say 500 a second, and the other 4,500 are refused before they take any of the in-flight limit.</p>
+<p><strong>Result:</strong> at 10 times the load, what broke first was not the gateway's capacity but limits sized for one process that protect something shared, and clients that turn refusals into more load. Each fix is a limit at the right scope: the seller's, the client's, the process's.</p>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Per-process limits that are really shared</td><td>Partial answers: a seller missing for most requests</td><td>429s or latency from one seller rising with the number of processes</td><td>Divide by processes, or one shared limiter</td></tr>
+<tr><td>Immediate retries of refusals</td><td>More "busy" replies the longer the overload lasts</td><td>Refusals per second above new arrivals; the same clients refused repeatedly</td><td>Retry-After, randomized exponential backoff, a retry budget in the app</td></tr>
+<tr><td>One client floods the door</td><td>Real shoppers refused while total traffic looks moderate</td><td>Requests and refusals per client</td><td>Per-client token bucket and 429, ahead of the global limit</td></tr>
+<tr><td>Front door limit too high</td><td>Slow answers again, memory rising</td><td>Time waiting for ranking; in-progress at the limit with latency above budget</td><td>Lower <code>max_requests</code> to capacity × time in the gateway</td></tr>
+<tr><td>Front door limit too low</td><td>"Busy" while CPU and sellers are idle</td><td>Refusals with ranking and seller caps well below their limits</td><td>Raise it; load-test the number</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "You run 10 replicas of a service that calls a vendor limited to 1,000 requests a second. How do you enforce the limit?"</p>
+<p><strong>What a strong senior answer contains:</strong> a per-replica limiter of 1,000 is 10,000 in total, so either divide the quota by the replica count (simple, no extra dependency, drifts when replicas scale or traffic is uneven) or use one shared limiter that every replica consults (exact, but adds a network call and a new thing that can fail; decide whether to fail open or closed). Keep a per-replica concurrency cap as well, which protects the replica when the vendor slows. Treat the vendor's 429 and Retry-After as a signal to back off, not an error to retry at once.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A limit tested on one process holds when the service is scaled out."</p>
+<p><strong>Why it is wrong:</strong> a limit counted inside one process limits that process. Ten processes each allowing 1,500 calls a second to seller-d send 15,000. Any limit that protects something outside the process must be divided among the processes or kept in one shared place.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>At 10× and many processes, per-process limits that guard a shared seller break first.</li>
+<li>Refusals need Retry-After and clients with randomized backoff, or they become new load.</li>
+<li>Per-client limits (429) go before the global limit (503), so one client cannot take the door.</li>
+</ul>
+</div>
+<p class="ts-takeaway">At ten times the load the first things to break are limits counted at the wrong scope and clients that answer a refusal with an instant retry; every limit must match the scope of what it protects.</p>
+<div class="ts-explain" data-points="A stage without a deadline or bound that cannot keep up grows every second; the fix is to bound it and refuse early|task_done() belongs in finally, workers must be owned, and join() needs a time limit|A queue larger than the wait requests can afford gives late answers; size it to the budget and watch time in queue|Limits that protect a shared seller must be divided among processes or shared; refusals need Retry-After and backoff">
+<p class="q">In your own words: name the ways bounding work goes wrong that this rung covered, and for each one the signal you would watch.</p>
+<div class="ts-model"><p>A worker that lets an exception skip task_done() leaves join() waiting forever with an empty queue; the signal is an unfinished count above zero with nothing queued, and dying workers, so task_done() goes in finally, workers are owned and join() gets a limit. A queue bounded far above the budget becomes a standing queue that answers everything late; the signal is time in queue near the budget and goodput falling while throughput holds, so the queue is sized to capacity times the affordable wait and the rest is refused. At ten times the load, limits counted per process that really guard a shared seller multiply with the processes; the signal is that seller's 429s or latency growing with the process count. And clients that retry refusals at once, or flood the door, turn refusals into load; the signals are refusals above arrivals and refusals per client, and the fixes are Retry-After, backoff and per-client limits.</p></div>
+</div>
+</section>
+<section class="ts-part" id="choose-the-tool" data-rung="5" data-min="13">
+<h2>Semaphore, bounded queue, shedding or a broker: which to pick</h2>
+<p class="ts-bridge">Last part: what breaks first at 10 times the load. Still unsolved: this page used four ways to bound work. Faced with a new piece of work, which one should a team reach for?</p>
+<p class="ts-problem">Four pieces of work land on the gateway team: the seller calls inside each request, shoppers' requests at the edge, the audit rows, and a new nightly job that must recompute 3 million cached prices without overloading the sellers. Each needs a bound. They do not all need the same one.</p>
+<h3>Introduction</h3>
+<p>Every tool on this page answers three questions differently: who does the work (the caller's own Task, or a fixed pool), what happens at the limit (wait, refuse, or hand the work to something durable), and what survives the process. The table puts the four options side by side.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A separate system that stores messages durably and delivers them to consumers, so work outlives the process that produced it.">message broker</dfn> is a separate system that stores messages durably and hands them to consumers. Work put into it outlives the process that produced it; that is what distinguishes it from every in-process queue on this page.</li>
+</ol>
+<h3>Difference between the four ways to bound work</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Option</th><th>Who runs the work</th><th>At the limit</th><th>Line bounded by</th><th>Survives a crash</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>Semaphore around the call (Part 3, per seller here)</td><td>The caller's own Task</td><td>The caller waits</td><td>Only the caller's deadline, unless you count the waiters (<code>SellerLimits</code>)</td><td>No</td><td>Calls made inside a request that has a deadline; cancellation and the request's context flow naturally</td></tr>
+<tr><td>Bounded queue + worker pool</td><td>A fixed set of worker Tasks</td><td><code>put()</code> waits (backpressure) or <code>put_nowait()</code> refuses</td><td><code>maxsize</code></td><td>No</td><td>Work handed off by producers that can wait, done by a fixed number of workers: the audit rows</td></tr>
+<tr><td>Load shedding at the edge</td><td>Nobody: the work is refused</td><td>503 or 429 with Retry-After, at about 0 ms</td><td>The in-flight limit</td><td>Not applicable</td><td>Callers with deadlines who cannot usefully wait: shoppers' requests</td></tr>
+<tr><td>External broker</td><td>Consumers, in any process</td><td>The broker stores it; consumers take it at their own pace</td><td>The broker's storage and retention</td><td>Yes</td><td>Work that may take longer than a request, must not be lost, or must be spread over many processes: the nightly job</td></tr>
+</tbody>
+</table></div>
+<h3>Decision rules</h3>
+<ul>
+<li><strong>Does a caller wait for the result within a deadline?</strong> Keep the work in the caller's Task, bound it with a Semaphore and a counted line, and shed at the edge.</li>
+<li><strong>Can the producer wait, and is the work done in this process?</strong> Bounded queue and workers; producers use <code>await put()</code>.</li>
+<li><strong>Must the work survive a crash or deploy, or outlast any request?</strong> A broker, with idempotent consumers, because at-least-once delivery means a message can arrive twice.</li>
+<li><strong>Always:</strong> a deadline on every wait, and a limit at the edge, whatever is behind it.</li>
+</ul>
+<h3>Solved example: the four pieces of work</h3>
+<p><strong>Step 1. Seller calls.</strong> They run inside a request with a 250 ms deadline, and moving them into a worker pool would cut them off from the request's cancellation (Part 5) and its context (Part 7). A Semaphore per seller with a counted line, as gateway v7 has.</p>
+<p><strong>Step 2. Shoppers' requests.</strong> Shoppers cannot wait usefully. Shedding at the door.</p>
+<p><strong>Step 3. Audit rows.</strong> Produced by requests that wait for them anyway; written by a fixed number of connections. Bounded queue and workers, with the edge limit behind it.</p>
+<p><strong>Step 4. The nightly job.</strong> 3 million items, hours of work, must survive a deploy and be spread over several processes, each rate-limited per seller. A broker topic of items, consumers in several processes, each with its own seller limits divided by the consumer count. Inside each consumer, a bounded asyncio queue and workers.</p>
+<p><strong>Result:</strong> all four tools in one system, each where its answer to the three questions fits.</p>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Why not put everything behind Kafka or a queue service and let consumers pull at their own speed?"</p>
+<p><strong>What a strong senior answer contains:</strong> a broker bounds memory and survives crashes, but it does not bound time: a shopper waiting 250 ms gains nothing from a message that will be processed in 30 s. For interactive requests, the queue in front of the work must be no longer than the wait the caller can afford, and the excess must be refused. A broker also adds an operated system, at-least-once delivery (so idempotent handling), and a hop of latency. Use it where work must survive or outlast the request; use shedding and in-process limits where a person is waiting.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A Semaphore and a bounded queue with workers are two spellings of the same limit."</p>
+<p><strong>Why it is wrong:</strong> both cap work in flight, but a Semaphore keeps the work in the caller's Task, so the caller's deadline, cancellation and context come along, and its line has no size limit of its own. A worker pool moves the work into other Tasks, gives the line a size, and cuts the link to the caller: cancellation must be passed by hand, and the request's context does not follow, which is Part 7's subject.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Caller waits within a deadline: Semaphore + counted line + edge shedding.</li>
+<li>Producer can wait, work stays in process: bounded queue + workers.</li>
+<li>Work must survive or outlast the request: a broker, with idempotent consumers.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Pick the bound by who is waiting and what must survive: a Semaphore for calls inside a request, a bounded queue for producers that can wait, shedding for callers who cannot, and a broker for work that must outlive the process.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">A service receives webhooks from a payment provider, must record each one exactly once, and the provider retries any webhook not acknowledged within 10 s. Processing can take up to a minute when the database is slow. Which design fits?</p>
+<ol>
+<li data-why="An in-process queue loses everything in it on a crash or deploy, and the provider has already been told the webhook was accepted.">Acknowledge at once, put the webhook in a bounded asyncio.Queue, and let workers process it</li>
+<li>Store the webhook durably (a table or a broker) before acknowledging, and let consumers process it with idempotent handling keyed by the webhook's id</li>
+<li data-why="Processing can take a minute, so the provider's 10 s limit is missed and it retries, doubling the work.">Process it inside the request under a Semaphore, and acknowledge when done</li>
+</ol>
+<p class="ts-why">The work must survive a crash and can outlast the provider's 10 s, so it must be stored durably before the acknowledgment. The provider's retries and at-least-once delivery mean the handler must be idempotent.</p>
+</div>
+</section>
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: bounding work in an async service</h2>
+<p class="ts-bridge">Last part: pick the bound by who waits and what must survive. Still unsolved: explaining it out loud, with numbers and trade-offs, the way an interviewer asks.</p>
+<p class="ts-problem">"Async services can hold thousands of connections, so why would one ever run out of anything?" A weak answer talks about threads. A strong answer does the arithmetic: arrival rate, time held, capacity, and the first line with no limit.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. Each draws on this page and at least one earlier part. Try each before opening the reference answer.</p>
+<h3>Prompt 1: "Memory grows during a downstream outage"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">An async API calls three downstreams with 300 ms timeouts each. During an outage of one of them, its memory grows by about 300 MB a minute until it is killed, while all three calls keep timing out on schedule. Arrivals rose from 1,000 to 1,500 a second during the outage. Where would you look, and what would you change?</p>
+<div class="ts-reveal"><p>The timed-out calls cannot be the growth: a stage with a 300 ms deadline holds at most 1,500 × 0.3 = 450 requests, whatever the outage does. Growth of a steady 300 MB a minute means a stage without a deadline whose capacity is below 1,500 a second: at about 7 KB a request, 300 MB a minute is about 700 requests a second of excess, so that stage now finishes only about 800 a second: it must itself have slowed in the outage, such as a database or pool shared with the failing downstream, since it kept up with 1,000 a second before. Look for an await with no timeout after the calls, such as a CPU pool, a database write or a lock, and compare its capacity with the arrival rate. Fixes: put a limit at the edge sized by Little's law (capacity × time in the service) and shed with 503 and Retry-After; give the slow stage a deadline or a bounded queue; and find out why arrivals rose, usually clients retrying partial answers, and make them back off. Trade-off: some callers are refused so the rest stay within their budget.</p></div>
+</div>
+<h3>Prompt 2: "Design the overload behaviour of a fan-out gateway"</h3>
+<div class="ts-explain" data-points="An in-flight limit at the edge, sized by Little's law, that sheds with 503 and Retry-After|A cap and a short line per downstream, sized to what can still finish within the deadline, plus a rate limiter where a contract is per second|One deadline per request covering every wait, including waits for slots (Part 3)|Backpressure only for internal producers that can wait, with limits divided among processes and per-client 429s">
+<p class="q">A travel search API asks 6 airline APIs per search, each with different speeds and quotas, and must answer within 2 s. Peak traffic is 3 times normal. Design how it behaves when demand exceeds what it or the airlines can handle, and say what each choice gives up.</p>
+<div class="ts-model"><p>At the edge, an in-flight limit per process equal to capacity × time per search, refusing the excess with 503 and Retry-After so clients back off, and a per-client limit with 429 ahead of it so one client cannot take the capacity. Each airline gets its own cap sized to rate × its latency or its stated concurrency, whichever is lower, and a line no longer than what can still finish within the 2 s, so a slow airline is skipped and costs only its own results; airlines with per-second quotas also get a token bucket, divided by the number of processes or shared. One deadline per search covers waiting for slots and the calls, as in Part 3. Any internal writer, such as search logging, gets a bounded queue with backpressure, behind the edge limit. The cost: under peak, some searches are refused and some answers miss an airline, so that admitted searches finish in 2 s and no airline is pushed past its quota.</p></div>
+</div>
+<h3>Prompt 3: "Everything looks healthy, and p99 is 4 seconds"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">A worker-pool service has a 1 s budget. Dashboards show no errors, no refusals, CPU at 45%, 40 workers all busy, a queue depth of 2,000, and p99 latency of 4 s. Each item takes about 80 ms. What is happening and what do you change first?</p>
+<div class="ts-reveal"><p>A standing queue. 40 workers at 80 ms finish 500 items a second, so 2,000 queued items are 4 s of waiting, which matches p99. The workers are busy doing work that is already late; CPU is moderate because the work is mostly waiting on I/O. First change: cut the queue to what the budget allows, about 500 × 0.5 s = 250 if half the budget may be spent waiting, and refuse the rest with 503 and Retry-After; check the deadline when taking an item and drop items that can no longer finish. Then decide whether capacity must grow (more workers, if the downstream can take it, or more processes). Watch time in queue and goodput, not only depth.</p></div>
+</div>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it treats every place work can wait as a line with a size and a time; it uses Little's law to size each line and to explain growth (in − out per second); it puts the refusal at the edge, early and cheap, with Retry-After; it matches each limit to the scope of what it protects (process, seller, client); and it names what the limits cost: refused requests and partial answers, in exchange for answers that arrive in time.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "In an interview, 'add a queue' is the answer to overload."</p>
+<p><strong>Why it is wrong:</strong> a queue absorbs bursts shorter than the budget and nothing else. Under sustained overload an unbounded queue grows until memory runs out, and a large bounded one answers everything late. Interviewers look for the bound, the refusal and the arithmetic, not the queue.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Growth = arrivals − capacity per second, at the first line with no deadline or bound.</li>
+<li>Edge: in-flight limit and 503; per client: 429; per downstream: cap, short line, rate.</li>
+<li>Queue size = capacity × affordable wait; watch time in queue and goodput.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A senior answer about overload finds the first unbounded line with Little's law, bounds it, refuses early with a clear reply, and states who gets refused so the rest are answered in time.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">This needs Parts 3 and 5. Gateway v7's seller calls are moved into a worker pool behind a bounded queue: each request puts five jobs and awaits five Futures under its 250 ms deadline, and the workers call the sellers with no timeout of their own. A shopper hangs up at 100 ms. What happens to that request's seller calls that the workers have already started?</p>
+<ol>
+<li data-why="The hang-up cancels the request's own Task and its awaits; the workers' Tasks are not its children and receive no cancel.">They are cancelled through the request's TaskGroup, as in Part 5</li>
+<li data-why="The deadline belongs to the request's Task and cancels only its awaits; the work runs in the workers' Tasks, which have no deadline.">The 250 ms deadline cancels them inside the workers</li>
+<li>They run to completion in the workers' Tasks, because nothing links the workers to the request's cancellation unless the code passes it on by hand</li>
+</ol>
+<p class="ts-why">Part 5's hang-up reached the seller calls because they were Tasks in the request's TaskGroup. In a worker pool the calls run in Tasks owned by the pool, so cancelling the request cancels only its waits on the Futures. That lost link is why gateway v7 keeps seller calls in the request's Task, under a Semaphore.</p>
+</div>
+</section>
+<section class="ts-part" id="whats-next" data-rung="5" data-min="7">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: gateway v7 now has many small pieces of state that many Tasks read and change at once, and work that runs in Tasks the request did not start.</p>
+<p class="ts-problem">Gateway v7 answers seller-b at 1,199 in 250 ms for every request it admits, refuses the rest with "busy" at about 0 ms, skips a seller whose limits are reached, and keeps its audit writes bounded. Next, the team wants a price cache shared by all requests, so that seller-e's 900 ms price can be used at all. The first version fetches seller-e's price 500 times at once when the cache expires during a sale.</p>
+<h3>What this page added</h3>
+<ul>
+<li>Why work must be bounded: in progress = arrival rate × time held; a stage without a limit grows by in − out every second. During seller-c's outage the ranking line grew by 1,000 requests, about 7 MB, every second.</li>
+<li>Three answers at a limit: waiting without limit, backpressure, load shedding; goodput.</li>
+<li>asyncio.Queue: bounded and unbounded, put/get and their <code>_nowait</code> forms, put() parked on a Future, worker pools, task_done() and join(), <code>shutdown()</code> (3.13+) and stop markers before it, PriorityQueue and LifoQueue.</li>
+<li>Gateway v7: a front door that answers "busy" (HTTP's 503 with Retry-After), a cap, a counted line and a rate limit per seller, and a bounded audit queue whose backpressure reaches the front door.</li>
+<li>What breaks: the worker loop that hangs <code>join()</code>, a standing queue that answers everything late, limits counted at the wrong scope at 10 times the load, and clients that retry refusals at once.</li>
+<li>Semaphore vs bounded queue vs shedding vs a broker, chosen by who waits and what must survive.</li>
+</ul>
+<h3>What is still broken</h3>
+<p>Every limit on this page is a small piece of shared state: a count, a bucket, a queue. Each is safe today for one reason only: no <code>await</code> sits between reading it and changing it, so on one event loop no other Task can run in between. That stops being true as soon as the gateway does something more useful:</p>
+<ul>
+<li><strong>State shared by Tasks across an await.</strong> A price cache that checks "is seller-e's price fresh?", awaits a fetch, and stores the result lets 500 requests all see "stale" before the first fetch returns, and all fetch. A counter updated as read, await, write loses updates.</li>
+<li><strong>Request data that does not follow the work.</strong> The audit writers run in Tasks started when the gateway started. They see the row's text and nothing else: a request id set by the handler, for logs and traces, is not visible in the writer that handles that request's row.</li>
+<li><strong>Threads that touch the loop's state.</strong> seller-e's SDK thread finishes in another thread; anything it hands back to the loop, or any state both sides touch, needs the right crossing, which Part 2 only introduced.</li>
+</ul>
+<h3>Next: Part 7 — Sharing state safely: locks, events, context and threads</h3>
+<p>Part 7 keeps gateway v7 and gives it a price cache shared by requests, with a lock so one fetch serves everyone, events to wake waiters, context variables so request data follows the work into other Tasks, and safe crossings between seller-e's threads and the loop.</p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: how much work to accept, and what to do with the rest.</li>
+<li>Still broken: shared state across awaits, request data in Tasks the request did not start, thread crossings.</li>
+<li>Part 7: locks, events, context variables and threads on gateway v7.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v7 accepts only the work it can finish in time and refuses the rest at once; Part 7 makes the state its Tasks share safe to use across awaits and threads.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway from the toy loop to this page in the order they were built.</p>
+<ol>
+<li>v1 on the toy loop: five tasks on one thread, 900 ms, answer at the 250 ms budget</li>
+<li>v2: the toy loop plus a selector, the same answers from real sockets</li>
+<li>v3: asyncio streams and Tasks, with a hand-made budget and hand-made waiting</li>
+<li>v4: a TaskGroup, a shared Semaphore and one timeout_at deadline per request</li>
+<li>v5: seller-e's sync SDK in its own thread pool, ranking in a process pool, watched background metrics</li>
+<li>v6: a hang-up watcher that cancels the request, the deadline passed down to seller-e's SDK, a shielded audit row</li>
+<li>v7: a front door that answers busy, a cap, a line and a rate per seller, and a bounded audit queue</li>
+</ol>
+<p class="ts-why">Each version fixes what the one before it could not do: fake I/O, the hand-written loop, the hand-made waiting and budget, the traps the loop cannot detect, work nobody wants any more, and finally more work than the gateway can finish.</p>
+</div>
+</section>

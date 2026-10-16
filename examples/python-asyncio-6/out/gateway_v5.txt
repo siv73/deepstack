@@ -1,0 +1,12 @@
+-- gateway v5: one request --
+   80 ms  seller-a answered 1,249
+  130 ms  seller-b answered 1,199
+  160 ms  seller-c answered 1,229
+  210 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e
+        partial answer: the response says which sellers are missing
+-- 10 requests at once --
+10 answers, all seller-b at 1,199; slowest 260 ms; partial: 10 of 10
+seller-e's SDK: 11 calls asked for, 4 started, at most 4 at once
+metrics service received: {'seller-a answered': 11, 'seller-b answered': 11, 'seller-c answered': 11, 'seller-d answered': 11, 'seller-e timed out': 11}
+background failures: none

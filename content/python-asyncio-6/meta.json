@@ -1,0 +1,78 @@
+{
+ "slug": "python-asyncio-6",
+ "title": "Python async (asyncio), Part 6: bounding work: queues and backpressure",
+ "tldr": "When work arrives faster than it leaves, it piles up at the first line with no limit. During seller-c's outage in a sale, shoppers' refreshes raise arrivals to 3,000 a second against a ranking stage that finishes 2,000: the seller calls stay bounded by Part 3's deadline, but the ranking line grows by 1,000 requests a second, about 410 MB a minute at a measured 7 KB each. This page does that arithmetic with Little's law, then builds the tools: asyncio.Queue bounded and unbounded, put() parked on a Future as backpressure, worker pools with task_done() and join(), Queue.shutdown() (3.13+) and the stop markers used before it, PriorityQueue and LifoQueue. Gateway v7 refuses requests it cannot finish with 'busy' (HTTP's 503 with Retry-After), gives each seller its own cap and a line no longer than what can still finish in time, rate-limits seller-d with a token bucket, and sends audit rows through a bounded queue whose backpressure reaches the front door. Then what breaks: the worker loop that hangs join() forever, a standing queue that answers everything late (60 of 300 on time against 208), limits counted per process at 10 times the load, and clients that retry refusals at once. Ends with Semaphore vs bounded queue vs shedding vs a broker and an interview drill.",
+ "category": "Python",
+ "created": "2026-10-16",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {
+   "label": "Python async, Part 1: coroutines from scratch, build your own event loop",
+   "slug": "python-asyncio-1"
+  },
+  {
+   "label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks",
+   "slug": "python-asyncio-2"
+  },
+  {
+   "label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines",
+   "slug": "python-asyncio-3"
+  },
+  {
+   "label": "Python async, Part 4: the six traps that break async services",
+   "slug": "python-asyncio-4"
+  },
+  {
+   "label": "Python async, Part 5: cancellation in depth",
+   "slug": "python-asyncio-5"
+  }
+ ],
+ "related": [
+  {
+   "label": "Python async, Part 1: coroutines from scratch, build your own event loop",
+   "slug": "python-asyncio-1",
+   "why": "previous page: generators, coroutines and a toy event loop; the gateway reaches 900 ms on one thread and answers at the 250 ms budget"
+  },
+  {
+   "label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks",
+   "why": "previous page: real sockets, selectors (epoll, kqueue), one loop iteration, Futures, Tasks and asyncio.run; a failing seller stays inside its own Task",
+   "slug": "python-asyncio-2"
+  },
+  {
+   "label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines",
+   "why": "previous page: TaskGroup, ExceptionGroup and except*, gather, as_completed, eager tasks, a Semaphore cap and asyncio.timeout_at; gateway v4 answers within 250 ms with seller-e timed out",
+   "slug": "python-asyncio-3"
+  },
+  {
+   "label": "Python async, Part 4: the six traps that break async services",
+   "why": "previous page: forgotten awaits, blocking calls (seller-e's sync SDK, CPU work), lost tasks, gather leaks, swallowed cancellation and silent timeouts, with debug mode and static checks to find them; gateway v5",
+   "slug": "python-asyncio-4"
+  },
+  {
+   "label": "Python async, Part 5: cancellation in depth",
+   "why": "previous page: cancel() as a request, traced through Task stepping; try/finally clean-up; cancelling() and uncancel() and how timeout and TaskGroup use them; gateway v6 stops when the shopper hangs up, passes the deadline to seller-e's thread and shields its audit row; refused and stale cancels, slow clean-up; shield vs owned task vs outbox",
+   "slug": "python-asyncio-5"
+  },
+  {
+   "label": "Python async, Part 6: bounding work: queues and backpressure",
+   "slug": "python-asyncio-6",
+   "why": "this page: why memory climbs when work arrives faster than it leaves (Little's law), asyncio.Queue bounded and unbounded, backpressure, worker pools, task_done/join, shutdown, PriorityQueue and LifoQueue; gateway v7 sheds with busy (503), caps, lines and rate limits per seller, and a bounded audit queue; hung workers, standing queues, limits at 10x; Semaphore vs queue vs shedding vs broker"
+  },
+  {
+   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads",
+   "why": "a price cache shared by requests, per-request context, and crossing between threads and the loop"
+  },
+  {
+   "label": "Python async, Part 8: shutting down and cleaning up",
+   "why": "finishing in-flight requests on SIGTERM and closing async generators and clients"
+  },
+  {
+   "label": "Python async, Part 9: seeing and testing async code",
+   "why": "debug mode, loop lag, task dumps, and deterministic tests for the gateway"
+  },
+  {
+   "label": "Python async, Part 10: the whole gateway: sizing, failures and a full mock interview",
+   "why": "integrates every layer, sizes it, walks its failures across layers, and ends with a mock interview"
+  }
+ ]
+}

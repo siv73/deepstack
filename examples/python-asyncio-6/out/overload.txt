@@ -1,0 +1,6 @@
+-- no cap: two bursts of 50 calls, seller with 10 workers --
+burst 1 answered 10 of 50; burst 2 answered 0 of 50
+seller jobs done: 100; useful: 10; seller busy until about 1,500 ms
+-- Semaphore(10), deadline around the wait --
+burst 1 answered 10 of 50; burst 2 answered 10 of 50
+seller jobs done: 40; useful: 20; seller busy until about 700 ms

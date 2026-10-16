@@ -1,0 +1,11 @@
+-- 1. a deadline fires --
+before the block: cancelling=0
+inside, as the deadline fires: cancelling=1
+outside: TimeoutError, cancelling=0
+-- 2. the deadline fires and the shopper hangs up in the same loop turn --
+inside, two requests: cancelling=2
+outside: CancelledError, not TimeoutError; cancelling=1
+the request's Task ends cancelled=True
+-- 3. a task in a TaskGroup fails --
+body interrupted by its own group: cancelling=1
+outside: ExceptionGroup(ValueError) handled; cancelling=0

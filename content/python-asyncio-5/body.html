@@ -1228,7 +1228,7 @@
 <li>Nothing tells a caller "too busy, come back later" before the work starts; there is no bounded line of waiting work and no rule for what to drop.</li>
 <li>The metrics flusher and the audit writes are owned Tasks with no limit on how many can pile up if their store slows down.</li>
 </ul>
-<h3>Next: Part 6 — Bounding work: queues and backpressure</h3>
+<h3>Next: <a href="../python-asyncio-6/index.html">Part 6 — Bounding work: queues and backpressure</a></h3>
 <p>Part 6 keeps gateway v6 and gives it a bounded queue in front of the seller calls, a rule for rejecting work it cannot finish in time, and backpressure that slows producers instead of letting waiting work grow without limit.</p>
 <div class="ts-note" data-label="Points to remember">
 <ul>

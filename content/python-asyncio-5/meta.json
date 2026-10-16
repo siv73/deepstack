@@ -51,7 +51,8 @@
   },
   {
    "label": "Python async, Part 6: bounding work: queues and backpressure",
-   "why": "keeping the gateway stable when requests arrive faster than sellers answer"
+   "why": "keeping the gateway stable when requests arrive faster than sellers answer",
+   "slug": "python-asyncio-6"
   },
   {
    "label": "Python async, Part 7: sharing state safely: locks, events, context and threads",

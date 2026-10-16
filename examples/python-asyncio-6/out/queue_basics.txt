@@ -1,0 +1,7 @@
+no limit: maxsize=0, qsize=100,000, full=False
+limit 2: qsize=2, full=True
+put_nowait on a full queue: QueueFull, the caller decides what to do now
+put() on a full queue: waiting; <Queue maxsize=2 _queue=['request-1', 'request-2'] _putters[1] tasks=2>
+get: request-1
+put() finished; queue now: ['request-2', 'request-3']
+get_nowait on an empty queue: QueueEmpty

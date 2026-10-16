@@ -1,0 +1,5 @@
+cancel() returned True
+right after cancel(): done=False, cancelled=False, cancelling=1
+  seller-e: finally runs (its connection would be closed here)
+one loop turn later:  done=True, cancelled=True, cancelling=1
+cancel() again returned False

@@ -1,0 +1,11 @@
+-- timeout(0.25) around seller-e --
+TimeoutError after 250 ms; expired() = True
+-- one deadline for two calls in a row: timeout_at(start + 0.25) --
+   80 ms  seller-a answered 1,249
+TimeoutError after 250 ms, not 80 + 250 = 330
+-- wait_for(seller-e, 0.25) --
+TimeoutError after 250 ms
+-- nested: 0.1 s for seller-d inside a 0.25 s request --
+inner TimeoutError after 100 ms; the request goes on
+  220 ms  seller-b answered 1,199
+request finished after 220 ms

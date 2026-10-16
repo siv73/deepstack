@@ -1,0 +1,935 @@
+{
+ "verified": "2026-10-16",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "asyncio: Queues",
+   "url": "https://docs.python.org/3.14/library/asyncio-queue.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-16"
+  },
+  {
+   "id": "s2",
+   "title": "CPython 3.14 Lib/asyncio/queues.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/queues.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-16"
+  },
+  {
+   "id": "s3",
+   "title": "What's New In Python 3.13",
+   "url": "https://docs.python.org/3.14/whatsnew/3.13.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-16",
+   "locator": "Improved modules › asyncio"
+  },
+  {
+   "id": "s4",
+   "title": "asyncio: Synchronization Primitives",
+   "url": "https://docs.python.org/3.14/library/asyncio-sync.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-16"
+  },
+  {
+   "id": "s5",
+   "title": "RFC 9110: HTTP Semantics",
+   "url": "https://httpwg.org/specs/rfc9110.html",
+   "kind": "primary",
+   "publisher": "IETF (HTTP Working Group's published copy)",
+   "accessed": "2026-10-16"
+  },
+  {
+   "id": "s6",
+   "title": "RFC 6585: Additional HTTP Status Codes",
+   "url": "https://www.rfc-editor.org/rfc/rfc6585.html",
+   "kind": "primary",
+   "publisher": "IETF",
+   "accessed": "2026-10-16",
+   "locator": "Section 4"
+  },
+  {
+   "id": "s7",
+   "title": "Site Reliability Engineering, Chapter 22: Addressing Cascading Failures",
+   "url": "https://sre.google/sre-book/addressing-cascading-failures/",
+   "kind": "primary",
+   "publisher": "Google",
+   "accessed": "2026-10-16",
+   "note": "every claim citing it states what this book says, so the book itself is the primary source for those claims"
+  },
+  {
+   "id": "s8",
+   "title": "CPython 3.14 Lib/asyncio/locks.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/locks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-16"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "asyncio.Queue is a first in, first out queue; if maxsize is less than or equal to zero its size is infinite, and if maxsize is greater than 0, await put() blocks when the queue reaches maxsize until an item is removed by get().",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › class Queue(maxsize=0)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › class Queue(maxsize=0)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › class Queue(maxsize=0)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "With maxsize=0, the default, full() never returns True.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › full()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › full()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › full()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "put_nowait() raises QueueFull if no free slot is immediately available, and get_nowait() raises QueueEmpty if no item is immediately available.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › put_nowait(), get_nowait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › put_nowait(), get_nowait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › put_nowait(), get_nowait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "asyncio queues are not thread-safe, and their methods have no timeout parameter; the docs point to asyncio.wait_for() for queue operations with a timeout.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queues (introduction)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queues (introduction)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queues (introduction)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "In CPython 3.14's queues.py, a put() that finds the queue full appends a new Future to the queue's deque of waiting putters and awaits it; get_nowait() wakes the first waiting putter that is not done, and the woken put() checks for room again before adding its item. put_nowait() wakes waiting getters the same way.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Queue.put(), put_nowait(), get_nowait(), _wakeup_next()",
+     "result": "supported",
+     "method": "verbatim read of the 3.14 branch's Lib/asyncio/queues.py (PY_VERSION 3.14.8+)",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Queue.put(), put_nowait(), get_nowait(), _wakeup_next()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/queues.py",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Queue.put(), put_nowait(), get_nowait(), _wakeup_next()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "join() blocks until all items have been received and processed: the count of unfinished tasks goes up whenever an item is added to the queue and goes down whenever a consumer calls task_done(); when it drops to zero, join() unblocks.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › join()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › join()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › join()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "task_done() raises ValueError if it is called more times than there were items placed in the queue.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › task_done()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › task_done()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › task_done()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "Queue.shutdown() puts the queue into shutdown mode: later put() calls raise QueueShutDown and blocked put() callers are woken to raise it; with immediate=False, the default, items already in the queue can still be taken with get(), and once the queue is empty, get() raises QueueShutDown.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › shutdown(immediate=False)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › shutdown(immediate=False)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › shutdown(immediate=False)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "With immediate=True the queue is drained at once, the unfinished count is reduced by the number of items drained, join() callers are unblocked if that count reaches zero, and blocked get() callers raise QueueShutDown; the docs warn that this unblocks join() even when no work was done on the drained items.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › shutdown(immediate=False), immediate is true",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › shutdown(immediate=False), immediate is true",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › shutdown(immediate=False), immediate is true",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Queue.shutdown() and the QueueShutDown exception were added in Python 3.13.",
+   "sources": [
+    "s1",
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Queue › shutdown versionadded 3.13; Exceptions › QueueShutDown; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Queue › shutdown versionadded 3.13; Exceptions › QueueShutDown; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "verbatim read of the 3.14 branch's Doc/whatsnew/3.13.rst",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Queue › shutdown versionadded 3.13; Exceptions › QueueShutDown; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Queue › shutdown versionadded 3.13; Exceptions › QueueShutDown; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/whatsnew/3.13.rst",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Queue › shutdown versionadded 3.13; Exceptions › QueueShutDown; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "Queue › shutdown versionadded 3.13; Exceptions › QueueShutDown; What's New 3.13 asyncio",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "PriorityQueue retrieves entries in priority order, lowest first, and its entries are typically tuples of the form (priority_number, data); LifoQueue retrieves the most recently added entries first.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Priority Queue; LIFO Queue",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Priority Queue; LIFO Queue",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Priority Queue; LIFO Queue",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "In CPython 3.14's queues.py, PriorityQueue keeps its items in a list managed with heapq.heappush() and heapq.heappop().",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "class PriorityQueue › _put(), _get()",
+     "result": "supported",
+     "method": "verbatim read of the 3.14 branch's Lib/asyncio/queues.py (PY_VERSION 3.14.8+)",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "class PriorityQueue › _put(), _get()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/queues.py",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "class PriorityQueue › _put(), _get()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "In CPython 3.14's queues.py, put_nowait() raises the unfinished count only after the item has been stored, so an exception while storing leaves the count unchanged.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Queue.put_nowait()",
+     "result": "supported",
+     "method": "verbatim read of the 3.14 branch's Lib/asyncio/queues.py (PY_VERSION 3.14.8+)",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Queue.put_nowait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/queues.py",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Queue.put_nowait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "HTTP's 503 (Service Unavailable) status means the server is currently unable to handle the request because of a temporary overload or scheduled maintenance, which will likely be alleviated after some delay, and the server MAY send a Retry-After header field suggesting how long the client should wait before retrying.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Section 15.6.4",
+     "result": "supported",
+     "method": "verbatim section text from the HTTP WG's published copy (httpwg.github.io specs/rfc9110.html); rfc-editor.org's HTML was truncated by WebFetch",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Section 15.6.4",
+     "result": "supported",
+     "method": "fresh verbatim read of the HTTP WG copy at commit 03f35d85; page sentences judged against Sections 15.6.4 and 10.2.3",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Section 15.6.4",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "Retry-After's value is either an HTTP date or a number of seconds to wait; sent with a 503, it says how long the service is expected to be unavailable to the client.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Section 10.2.3",
+     "result": "supported",
+     "method": "verbatim section text from the HTTP WG's published copy (httpwg.github.io specs/rfc9110.html); rfc-editor.org's HTML was truncated by WebFetch",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Section 10.2.3",
+     "result": "supported",
+     "method": "fresh verbatim read of the HTTP WG copy at commit 03f35d85; page sentences judged against Sections 15.6.4 and 10.2.3",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Section 10.2.3",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "The 429 (Too Many Requests) status means the user has sent too many requests in a given amount of time, and its response MAY include a Retry-After header saying how long to wait before a new request.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Section 4",
+     "result": "supported",
+     "method": "WebFetch of rfc-editor.org/rfc/rfc6585 (Section 4) and verbatim section text from the HTTP WG's copy",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Section 4",
+     "result": "supported",
+     "method": "fresh verbatim read of Section 4 in the HTTP WG copy at commit 03f35d85",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Section 4",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "Semaphore.locked() returns True if the semaphore cannot be acquired immediately.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Semaphore › locked()",
+     "result": "supported",
+     "method": "verbatim read of the 3.14 branch's Doc/library/asyncio-sync.rst",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Semaphore › locked()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Semaphore › locked()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "Google's SRE book describes load shedding as dropping some proportion of load as a server approaches overload, and gives as an example a server returning HTTP 503 to incoming requests when more than a given number of client requests are in flight.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Load Shedding and Graceful Degradation",
+     "result": "supported",
+     "method": "WebFetch of the chapter with locators requested and the NOT IN CONTENT guard",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Load Shedding and Graceful Degradation",
+     "result": "supported",
+     "method": "new WebFetch with the page's sentences as numbered statements, SUPPORTED/CONTRADICTED/NOT FOUND, neutral prompt; c21 reworded after a caveat and re-checked against the same answer",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Load Shedding and Graceful Degradation",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "In CPython 3.14's locks.py, locked() is also True while any waiter that is not cancelled is in line, even if the counter is above zero, so a newcomer cannot go ahead of the line.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Semaphore.locked()",
+     "result": "supported",
+     "method": "verbatim read of the 3.14 branch's Lib/asyncio/locks.py",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Semaphore.locked()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/locks.py",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "Semaphore.locked()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "The worker in the asyncio queue documentation's own example calls task_done() after its work, not in a finally block, and the example stops its workers by cancelling them after join() returns.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Examples (worker coroutine and main())",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-queue.rst on raw.githubusercontent.com; behaviour also run on Python 3.11.15, 3.12.13, 3.13.16 and 3.14.6",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Examples (worker coroutine and main())",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-queue.rst; each page sentence judged against the located passage",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Examples (worker coroutine and main())",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "Google's SRE book says queued requests consume memory and increase latency, that a queue ten times the size of the thread pool can turn a 100 ms request into a 1.1 s one when full, and that for steady traffic a queue of about 50% of the thread pool size or less is usually better, because it rejects excess load early; for bursty traffic it ties the size to the threads in use, the time per request, and the size and frequency of the bursts.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Queue Management",
+     "result": "supported",
+     "method": "WebFetch of the chapter with locators requested and the NOT IN CONTENT guard",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Queue Management",
+     "result": "supported",
+     "method": "new WebFetch with the page's sentences as numbered statements, SUPPORTED/CONTRADICTED/NOT FOUND, neutral prompt; c21 reworded after a caveat and re-checked against the same answer",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Queue Management",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "It also says a server should check the deadline left at each stage before doing more work on a request.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Latency and Deadlines › Missing deadlines",
+     "result": "supported",
+     "method": "WebFetch of the chapter with locators requested and the NOT IN CONTENT guard",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Latency and Deadlines › Missing deadlines",
+     "result": "supported",
+     "method": "new WebFetch with the page's sentences as numbered statements, SUPPORTED/CONTRADICTED/NOT FOUND, neutral prompt; c21 reworded after a caveat and re-checked against the same answer",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Latency and Deadlines › Missing deadlines",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "The SRE book suggests changing the queue from first-in, first-out to last-in, first-out, or using the controlled delay (CoDel) algorithm, to drop requests that are unlikely to be worth processing because the user has probably given up.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Load Shedding and Graceful Degradation",
+     "result": "supported",
+     "method": "WebFetch of the chapter with locators requested and the NOT IN CONTENT guard",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Load Shedding and Graceful Degradation",
+     "result": "supported",
+     "method": "new WebFetch with the page's sentences as numbered statements, SUPPORTED/CONTRADICTED/NOT FOUND, neutral prompt; c21 reworded after a caveat and re-checked against the same answer",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Load Shedding and Graceful Degradation",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Google's SRE book says to always use randomized exponential backoff when scheduling retries, and to consider a server-wide retry budget, giving 60 retries per minute in a process as an example.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Retries",
+     "result": "supported",
+     "method": "WebFetch of the chapter with locators requested and the NOT IN CONTENT guard",
+     "at": "2026-10-16T09:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Retries",
+     "result": "supported",
+     "method": "new WebFetch with the page's sentences as numbered statements, SUPPORTED/CONTRADICTED/NOT FOUND, neutral prompt; c21 reworded after a caveat and re-checked against the same answer",
+     "at": "2026-10-16T12:10"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Retries",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8 and the 3.14 branch, the HTTP WG copies of RFC 9110 and RFC 6585, and the SRE chapter, plus behaviour runs on 3.14.6; five check wordings fixed where it flagged them",
+     "at": "2026-10-16T12:40"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Amazon's Builders' Library describes load shedding and goodput under overload.",
+   "reason": "the article could not be fetched in this session (redirect to a host needing approval); the page cites Google's SRE book only"
+  },
+  {
+   "text": "heapq.heappush() stores the new item before it compares, so a failed comparison leaves it in the heap.",
+   "reason": "kept as a measured result of queue_order.py (qsize() is 2), not stated as a documented guarantee"
+  },
+  {
+   "text": "A connection's kernel socket buffers add N KB per waiting request.",
+   "reason": "not measured; the page counts only Python memory with tracemalloc and calls 7 KB a floor"
+  },
+  {
+   "text": "Little's law as a sourced theorem statement.",
+   "reason": "used as arithmetic, as in Parts 3 and 4; no claim depends on a citation for it"
+  }
+ ]
+}

@@ -1,0 +1,4 @@
+task: calling await reader.readline()
+  -- select(timeout=None, wait for I/O)
+  -- select(timeout=0.00 s)
+task: resumed with 'seller-b 1199'

@@ -1,0 +1,4 @@
+at 0 ms: cap locked=True, waiting in line=2
+  3 answered by 150 ms
+  2 cut by the 250 ms deadline
+  5 skipped at 0 ms: line full

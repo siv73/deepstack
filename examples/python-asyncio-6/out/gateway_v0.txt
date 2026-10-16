@@ -1,0 +1,6 @@
+   80 ms  seller-a answered 1,249
+  200 ms  seller-b answered 1,199
+  350 ms  seller-c answered 1,229
+  550 ms  seller-d answered 1,215
+ 1450 ms  seller-e answered 1,149
+cheapest: seller-e at 1,149 after 1,450 ms

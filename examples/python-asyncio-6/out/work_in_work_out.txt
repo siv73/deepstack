@@ -1,0 +1,12 @@
+arrivals 3,000/s, ranking finishes 2,000/s
+seller stage: 3,000 x 0.25 s = 750 requests, the same every minute
+ranking line, no deadline:
+  minute   waiting   memory     a new request waits
+       0         0         0 MB       0 s
+       1    60,000       410 MB      30 s
+       2   120,000       820 MB      60 s
+       5   300,000     2,051 MB     150 s
+      10   600,000     4,102 MB     300 s
+shedding at the door, only what can be finished is admitted:
+  in progress: 2,000 x 0.28 s = 560 requests, 3.8 MB
+  refused at once: 1,000/s, each told 'busy' before any work is done

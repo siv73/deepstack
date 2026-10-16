@@ -1,0 +1,10 @@
+-- seller-e's sync SDK called from a coroutine --
+cheapest: seller-e at 1,149 after 910 ms; timed out: seller-a, seller-b, seller-c, seller-d
+-- the same call in seller-e's own thread pool (4 threads) --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e
+seller-e calls still running in a thread after the answer: 1
+  910 ms  seller-e's thread finished; nobody was waiting for it

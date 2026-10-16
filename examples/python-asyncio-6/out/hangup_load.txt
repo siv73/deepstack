@@ -1,0 +1,6 @@
+-- 10 shoppers hang up at 50 ms: gateway v5 behind a plain server --
+  at 60 ms, seller calls still in progress: 50
+  at 300 ms, seller-e SDK threads still busy: 4
+-- the same 10 shoppers: gateway v6 --
+  at 60 ms, seller calls still in progress: 0
+  at 300 ms, seller-e SDK threads still busy: 0
