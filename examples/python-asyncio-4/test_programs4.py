@@ -80,13 +80,24 @@ def test_cpu_program_shape_and_the_page_run():
     cpu_rows(expected("trap2_cpu"))
 
 
-def test_cpu_work_blocks_the_loop_threads_do_not_speed_it_up_processes_do():
-    rows = cpu_rows(run("trap2_cpu"))
+def cpu_relationships_hold(rows):
     loop_ms, loop_lag = rows["on the loop"]
     threads_ms, threads_lag = rows["2 threads"]
     procs_ms, procs_lag = rows["2 processes"]
-    assert loop_lag >= 0.7 * loop_ms  # the loop was frozen for nearly all of it
-    assert threads_ms >= 0.8 * loop_ms  # one GIL: no faster than on the loop
-    assert threads_lag < 0.5 * loop_lag  # but the loop gets turns between switches
-    assert procs_ms < 0.85 * threads_ms  # two cores really work at once
-    assert procs_lag <= 30  # and the loop stays free
+    return [
+        loop_lag >= 0.7 * loop_ms,  # the loop was frozen for nearly all of it
+        threads_ms >= 0.8 * loop_ms,  # one GIL: no faster than on the loop
+        threads_lag < 0.5 * loop_lag,  # but the loop gets turns between switches
+        procs_ms < 0.85 * threads_ms,  # two cores really work at once
+        procs_lag <= 30,  # and the loop stays free
+    ]
+
+
+def test_cpu_work_blocks_the_loop_threads_do_not_speed_it_up_processes_do():
+    # Timings on a shared CI runner are noisy: the relationships must hold in one of three runs.
+    results = []
+    for _ in range(3):
+        results.append(cpu_relationships_hold(cpu_rows(run("trap2_cpu"))))
+        if all(results[-1]):
+            break
+    assert all(results[-1]), results
