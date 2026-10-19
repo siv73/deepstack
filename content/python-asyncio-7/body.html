@@ -1,0 +1,1494 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="9">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Gateway v7 from Part 6 answers seller-b at 1,199 in 250 ms for every request it admits, refuses the rest with <code>busy</code> in about 0 ms, skips a seller whose limits are full, and keeps its audit writes bounded. Every request still asks all five sellers for itself. seller-e's 1,149, the best price of all, never reaches a shopper, because seller-e takes 900 ms and every request stops waiting at 250 ms.</p>
+<h3>Introduction</h3>
+<p>This is Part 7 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Parts 1 to 6 are the prerequisites for this page. This part recaps them in one screen; if any line below is unfamiliar, read that part first.</p>
+<h3>What Parts 1 to 6 built</h3>
+<ol>
+<li>The five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149). The right answer within 250 ms is seller-b at 1,199, with seller-e missing.</li>
+<li>Part 1: one after another the waits add up to 1,450 ms; overlapped on one thread, 900 ms. The loop switches Tasks only at an <code>await</code>.</li>
+<li>Part 2: asyncio's loop, Futures and Tasks. A waiting coroutine is parked on a Future; whoever fills the Future wakes it through <code>call_soon</code>. From another thread, only <code>call_soon_threadsafe</code> both queues the work safely and wakes the loop.</li>
+<li>Part 3: a TaskGroup owns the five seller calls, a Semaphore caps them, and one <code>timeout_at</code> deadline per request covers the wait for a slot and the call.</li>
+<li>Part 4: seller-e's sync SDK runs in a thread pool of its own, ranking runs in a process pool, and background Tasks are owned with <code>spawn()</code>.</li>
+<li>Part 5: a watcher cancels the request when the shopper hangs up, the deadline is passed down to seller-e's SDK, and the audit row is written by an owned Task behind <code>shield()</code>.</li>
+<li>Part 6: a front door that answers <code>busy</code>, a cap, a short line and a rate limit per seller, and a bounded audit queue. Every one of those limits is a count or a bucket that many Tasks read and change.</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>Part 6 noted that its counts are safe for one reason only: no <code>await</code> sits between reading them and changing them. Nothing yet says what to do when an <code>await</code> must sit there.</li>
+<li>Request data, such as the request id in log lines, does not follow the work into Tasks the request did not start, or into seller-e's SDK thread.</li>
+<li>seller-e's SDK can call the gateway back on its own thread, and the gateway has no safe way in from that thread except the one call Part 2 introduced.</li>
+</ul>
+<h3>What this page adds</h3>
+<p>Rungs 1 and 2 show why one thread still has races and which tools asyncio gives against them. Rung 3 builds gateway v8 on them. Three things change in the running system from this page on, and later pages keep them:</p>
+<ol>
+<li><strong>A price cache shared by all requests.</strong> Each seller's price for an item is kept for a while and filled by exactly one call, however many requests ask at once. seller-e's 900 ms answer is no longer thrown away: the requests that come after it get 1,149.</li>
+<li><strong>A request id that follows the work.</strong> It is set once when a request starts, and every log line, every Task the request starts and seller-e's SDK thread carry it.</li>
+<li><strong>A price feed from seller-e's SDK.</strong> The SDK pushes price changes from its own thread; the gateway applies them on the loop and tells the SDK when each one is done.</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 7 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "one TCP connection", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "tg", "label": "Run together", "sub": "Part 3: group · cap · deadline", "col": 1, "row": 0},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2},
+ {"id": "sdk", "label": "SDK threads", "sub": "Part 4: seller-e's own pool", "col": 3, "row": 3},
+ {"id": "cpu", "label": "Process pool", "sub": "Part 4: ranking offers", "col": 1, "row": 3},
+ {"id": "met", "label": "Metrics service", "sub": "Part 4: counts per seller", "col": 0, "row": 0},
+ {"id": "watch", "label": "Hang-up watch", "sub": "Part 5: stops the request", "col": 3, "row": 0},
+ {"id": "audit", "label": "Audit store", "sub": "Part 6: bounded queue", "col": 0, "row": 3},
+ {"id": "limits", "label": "Seller limits", "sub": "Part 6: cap · line · rate", "col": 3, "row": 1},
+ {"id": "cache", "label": "Price cache", "sub": "Part 7: one fill per item", "col": 0, "row": 4, "step": 6}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "shopper-1 kettle-1l", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "tg", "label": "starts and bounds the calls", "step": 2},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 2},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 2},
+ {"from": "gw", "to": "sdk", "step": 3},
+ {"from": "sdk", "to": "se", "label": "sync SDK call", "step": 3},
+ {"from": "gw", "to": "cpu", "step": 3},
+ {"from": "gw", "to": "met", "label": "background flush", "step": 3},
+ {"from": "watch", "to": "gw", "label": "shopper left: cancel all", "step": 4, "dashed": true},
+ {"from": "gw", "to": "audit", "step": 4},
+ {"from": "gw", "to": "app", "label": "busy: refused at once", "step": 5, "dashed": true},
+ {"from": "tg", "to": "limits", "step": 5},
+ {"from": "gw", "to": "cache", "label": "fresh price? else one fill", "step": 6},
+ {"from": "sdk", "to": "cache", "label": "feed: price changes", "step": 6, "dashed": true}],
+ "captions": [
+ "The request: the shopping app sends one line over its own TCP connection, and the gateway asks sellers a to d over theirs.",
+ "Parts 2 and 3, unchanged: asyncio's loop runs the waits, and a TaskGroup, a cap and one deadline bound the seller calls.",
+ "Part 4, unchanged: seller-e is reached through its sync SDK in a pool of its own, ranking runs in processes, and counts go out in the background.",
+ "Part 5, unchanged: a watcher cancels the request when the shopper hangs up, and every request writes one audit row.",
+ "Part 6, unchanged: the front door answers busy when the gateway is full, and each seller has its own cap, line and rate.",
+ "New on this page: a price cache shared by every request, filled by one call per seller and item, and updated by seller-e's feed from the SDK's own thread. The request id travels with all of it."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 to 5 are Parts 1 to 6, unchanged. This page removes none of them.</li>
+<li>Step 6 adds the price cache below the rest. The gateway asks it first; on a miss, one call per seller and item fills it, and every request that asked in the meantime shares that call.</li>
+<li>The dashed arrow from seller-e's SDK threads is the price feed. It starts on a thread the gateway does not own, so it needs the thread crossings this page teaches.</li>
+<li>The request id has no box: it is not a component but a value that travels with each request through every box it touches.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "asyncio runs on one thread, so shared state needs no protection."</p>
+<p><strong>Why it is wrong:</strong> one thread means one piece of code at a time, not one request at a time. Every <code>await</code> lets other Tasks run, and if the code read shared state before the <code>await</code> and writes it after, the other Tasks can change it in between. The next part measures it.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v7: front door, per-seller limits, bounded audit queue; seller-b at 1,199 in 250 ms, seller-e never used.</li>
+<li>Still broken: state shared across an <code>await</code>, request data that does not follow the work, thread crossings.</li>
+<li>New: a shared price cache with one fill per item, a request id that travels, and seller-e's feed from its own thread.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 7 keeps gateway v7 and adds state that every request shares, a price cache, plus the rules and tools that keep it, and each request's own data, correct across awaits and threads.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">This needs Part 6. Gateway v7's front door runs <code>if self.in_progress &gt;= self.max_requests: refuse</code> and then <code>self.in_progress += 1</code>. Why can two requests not both pass the check when only one place is left?</p>
+<ol>
+<li data-why="The front door has no lock; the safety comes from where the awaits are, not from a lock.">The front door holds an asyncio.Lock around the check</li>
+<li>No <code>await</code> sits between the check and the increment, so no other Task can run in between on the loop's one thread</li>
+<li data-why="Nothing about ints makes a read followed by a write one step; what protects this code is that no await sits between the two lines.">Integer increments are atomic in Python</li>
+</ol>
+<p class="ts-why">Part 6 put the check and the increment next to each other with no <code>await</code> in between. On one event loop a Task only gives up the thread at an <code>await</code>, so nothing else runs between those two lines. This page is about the code where an <code>await</code> must sit in between.</p>
+</div>
+</section>
+<section class="ts-part" id="race-one-thread" data-rung="1" data-min="13">
+<h2>One thread, and still a race: check, then act, across an await</h2>
+<p class="ts-bridge">Last part: Part 7 adds state that every request shares. Still unsolved: if only one piece of code runs at a time, how can two requests corrupt the same value?</p>
+<p class="ts-problem">seller-d's contract allows 1,500 calls a day, so the gateway counts them. The counting code reads the count, awaits a write to the metrics store, then stores the count plus one. At the end of a busy day the counter says 412 and seller-d's invoice says 1,630: the gateway broke its contract without knowing it.</p>
+<h3>Introduction</h3>
+<p>Part 1 showed that the loop can switch Tasks only at an <code>await</code>. That is usually told as good news: code between two awaits is never interrupted. The other side of the same rule is this part's subject. Code that reads shared state, then awaits, then writes based on what it read, is interrupted at exactly the worst moment. This part measures two forms of the mistake on the gateway: a counter, and a price cache.</p>
+<h3>Comparison</h3>
+<p>Two clerks share one whiteboard that shows how many tickets are left. Each clerk reads the number, walks to the phone to confirm a sale with the customer, comes back and writes the number minus one. If both read "10" before either comes back, both write "9", and one sale has vanished from the board.</p>
+<ul>
+<li>The whiteboard = shared state, such as <code>self.calls</code>.</li>
+<li>Walking to the phone = the <code>await</code>.</li>
+<li>Writing "9" twice = a lost update.</li>
+</ul>
+<p>The comparison stops working here: two clerks really act at the same time. On an event loop, only one Task runs at any moment; the damage comes entirely from the pause in the middle, not from two things running at once.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A bug where the result depends on the order in which concurrent Tasks happen to run.">race condition</dfn> is a bug whose result depends on the order in which concurrent Tasks happen to run.</li>
+<li><dfn data-def="Code that tests shared state and then acts on the result, assuming the state has not changed in between.">Check-then-act</dfn> is code that tests shared state and then acts on what it found: "if the price is not cached, fetch it and store it".</li>
+<li>A <dfn data-def="An update that is overwritten by another Task that read the same old value, so its effect disappears.">lost update</dfn> is a write overwritten by another Task that read the same old value, so its effect disappears.</li>
+<li>A <dfn data-def="A stretch of code that must run as one step with respect to other Tasks, because it reads and writes shared state.">critical section</dfn> is a stretch of code that must run as one step with respect to other Tasks, because it reads and then writes shared state.</li>
+</ol>
+<h3>Working: how 3 calls become 1</h3>
+<ol class="ts-steps">
+<li><strong>task-1 reads</strong> <code>self.calls</code>: 0. It reaches the <code>await</code> and gives up the thread.</li>
+<li><strong>task-2 runs</strong> and reads 0, because task-1 has not written yet. It awaits too. task-3 does the same.</li>
+<li><strong>task-1 resumes</strong> and writes 0 + 1 = 1.</li>
+<li><strong>task-2 and task-3 resume</strong> and each writes 0 + 1 = 1, the value computed from what they read before their await.</li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 1: the read is correct when it happens. What makes it wrong is the time that passes before the write.</li>
+<li>Step 2: every Task that runs during the gap reads the same old value. The longer the await, the more Tasks fit in the gap.</li>
+<li>Step 4: no write fails and no exception is raised. The result is simply wrong.</li>
+</ul>
+<h3>Program 1: a counter</h3>
+<div class="ts-code" data-lang="python" data-title="race_counter.py" data-file="race_counter.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/race_counter.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>record_racy()</code> reads <code>self.calls</code>, awaits 1 ms, then writes the value it read plus one. The trace shows all three reads before any write: the working above, line for line.</li>
+<li>With 10 Tasks the counter ends at 1: nine calls are lost.</li>
+<li><code>record_no_await()</code> does <code>self.calls += 1</code> with no <code>await</code> in the statement. On one event loop no other Task can run in the middle of it, and the counter ends at 10.</li>
+</ol>
+<h3>Program 2: a price cache</h3>
+<p>The same mistake in the shape the gateway is about to need: check whether the price is cached, and if not, await the seller and store the answer.</p>
+<div class="ts-code" data-lang="python" data-title="race_cache.py" data-file="race_cache.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/race_cache.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>All 100 requests check the cache within the same loop iteration, before the first answer arrives 150 ms later. All 100 find it empty, so all 100 ask seller-c.</li>
+<li>Each answer is then stored, 100 times, into the same key. The cache ends up correct, and seller-c did 100 times the necessary work.</li>
+<li>Once filled, the cache works: the next 100 requests ask nobody. The bug lives only in the gap after a miss, which is exactly when load arrives: at a cold start, after an expiry, or when a new item goes on sale.</li>
+</ol>
+<h3>Solved example: the gap, at the gateway's numbers</h3>
+<p><strong>Given:</strong> 2,000 requests a second for one item; a miss is filled by seller-c, 150 ms.</p>
+<p><strong>Step 1.</strong> The gap is the 150 ms between the check and the store.</p>
+<p><strong>Step 2.</strong> Requests that arrive during the gap: 2,000 × 0.15 = 300, by Little's law (Part 6). Each finds the cache empty.</p>
+<p><strong>Step 3.</strong> So one miss costs 300 calls to seller-c instead of 1. For seller-e's 900 ms it would be 2,000 × 0.9 = 1,800 calls, against a thread pool of 4 (Part 4).</p>
+<p><strong>Result:</strong> a check-then-act cache sends one call per request that arrives while the first call is in flight. That burst has a name, a <dfn data-def="Many requests missing the cache for the same key at once, so all of them call the slow source behind it at the same time.">cache stampede</dfn>: many requests miss the same key at once and all call the source behind it. Rung 3 builds the fix.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "There is only one thread, so races cannot happen in asyncio code."</p>
+<p><strong>Why people hold it:</strong> with threads, a race needs two threads running the same code at the same time; asyncio has one.</p>
+<p><strong>Why it is wrong:</strong> asyncio needs no second thread, only a second Task and a pause. Any <code>await</code> between a read of shared state and a write that depends on it is a gap other Tasks can use. The programs above lose 9 of 10 updates and make 100 calls instead of 1 on a single thread.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Code between two awaits runs as one step; an <code>await</code> between a read and a dependent write is a race window.</li>
+<li>Read, await, write lost 9 of 10 counts; the same with no await lost none.</li>
+<li>A cache that checks, awaits the seller and stores makes one call per request that arrives during the call: a cache stampede.</li>
+</ul>
+</div>
+<p class="ts-takeaway">On one event loop a race needs no second thread: any await between reading shared state and the write that depends on it lets other Tasks act on the same old value.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The counter's <code>await asyncio.sleep(0.001)</code> is moved to before the read: await, then read, then write with no await in between. 10 Tasks record a call at once. What does the counter end at?</p>
+<div class="ts-reveal"><p>10. Each Task now awaits first and then reads and writes with nothing in between, so the read and the write run as one step. When a Task resumes after its sleep, it reads the latest value, adds one and stores it before any other Task can run. The await still exists; it just no longer sits inside the critical section.</p></div>
+</div>
+</section>
+<section class="ts-part" id="wrong-request-id" data-rung="1" data-min="10">
+<h2>Log lines that carry another request's id</h2>
+<p class="ts-bridge">Last part: an await between a read and a dependent write is a race window. Still unsolved: the same window hides in code that does not look like shared state at all, such as the value a logger stamps on every line.</p>
+<p class="ts-problem">An on-call engineer searches the logs for shopper-1's slow request and finds the line "seller-b answered 1,199" tagged with shopper-2's id. Under load, about one line in fifty carries the wrong id, so the logs cannot be trusted exactly when they are needed.</p>
+<h3>Introduction</h3>
+<p>A gateway wants every log line to say which request it belongs to. The quick way is a module-level variable, set when a request starts and read by the logging code. With threads, people reach for thread-local storage. With asyncio, many requests share one thread, and a module variable is shared by all of them. This part reproduces the wrong tag and names what was missing.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="Data that belongs to one request, such as its id or its user, and must be visible to all code that runs for that request and to no other request.">Request-scoped data</dfn> is data that belongs to one request, such as its id, and must be visible to all code that runs for that request, including the Tasks it starts, and to no other request.</p>
+</div>
+<p>A module variable has the opposite scope: the whole process. Setting it at the start of a request only works until the request's first <code>await</code>, when another request can set it again.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>0 ms:</strong> shopper-1's handler sets <code>current_request = "shopper-1"</code>, logs "asking seller-b" and awaits seller-b.</li>
+<li><strong>50 ms:</strong> shopper-2's handler sets <code>current_request = "shopper-2"</code> and awaits seller-b too.</li>
+<li><strong>120 ms:</strong> shopper-1's handler resumes and logs "seller-b answered". The logger reads <code>current_request</code>: "shopper-2".</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="race_log_id.py" data-file="race_log_id.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/race_log_id.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Each line prints the tag the logger saw and, for checking, whose handler really wrote it.</li>
+<li>The line at 120 ms was written by shopper-1's handler and tagged shopper-2: the set at 50 ms happened during shopper-1's await.</li>
+<li>Nothing failed. The tag is simply the last value set by any request, which is right only when requests do not overlap.</li>
+</ol>
+<h3>Solved example: how often the tag is wrong</h3>
+<p><strong>Given:</strong> each request logs once at its start and once after its 250 ms of seller calls; requests arrive at 2,000 a second.</p>
+<p><strong>Step 1.</strong> The start line is always right: it is written in the same step as the set.</p>
+<p><strong>Step 2.</strong> The end line is right only if no other request started during its 250 ms. With 2,000 arrivals a second, about 500 start in that window.</p>
+<p><strong>Result:</strong> at this load almost every second line is wrong. The "one in fifty" from the problem is what a lightly loaded service sees, which is why the bug survives testing.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>threading.local()</code> fixes this, as it does for threaded servers."</p>
+<p><strong>Why it is wrong:</strong> thread-local storage gives each thread its own value. Every request on the event loop runs on the same thread, so they all share one thread-local value, exactly like the module variable. The scope needed is "this request and the Tasks it starts", which the next rung provides.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A module variable, or a thread-local, is shared by every request on the loop.</li>
+<li>Its value is right only until the request's first <code>await</code>.</li>
+<li>Request-scoped data needs storage scoped to the request and the Tasks it starts.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A request id kept in a module variable is overwritten by whichever request ran last, so after any await a log line can carry another request's id.</p>
+<div class="ts-explain" data-points="The loop switches Tasks only at an await, so code between two awaits runs as one step|An await between reading shared state and a write that depends on it lets other Tasks act on the same old value: lost updates and stampedes|A module variable or thread-local is shared by every request on the loop, so a request id kept there is wrong after an await|One thread means one piece of code at a time, not one request at a time">
+<p class="q">In your own words: how can a gateway that runs on one thread lose 9 of 10 counter updates, ask seller-c 100 times for one price, and stamp the wrong request id on a log line?</p>
+<div class="ts-model"><p>The loop runs one piece of code at a time, but it switches Tasks at every await. The counter code reads the count, awaits a write, then stores what it read plus one; all ten Tasks read 0 during the first Task's await, so all write 1. The cache checks, awaits seller-c for 150 ms and only then stores, so every request that arrives during those 150 ms also finds it empty and asks too. And a request id in a module variable is overwritten by the next request that starts while the first one awaits a seller, so the first request's later log lines carry the second one's id. In each case the gap is the await between reading shared state and acting on it.</p></div>
+</div>
+</section>
+<section class="ts-part" id="one-step-rule" data-rung="2" data-min="10">
+<h2>The one rule: code between two awaits runs as one step</h2>
+<p class="ts-bridge">Last part: a module variable is shared by every request on the loop. Still unsolved: before reaching for tools, how do you tell which shared state in a codebase is safe as it stands and which is not?</p>
+<p class="ts-problem">Gateway v7 already has six pieces of state shared by every request: the in-progress count, each seller's waiting count, each Semaphore, seller-d's token bucket, the audit queue and the metrics counts. None has a lock. A reviewer asks which of them can lose an update. The answer is a rule you can apply line by line.</p>
+<h3>Introduction</h3>
+<p>Every tool in this rung exists to stretch one guarantee the loop already gives. Before using any of them, it pays to know that guarantee exactly, because most shared state in an asyncio service needs no tool at all, and adding a lock where none is needed only adds waiting.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>On one event loop, the code a Task runs between two awaits is an <dfn data-def="On one event loop: the code a Task runs between two awaits, which no other Task can interleave with.">atomic step</dfn> with respect to other Tasks: no other Task's code can run in the middle of it, because the loop switches only when the running Task awaits something that is not ready (Parts 1 and 2). Shared state is safe without a tool if every critical section that touches it fits inside one atomic step.</p>
+</div>
+<h3>Working: checking one piece of state</h3>
+<ol class="ts-steps">
+<li><strong>Find every read</strong> of the shared value whose result decides a later write (a check, a computation, a "seen" copy).</li>
+<li><strong>Find the write</strong> that depends on it.</li>
+<li><strong>Look between them</strong> for an <code>await</code>, an <code>async with</code> or an <code>async for</code>: each can give up the thread. Calls to plain functions cannot.</li>
+<li><strong>No await in between:</strong> safe as written. <strong>An await in between:</strong> a race window; close it with a tool, or move the await out of the window.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: a read whose result is thrown away, or only logged, cannot cause a wrong write.</li>
+<li>Step 3: <code>async with</code> and <code>async for</code> hide awaits in their setup and teardown, so they count. An <code>await</code> on something already finished does not give up the thread, but code should not rely on that, because the same line gives it up whenever the awaited thing is not ready.</li>
+</ul>
+<h3>Solved example: gateway v7's shared state</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>State</th><th>Read that decides</th><th>Write</th><th>Await in between?</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><td><code>in_progress</code> (front door)</td><td><code>in_progress &gt;= max_requests</code></td><td><code>in_progress += 1</code></td><td>No</td><td>Safe</td></tr>
+<tr><td><code>SellerLimits.waiting</code></td><td><code>waiting[name] &gt;= max_waiting</code></td><td><code>waiting[name] += 1</code></td><td>No</td><td>Safe</td></tr>
+<tr><td>Token bucket</td><td><code>tokens &gt;= 1</code></td><td><code>tokens -= 1</code></td><td>No</td><td>Safe</td></tr>
+<tr><td>Metrics counts</td><td><code>pending &gt;= batch_size</code></td><td>swap the counts out, then send</td><td>The send comes after the swap</td><td>Safe: the swap is one step</td></tr>
+<tr><td>Naive price cache</td><td><code>sku not in prices</code></td><td><code>prices[sku] = await ...</code></td><td>Yes, 150 ms</td><td>Race: needs a tool</td></tr>
+<tr><td>Read-await-write counter</td><td><code>seen = calls</code></td><td><code>calls = seen + 1</code></td><td>Yes</td><td>Race: needs a tool</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> four of gateway v7's pieces of state are safe by construction, because Part 6 kept each check and write in one step. Only code that must await in the middle needs one of the tools that follow.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "To be safe, put a lock around every piece of shared state in async code."</p>
+<p><strong>Why it is wrong:</strong> a lock around code with no await inside protects nothing, because that code already runs as one step, and the lock's own <code>async with</code> adds a place where the Task may wait. Locks belong around critical sections that must contain an await, and those are rarer than they look.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Between two awaits a Task's code runs as one step; that is the loop's only built-in guarantee.</li>
+<li>Check each read-then-write: no await between them, safe; an await between them, a race window.</li>
+<li><code>async with</code> and <code>async for</code> count as awaits.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Shared state on one event loop is safe whenever each read and the write that depends on it sit between the same two awaits; tools are for the windows where an await must sit in between.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">Which of these functions, called by 100 Tasks at once, can lose updates?</p>
+<ol>
+<li data-why="There is no await between the read and the write, so it runs as one step."><code>def hit(self): self.hits[sku] = self.hits.get(sku, 0) + 1</code></li>
+<li data-why="The await comes after the increment is complete; nothing reads stale state."><code>async def hit(self): self.hits += 1; await self.flush()</code></li>
+<li><code>async def hit(self): n = await self.store.get("hits"); await self.store.set("hits", n + 1)</code></li>
+</ol>
+<p class="ts-why">The third reads a value, awaits, and writes a value computed from the read: every Task that runs during the await reads the same old count. The first has no await at all, and the second finishes its read and write before it awaits.</p>
+</div>
+</section>
+<section class="ts-part" id="lock" data-rung="2" data-min="13">
+<h2>asyncio.Lock: one Task at a time through a critical section</h2>
+<p class="ts-bridge">Last part: a race window is an await between a read and a dependent write. Still unsolved: when the await cannot be moved, how do you make the whole read, await, write run as one step for other Tasks?</p>
+<p class="ts-problem">The seller-d counter must read the current count from the metrics store, await the round trip, and write the new count back. The await is the whole point of the code; it cannot move. Ten calls at once must still count as ten.</p>
+<h3>Introduction</h3>
+<p>A lock turns a critical section that contains awaits into one step for every Task that uses the same lock. A Task that finds the lock taken waits in line, parked on a Future, the same way Part 3's Semaphore and Part 6's full queue park their waiters.</p>
+<h3>Comparison</h3>
+<p>A single-person changing room with a "occupied" sign. Whoever goes in turns the sign; everyone else queues outside in the order they arrived; the person coming out turns it back, and the first in the queue goes in.</p>
+<ul>
+<li>The sign = the lock's locked flag.</li>
+<li>The queue outside = the lock's waiters, each parked on a Future.</li>
+<li>Turning the sign back = <code>release()</code>, which wakes the first in line.</li>
+</ul>
+<p>The comparison stops working here: a changing room knows who is inside. An asyncio Lock does not: any Task may release it, as the second program shows.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>An <dfn data-def="asyncio.Lock: a mutual-exclusion lock for Tasks on one event loop; only one Task at a time holds it, the rest wait in line.">asyncio.Lock</dfn> lets one Task at a time through a block of code. <span class="ts-claim" data-claim="c2" data-src="s1">An asyncio lock can be used to guarantee exclusive access to a shared resource, and the preferred way to use one is an async with statement, which is equivalent to await lock.acquire() followed by the block in a try with lock.release() in its finally.</span> <span class="ts-claim" data-claim="c3" data-src="s1">Acquiring a lock is fair: the coroutine that proceeds is the first coroutine that started waiting on the lock.</span></p>
+</div>
+<h3>Working: one acquire and one release, in CPython 3.14's locks.py</h3>
+<ol class="ts-steps">
+<li><strong>Fast path.</strong> <span class="ts-claim" data-claim="c16" data-src="s2">In CPython 3.14's locks.py, Lock.acquire() takes the lock at once if it is unlocked and every waiter in line, if any, has been cancelled; otherwise it appends a new Future to a deque of waiters and awaits it, and release() sets the result of the first waiter's Future.</span></li>
+<li><strong>Waiting.</strong> The Task that cannot take the lock is parked on its Future and uses no CPU (Part 2).</li>
+<li><strong>Release.</strong> The holder's <code>async with</code> exit calls <code>release()</code>; the first waiter's Future is filled and its Task is scheduled with <code>call_soon</code>.</li>
+<li><strong>Hand-over.</strong> That Task resumes in a later iteration, marks the lock taken and runs its critical section.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: the fast path makes an uncontended lock cost almost nothing: no Future, no wait.</li>
+<li>Step 1, the cancelled-waiter rule: a newcomer may not overtake a waiter that is still in line, which is what makes the lock fair.</li>
+<li>Step 3: waking only the first waiter, instead of all of them, means one Task proceeds and the rest stay parked.</li>
+</ul>
+<h3>Program 1: the counter, under a lock</h3>
+<div class="ts-code" data-lang="python" data-title="lock_demo.py" data-file="lock_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/lock_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>record()</code> wraps the same read, await, write in <code>async with self.lock</code>.</li>
+<li>After one turn of the loop, task-1 holds the lock and is in its await; the lock's printed state shows two waiters, task-2 and task-3.</li>
+<li>Each Task reads the value the previous one wrote: 0, 1, 2. The counter ends at 3, and at 10 for ten Tasks. The cost is time: the critical sections now run one after another.</li>
+</ol>
+<h3>Program 2: one release too many</h3>
+<p>Part 3 used a Semaphore as a cap, and noted BoundedSemaphore. A Lock and a Semaphore of 1 look alike. They differ exactly when code has a bug.</p>
+<div class="ts-code" data-lang="python" data-title="release_twice.py" data-file="release_twice.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/release_twice.txt" data-verified="ran"></div>
+<h3>Difference between Lock, Semaphore(1) and BoundedSemaphore(1)</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th scope="col">Point</th><th scope="col">Lock</th><th scope="col">Semaphore(1)</th><th scope="col">BoundedSemaphore(1)</th></tr></thead>
+<tbody>
+<tr><td>Holders at once</td><td>1</td><td>1, until a stray release</td><td>1</td></tr>
+<tr><td>Extra <code>release()</code></td><td><span class="ts-claim" data-claim="c4" data-src="s1">Releasing an unlocked Lock raises RuntimeError.</span></td><td colspan="2"><span class="ts-claim" data-claim="c11" data-src="s1">Semaphore allows more release() calls than acquire() calls, while BoundedSemaphore raises ValueError in release() if it would increase the counter above its initial value.</span></td></tr>
+<tr><td>Who may release</td><td colspan="3"><span class="ts-claim" data-claim="c17" data-src="s2">In CPython 3.14's locks.py, the Lock class describes a primitive lock as not owned by a particular task when locked.</span> The program releases it from another Task without error.</td></tr>
+<tr><td>Use it for</td><td>A critical section</td><td>A cap of N (Part 3)</td><td>A cap of N, with stray releases caught</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c1" data-src="s1">asyncio's synchronization primitives are not thread-safe and should not be used to synchronize OS threads, and their methods take no timeout argument; the docs point to asyncio.wait_for() for operations with a timeout.</span> As in Part 3, the gateway puts <code>asyncio.timeout()</code> around the <code>async with</code> instead.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.9 and older code.</strong> <span class="ts-claim" data-claim="c15" data-src="s1">The loop parameter of Lock, Event, Condition, Semaphore and BoundedSemaphore was removed in Python 3.10.</span> Code that writes <code>asyncio.Lock(loop=loop)</code> fails on every version this series supports; create the primitive without it, inside the code that uses it.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A Lock and a Semaphore(1) are the same thing."</p>
+<p><strong>Why it is wrong:</strong> they behave the same until a bug releases twice. The Lock raises RuntimeError; the Semaphore silently becomes a Semaphore(2), and from then on two Tasks run the critical section at once. The program shows <code>locked()</code> False after one acquire.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>async with lock:</code> makes the block, awaits included, one step for every Task using that lock.</li>
+<li>Waiters park on Futures in a deque; release wakes the first: fair, first come first served.</li>
+<li>Not owned by a Task, not thread-safe, no timeout parameter; an extra release raises RuntimeError.</li>
+</ul>
+</div>
+<p class="ts-takeaway">An asyncio.Lock makes a critical section that contains awaits run as one step for every Task that shares the lock, at the cost of those Tasks taking turns.</p>
+<div class="ts-order" data-claims="c16">
+<p class="q">Three Tasks call <code>async with lock</code> on a free lock in the same loop iteration. Put what happens in order.</p>
+<ol>
+<li>task-1 finds the lock free with nobody in line and takes it without waiting</li>
+<li>task-2 and task-3 each append a Future to the waiters and park on it</li>
+<li>task-1 leaves its block; release() fills the first waiter's Future</li>
+<li>task-2 resumes, takes the lock and runs its critical section</li>
+<li>task-2 leaves its block, and task-3 is woken next</li>
+</ol>
+<p class="ts-why">Waiters are woken one at a time, in the order they started waiting, by the release of the Task before them.</p>
+</div>
+</section>
+<section class="ts-part" id="event" data-rung="2" data-min="10">
+<h2>asyncio.Event: many Tasks wait for one thing to happen</h2>
+<p class="ts-bridge">Last part: a Lock lets one Task at a time through. Still unsolved: sometimes no Task should go through until something has happened, and then all of them at once, such as "the cache is warm".</p>
+<p class="ts-problem">After a deploy the gateway loads seller-e's prices into its cache, which takes 100 ms. Requests that arrive in those 100 ms should wait for the load and then all go ahead. Part 2's busy-loop part showed the wrong way: each request polling a flag with <code>await asyncio.sleep(0)</code>, keeping a core at 100%.</p>
+<h3>Introduction</h3>
+<p>An Event is a flag that Tasks can wait on. It is the right tool when the thing being waited for happens once (or once per phase) and every waiter should wake when it does.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>An <dfn data-def="asyncio.Event: a flag, initially false; wait() parks until set() makes it true, and set() wakes every waiter.">asyncio.Event</dfn> is a flag Tasks can wait for. <span class="ts-claim" data-claim="c5" data-src="s1">An Event manages an internal flag, false initially, that set() sets to true and clear() resets to false; wait() returns True immediately if the flag is set and otherwise blocks until another task calls set().</span> <span class="ts-claim" data-claim="c6" data-src="s1">When an Event is set, all tasks waiting for it are awakened.</span></p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Not set:</strong> each <code>wait()</code> creates a Future, adds it to the Event's waiters and parks the Task on it.</li>
+<li><strong><code>set()</code>:</strong> <span class="ts-claim" data-claim="c18" data-src="s2">In CPython 3.14's locks.py, Event.set() sets the result of every waiting Future, while Lock.release() wakes only the first.</span></li>
+<li><strong>Set:</strong> a later <code>wait()</code> returns at once, with no Future.</li>
+<li><strong><code>clear()</code>:</strong> the flag goes back to false; Tasks already woken are not affected; new <code>wait()</code> calls park again.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="event_demo.py" data-file="event_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/event_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>shopper-1 to shopper-3 arrive at 0, 20 and 40 ms and park in <code>wait()</code>. Nothing runs for them until 100 ms.</li>
+<li>At 100 ms <code>set()</code> wakes all three in the same iteration.</li>
+<li>shopper-4 arrives at 150 ms, while the flag is set, and is served at once.</li>
+<li>At 200 ms <code>clear()</code> resets the flag, so shopper-5 at 250 ms parks until the second <code>set()</code> at 300 ms.</li>
+</ol>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> 2,000 requests a second arrive during a 100 ms warm-up.</p>
+<p><strong>Step 1.</strong> Requests parked when <code>set()</code> runs: 2,000 × 0.1 = 200, each one Future in the Event's waiters.</p>
+<p><strong>Step 2.</strong> <code>set()</code> fills 200 Futures in one call, and their 200 Tasks run in the next iteration.</p>
+<p><strong>Result:</strong> 200 Tasks wake together, which is the point, and also a burst: if each then calls a seller, the warm-up has moved a stampede rather than removed it. An Event says "go"; it does not decide how many may go.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>set()</code> then <code>clear()</code> straight away is a pulse that wakes the current waiters and leaves the flag clear."</p>
+<p><strong>Why it is wrong:</strong> it does both: the waiters' Futures were filled by <code>set()</code>, so they still wake, and new waiters park. But a Task that was about to call <code>wait()</code> a moment later misses the pulse entirely. If waiters must not miss a change, they need state they can check, which is what a Condition adds.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Event: a flag; <code>wait()</code> parks until <code>set()</code>; <code>set()</code> wakes every waiter.</li>
+<li>Once set, <code>wait()</code> returns at once; <code>clear()</code> makes later waits park again.</li>
+<li>Use it for "happened / not yet"; it limits nothing about what the woken Tasks do next.</li>
+</ul>
+</div>
+<p class="ts-takeaway">An Event lets any number of Tasks wait, without polling, for one thing to happen, and wakes all of them together when it does.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c5 c6">
+<p class="q">An Event is set at 100 ms and never cleared. A Task calls <code>await event.wait()</code> at 500 ms. What happens?</p>
+<ol>
+<li>It returns True at once, without parking</li>
+<li data-why="An Event stays set until clear() is called; it is a flag, not a one-time signal.">It parks until the next set()</li>
+<li data-why="There is no limit on how many Tasks pass a set Event.">It raises, because the event was already consumed</li>
+</ol>
+<p class="ts-why">wait() returns True immediately when the flag is set; set() keeps it set until someone calls clear().</p>
+</div>
+</section>
+<section class="ts-part" id="condition" data-rung="2" data-min="12">
+<h2>asyncio.Condition: wait, under a lock, until the state you need</h2>
+<p class="ts-bridge">Last part: an Event wakes every waiter when one thing happens. Still unsolved: what if each waiter needs a different state of shared data, and must read that data safely once it wakes?</p>
+<p class="ts-problem">A product manager wants a "quick quote": answer as soon as any three sellers have answered, with the best of those three. The offers go into a shared list from five Tasks. The quote Task must wait until the list holds three, then read it while no seller Task is changing it.</p>
+<h3>Introduction</h3>
+<p>A Condition is a Lock with a waiting room attached. A Task takes the lock, checks the shared state, and if it is not ready, waits; waiting gives the lock up so others can change the state. Whoever changes it notifies the waiters, which take the lock back and check again.</p>
+<h3>Definitions</h3>
+<div class="ts-note" data-label="Definition">
+<p>An <dfn data-def="asyncio.Condition: a Lock plus a set of waiters; wait() releases the lock until notified, then takes it back.">asyncio.Condition</dfn> lets Tasks wait for shared state to change while holding a lock around it. <span class="ts-claim" data-claim="c7" data-src="s1">A Condition combines the functionality of an Event and a Lock, and several Condition objects can share one Lock.</span></p>
+</div>
+<ol>
+<li><span class="ts-claim" data-claim="c9" data-src="s1">Condition.wait() raises RuntimeError if the calling task has not acquired the lock; otherwise it releases the lock, blocks until it is awakened by notify() or notify_all(), re-acquires the lock and returns True.</span></li>
+<li><span class="ts-claim" data-claim="c8" data-src="s1">notify() and notify_all() must be called with the lock acquired, and released shortly after; called with an unlocked lock, they raise RuntimeError.</span></li>
+<li><span class="ts-claim" data-claim="c10" data-src="s1">A task may return from Condition.wait() spuriously, so the caller should re-check the state; wait_for(predicate) waits repeatedly until the predicate is true and returns its final value.</span></li>
+</ol>
+<h3>Working: the quick quote</h3>
+<ol class="ts-steps">
+<li><strong>The quote Task</strong> enters <code>async with cond</code> and calls <code>wait_for(lambda: len(offers) &gt;= 3)</code>. The predicate is false, so it waits, and the lock is released.</li>
+<li><strong>A seller Task</strong> enters <code>async with cond</code>, appends its offer and calls <code>notify_all()</code>.</li>
+<li><strong>The quote Task wakes</strong>, takes the lock back once the seller Task leaves its block, and checks the predicate again: 1 offer, not yet; it waits again.</li>
+<li><strong>At the third offer</strong> the predicate is true: the quote Task reads the list, still holding the lock, and answers.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: releasing the lock while waiting is what lets the seller Tasks get in to change the list.</li>
+<li>Step 3: re-checking after every wake is what makes a spurious or premature wake harmless.</li>
+<li>Step 4: reading under the lock means no seller Task can append in the middle of the read, even if the read contained an await.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="condition_demo.py" data-file="condition_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/condition_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The quote waits through seller-a (80 ms) and seller-b (120 ms): each wakes it, each time the predicate is false.</li>
+<li>seller-c's offer at 150 ms makes three; the quote answers at 150 ms with seller-b's 1,199 as the best so far.</li>
+<li><code>notify()</code> outside <code>async with cond</code> raises RuntimeError, as the definition says.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c32" data-src="s2">In CPython 3.14's locks.py, Condition.wait() releases the lock, appends its Future to the condition's waiters and awaits it, and in a finally block re-acquires the lock even if the wait is cancelled.</span> So a cancelled waiter, for instance at a request's deadline, leaves <code>wait()</code> holding the lock, and its <code>async with</code> releases it.</p>
+<h3>Difference between Event and Condition</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Point</th><th>Event</th><th>Condition</th></tr></thead>
+<tbody>
+<tr><td>Waits for</td><td>One flag</td><td>Any predicate over shared state</td></tr>
+<tr><td>Lock around the state</td><td>None</td><td>Built in; held while checking and reading</td></tr>
+<tr><td>Who wakes</td><td>Every waiter, on <code>set()</code></td><td>n or all waiters, on <code>notify(n)</code> or <code>notify_all()</code></td></tr>
+<tr><td>Missed changes</td><td>A Task that waits after a set-then-clear misses it</td><td>None, if the predicate reads the state itself</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "After <code>await cond.wait()</code> returns, the state I was waiting for is true."</p>
+<p><strong>Why it is wrong:</strong> it means only that someone notified. Another waiter may have run first and changed the state again, and wakes may be spurious. That is why <code>wait_for(predicate)</code>, or a <code>while not ready: await cond.wait()</code> loop, is the only correct way to wait.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Condition = Lock + waiters; wait releases the lock, waking takes it back.</li>
+<li>Change state and notify only while holding the lock; otherwise RuntimeError.</li>
+<li>Always wait for a predicate: <code>wait_for()</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A Condition lets a Task sleep until shared state satisfies a predicate, giving up the lock while it sleeps and holding it again while it checks and reads.</p>
+<div class="ts-predict" data-claims="c9 c10">
+<p class="q">The quick quote is changed to need 2 offers, and a second quote Task needing 4 offers is added. At what times do the two quotes answer?</p>
+<div class="ts-reveal"><p>The 2-offer quote answers at 120 ms, when seller-b's offer makes two; the 4-offer quote answers at 200 ms, when seller-d's makes four. Every notify_all() wakes both; each re-checks its own predicate under the lock, and each goes back to waiting until its own count is reached.</p></div>
+</div>
+</section>
+<section class="ts-part" id="barrier" data-rung="2" data-min="10">
+<h2>asyncio.Barrier: N Tasks go on together once all N have arrived</h2>
+<p class="ts-bridge">Last part: a Condition waits for any predicate over shared state. Still unsolved: one common predicate, "all N of us are here", has its own tool since Python 3.11.</p>
+<p class="ts-problem">The load test for gateway v8 must send 100 requests at the same instant, to reproduce a stampede. Opening 100 connections takes tens of milliseconds, and requests sent as each connection opens arrive spread out. The test needs every shopper to wait until all 100 are connected, then fire together.</p>
+<h3>Introduction</h3>
+<p>A barrier is a meeting point for a fixed number of Tasks. Each waits there; when the last one arrives, all of them go on. It is the tool for phases, where no Task may start phase 2 until every Task has finished phase 1.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>An <dfn data-def="asyncio.Barrier(parties): a meeting point; each wait() parks until parties Tasks are waiting, then all go on together.">asyncio.Barrier</dfn> holds Tasks until a set number have arrived. <span class="ts-claim" data-claim="c12" data-src="s1">Barrier(parties) blocks Tasks in wait() until parties tasks are waiting, then unblocks them all simultaneously; it can be reused any number of times, and it was added in Python 3.11.</span> <span class="ts-claim" data-claim="c13" data-src="s1">The docs say Barrier.wait() returns an integer from 0 to parties − 1, different for each task, and a waiting task that is cancelled exits the barrier, which stays in the same state.</span></p>
+</div>
+<p><span class="ts-claim" data-claim="c14" data-src="s1">abort() puts the barrier into a broken state, so that active and future calls to wait() fail with BrokenBarrierError, a subclass of RuntimeError; reset() returns the barrier to its empty state, and tasks waiting on it receive BrokenBarrierError.</span></p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Filling.</strong> Each <code>wait()</code> before the last one parks; the barrier counts it.</li>
+<li><strong>The last arrival</strong> releases all of them: the barrier enters its draining state and every waiter wakes, each with its own position number.</li>
+<li><strong>Reuse.</strong> When all have left, the barrier is back to filling, with 0 waiting, for the next phase.</li>
+<li><strong>Failure.</strong> If one party cannot arrive, <code>abort()</code> breaks the barrier, so the others get BrokenBarrierError instead of waiting forever.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="barrier_demo.py" data-file="barrier_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/barrier_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>shopper-1 and shopper-2 connect at 0 and 30 ms and park; at 50 ms the barrier shows 2 of 3 waiting.</li>
+<li>shopper-3 connects at 70 ms; all three send at 70 ms, with positions 0, 1 and 2.</li>
+<li>Afterwards the barrier is filling again with 0 waiting: ready for another round.</li>
+<li>With <code>abort()</code>, both waiting shoppers get BrokenBarrierError and the barrier stays broken.</li>
+</ol>
+<p>Gateway v8's load test in rung 3 uses exactly this: 100 shoppers connect, meet at a <code>Barrier(100)</code>, and send together.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.10 and older: no asyncio.Barrier.</strong> There, the same meeting point is built from a counter and an Event: each arrival adds one, and the arrival that reaches N sets the Event everyone waits on. It serves one phase; a second phase needs a new Event. On 3.11 and later, use <code>asyncio.Barrier</code>, which is reusable and handles cancelled waiters.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>gather()</code> or a TaskGroup already does what a Barrier does."</p>
+<p><strong>Why it is wrong:</strong> a TaskGroup waits, from outside, until the Tasks have finished. A Barrier makes running Tasks wait for each other in the middle of their work, and then lets them all go on. The load test cannot use a TaskGroup for that: the shoppers must still send and read after the meeting point.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>Barrier(n)</code>: each <code>wait()</code> parks until n are waiting, then all go on; reusable.</li>
+<li><code>wait()</code> returns a position, 0 to n − 1, to each Task; after a cancelled waiter two Tasks can get the same number (measured on 3.11 to 3.14), so do not use it as an id.</li>
+<li>If a party cannot come, <code>abort()</code>: everyone else gets BrokenBarrierError.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A Barrier makes a fixed number of Tasks wait for each other at one point in their work and releases them together, which is what phases and true-simultaneity load tests need.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c12 c13">
+<p class="q">A <code>Barrier(3)</code> has 2 Tasks waiting. One of them is cancelled by its request's deadline. Then 2 more Tasks call <code>wait()</code>. What happens?</p>
+<ol>
+<li data-why="Cancelling a waiter does not break the barrier; it only removes that task.">All three get BrokenBarrierError</li>
+<li>The cancelled Task leaves, so 1 is waiting; the next 2 arrivals make 3, and those three go on together</li>
+<li data-why="The cancelled Task exits the barrier and stops counting; it does not stay as a phantom party.">The first new arrival releases the barrier, because the cancelled Task still counts</li>
+</ol>
+<p class="ts-why">A waiting task that is cancelled exits the barrier, which stays in the filling state with one fewer waiting. Three live waiters are then needed to pass. One quirk, measured on 3.11 to 3.14: positions are handed out on arrival, so here the three get 1, 1 and 2, not 0, 1 and 2.</p>
+</div>
+</section>
+<section class="ts-part" id="contextvars" data-rung="2" data-min="12">
+<h2>contextvars: a value that belongs to the current context, not to the module</h2>
+<p class="ts-bridge">Last part: a Barrier makes Tasks wait for each other. Still unsolved: the wrong request id from rung 1. A module variable is shared by every request; what kind of variable belongs to one request?</p>
+<p class="ts-problem">The gateway's logger needs the current request's id on every line, from deep inside seller calls, ranking and audit code that never received the id as an argument. Passing it through every function signature in the codebase would touch hundreds of functions. A module variable is wrong after the first await.</p>
+<h3>Introduction</h3>
+<p><span class="ts-claim" data-claim="c19" data-src="s3">The contextvars module, added in Python 3.7, provides APIs to manage, store and access context-local state, and its docs say that context managers that have state should use context variables instead of threading.local, to keep that state from bleeding into other code when used in concurrent code.</span> A context variable's value depends on the current <em>context</em>, a mapping that asyncio swaps in and out as it switches between Tasks. This part covers the variable and the context on their own, with no asyncio. The next part adds the Tasks.</p>
+<h3>Comparison</h3>
+<p>A hotel gives each guest a key card. The card reader on a door does not ask the guest's name; it reads whatever card is presented and opens the right room. Two guests using the same door at different times get different rooms.</p>
+<ul>
+<li>The key card = the current context.</li>
+<li>The door's card reader = <code>request_id.get()</code>: the same code, a different answer per context.</li>
+<li>Copying a card for a family member = <code>copy_context()</code>.</li>
+</ul>
+<p>The comparison stops working here: a copied card opens the same room. A copied context is a separate mapping: changes made under the copy do not appear in the original.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="contextvars.ContextVar: a variable whose value is looked up in the current context rather than stored in one place.">ContextVar</dfn> is a variable whose value is looked up in the current context. <span class="ts-claim" data-claim="c20" data-src="s3">ContextVar.get() returns the variable's value in the current context; if there is none, it returns the get() call's default argument if one was given, else the variable's own default if it was created with one, else it raises LookupError.</span></li>
+<li><span class="ts-claim" data-claim="c21" data-src="s3">ContextVar.set() sets a new value in the current context and returns a Token, which ContextVar.reset() uses to restore the value the variable had before that set(); the same token cannot be used twice.</span></li>
+<li>A <dfn data-def="contextvars.Context: a mapping from ContextVars to values; the current one decides what get() returns.">Context</dfn> is the mapping from variables to values. <span class="ts-claim" data-claim="c23" data-src="s3">copy_context() returns a copy of the current Context, and Context.run() enters the context, calls the function, then exits; changes made with ContextVar.set() while it runs are recorded in that context.</span></li>
+<li><span class="ts-claim" data-claim="c22" data-src="s3">Context variables should be created at the top module level and never in closures, because Context objects hold strong references to them, which prevents them from being garbage collected.</span></li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Declare once</strong>, at module level: <code>request_id = ContextVar("request_id", default="-")</code>.</li>
+<li><strong>Set at the edge</strong>, when a request starts: <code>request_id.set("shopper-1")</code>. The value goes into the current context, not into the variable.</li>
+<li><strong>Read anywhere</strong>: <code>request_id.get()</code> looks in whatever context is current when it runs.</li>
+<li><strong>Run code in another context</strong> with <code>ctx.run(f)</code>; its sets stay in <code>ctx</code>.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="context_basics.py" data-file="context_basics.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/context_basics.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Before any set, <code>get()</code> returns the default "-"; after <code>reset(token)</code> it does again.</li>
+<li><code>shopper_tier</code> has no default and no value, so <code>get()</code> raises LookupError.</li>
+<li>Inside <code>ctx.run(inside)</code>, the set to "shopper-2" goes into <code>ctx</code>. Outside, the current context never changed: still "-". <code>ctx[request_id]</code> shows the value kept in the snapshot.</li>
+<li>The last block uses the Token as a context manager, new in 3.14.</li>
+</ol>
+<div class="ts-legacy">
+<p><strong>Python 3.11 to 3.13: no <code>with var.set(...)</code>.</strong> <span class="ts-claim" data-claim="c24" data-src="s3">Support for using a Token as a context manager, which resets the variable when the block exits, was added in Python 3.14.</span> On older versions the program stops at that line with TypeError; write <code>token = var.set(...)</code> and <code>var.reset(token)</code> in a <code>finally</code> instead.</p>
+</div>
+<h3>Solved example: what does get() return?</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Code</th><th>Current context holds</th><th><code>request_id.get()</code></th></tr></thead>
+<tbody>
+<tr><td>Nothing set</td><td>no value</td><td>"-", the variable's default</td></tr>
+<tr><td><code>request_id.set("shopper-1")</code></td><td>shopper-1</td><td>"shopper-1"</td></tr>
+<tr><td><code>request_id.get("none")</code> with nothing set</td><td>no value</td><td>"none": the call's default wins over the variable's</td></tr>
+<tr><td>Inside <code>ctx.run()</code> after a set there</td><td>ctx's own value</td><td>ctx's value; the outer context is untouched</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> the same line of code, <code>request_id.get()</code>, gives different answers in different contexts. That is the property the logger needs; the next part shows that asyncio gives each Task its own context.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A ContextVar is a global variable with extra steps, so <code>set()</code> changes it for everyone."</p>
+<p><strong>Why it is wrong:</strong> <code>set()</code> writes into the current context only. In the program, the set inside <code>ctx.run()</code> is invisible outside it. The variable object is global, so every module can name it; its value is not.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Declare a ContextVar at module level; read it with <code>get()</code>, which looks in the current context.</li>
+<li><code>set()</code> writes the current context and returns a Token for <code>reset()</code>; 3.14 lets the Token be used with <code>with</code>.</li>
+<li><code>copy_context()</code> and <code>ctx.run()</code> give code its own mapping; its sets stay there.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A ContextVar's value lives in the current context, so the same get() gives each context its own answer, and a set in one context is invisible in another.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c20 c23">
+<p class="q"><code>v = ContextVar("v", default=0)</code>. Code runs <code>ctx = copy_context()</code>, then <code>v.set(5)</code>, then <code>ctx.run(lambda: print(v.get()))</code>. What is printed?</p>
+<ol>
+<li data-why="ctx is a copy taken before the set; changes to the current context after the copy do not reach it.">5</li>
+<li data-why="The variable has a default, so get() does not raise when no value is set.">LookupError</li>
+<li>0</li>
+</ol>
+<p class="ts-why">copy_context() took a snapshot while v had no value. The later set(5) went into the current context, not into the snapshot, so inside ctx.run() get() falls back to the default, 0.</p>
+</div>
+</section>
+<section class="ts-part" id="context-per-task" data-rung="2" data-min="12">
+<h2>Each Task gets a copy of the context, taken when it is created</h2>
+<p class="ts-bridge">Last part: a ContextVar's value lives in the current context. Still unsolved: on an event loop, what is "the current context" while 200 requests take turns on one thread?</p>
+<p class="ts-problem">The gateway sets <code>request_id</code> in each request's handler. The handler then starts five seller Tasks in a TaskGroup. Each seller Task must log with its own request's id, and a seller Task that changes the value, by accident or on purpose, must not change it for its request or its siblings.</p>
+<h3>Introduction</h3>
+<p>asyncio answers the question with one rule, applied at one moment: when a Task is created, it takes a copy of the context current at that moment, and every step of the Task runs inside that copy. Callbacks get the same treatment when they are scheduled. Everything about request ids, and every bug in rung 4, follows from that one rule.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c27" data-src="s4">If no context is provided, a Task copies the current context and later runs its coroutine in the copied context; asyncio.create_task() and the Task constructor accept a context argument to use a given Context instead, added in Python 3.11.</span> <span class="ts-claim" data-claim="c26" data-src="s3">Context variables are natively supported in asyncio and are ready to be used without any extra configuration.</span></p>
+</div>
+<p><span class="ts-claim" data-claim="c33" data-src="s5">loop.call_soon() accepts an optional context argument for the callback to run in, and callbacks use the current context when none is provided.</span> <span class="ts-claim" data-claim="c40" data-src="s10 s21">In CPython 3.14's events.py, a Handle created without a context takes a copy of the current context when it is created, and futures.py's add_done_callback() likewise copies the context current when the callback is added.</span></p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>The handler sets</strong> <code>request_id</code> in its own Task's context.</li>
+<li><strong>It creates child Tasks.</strong> Each takes a copy of the handler's context at that moment, value included.</li>
+<li><strong>Each step of each Task</strong> runs inside that Task's own copy: <code>get()</code> sees the value, and <code>set()</code> changes only that copy.</li>
+<li><strong>A callback</strong> scheduled with <code>call_soon</code> or added as a done callback runs in a copy taken when it was scheduled or added.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 2: copying at creation is what makes the id follow the request into every Task it starts.</li>
+<li>Step 3: a separate copy per Task is what keeps one Task's <code>set()</code> from leaking into its parent, its siblings, or another request.</li>
+<li>Step 4: callbacks need a context too, and they get the one in force when they were scheduled, not when they run.</li>
+</ul>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="Contexts: one per Task, copied at creation">
+<script type="application/json">
+{"nodes": [
+ {"id": "h1", "label": "shopper-1's handler", "sub": "request_id = shopper-1", "col": 0, "row": 0, "step": 1},
+ {"id": "h2", "label": "shopper-2's handler", "sub": "request_id = shopper-2", "col": 0, "row": 2, "step": 1},
+ {"id": "a1", "label": "seller-a Task", "sub": "copy: shopper-1", "col": 1, "row": 0, "step": 2},
+ {"id": "b1", "label": "seller-b Task", "sub": "copy: shopper-1", "col": 1, "row": 1, "step": 2},
+ {"id": "a2", "label": "seller-a Task", "sub": "copy: shopper-2", "col": 1, "row": 2, "step": 2},
+ {"id": "x", "label": "set() in a child", "sub": "only its own copy changes", "col": 2, "row": 1, "step": 3}],
+ "edges": [
+ {"from": "h1", "to": "a1", "label": "create_task: copy", "step": 2},
+ {"from": "h1", "to": "b1", "step": 2},
+ {"from": "h2", "to": "a2", "label": "create_task: copy", "step": 2},
+ {"from": "b1", "to": "x", "step": 3}],
+ "captions": [
+ "Each request's handler runs in its own Task, so a set() at the edge puts the id into that Task's own context.",
+ "Every Task the handler creates starts from a copy of the handler's context, taken at that moment: the id comes along.",
+ "A set() inside a child changes the child's copy only; the handler and the sibling still see the request's id."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Step 1: the two handlers are two Tasks on the same thread, each with its own context. That is why the same <code>get()</code> gives each its own id.</li>
+<li>Step 2: the arrows are copies, not links. After creation, nothing flows along them in either direction.</li>
+<li>Step 3: a child's <code>set()</code> stays in the child, which is why a buggy child cannot relabel its parent.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="context_tasks.py" data-file="context_tasks.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/context_tasks.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Line 1: a Task created after the handler's set sees "shopper-1". Line 2: its own set did not reach the handler.</li>
+<li>Line 3: a Task created <em>before</em> the handler's second set still sees "shopper-1": the copy was taken at creation, and later sets in the parent do not reach it.</li>
+<li>Line 4: a <code>call_soon</code> callback sees the handler's current value, "shopper-2", copied when it was scheduled.</li>
+<li>Lines 5 and 6: a Task given <code>context=Context()</code> starts empty, sees the default, and keeps its own value. <span class="ts-claim" data-claim="c28" data-src="s4">Task.get_context() returns the Context associated with the task and was added in Python 3.12.</span></li>
+<li>Line 7: <code>main()</code>, which created the handler's Task, never sees any of it.</li>
+</ol>
+<h3>What about threads?</h3>
+<p><span class="ts-claim" data-claim="c25" data-src="s3">Each thread has its own stack of contexts, so ContextVars behave like threading.local when values are set in different threads, and entering a context that is already entered, in any thread, raises RuntimeError.</span> <span class="ts-claim" data-claim="c29" data-src="s4">asyncio.to_thread() runs a function in a separate thread and propagates the current contextvars Context to it.</span> <span class="ts-claim" data-claim="c39" data-src="s8">In CPython 3.14's base_events.py, run_in_executor() passes the function to executor.submit() and does not copy the current context.</span> Rung 3 uses the difference, and rung 4 measures what it costs.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.11.</strong> <code>Task.get_context()</code> does not exist; the program stops at line 6 with AttributeError on 3.11, and prints the same seven lines on 3.12 and 3.13. Lines 1 to 5, the copying itself, are the same on every version this series covers.</p>
+</div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "How would you get a request id into every log line of an asyncio service, including logs written by libraries?"</p>
+<p><strong>What a strong senior answer contains:</strong> a ContextVar set once at the edge, in middleware, before any Task is started, because each Task copies the context at creation; a logging filter that reads it, so libraries' log lines get it too; and the known gaps: work started before the set, threads started without the context (run_in_executor does not copy it, to_thread does), callbacks from foreign threads, and shared work started by one request on behalf of many, which should run in a fresh context with its own id. The candidate rules out thread-locals for asyncio, since every request shares the loop's thread.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A child Task shares its parent's context, so a value set in the parent after starting the child shows up in the child."</p>
+<p><strong>Why it is wrong:</strong> the child gets a copy taken when it was created. Line 3 of the program shows the child still seeing the old value after the parent set a new one. Set request data first, then start Tasks.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A Task runs every step in a copy of the context current when it was created; <code>context=</code> overrides it (3.11+).</li>
+<li>Callbacks run in a copy taken when they were scheduled or added.</li>
+<li>Sets never travel between copies: not from child to parent, not from parent to an existing child.</li>
+</ul>
+</div>
+<p class="ts-takeaway">asyncio gives each Task a copy of the context at the moment the Task is created, so request data set at the edge follows the request into every Task it starts and never leaks into another request.</p>
+<div class="ts-explain" data-points="Code between two awaits runs as one step; tools are needed only where an await must sit inside a critical section|Lock serialises a critical section; Event wakes all waiters on one flag; Condition waits for a predicate under a lock; Barrier releases N tasks together|A ContextVar's value lives in the current context; set() writes only that context|Each Task copies the current context at creation, so values set at the edge follow the request and never leak">
+<p class="q">In your own words: which tool would you use for a counter updated across an await, for "go when the cache is warm", for "go when three offers are in", for "start all 100 load-test shoppers together", and for a request id in every log line, and why?</p>
+<div class="ts-model"><p>The counter needs an asyncio.Lock around the read, await and write, so the whole critical section runs as one step for every Task using the lock. "Go when the cache is warm" is a single happened-or-not flag, so an Event: every waiter parks until set() and all wake together. "Three offers are in" is a predicate over shared state, so a Condition with wait_for(), which releases the lock while waiting and checks the list under the lock. Starting 100 shoppers together is a Barrier(100). And the request id is a ContextVar set at the edge: each Task copies the context when it is created, so the id follows the request into its Tasks without leaking to others.</p></div>
+</div>
+</section>
+<section class="ts-part" id="single-flight" data-rung="3" data-min="16">
+<h2>A single-flight price cache: one seller call, however many requests ask</h2>
+<p class="ts-bridge">Last part: each Task gets a copy of the context at creation. Still unsolved: rung 1's stampede. 100 requests for one item asked seller-c 100 times. How does the gateway make them share one call?</p>
+<p class="ts-problem">A sale starts at 10:00 and 100 shoppers ask for kettle-1l in the same instant, with an empty cache. The gateway should ask each seller once and give all 100 shoppers the answer. And seller-e, which answers at 900 ms, long after every request's 250 ms deadline, should still end up in the cache, so the shoppers who come next get its 1,149.</p>
+<h3>Introduction</h3>
+<p>A Lock around the check, the call and the store would stop the duplicate calls, but rung 4 measures what it does to every other item. The pattern that fits is older than asyncio and has a name. This part builds it in about 25 lines and measures it against the naive cache.</p>
+<h3>Comparison</h3>
+<p>An office of 100 people wants coffee from the shop downstairs. The first person to ask writes "going for coffee, back at 10:15" on the board and goes; everyone who asks after that adds their name to the board and waits; the one runner brings back enough for all. If someone stops waiting and leaves for a meeting, the runner still comes back, and the coffee is there for whoever asks next.</p>
+<ul>
+<li>The note on the board = the in-flight entry for the key.</li>
+<li>The one runner = the one fill Task.</li>
+<li>Someone leaving for a meeting = a request whose deadline or hang-up stops its wait.</li>
+</ul>
+<p>The comparison stops working here: the office runner is a person with a name. The fill Task belongs to no request, which decides whose deadline, cancellation and request id it carries.</p>
+<h3>Definitions</h3>
+<ol>
+<li><dfn data-def="A pattern where at most one call per key is in flight; callers who ask for the same key meanwhile wait for that call and share its result.">Single-flight</dfn>: at most one call per key is in flight, and callers who ask for the same key meanwhile wait for that call and share its result. <span class="ts-claim" data-claim="c53" data-src="s19">Go's golang.org/x/sync/singleflight package provides a duplicate function call suppression mechanism: its Do method makes sure that only one execution is in flight for a given key at a time, and a duplicate caller waits for the original to complete and receives the same results.</span></li>
+<li>A <dfn data-def="The one call that loads a missing or expired cache entry, run as its own owned Task.">fill</dfn>: the one call that loads a missing or expired entry. In the gateway it is an owned Task, started with Part 4's <code>spawn()</code>.</li>
+<li>The <dfn data-def="How long a cached price is used before it is fetched again.">TTL</dfn> (time to live): how long a cached price is used before it is fetched again.</li>
+</ol>
+<h3>Working: one fill for 100 requests</h3>
+<ol class="ts-steps">
+<li><strong>Check the cache.</strong> A fresh price is returned at once.</li>
+<li><strong>On a miss, look for a fill in flight</strong> for (seller, item). If there is none, start one and record it. There is no <code>await</code> between the lookup and the record, so by the one-step rule no other request can slip in between: the first request starts the fill, and the other 99 find it.</li>
+<li><strong>Wait for the fill through <code>shield()</code>, under the request's own deadline.</strong> The deadline or a hang-up ends that request's wait; the fill goes on (Part 5's shield, for the same reason as the audit row).</li>
+<li><strong>The fill stores the price</strong> and finishes. Its done callback removes the in-flight entry, so the next miss, after the TTL, starts a new fill.</li>
+<li><strong>A failure is returned, not stored.</strong> Every waiter gets the same error value; nothing is cached, so the next request tries again.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 2: the check and the record must be one step; that is what a Lock would buy, and the loop gives it free when there is no await between them.</li>
+<li>Step 3: without the shield, the first request's 250 ms deadline would cancel the fill for all 100, and seller-e's 900 ms price would never be stored. The naive cache in the program below has exactly that problem.</li>
+<li>Step 3, ownership: the fill is created with <code>spawn()</code>, outside any request's TaskGroup, in a fresh context. Rung 4 shows what goes wrong in logs when it inherits the first request's context instead.</li>
+<li>Step 5: caching a failure would make one bad answer from a seller stick for the whole TTL.</li>
+</ul>
+<div class="ts-code" data-lang="python" data-title="single_flight.py" data-file="single_flight.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="price_cache.py" data-file="price_cache.py" data-verified="ran"></div>
+<h3>Diagram</h3>
+<figure class="ts-seq" data-title="100 requests, one fill per seller">
+<script type="application/json">
+{"actors": [
+ {"id": "r1", "label": "Request 1", "sub": "first to miss"},
+ {"id": "r2", "label": "Requests 2–100", "sub": "same item"},
+ {"id": "sf", "label": "SingleFlight", "sub": "in-flight fills"},
+ {"id": "fill", "label": "Fill Task", "sub": "owned, fresh context"},
+ {"id": "se", "label": "seller-e", "sub": "900 ms"}],
+ "steps": [
+ {"from": "r1", "to": "sf", "label": "start((seller-e, kettle-1l))", "note": "No fill is in flight, so start() spawns one and records it, with no await in between."},
+ {"from": "sf", "to": "fill", "label": "spawn(fill), context=Context()", "note": "The fill is an owned Task in an empty context: no request's deadline, cancellation or id."},
+ {"from": "r2", "to": "sf", "label": "start(): the same Task", "note": "The other 99 find the recorded fill and get the same Task back."},
+ {"from": "fill", "to": "se", "label": "one call", "note": "One call to seller-e, under the fill's own 2 s deadline."},
+ {"over": ["r1", "r2"], "label": "250 ms: deadlines cut the waits", "note": "Each request stops waiting at its deadline and answers with seller-b's 1,199. The shield keeps the fill running."},
+ {"from": "se", "to": "fill", "label": "seller-e 1149 at 900 ms", "dashed": true, "note": "The fill stores the price in the cache and finishes; its done callback removes the in-flight entry."},
+ {"over": ["r2"], "label": "later requests: cache hit", "note": "Requests after 900 ms find seller-e's price in the cache and answer 1,149 without calling anyone."}]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 to 3 are the one-step rule at work: whichever request runs first records the fill before any other request can look.</li>
+<li>Steps 4 and 5 separate the fill's lifetime from the requests'. The requests keep their 250 ms promise; the fill keeps going.</li>
+<li>Steps 6 and 7 are the payoff: the slow seller's answer, useless to the 100 requests that caused it, is what the next requests get.</li>
+</ol>
+<h3>Program</h3>
+<p>100 requests at once for kettle-1l, each asking all five sellers under the 250 ms deadline; then 100 more 1 s later. The sellers are stand-ins that count their calls. First the naive cache from rung 1, then single-flight.</p>
+<div class="ts-code" data-lang="python" data-title="stampede.py" data-file="stampede.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/stampede.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Naive cache, first 100: 100 calls to each seller, 500 in all. seller-e's 100 calls are each cancelled at their request's deadline, so its price is never stored.</li>
+<li>Naive cache, next 100: sellers a to d are cached now, but seller-e misses again, so it is asked 100 more times, and every answer is still seller-b's 1,199. With a slow seller and a deadline, a naive cache never caches it.</li>
+<li>Single-flight, first 100: one call to each seller. The answers are the same as the naive cache's, at the same time.</li>
+<li>Single-flight, next 100: no seller calls at all, and every shopper gets seller-e's 1,149: the fill finished at 900 ms, after every request that started it had already answered.</li>
+</ol>
+<h3>Solved example: the calls saved at the sale's numbers</h3>
+<p><strong>Given:</strong> 2,000 requests a second for one item; TTL 30 s; five sellers.</p>
+<p><strong>Step 1. Naive cache.</strong> After each expiry, every request in the gap misses: seller-c's gap holds 2,000 × 0.15 = 300 requests, seller-d's 400, seller-e's 2,000 × 0.9 = 1,800, and seller-e's calls never store anything, so it misses on every request: 2,000 calls a second.</p>
+<p><strong>Step 2. Single-flight.</strong> One call per seller per expiry: 5 calls every 30 s.</p>
+<p><strong>Step 3. Freshness.</strong> A price can be up to 30 s old. That is the cost, and it is a product decision: a feed of price changes (later in this rung) shortens it for seller-e.</p>
+<p><strong>Result:</strong> from thousands of calls a second to 5 every 30 s, and the best price, 1,149, reaches shoppers for the first time in this series.</p>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c54" data-src="s20">Facebook's NSDI 2013 paper on scaling memcache describes leases against thundering herds: a lease is a 64-bit token bound to the key a client asked for, servers by default return a token only once every 10 seconds per key, and in their measurement the peak database query rate was 17K/s without leases and 1.3K/s with them.</span> A lease is single-flight across many processes: only the holder of the token refills the key.</p>
+</div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your cache sits in front of a slow API. Traffic spikes after every deploy and every expiry. What is happening and what do you change?"</p>
+<p><strong>What a strong senior answer contains:</strong> a cache stampede: every request that misses during the refill calls the API. Single-flight per key inside each process, so one call refills it and the others wait for that call under their own deadlines; the refill must not be cancelled by the first caller's deadline, or a slow source is never cached; failures are not cached, or cached only briefly. Then the scope: single-flight inside a process still means one refill per process, so many processes need a shared cache with a lease or lock (rung 4), plus jittered expiry. And the trade-off stated: prices up to one TTL old.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Single-flight needs an asyncio.Lock around the dictionary of fills."</p>
+<p><strong>Why it is wrong:</strong> on one event loop, the lookup and the insert have no await between them, so they already run as one step. A lock would add an <code>async with</code>, a place to wait, and protect nothing. Go's version uses a mutex because goroutines run in parallel threads; a <em>threaded</em> Python single-flight needs a <code>threading.Lock</code> for the same reason.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Single-flight: one fill per key; others wait for it; the entry is removed when it finishes.</li>
+<li>The fill is an owned Task in a fresh context, waited on through <code>shield()</code> under each request's own deadline.</li>
+<li>Failures are returned, not cached. 100 requests: 5 seller calls instead of 500, and seller-e's price finally cached.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A single-flight cache gives every request that misses the same key one shared fill, so a stampede becomes one call per seller, and a fill that outlives the requests stores even the slow seller's price.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">This needs Part 5. In the single-flight cache, a developer removes <code>asyncio.shield()</code> and awaits the fill Task directly. 100 requests arrive at once with an empty cache. What happens to seller-e's price?</p>
+<ol>
+<li data-why="The fill is owned by spawn(), so it is not garbage collected; the danger is cancellation, not loss of the reference.">It is cached as before, because the fill is an owned Task</li>
+<li>Each request's deadline cancels its await of the fill, which cancels the fill Task itself, so seller-e's price is never stored</li>
+<li data-why="Each request awaits the same Task; there is still only one fill, it is just cancelled.">Each request starts its own fill, so seller-e is asked 100 times</li>
+</ol>
+<p class="ts-why">Part 5: cancelling a Task that awaits another Task cancels the awaited Task too, unless the await goes through shield(). At 250 ms the first deadline cancels the shared fill, and no request is left to store seller-e's answer.</p>
+</div>
+</section>
+<section class="ts-part" id="request-id-flow" data-rung="3" data-min="13">
+<h2>A request id in every log line, including the SDK's thread</h2>
+<p class="ts-bridge">Last part: a single-flight cache shares one fill among many requests. Still unsolved: rung 1's wrong log tag. How does the gateway put the right request id on every line, including lines written by libraries and by seller-e's SDK thread?</p>
+<p class="ts-problem">The gateway logs through Python's logging module, and so do its libraries, including seller-e's SDK, which logs "get_price kettle-1l" on every call from inside a pool thread. On-call needs every one of those lines tagged with the request that caused it.</p>
+<h3>Introduction</h3>
+<p>Two pieces put the id on every line. A ContextVar holds it, set once at the edge, which this rung's context parts showed travels into every Task the request starts. A logging filter reads it and adds it to each record, so no logging call has to pass it. The one gap is threads: the SDK runs in a pool thread, which has a context of its own.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c51" data-src="s17">A logging Filter's filter(record) method decides whether a record is logged, and filters can modify log records in place; filters attached to handlers are consulted before the handler emits the event.</span></li>
+<li><span class="ts-claim" data-claim="c52" data-src="s18">The logging cookbook shows a filter that reads ContextVars set at the start of request processing and adds the request's attributes to every log record.</span></li>
+</ol>
+<div class="ts-code" data-lang="python" data-title="request_log.py" data-file="request_log.py" data-verified="ran"></div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Set at the edge.</strong> The handler's first line is <code>request_id.set(shopper)</code>, before it starts any Task.</li>
+<li><strong>Tasks inherit it.</strong> The seller Tasks in the request's TaskGroup copy the context when created.</li>
+<li><strong>The filter reads it</strong> in whatever context the log call runs in and sets <code>record.request_id</code>; the formatter prints it.</li>
+<li><strong>Threads need it carried.</strong> For the SDK's pool, take <code>contextvars.copy_context()</code> on the loop and run the function inside it with <code>ctx.run</code>, in the pool's thread.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="request_ids.py" data-file="request_ids.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/request_ids.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Two shoppers run at once. Their seller Tasks interleave on one thread, yet every gateway line carries its own shopper's id, including the lines from the child Tasks.</li>
+<li>With plain <code>run_in_executor</code>, the SDK's two lines carry "-": the pool thread runs in its own context, where nothing was set. The lines are also no longer grouped with their requests, which is how they are lost in an incident.</li>
+<li>With <code>copy_context().run</code>, each SDK line carries its own request's id.</li>
+</ol>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Point</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>The id</td><td>The shopper's name</td><td>An id from the incoming request if it has one, else a new one; returned in the response so a user's report can be matched</td></tr>
+<tr><td>Where it is set</td><td><code>handle()</code></td><td>Middleware, before any handler code or Task runs</td></tr>
+<tr><td>Where it goes</td><td>Log lines</td><td>Log lines, metrics labels where the cardinality allows, and outgoing calls, so the sellers' logs can be matched too</td></tr>
+<tr><td>Threads</td><td><code>copy_context().run</code> into seller-e's own pool</td><td>The same for every pool; <code>to_thread()</code> carries it, but only for the default pool (next part)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Once the id is in a ContextVar, every line logged for the request has it."</p>
+<p><strong>Why it is wrong:</strong> every line logged in the request's Tasks, and in copies of their contexts, has it. Code running in a thread started elsewhere, such as a pool worker, runs in that thread's own context. The program's first run shows the SDK's lines without the id; the context must be carried into the thread explicitly.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Set the ContextVar once at the edge, before starting Tasks.</li>
+<li>A logging filter reads it per record, so library log lines get it too.</li>
+<li>Carry it into pool threads with <code>copy_context().run</code>; plain <code>run_in_executor</code> does not.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A ContextVar set at the edge and read by a logging filter tags every log line of a request, and copy_context().run carries the tag into the threads the request uses.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c27 c39">
+<p class="q">A handler starts a background audit Task with <code>spawn()</code> and then calls <code>request_id.set(shopper)</code>. The audit Task logs one line. Which id does that line carry?</p>
+<ol>
+<li>Whatever the handler's context held when the Task was created, here the default "-": the set came too late</li>
+<li data-why="Tasks do not share their creator's context; they copy it at creation, so later sets do not reach them.">The shopper's id, because the Task shares the handler's context</li>
+<li data-why="The logging filter reads the ContextVar in the Task's own context; it does not look up the handler.">The shopper's id, because the logging filter looks it up from the handler</li>
+</ol>
+<p class="ts-why">The Task copied the handler's context when spawn() created it, before the set. Setting the id at the very start of the request, before any Task is created, avoids it.</p>
+</div>
+</section>
+<section class="ts-part" id="thread-bridge" data-rung="3" data-min="15">
+<h2>Crossing between threads and the loop: three bridges</h2>
+<p class="ts-bridge">Last part: <code>copy_context().run</code> carries the request id into seller-e's SDK thread. Still unsolved: that crossing went from the loop into a thread. seller-e's SDK also calls the gateway <em>back</em>, from a thread of its own. Which way across fits which job?</p>
+<p class="ts-problem">seller-e's vendor adds a price feed to its SDK: <code>feed.subscribe(callback)</code>, and the SDK calls <code>callback(item, offer)</code> on its own thread whenever a price changes. The callback must update the gateway's cache, which lives on the loop, and the vendor wants a reply only once the change is applied and audited.</p>
+<h3>Introduction</h3>
+<p>Part 2 showed that only <code>call_soon_threadsafe</code> both queues work safely and wakes the loop, and Part 4 put seller-e's SDK in a thread pool with <code>run_in_executor</code>. This part puts all the crossings side by side. There are three directions a gateway needs, and one tool for each.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c37" data-src="s7">The asyncio docs say almost all asyncio objects are not thread safe; code outside a Task or callback that needs a low-level asyncio API should use loop.call_soon_threadsafe(), and run_coroutine_threadsafe() should be used to schedule a coroutine object from a different OS thread.</span></li>
+<li><span class="ts-claim" data-claim="c34" data-src="s5">call_soon_threadsafe() must be used when scheduling callbacks from another thread, because call_soon() is not thread-safe, and it raises RuntimeError if called on a loop that has been closed, which can happen on a secondary thread while the application shuts down.</span></li>
+<li><span class="ts-claim" data-claim="c30" data-src="s4">run_coroutine_threadsafe(coro, loop) submits a coroutine to the given event loop, is thread-safe, returns a concurrent.futures.Future for waiting on the result from another OS thread, and is meant to be called from a different OS thread than the one running the loop.</span> <span class="ts-claim" data-claim="c31" data-src="s4">If the coroutine raises, the returned Future is notified, and the Future can be used to cancel the task in the event loop, for example after result(timeout) raises TimeoutError.</span></li>
+<li><span class="ts-claim" data-claim="c38" data-src="s9">In CPython 3.14's threads.py, to_thread() copies the current context and runs the function through ctx.run with loop.run_in_executor(None, ...), so it always uses the loop's default executor.</span></li>
+</ol>
+<h3>Working: one bridge per direction</h3>
+<ol class="ts-steps">
+<li><strong>Loop → thread, wait for the result.</strong> A coroutine needs a blocking call. <code>await asyncio.to_thread(f)</code> uses the default pool and carries the context. For a dependency with its own pool (Part 4), <code>await loop.run_in_executor(pool, ctx.run, f)</code> with <code>ctx = copy_context()</code> does the same in that pool.</li>
+<li><strong>Thread → loop, fire and forget.</strong> A thread has a small piece of work for the loop and does not need a reply: <code>loop.call_soon_threadsafe(callback)</code>. The callback runs on the loop's thread in a later iteration.</li>
+<li><strong>Thread → loop, wait for a coroutine's result.</strong> A thread needs async work done and must know how it went: <code>asyncio.run_coroutine_threadsafe(coro, loop).result(timeout)</code>. The thread blocks; the loop does not.</li>
+<li><strong>Get the loop first.</strong> A foreign thread has no running loop: <span class="ts-claim" data-claim="c36" data-src="s5">get_running_loop() returns the running event loop in the current OS thread and raises RuntimeError if there is none.</span> So the loop is captured on the loop's thread, at start-up, and handed to whoever will cross.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c42" data-src="s11">In CPython 3.14's tasks.py, run_coroutine_threadsafe() creates a concurrent.futures.Future and uses loop.call_soon_threadsafe() to schedule a callback that wraps the coroutine in a Task on the loop and chains that Task's outcome to the Future.</span> So bridge 3 is bridge 2 plus a Task and a Future: the same wake-up, with a result attached.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="price_feed.py" data-file="price_feed.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="bridge_demo.py" data-file="bridge_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/bridge_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Bridge 1: <code>to_thread</code> runs in the default pool's thread <code>asyncio_0</code> with shopper-1's id. Plain <code>run_in_executor</code> into seller-e's own pool loses the id; adding <code>ctx.run</code> keeps it.</li>
+<li>Bridge 2: the feed thread calls <code>call_soon_threadsafe(put)</code> and returns "queued" at once; <code>put()</code> runs on <code>MainThread</code>, the loop's thread, and the cache changes there.</li>
+<li>Bridge 3: the feed thread waits on <code>future.result(timeout=1.0)</code> and gets "applied …" back. For the price of −5, <code>apply_change</code> raised ValueError on the loop, and <code>result()</code> raised the same ValueError in the feed's thread.</li>
+<li>Bridges 2 and 3 print request_id "-": a callback runs in a copy of the context current when it was scheduled, and it was scheduled from the feed's thread. <span class="ts-claim" data-claim="c43" data-src="s13">In Python 3.14, a threading.Thread started without a context argument starts with a copy of the context of the caller of start() if sys.flags.thread_inherit_context is true, and with an empty context otherwise; the flag defaults to true on free-threaded builds and false otherwise.</span> The default build gives the feed thread an empty context. The next part shows the other build.</li>
+</ol>
+<h3>Difference between the bridges</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Bridge</th><th>Called from</th><th>Runs on</th><th>Caller waits?</th><th>Errors reach</th><th>Context</th></tr></thead>
+<tbody>
+<tr><td><code>to_thread(f)</code></td><td>A coroutine</td><td>The default pool</td><td>Its Task awaits</td><td>The awaiting coroutine</td><td>Carried</td></tr>
+<tr><td><code>run_in_executor(pool, ctx.run, f)</code></td><td>A coroutine</td><td>A pool you choose</td><td>Its Task awaits</td><td>The awaiting coroutine</td><td>Carried by <code>ctx.run</code></td></tr>
+<tr><td><code>call_soon_threadsafe(cb)</code></td><td>Any thread</td><td>The loop's thread</td><td>No</td><td>The loop's exception handler</td><td>The calling thread's</td></tr>
+<tr><td><code>run_coroutine_threadsafe(coro, loop)</code></td><td>Any thread but the loop's</td><td>The loop's thread, as a Task</td><td>Its thread blocks on <code>result()</code></td><td>The calling thread, from <code>result()</code></td><td>The calling thread's</td></tr>
+</tbody>
+</table></div>
+<div class="ts-trap">
+<p><strong>Calling <code>run_coroutine_threadsafe(...).result()</code> on the loop's own thread deadlocks.</strong> The loop's thread blocks in <code>result()</code>, waiting for a Task that only that same thread can run. The docs say the function is meant for a <em>different</em> thread; from a coroutine, just <code>await</code> the coroutine.</p>
+</div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "A vendor SDK delivers events on its own thread and expects you to acknowledge each one after processing. Your service is asyncio. How do you wire it?"</p>
+<p><strong>What a strong senior answer contains:</strong> capture the loop at start-up; in the SDK's callback, <code>run_coroutine_threadsafe(handle(event), loop)</code> and <code>result(timeout)</code> before acknowledging, so the SDK sees failures and naturally slows down to the loop's pace (backpressure across the thread boundary); <code>call_soon_threadsafe</code> only for fire-and-forget work; never touch asyncio objects from the SDK thread directly; set an explicit context or id in the handler, since the callback runs in the SDK thread's context; and stop the SDK's thread before closing the loop, since calling into a closed loop raises.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>to_thread()</code> is the modern spelling of <code>run_in_executor()</code>, so it should always be used."</p>
+<p><strong>Why it is wrong:</strong> it always uses the loop's default pool, which Part 4 showed also serves every name lookup, so a slow dependency there can make every seller time out. For seller-e's SDK the gateway keeps its own pool and gets <code>to_thread()</code>'s one extra, the context, with <code>copy_context().run</code>.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Loop → thread: <code>to_thread</code> (default pool) or <code>run_in_executor(pool, ctx.run, f)</code> (your pool, context carried).</li>
+<li>Thread → loop: <code>call_soon_threadsafe</code> to fire and forget; <code>run_coroutine_threadsafe(...).result(timeout)</code> to wait and see errors.</li>
+<li>Capture the loop on its own thread; never call <code>result()</code> on the loop's thread.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Work crosses from the loop to a thread through an executor, and from a thread to the loop through call_soon_threadsafe or run_coroutine_threadsafe; each carries a different context and reports errors to a different place.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c30 c31 c34">
+<p class="q">seller-e's feed thread must apply a price change, which writes an audit row (a coroutine), and must tell the vendor whether it failed. Which call fits?</p>
+<ol>
+<li data-why="The audit queue is an asyncio object; touching it from another thread is not thread-safe, and nothing wakes the loop.">Call <code>audit_queue.put_nowait(row)</code> directly from the feed thread</li>
+<li data-why="call_soon_threadsafe returns at once and gives the thread no result or exception, so the vendor cannot be told about a failure.">loop.call_soon_threadsafe(apply_change, item, offer)</li>
+<li><code>asyncio.run_coroutine_threadsafe(apply_change(item, offer), loop).result(timeout=1.0)</code></li>
+</ol>
+<p class="ts-why">The work is a coroutine and the thread needs its outcome. run_coroutine_threadsafe runs it as a Task on the loop and returns a concurrent.futures.Future whose result() returns the value or raises the coroutine's exception in the calling thread.</p>
+</div>
+</section>
+<section class="ts-part" id="free-threaded" data-rung="3" data-min="11">
+<h2>Free-threaded Python 3.14: what changes for this gateway</h2>
+<p class="ts-bridge">Last part: three bridges cross between threads and the loop. Still unsolved: those threads are about to run Python code truly in parallel on the free-threaded build. What does that change for a service built on one event loop?</p>
+<p class="ts-problem">The platform team offers a free-threaded Python 3.14 image. Someone asks whether the gateway's asyncio code needs changes, and whether the GIL was secretly making its threads safe.</p>
+<h3>Introduction</h3>
+<p>Part 1 noted that the free-threaded build exists and argued it does not make an I/O-bound gateway faster. This part looks at it from this page's side, shared state, and answers with the docs and with one measurement that differs between the builds.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c45" data-src="s15">Python 3.14's release notes say the free-threaded build is now supported and no longer experimental, the start of phase II, in which it is officially supported but still optional; whether it becomes the default build is still undecided.</span></li>
+<li><span class="ts-claim" data-claim="c46" data-src="s15">In 3.14 the performance penalty on single-threaded code in free-threaded mode is roughly 5 to 10%, depending on the platform and C compiler.</span></li>
+<li><span class="ts-claim" data-claim="c49" data-src="s16">A free-threaded build can run with the GIL enabled at runtime through the PYTHON_GIL environment variable or the -X gil option, sys._is_gil_enabled() reports whether the GIL is actually disabled in the running process, and importing an extension module not marked as supporting free threading can enable the GIL automatically, with a warning.</span></li>
+<li><span class="ts-claim" data-claim="c47" data-src="s15">In 3.14 asyncio has first class support for free-threading builds, which enables parallel execution of multiple event loops in different threads, scaling linearly with the number of threads.</span></li>
+</ol>
+<h3>Working: what changes, piece by piece</h3>
+<ol class="ts-steps">
+<li><strong>Code on one event loop:</strong> unchanged. One loop is one thread; the one-step rule and every tool in rung 2 work exactly as before, because they never relied on the GIL.</li>
+<li><strong>asyncio objects touched from other threads:</strong> still forbidden. Lock, Event, Queue and the loop's own methods were never thread-safe; the bridges of the last part are still the only way in.</li>
+<li><strong>Plain Python state shared with threads</strong> (the SDK's counters, a dict a feed thread writes): <span class="ts-claim" data-claim="c50" data-src="s16">the free-threaded build aims to provide thread-safety at the Python level similar to the default build, with built-in types such as dict, list and set using internal locks, and the docs recommend threading.Lock or other synchronization primitives instead of relying on those internal locks.</span> A read-modify-write such as <code>count += 1</code> from several threads needs a <code>threading.Lock</code> on either build, as seller-e's SDK already uses; on the free-threaded build the threads really run at the same time, so a missing lock shows up sooner.</li>
+<li><strong>Context in new threads:</strong> different. The thread-context flag from the last part defaults to true here, so a pool thread starts with a copy of whatever context was current when the pool started it.</li>
+</ol>
+<h3>Program: which request id does a pool thread see?</h3>
+<p>Three requests in turn each run one SDK call in a pool with one worker thread, started by the first call. The same program, on both builds of 3.14.6.</p>
+<div class="ts-code" data-lang="python" data-title="pool_context.py" data-file="pool_context.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (default build)" data-file="out/pool_context.txt" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output (free-threaded build)" data-file="out/pool_context_ft.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Default build: the worker thread starts with an empty context, so the SDK sees "-" for every shopper: missing, but obviously missing.</li>
+<li>Free-threaded build: the pool started its worker thread inside shopper-1's request, so the worker's own context is a copy of shopper-1's. shopper-2's and shopper-3's calls run in that thread and report shopper-1: wrong, and plausible.</li>
+<li>With <code>copy_context().run</code>, each call runs in its own request's context on both builds. Code that carries the context explicitly does not depend on the flag.</li>
+</ol>
+<p><span class="ts-claim" data-claim="c44" data-src="s14">The flag can be set with -X thread_inherit_context or the PYTHON_THREAD_INHERIT_CONTEXT environment variable, both added in 3.14.</span></p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The GIL made our threads safe; on the free-threaded build we must add locks to our asyncio code."</p>
+<p><strong>Why it is wrong:</strong> asyncio code on one loop never relied on the GIL; it relies on the loop switching only at awaits, which does not change. Code shared between threads needed <code>threading.Lock</code> around read-modify-write before, too. What does change is timing (races show up sooner) and the default context of new threads, which the program measures.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>3.14: free-threaded is supported but optional; about 5 to 10% slower on one thread.</li>
+<li>One loop's code is unaffected; asyncio objects stay loop-only; thread-shared state needs <code>threading.Lock</code> on both builds.</li>
+<li>New threads inherit the starter's context on the free-threaded build: carry context explicitly.</li>
+</ul>
+</div>
+<p class="ts-takeaway">The free-threaded build leaves code on one event loop unchanged, makes missing threading locks fail sooner, and changes which context new threads start with, so the gateway carries context into threads explicitly.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c43">
+<p class="q">On the free-threaded 3.14 build, seller-e's feed thread is started inside the request of shopper-9, and every later price change is logged from that thread. What id do those log lines carry, unless the code sets one?</p>
+<ol>
+<li data-why="That is the default build's behaviour; on the free-threaded build the flag defaults to true.">"-", because threads start with an empty context</li>
+<li>shopper-9's, copied when the thread was started, for as long as the thread lives</li>
+<li data-why="A thread's context does not follow requests; nothing updates it after start().">Each change's own request id</li>
+</ol>
+<p class="ts-why">With sys.flags.thread_inherit_context true, a thread starts with a copy of the context of the code that called start(). Long-lived threads should be started with context=contextvars.Context() or set their own id.</p>
+</div>
+</section>
+<section class="ts-part" id="gateway-v8" data-rung="3" data-min="17">
+<h2>Gateway v8: the shared cache, the request id and the feed, together</h2>
+<p class="ts-bridge">Last part: the free-threaded build changes the context new threads start with. Still unsolved: putting the single-flight cache, the request id and seller-e's feed into gateway v7 and watching them work under a crowd.</p>
+<p class="ts-problem">100 shoppers ask for kettle-1l at the same instant with an empty cache; 1 s later 10 more ask; then seller-e's feed lowers kettle-1l to 1,099 from its own thread; then one shopper asks for a new item just before a deploy stops the gateway. Gateway v8 must make one call per seller for the 100, answer the next 10 from the cache, apply the feed's change on the loop, and tag every log line with the right id.</p>
+<h3>Introduction</h3>
+<p>Gateway v8 is gateway v7 with four changes, all from this rung. <code>handle()</code> sets the request id. <code>_ask()</code> checks the cache and otherwise waits for the single-flight fill under the request's deadline. The new <code>_fill()</code> makes the one seller call, through v7's per-seller limits, under its own deadline, in its own context. And <code>on_price_change()</code> is the feed's callback, which crosses to the loop with <code>run_coroutine_threadsafe</code>. Everything else is gateway v7's code, unchanged.</p>
+<h3>Working: one request through gateway v8</h3>
+<ol class="ts-steps">
+<li><strong>The front door</strong> (Part 6) admits the request; <code>handle()</code> sets <code>request_id</code> to the shopper's name before anything else runs.</li>
+<li><strong><code>compare()</code></strong> (Parts 3 to 5) starts five seller Tasks in a TaskGroup under one 250 ms deadline. Each inherits the request id.</li>
+<li><strong><code>_ask()</code></strong> returns a fresh cached price at once; on a miss it gets the fill for (seller, item) from SingleFlight and waits for it through <code>shield()</code> under the request's deadline.</li>
+<li><strong><code>_fill()</code></strong> sets its own id, <code>fill seller-e kettle-1l</code>, calls the seller through <code>SellerLimits</code> with a 2 s deadline, passes the deadline and the context into seller-e's SDK thread, stores the price and returns it. A failure is returned as a value and not stored.</li>
+<li><strong>The answer</strong> is ranked, audited and sent as in gateway v7; <code>handle()</code> logs it with the shopper's id.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v8.py" data-file="gateway_v8.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/gateway_v8.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>The crowd.</strong> 100 shoppers connect, meet at a <code>Barrier(100)</code> and send together. All 100 get seller-b at 1,199, the last about 340 ms after the barrier released them: the 250 ms deadline, then 100 rankings on 2 processes and 100 audit rows on 50 writers. Each seller was called once.</li>
+<li><strong>1 s later.</strong> seller-e's fill finished at about 900 ms, after all 100 requests had answered. The next 10 shoppers get seller-e at 1,149, the best price, in about 30 ms, with no seller call at all.</li>
+<li><strong>The feed.</strong> The SDK's thread called <code>on_price_change</code>, which ran <code>apply_price_change</code> on the loop, wrote an audit row, and returned "applied" to the feed's thread. The next shopper gets 1,099.</li>
+<li><strong>The logs.</strong> 100 lines carry a <code>sale-</code> id, 10 a <code>later-</code> id, and the fills' lines carry the fill's own id, including the line seller-e's SDK wrote from its pool thread. shopper sale-7's line is its own. The feed's line carries <code>feed seller-e</code>, set inside the coroutine, because the feed thread's own context is empty.</li>
+<li><strong>The deploy.</strong> The last shopper's toaster-2s request answered at 250 ms, leaving seller-e's fill for toaster-2s in flight. <code>stop()</code> returned with it still running, and <code>asyncio.run</code> cancelled it on the way out. Its price is lost. That is Part 8's problem.</li>
+</ol>
+<h3>Testing the program</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Case</th><th>Expected</th><th>Test</th></tr></thead>
+<tbody>
+<tr><td>100 at once, empty cache</td><td>All seller-b 1,199; one call per seller</td><td><code>test_gateway_v8_counts_are_exact</code></td></tr>
+<tr><td>10 more, 1 s later</td><td>All seller-e 1,149; no seller calls</td><td>the same test</td></tr>
+<tr><td>Feed from its own thread</td><td>"applied"; then seller-e 1,099</td><td>the same test</td></tr>
+<tr><td>Log ids</td><td>100 sale, 10 later, fills tagged as fills, the SDK's line tagged with its fill</td><td>the same test</td></tr>
+<tr><td>Stop with a fill in flight</td><td>The fill is cancelled by asyncio.run</td><td>the same test</td></tr>
+<tr><td>Times</td><td>Within 60 ms of the recorded run</td><td><code>test_timed_output_matches_within_tolerance</code></td></tr>
+<tr><td>Earlier pages' gateways</td><td>Unchanged</td><td>every test from Parts 1 to 6, in this folder</td></tr>
+</tbody>
+</table></div>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>TTL</td><td>30 s, the same for every entry</td><td>Per seller and item, from how fast prices change; with random jitter so entries filled together do not expire together (rung 4)</td></tr>
+<tr><td>Cache size</td><td>Unbounded dict</td><td>A size limit with eviction, and a memory budget; expired entries removed, not only ignored</td></tr>
+<tr><td>Fill deadline</td><td>2 s</td><td>Longer than the seller's normal latency, shorter than the TTL; a fill that times out is counted</td></tr>
+<tr><td>Failures</td><td>Not cached</td><td>Not cached, or cached for a few seconds to protect a failing seller</td></tr>
+<tr><td>Scope</td><td>One cache per process</td><td>A shared cache across processes with a lease, when the number of processes multiplies seller calls (rung 4)</td></tr>
+<tr><td>Request id</td><td>The shopper's name</td><td>The incoming id or a generated one, returned to the client, and sent on to sellers</td></tr>
+<tr><td>Feed</td><td>A callback that waits up to 1 s</td><td>The same, with a timeout that matches the vendor's, the feed's thread stopped before the loop closes, and a metric for failed applies</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "You add a cache in front of five vendors to a gateway with a 250 ms budget. One vendor takes 900 ms. Walk me through how the cache fills and what each request sees."</p>
+<p><strong>What a strong senior answer contains:</strong> a miss starts one fill per vendor and item, shared by every request that misses meanwhile; each request waits for it only until its own deadline, through a shield, so the 900 ms fill completes after those requests have answered without it, and later requests get it from the cache. Failures are not cached. The fill runs in its own context and is owned, so its logs and its cancellation are not tied to the first requester. Then the costs: stale prices up to a TTL, memory, one fill per process unless the cache is shared, and fills lost on a deploy unless shutdown waits for them.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Adding a cache made the gateway faster for the first 100 shoppers."</p>
+<p><strong>Why it is wrong:</strong> the first 100 still waited for the sellers and answered at the same time as before; the cache only cut their 500 seller calls to 5. The speed and the better price came to the shoppers <em>after</em> them, who found the prices already filled. A cache moves cost from later requests onto the first ones and onto staleness.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v8 = gateway v7 + request id at the edge + cache with single-flight fills + feed via run_coroutine_threadsafe.</li>
+<li>In the run: 100 shoppers, 5 seller calls; then 1,149 from the cache in about 30 ms; then 1,099 from the feed.</li>
+<li>Every log line carries its request's id, or the fill's or the feed's own; a fill in flight at stop() is cancelled.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v8 shares one fill per seller and item among all requests, tags all work with the id of the request or job that caused it, and applies seller-e's pushed prices on the loop through a thread-safe bridge.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In the crowd run, seller-c answers ERROR for the one fill. What do the 100 shoppers get for seller-c, how many seller-c calls does the gateway make for them, and what happens for the next 10 shoppers 1 s later?</p>
+<div class="ts-reveal"><p>All 100 shoppers share the one failed fill, so seller-c is reported as failed in all 100 answers, from one call. The failure is returned as a value and not stored, so the cache has no seller-c entry. The next 10 shoppers miss for seller-c and start one new fill, which is one more call; the other four sellers come from the cache. A seller that fails costs one call per wave of misses, not one per request.</p></div>
+</div>
+</section>
+<section class="ts-part" id="lock-across-await" data-rung="4" data-min="12">
+<h2>A lock held across a slow call: every cached item waits for one miss</h2>
+<p class="ts-bridge">Last part: gateway v8 shares one fill per key. Still unsolved: the obvious alternative, one Lock around the whole cache, also stops duplicate calls. What does it cost?</p>
+<p class="ts-problem">A first version of the cache used one asyncio.Lock: take the lock, check, call the seller on a miss, store, release. In tests every request got the right price with one call per item. In production, during each refill of a new item from seller-e, requests for already-cached items took 900 ms instead of 0.</p>
+<h3>Introduction</h3>
+<p>A lock makes its critical section one step for every Task that uses it, and that is the whole problem when the section contains a 900 ms await and the lock covers more than the one key the await is about. This part measures it and shows how to tell it from other slowness.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>shopper-1</strong> asks for toaster-2s, which is not cached. It takes the cache's one lock and awaits seller-e: 900 ms with the lock held.</li>
+<li><strong>shopper-2</strong> asks for kettle-1l at 10 ms. kettle-1l is cached, but checking the cache needs the lock, so shopper-2 parks in the lock's waiters.</li>
+<li><strong>At 900 ms</strong> shopper-1 stores and releases; shopper-2 takes the lock, finds kettle-1l at once and answers, 890 ms late.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="lock_across_await.py" data-file="lock_across_await.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/lock_across_await.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>OneLock</code>: the cached kettle-1l is answered at 900 ms, together with the miss it had nothing to do with.</li>
+<li><code>PerKey</code>: single-flight per item. kettle-1l is answered at 10 ms, when it was asked; toaster-2s at 900 ms, as it must be.</li>
+</ol>
+<h3>Solved example: at the sale's load</h3>
+<p><strong>Given:</strong> 2,000 requests a second, all for cached items; one miss for a new item every second, filled by seller-e (900 ms) under the one lock.</p>
+<p><strong>Step 1.</strong> The lock is held 900 ms of every 1,000 ms by fills.</p>
+<p><strong>Step 2.</strong> Requests arriving during a fill: 2,000 × 0.9 = 1,800 a second wait for the lock; their 250 ms deadlines cut most of them, as cache misses for prices the cache already had.</p>
+<p><strong>Result:</strong> one lock across a slow await turns a 0 ms cache hit into a timeout for nine requests in ten, while the cache holds every answer they need.</p>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Slow or timed-out answers for items that are cached, in bursts that match refills</td><td>Time waiting for the lock (measure around <code>acquire()</code>); cache-hit latency far above zero; the lock's waiter count</td><td>Hold a lock only around code with no slow await; per-key single-flight for fills; or keep the slow call outside the lock and re-check after it</td></tr>
+</tbody>
+</table></div>
+<div class="ts-trap">
+<p><strong>The lock is correct; its scope is wrong.</strong> Both versions in the program make exactly one call per item, so a test that counts calls passes for both. Only a test that measures the latency of an unrelated cached item catches the one-lock version. Lock scope is a performance decision that correctness tests do not see.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A lock in asyncio is cheap, because waiting Tasks use no CPU."</p>
+<p><strong>Why it is wrong:</strong> the CPU is cheap; the time is not. Every Task in the lock's line waits for every critical section ahead of it, awaits included. One 900 ms await inside the lock is 900 ms added to everyone behind it.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A lock held across a slow await makes every user of that lock wait for it.</li>
+<li>Signal: lock wait time; cached reads that are slow.</li>
+<li>Fix: narrow the lock to the key (single-flight), or keep slow awaits out of it.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A lock held across a slow await turns one Task's wait into everyone's, so a lock should cover only the key and the steps that need it, never a slow call for something else.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The one-lock cache gets 3 misses in a row, for three new items from seller-e, at 0, 10 and 20 ms, and a request for a cached item at 30 ms. When is the cached item answered?</p>
+<div class="ts-reveal"><p>At about 2,700 ms. The lock is fair, so the three fills run one after another in arrival order, 900 ms each, and the cached request is fourth in line. With per-key single-flight the three fills run at the same time, all finish at about 900 to 920 ms, and the cached item is answered at 30 ms.</p></div>
+</div>
+</section>
+<section class="ts-part" id="deadlock" data-rung="4" data-min="12">
+<h2>A deadlock from lock order: two Tasks that wait for each other forever</h2>
+<p class="ts-bridge">Last part: a lock's scope decides who waits behind it. Still unsolved: once code holds one lock and needs another, two Tasks can each hold what the other needs.</p>
+<p class="ts-problem">The refill job takes the cache lock and then seller-d's quota lock. A new reporting job takes the quota lock and then the cache lock. Most of the time nothing happens. Then, once a day, both stop: no error, no CPU, no progress, and every request that needs either lock waits behind them until its deadline.</p>
+<h3>Introduction</h3>
+<p>A deadlock needs two locks, two Tasks and two different orders. It is a classic of threaded code, and an event loop does not prevent it: an await while holding a lock is all it takes.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p>A <dfn data-def="Two or more Tasks each waiting for a lock another of them holds, so none can ever proceed.">deadlock</dfn> is two or more Tasks each waiting for a lock that another of them holds, so none can ever go on. On an event loop the Tasks are parked on Futures that nobody will fill: no CPU is used and nothing is reported.</p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>refill</strong> takes <code>cache_lock</code> and awaits seller-d.</li>
+<li><strong>report</strong> runs during that await, takes <code>quota_lock</code> and awaits the metrics store.</li>
+<li><strong>refill resumes</strong> and asks for <code>quota_lock</code>: held by report, so it parks.</li>
+<li><strong>report resumes</strong> and asks for <code>cache_lock</code>: held by refill, so it parks. Neither will ever release.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="deadlock.py" data-file="deadlock.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/deadlock.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Opposite orders: after 1 s neither Task has finished, the log is empty, and each lock is held with one waiter. Without the 1 s limit in <code>asyncio.wait()</code>, the program would wait forever.</li>
+<li>The program cancels both; each lock's <code>async with</code> releases what it held.</li>
+<li>Same order: report waits for refill to release <code>cache_lock</code>, then both finish.</li>
+</ol>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Requests that need either lock time out; others are fine; CPU near idle</td><td>Lock wait time growing without bound; a job's "last run" not moving; a dump of Tasks parked in <code>acquire()</code></td><td>One global order for locks; hold one lock at a time where possible; never await another lock while holding one, or bound the inner acquire with <code>asyncio.timeout()</code> and back off</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c48" data-src="s15">Python 3.14 adds python -m asyncio ps PID and python -m asyncio pstree PID, which inspect a running process and list its asyncio tasks with their coroutine stacks and which tasks are awaiting them: ps as a table, pstree as a tree.</span> A deadlock shows up there as two Tasks parked in <code>acquire()</code> under each other's locks. Part 9 uses these tools on the gateway.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Deadlocks need threads; a single-threaded event loop cannot deadlock."</p>
+<p><strong>Why it is wrong:</strong> a deadlock needs Tasks that can wait while holding something, and an asyncio Task can wait at any await while holding a Lock. The program deadlocks on one thread, and it is worse than the threaded kind in one way: there is no blocked thread to see, only Futures that never complete.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Two locks + two orders + an await while holding one = a deadlock, even on one thread.</li>
+<li>It is silent: no CPU, no error; only waits that never end.</li>
+<li>Fix with one lock order, fewer locks held at once, and timeouts on nested acquires.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Two Tasks that take the same two locks in opposite orders, with an await in between, can each hold what the other needs and wait forever, silently, on one thread.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">Which change is guaranteed to remove this deadlock without removing either lock?</p>
+<ol>
+<li data-why="A shorter await shrinks the window but does not close it; the deadlock becomes rarer, not impossible.">Making the await between the two acquires shorter</li>
+<li>Making every Task take <code>cache_lock</code> before <code>quota_lock</code></li>
+<li data-why="Fairness decides who goes first among waiters for one lock; it cannot resolve a cycle between two locks.">Relying on asyncio.Lock being fair</li>
+</ol>
+<p class="ts-why">With one global order, a Task holding quota_lock can never be waiting for cache_lock, so no cycle can form. A shorter window only makes the cycle rarer.</p>
+</div>
+</section>
+<section class="ts-part" id="context-lost" data-rung="4" data-min="13">
+<h2>Context lost, or wrong, in thread pools, callbacks and shared work</h2>
+<p class="ts-bridge">Last part: two locks in opposite orders deadlock. Still unsolved: the request id from rung 3 is right in every Task a request starts. Where does it go missing, or worse, show the wrong request?</p>
+<p class="ts-problem">During an incident the team filters logs by one shopper's id and finds nothing from seller-e's SDK, though the SDK was called. On a free-threaded canary, the same filter shows SDK lines for a shopper who never asked for that item. And every cache fill is logged under whichever shopper happened to miss first, so one shopper's id appears on work done for a hundred.</p>
+<h3>Introduction</h3>
+<p>Each of these follows from the rules on this page: a Task copies the context at creation, a callback copies it when scheduled, a thread has its own, and on the free-threaded build a new thread copies its starter's. This part collects the places those rules put the wrong context, and the fix for each.</p>
+<h3>Case 1: pool threads</h3>
+<p>The free-threaded part ran this program on both builds: plain <code>run_in_executor</code> gives the SDK an empty context on the default build and the first request's context on the free-threaded build.</p>
+<div class="ts-code" data-lang="text" data-title="pool_context.py, default build" data-file="out/pool_context.txt" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="pool_context.py, free-threaded build" data-file="out/pool_context_ft.txt" data-verified="ran"></div>
+<h3>Case 2: callbacks from a foreign thread</h3>
+<p>bridge_demo.py's feed thread was started inside shopper-1's Task. On the default build its callbacks ran with "-"; on the free-threaded build, with shopper-1's id, for every later change:</p>
+<div class="ts-code" data-lang="text" data-title="bridge_demo.py, free-threaded build" data-file="out/bridge_demo_ft.txt" data-verified="ran"></div>
+<h3>Case 3: shared work started by one request</h3>
+<div class="ts-code" data-lang="python" data-title="context_lost.py" data-file="context_lost.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/context_lost.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Started with no <code>context</code>, the fill copies shopper-1's context: its lines say shopper-1, though it serves all three.</li>
+<li>Started with <code>context=Context()</code> and its own id, the fill's lines are its own. The done callback still says shopper-1: a done callback copies the context current when it was <em>added</em> (<code>add_done_callback</code>), and shopper-1 added it.</li>
+</ol>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Where</th><th>What goes wrong</th><th>Signal</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Pool thread, default build</td><td>Id missing ("-")</td><td>Log lines from libraries with the default id</td><td><code>run_in_executor(pool, copy_context().run, f, ...)</code></td></tr>
+<tr><td>Pool thread, free-threaded build</td><td>Another request's id</td><td>Library lines whose id never asked for that work</td><td>The same; do not rely on <code>thread_inherit_context</code></td></tr>
+<tr><td>Callback from a foreign thread</td><td>The thread's context, not a request's</td><td>Feed or SDK lines with the default id, or one fixed id forever</td><td>Set an explicit id in the callback or the coroutine it runs; start long-lived threads with <code>context=contextvars.Context()</code> (3.14)</td></tr>
+<tr><td>Shared fill</td><td>The first requester's id on everyone's work</td><td>One request's id with far more lines than a request makes</td><td><code>context=contextvars.Context()</code> and an id that names the job</td></tr>
+<tr><td>Done callback</td><td>The adder's id, when it runs later</td><td>Completion lines tagged with a request that ended long ago</td><td>Pass <code>context=</code> to <code>add_done_callback</code>, or log from inside the Task</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A missing id is the worst case; at least a present id is right."</p>
+<p><strong>Why it is wrong:</strong> the free-threaded program shows a present id that is wrong, which sends an investigation after the wrong shopper. A missing id is obvious; a wrong one is believed. Code that carries the context explicitly gives the right id on both builds.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Threads have their own context: carry the request's with <code>copy_context().run</code>.</li>
+<li>Callbacks run in the context they were scheduled or added in, which may be another thread's or another request's.</li>
+<li>Shared work gets a fresh context and its own id.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Request context is lost in threads and callbacks that were not given it, and is wrong in work started by one request for many, so the gateway passes context explicitly and gives shared work an identity of its own.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c27 c40">
+<p class="q">A fill Task is started with <code>context=contextvars.Context()</code> and sets its own id. shopper-4 then calls <code>fill.add_done_callback(log_done)</code>. Which id does log_done's line carry?</p>
+<ol>
+<li data-why="The Task's own context belongs to its coroutine's steps; a done callback copies the context of whoever added it.">The fill's own id</li>
+<li data-why="An empty Context applies to the Task's steps, not to callbacks added to the Task from outside.">The default "-", because the Task's context is empty</li>
+<li>shopper-4's, copied when shopper-4 added the callback</li>
+</ol>
+<p class="ts-why">add_done_callback copies the current context at the moment it is called, here shopper-4's, and runs the callback in that copy when the Task finishes.</p>
+</div>
+</section>
+<section class="ts-part" id="wrong-thread" data-rung="4" data-min="12">
+<h2>Calling loop objects from the wrong thread, or the wrong loop</h2>
+<p class="ts-bridge">Last part: context goes missing in threads and callbacks. Still unsolved: the bridges exist because loop objects must not be touched from other threads. What actually happens when they are, and when an object made for one loop is used by another?</p>
+<p class="ts-problem">An SDK callback calls <code>future.set_result(price)</code> on an asyncio Future directly, from its own thread. It works in tests. In production, at night, prices arrive up to a second late. Separately, a test suite that runs each test in a fresh <code>asyncio.run()</code> fails only when two tests contend for a module-level lock, with "is bound to a different event loop".</p>
+<h3>Introduction</h3>
+<p>Part 2 showed <code>call_soon</code> from another thread waiting for the next timer. Completing a Future from another thread is the same mistake one level up, because a Future schedules its done callbacks with <code>call_soon</code>. The second problem is not about threads at all: asyncio's primitives are tied to the loop that first needs them.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c41" data-src="s8">In CPython 3.14's base_events.py, call_soon() in debug mode checks that it runs on the loop's thread and otherwise raises RuntimeError("Non-thread-safe operation invoked on an event loop other than the current one").</span></li>
+<li><span class="ts-claim" data-claim="c35" data-src="s6">If a Future is already done when add_done_callback() is called, the callback is scheduled with loop.call_soon(); the current context is used when no context is given.</span> When a pending Future is completed, its callbacks are likewise scheduled with <code>call_soon</code> (Part 2).</li>
+<li><span class="ts-claim" data-claim="c55" data-src="s12 s2">In CPython 3.14's mixins.py, an asyncio primitive records the running loop the first time it needs one, and raises RuntimeError saying it is bound to a different event loop if it is later used from another loop; locks.py asks for the loop only when it must create a Future for a waiter.</span></li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="wrong_thread.py" data-file="wrong_thread.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/wrong_thread.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>set_result</code> from the SDK's thread at 100 ms: the waiter wakes at 1,000 ms, when the loop's only timer ends its sleep. The result was there; nothing woke the loop to deliver it.</li>
+<li><code>call_soon_threadsafe(fut.set_result, ...)</code>: woken at 100 ms.</li>
+<li>Debug mode makes the mistake loud: <code>set_result</code> raises RuntimeError in the SDK's thread. But the Future is already marked done and no callback was scheduled, so the waiter wakes only at its own 1.5 s limit. Debug mode finds the bug; only the bridge fixes it.</li>
+<li>One module-level Lock: loop 1 binds it when the second Task has to wait; loop 2, a new <code>asyncio.run()</code>, contends for it and gets RuntimeError. Uncontended use in loop 2 would have passed, which is why the failure appears only under contention.</li>
+</ol>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Mistake</th><th>What the user sees</th><th>Signal</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Completing a Future from another thread</td><td>Results late by up to the next timer, worse at quiet times</td><td>Loop lag fine, yet waits end on timer boundaries; debug mode's RuntimeError</td><td><code>loop.call_soon_threadsafe(fut.set_result, v)</code>, or <code>run_coroutine_threadsafe</code></td></tr>
+<tr><td>Any other loop method from another thread</td><td>The same, or corrupted loop state</td><td>Debug mode in tests</td><td>Only the two thread-safe bridges</td></tr>
+<tr><td>A primitive shared by two loops</td><td>RuntimeError "bound to a different event loop", only under contention</td><td>Failures in tests that start a new loop per test; in apps that run a loop per thread</td><td>Create primitives inside the loop that uses them, for example in a start-up coroutine; one set per loop</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Setting a Future's result is a single assignment, so doing it from another thread is harmless."</p>
+<p><strong>Why it is wrong:</strong> completing a Future also schedules every waiter's wake-up with <code>call_soon</code>, which is not thread-safe and does not wake a sleeping loop. The program's waiter stayed asleep for 900 ms with its result already set.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>From another thread, complete Futures and call loop methods only through <code>call_soon_threadsafe</code> or <code>run_coroutine_threadsafe</code>.</li>
+<li>Debug mode turns the mistake into RuntimeError, but cannot undo it.</li>
+<li>Primitives bind to the first loop that waits on them: create them per loop.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Loop objects belong to one loop's thread, and primitives to one loop, so other threads reach them only through the thread-safe bridges and each loop creates its own.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">This needs Part 2. An SDK thread calls <code>fut.set_result(1149)</code> directly while the loop is busy serving 2,000 requests a second. Why might the bug go unnoticed for weeks?</p>
+<ol>
+<li>A busy loop runs an iteration every few milliseconds, so the waiter's wake-up is picked up almost at once; only a quiet loop, asleep until its next timer, shows the delay</li>
+<li data-why="The GIL does not make call_soon thread-safe; the docs say it is not, and the program shows the delay.">The GIL makes set_result safe from other threads</li>
+<li data-why="Debug mode is what reports it; without it nothing is raised.">set_result raises an exception, which the SDK logs and retries</li>
+</ol>
+<p class="ts-why">Part 2's cross-thread part: work appended to the ready queue from another thread is found at the next iteration, which comes quickly under load and late at night. The fix does not depend on load: call_soon_threadsafe writes to the loop's wake-up socket.</p>
+</div>
+</section>
+<section class="ts-part" id="ten-x" data-rung="4" data-min="14">
+<h2>What breaks first at 10 times the load: herds, hot keys and ten caches</h2>
+<p class="ts-bridge">Last part: loop objects belong to one loop and one thread. Still unsolved: gateway v8 at ten times the sale's traffic, run as ten processes, with thousands of items cached at once.</p>
+<p class="ts-problem">The sale grows to 20,000 requests a second over 10 gateway v8 processes and 5,000 hot items. Every 30 s, seller-d's 429 rate jumps, seller-e's pool fills, and partial answers spike for a few seconds; between the spikes everything is fine. Memory also grows all day and never comes down.</p>
+<h3>Introduction</h3>
+<p>Single-flight fixed the stampede for one key in one process. At 10 times the load three new things break first, all of them about scope and timing rather than correctness: entries that expire together, a cache per process, and a cache with no size limit.</p>
+<h3>Program: a model of seller calls after a deploy</h3>
+<div class="ts-code" data-lang="python" data-title="herd_10x.py" data-file="herd_10x.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/herd_10x.txt" data-verified="ran"></div>
+<h3>Working: the order things break</h3>
+<ol class="ts-steps">
+<li><strong>Synchronized expiry.</strong> A deploy starts all 10 processes with empty caches; every item is filled in the first second, so every entry expires in the same second, 30 s later, and every 30 s after that. Each of those seconds sends one call per item per process: 10 × 5,000 = 50,000 calls to each seller.</li>
+<li><strong>Ten caches.</strong> Single-flight works per process, so each item is filled once per process per TTL: 10 × 5,000 ÷ 30 ≈ 1,667 calls a second to each seller in the long run, above seller-d's contract of 1,500 a second (Part 6), however the expiries are spread.</li>
+<li><strong>Hot keys.</strong> One item that everybody wants is still one fill per process, but while seller-e's 900 ms fill runs, every request for it waits on that fill until its own deadline: at 2,000 requests a second per process, 2,000 × 0.25 = 500 Tasks parked on one fill at any moment, each answering without seller-e for most of every refill.</li>
+<li><strong>Memory.</strong> The dict never forgets: expired entries stay until overwritten, and items that are never asked for again stay forever.</li>
+</ol>
+<h3>Solved example: the fixes, with numbers</h3>
+<p><strong>Step 1. Jitter.</strong> A TTL of 30 s ± 10% spreads each round of expiries over 6 s. The model's worst second falls from 50,000 calls to 8,449, the same long-run rate.</p>
+<p><strong>Step 2. Share the cache.</strong> One cache for all 10 processes, with single-flight across them (a lease, as in Facebook's memcache), refills each item once per TTL: about 167 calls a second, and the model's worst second is 901. That is below seller-d's 1,500 a second; the cost is a network hop per lookup and a shared store that can fail.</p>
+<p><strong>Step 3. Refresh before expiry.</strong> Hot items can be refreshed in the background a few seconds before they expire, while the old price is still served, so no request ever waits on a hot key's refill. The cost is calls for items nobody asks for again.</p>
+<p><strong>Step 4. Bound the memory.</strong> A size limit with eviction of the least recently used entries, and removal of expired ones.</p>
+<p><strong>Result:</strong> what broke first was not the cache's correctness but its timing and scope: entries filled together expire together, and caches per process multiply every seller's load by the process count.</p>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>What the user sees</th><th>Signal to watch</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Synchronized expiry</td><td>Partial answers in bursts, every TTL after a deploy</td><td>Seller calls per second with spikes at the TTL period; cache miss rate in spikes</td><td>Jittered TTL; refresh hot items before they expire</td></tr>
+<tr><td>Cache per process</td><td>A seller's 429s rising with the process count</td><td>Calls per seller ≈ processes × items ÷ TTL</td><td>A shared cache with a lease; or divide by processes as in Part 6</td></tr>
+<tr><td>Hot key fill</td><td>Many requests waiting on one slow fill</td><td>Waiters per fill; in-flight fills by key</td><td>Refresh ahead; serve the stale price while refilling</td></tr>
+<tr><td>Unbounded cache</td><td>Memory growing all day, then a restart</td><td>Entries and bytes in the cache; RSS over time</td><td>Size limit and eviction; remove expired entries</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your cache hit rate is 99% but the backend still gets overloaded every 30 seconds. Why?"</p>
+<p><strong>What a strong senior answer contains:</strong> the misses are not spread out: entries filled together (a deploy, a cold start, a bulk load) expire together, and each process refills on its own, so the 1% arrives as a spike of processes × keys in one second. Fixes: jittered TTLs, refresh-ahead for hot keys, single-flight within each process and a lease across processes, and a rate limit on refills so the backend's quota holds. The candidate states the trade-offs: staleness, a shared store to run, and background calls for keys nobody may ask for again.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "With single-flight, each item is fetched once per TTL."</p>
+<p><strong>Why it is wrong:</strong> once per TTL per process. Ten processes fetch it ten times, and if they started together, all at the same moment. The model's first two rows show it: 1,667 calls a second, and 50,000 in the worst second.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Entries filled together expire together: jitter the TTL.</li>
+<li>Single-flight is per process: calls ≈ processes × items ÷ TTL; share the cache with a lease to divide by the process count.</li>
+<li>Hot keys pile waiters on one fill; unbounded caches grow forever.</li>
+</ul>
+</div>
+<p class="ts-takeaway">At ten times the load a single-flight cache breaks by timing and scope: synchronized expiries and one cache per process turn a 99% hit rate into periodic floods, so expiries are jittered and refills are shared and bounded.</p>
+<div class="ts-explain" data-points="A lock held across a slow await makes every user of that lock wait: narrow it to the key|Two locks taken in opposite orders with an await in between deadlock silently: one lock order|Context is lost or wrong in threads, foreign callbacks and shared work: carry it explicitly, give shared work its own|Loop objects only through the thread-safe bridges, primitives per loop; and at 10x, jitter expiries and share refills across processes">
+<p class="q">In your own words: name the ways shared state breaks that this rung covered, and for each one the signal you would watch.</p>
+<div class="ts-model"><p>A lock held across a slow await makes every Task that needs the lock wait for that await, so cached reads become slow; the signal is lock wait time and slow cache hits, and the fix is per-key single-flight or keeping slow calls outside the lock. Two locks taken in opposite orders with an await between them deadlock silently; the signal is waits that never end with no CPU, visible in a Task dump, and the fix is one lock order. Context goes missing in pool threads and comes out wrong on the free-threaded build, in callbacks from foreign threads and in shared fills; the signal is library lines with the default id or with one id far too often, and the fix is copy_context().run and a fresh context for shared work. Futures completed from other threads wake late, and primitives shared by two loops raise; the signals are waits ending on timer boundaries and "bound to a different event loop", and the fix is the thread-safe bridges and primitives per loop. At ten times the load, synchronized expiries and per-process caches flood the sellers every TTL; the signal is seller calls spiking at the TTL period, and the fix is jitter and a shared cache with a lease.</p></div>
+</div>
+</section>
+<section class="ts-part" id="choose-the-tool" data-rung="5" data-min="14">
+<h2>Lock, single-flight, an owner Task or an immutable snapshot: which to pick</h2>
+<p class="ts-bridge">Last part: at 10 times the load, cache timing and scope break first. Still unsolved: this page used several ways to keep shared state correct. Faced with a new piece of shared state, which should a team reach for?</p>
+<p class="ts-problem">Four pieces of shared state land on the gateway team: seller-d's daily call counter, the price cache, a per-seller "health" record that several jobs update, and the list of sellers and their settings, which changes a few times a day. Each needs protecting. They do not all need the same protection.</p>
+<h3>Introduction</h3>
+<p>There are four ways to keep shared state correct in an asyncio service. Two of them, a lock and single-flight, came up on this page already. The other two avoid sharing altogether: give the state to one owner Task that everybody messages, or never change the state in place and replace it whole. The program puts all four on the same burst.</p>
+<h3>Definitions</h3>
+<ol>
+<li>An <dfn data-def="One Task that alone reads and writes a piece of state; others send it requests through a queue and wait for replies.">owner Task</dfn> is the only Task that reads and writes a piece of state; others send it requests through a queue and wait for its replies. No two Tasks touch the state, so there is nothing to race.</li>
+<li>An <dfn data-def="State that is never changed in place: a writer builds a new copy and swaps it in with one assignment; readers keep whatever version they already took.">immutable snapshot</dfn> is state that is never changed in place: a writer builds a complete new copy and swaps it in with one assignment, and readers use whichever version they read.</li>
+</ol>
+<h3>Program: the same burst, four ways</h3>
+<p>90 requests at once, 30 for each of three items; each miss is a 150 ms call to seller-c.</p>
+<div class="ts-code" data-lang="python" data-title="four_ways.py" data-file="four_ways.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/four_ways.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>OneLock</code> and <code>OwnerTask</code> both make 3 calls and both serialise them: the third item waits for the first two, 450 ms. They are the same design in two shapes; an owner that handles one message at a time is a lock.</li>
+<li><code>PerKeyFlight</code> makes the same 3 calls at the same time: 150 ms.</li>
+<li><code>Snapshot</code> makes no calls during the burst and nobody waits: the refresher filled it before the burst and will replace it on its own schedule. The price is staleness, up to one refresh interval.</li>
+</ol>
+<h3>Difference between the four ways</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Way</th><th>Who touches the state</th><th>Readers wait?</th><th>Fails how</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>Lock around a critical section</td><td>Any Task, one at a time</td><td>Yes, behind every holder</td><td>Slow under a slow await; deadlocks with a second lock</td><td>A short read-await-write on one value, such as the call counter's store round trip</td></tr>
+<tr><td>Single-flight per key</td><td>Any Task; one fill per key</td><td>Only for their own key's fill</td><td>Per process; stale up to the TTL</td><td>Expensive loads by key that many requests want at once: the price cache</td></tr>
+<tr><td>Owner Task with a queue</td><td>Only the owner</td><td>Yes, in the owner's queue</td><td>One slow message delays all; the owner must not die silently (Part 6)</td><td>State with many fields and rules, updated by several jobs: the health record; or anything that must also be ordered</td></tr>
+<tr><td>Immutable snapshot, swapped whole</td><td>Only the writer builds; readers only read</td><td>Never</td><td>Stale up to the refresh; full copies cost memory per swap</td><td>Read-mostly data changed rarely and as a whole: the seller list and settings</td></tr>
+</tbody>
+</table></div>
+<h3>Decision rules</h3>
+<ul>
+<li><strong>Can the critical section avoid awaits?</strong> Then no tool: keep the read and write in one step (the one-step rule).</li>
+<li><strong>Is it one expensive load per key?</strong> Single-flight, with the fill owned and shielded.</li>
+<li><strong>Is it read on every request and changed rarely?</strong> An immutable snapshot, swapped in one assignment.</li>
+<li><strong>Is it a short read-await-write?</strong> A Lock, scoped as narrowly as the state.</li>
+<li><strong>Is it a rich object several jobs change, where order matters?</strong> An owner Task, which also gives each change a place in one sequence.</li>
+<li><strong>Does more than one process share it?</strong> None of these is enough; the state, or a lease on it, must live in a shared store.</li>
+</ul>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "In an asyncio service, when would you use a lock, and when would you design the lock away?"</p>
+<p><strong>What a strong senior answer contains:</strong> first, most shared state needs nothing: on one loop, code without an await between read and write is already one step. A lock is for a short critical section that must await, scoped to the state it protects, never held across a slow call or while taking another lock. It is designed away by single-flight for keyed loads, by one owner Task for state with many rules, and by immutable snapshots for read-mostly data; each has a cost, waiting, an owner to supervise, or staleness. And none of them works across processes.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "An owner Task (actor) avoids locks, so it avoids lock contention."</p>
+<p><strong>Why it is wrong:</strong> it avoids the lock object, not the waiting. A single owner that awaits inside a message handler serialises every caller behind that await, exactly like a lock held across it: the program's OwnerTask waits 450 ms, the same as OneLock. An owner is fast only if its handlers do not await slow work, or hand it to single-flight fills.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>No await between read and write: no tool needed.</li>
+<li>Keyed expensive loads: single-flight. Read-mostly data: an immutable snapshot. Short read-await-write: a narrow Lock. Rich state with rules: an owner Task.</li>
+<li>Across processes: a shared store with a lease; none of the in-process tools reach that far.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Pick the protection by the shape of the access: nothing for one-step updates, single-flight for keyed loads, a snapshot for read-mostly data, a narrow lock for short read-await-writes, and an owner Task for rich state, and none of them across processes.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">The gateway's seller settings (caps, lines, rates, TTLs for five sellers) are read by every request and changed by an admin a few times a day. Which design fits best?</p>
+<ol>
+<li data-why="Every request would take the lock on its hot path to read settings that almost never change.">A Lock around every read and write of the settings dict</li>
+<li data-why="Every request would wait in the owner's queue just to read; the owner becomes a bottleneck for a read-only path.">An owner Task that answers every request's "what are seller-c's settings?" message</li>
+<li>An immutable snapshot: the admin path builds a new settings object and swaps it in with one assignment; requests read whichever version they took</li>
+</ol>
+<p class="ts-why">Reads vastly outnumber writes, and a request must see one consistent set, not half old and half new. Building a new object and swapping it in one assignment gives both, with no waiting on the read path; the cost, a few seconds of the old settings, is harmless here.</p>
+</div>
+</section>
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: shared state in an async service</h2>
+<p class="ts-bridge">Last part: pick the protection by the shape of the access. Still unsolved: explaining it out loud, with the mechanism, the numbers and the trade-offs, the way an interviewer asks.</p>
+<p class="ts-problem">"asyncio is single-threaded, so we don't need locks, right?" A weak answer agrees or recites a list of primitives. A strong one says where the race windows are, why most code has none, and what each tool costs.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. Each draws on this page and at least one earlier part. Try each before opening the reference answer.</p>
+<h3>Prompt 1: "Our cache makes the backend fall over after every deploy"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">An asyncio API with a 300 ms budget caches product data from a backend that takes 1.2 s. After each deploy of its 8 processes the backend is overloaded for a minute, and products from the backend are almost never in the cache. The cache code is: if not cached, await the backend, store, return. What is going on, and what do you change?</p>
+<div class="ts-reveal"><p>Two things. First, a stampede: every request that misses during the 1.2 s load calls the backend itself, because the check, the await and the store are not one step, and after a deploy every key misses at once in all 8 processes. Second, the slow backend is never cached: each request's own 300 ms deadline cancels its own call, so no call ever completes to store anything. Fix both with single-flight per key: one fill per key, an owned Task in a fresh context with its own deadline longer than 1.2 s, awaited through shield() under each request's deadline, failures not cached. Then the deploy herd: jitter TTLs, refresh hot keys ahead of expiry, and, because single-flight is per process, a shared cache with a lease so 8 processes make one call per key instead of 8. Trade-off: data up to a TTL old, and a shared store to operate.</p></div>
+</div>
+<h3>Prompt 2: "Our logs show the wrong user"</h3>
+<div class="ts-explain" data-points="A module variable or thread-local is shared by every request on the loop, so it is overwritten during awaits|A ContextVar set at the edge is copied into each Task at creation; a logging filter reads it per record|Thread pools need copy_context().run (to_thread does it); callbacks run in the context they were scheduled in|Shared work needs its own context and id; on the free-threaded build new threads copy their starter's context">
+<p class="q">An asyncio service tags log lines with the current user from a module-level variable set in middleware. Under load, lines show the wrong user, and lines from a sync SDK called through a thread pool show none. Design the fix and say what remains to watch.</p>
+<div class="ts-model"><p>The module variable is shared by every request on the loop's one thread, so another request overwrites it during any await. Move the user into a ContextVar set in middleware before the handler starts any Task; each Task copies the context at creation, so the value follows the request into all of them, and a logging filter reads it for every record, including library records. The thread pool runs in its own context, so wrap each call with copy_context().run, or use to_thread() where the default pool is acceptable. Callbacks from foreign threads run in that thread's context and must set their own value. Shared work started on behalf of many requests, such as a cache fill, gets a fresh context and its own id, or its lines carry whichever request started it. On the free-threaded build new threads copy their starter's context, so a missing wrap shows a wrong user rather than none; carrying the context explicitly avoids depending on the build.</p></div>
+</div>
+<h3>Prompt 3: "A vendor SDK calls us back on its own thread"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">A payment provider's SDK delivers status updates by calling your function on its own thread, and redelivers any update your function does not return from within 5 s. Each update must update an in-memory order status (used by asyncio handlers) and write an audit row through an async client. Design the callback.</p>
+<div class="ts-reveal"><p>Capture the loop at start-up. In the callback, run_coroutine_threadsafe(apply(update), loop) and wait with result(timeout=4) before returning, so the SDK learns about failures (an exception from result()) and timeouts (redelivery), and so the SDK's thread is held to the loop's pace. apply() runs on the loop: it updates the status dict in one step, with no await between its read and write, and awaits the audit write. If redelivery can repeat an update, apply() is idempotent by update id. Never touch the dict or any asyncio object from the SDK thread directly; call_soon_threadsafe would do for fire-and-forget, but here the SDK must know the outcome. The callback sets its own context id, since it runs in the SDK thread's context. On shutdown, stop the SDK before closing the loop, because calls into a closed loop raise RuntimeError. Trade-off: the SDK thread blocks up to 4 s per update, so its delivery rate is bounded by the loop's handling time.</p></div>
+</div>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it starts from the one-step rule instead of from a list of primitives; it names the race window (an await between read and dependent write) and shows that most state has none; it picks single-flight, snapshots or an owner before reaching for a lock, and scopes any lock narrowly; it treats request context as copied at Task creation and carried into threads explicitly; it uses only the two thread-safe bridges into the loop; and it says what each choice costs: staleness, waiting, an owner to supervise, a shared store, or a blocked thread.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "In an interview, 'asyncio is single-threaded, so no race conditions' is a safe simplification."</p>
+<p><strong>Why it is wrong:</strong> it is the exact misconception interviewers probe for. The correct statement is narrower and more useful: no two Tasks run at the same instant, so code between awaits is one step, and every await between a read and a dependent write is a race window. The rung 1 programs lose 9 of 10 updates and make 100 calls instead of 1 on one thread.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Race windows are awaits between a read and a dependent write; find them before choosing a tool.</li>
+<li>Stampedes need single-flight with an owned, shielded fill; herds need jitter and a shared lease.</li>
+<li>Context: set at the edge, copied per Task, carried into threads; threads reach the loop only through the two bridges.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A senior answer about shared state in asyncio locates the race windows with the one-step rule, removes most of them by design, and names what each remaining tool costs.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">This needs Parts 3 and 5. A request waits for a single-flight fill with <code>async with asyncio.timeout_at(deadline): await asyncio.shield(fill)</code>. The deadline passes. What does the request get, and what happens to the fill?</p>
+<ol>
+<li data-why="The shield keeps the timeout's cancellation away from the fill; only the request's wait is cancelled.">TimeoutError, and the fill is cancelled with it</li>
+<li>TimeoutError for its wait; the fill keeps running, stores its result, and serves later requests</li>
+<li data-why="The timeout converts its own cancellation into TimeoutError outside the block (Part 5); it does not pass CancelledError on.">CancelledError, because shield re-raises the cancellation</li>
+</ol>
+<p class="ts-why">Part 3's timeout cancels the waiting Task at the deadline; Part 5's shield stops that cancel at the shield, so the fill Task is untouched; and the timeout turns its own cancel into TimeoutError outside the block. The request answers without that seller; the fill finishes for whoever asks next.</p>
+</div>
+</section>
+<section class="ts-part" id="whats-next" data-rung="5" data-min="7">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: gateway v8 now has work in flight that belongs to no request, fills, shielded audit rows and queued rows, and nothing makes a deploy wait for it.</p>
+<p class="ts-problem">Gateway v8 answers seller-e's 1,149 from its cache, makes one call per seller and item however many shoppers ask, tags every log line with the right id, and takes price changes from seller-e's feed. Then the orchestrator deploys a new version: the last run on this page showed seller-e's fill for toaster-2s cancelled on the way out, its price lost.</p>
+<h3>What this page added</h3>
+<ul>
+<li>Races on one thread: an await between a read and a dependent write. A read-await-write counter lost 9 of 10 updates; a check-then-act cache asked seller-c 100 times; a module variable stamped shopper-2 on shopper-1's line.</li>
+<li>The one-step rule, and the tools for what it cannot cover: Lock (fair, not owned, not thread-safe), Event, Condition, Semaphore and BoundedSemaphore compared with Lock, and Barrier (3.11+).</li>
+<li>contextvars: ContextVar, Token, copy_context and Context.run; every Task runs in a copy of the context current at its creation; callbacks in a copy taken when scheduled.</li>
+<li>Gateway v8: a single-flight price cache (100 shoppers, 5 seller calls; seller-e's price cached at last), a request id that follows the work into Tasks and seller-e's SDK thread, and seller-e's feed through run_coroutine_threadsafe; the three bridges and the free-threaded build's different thread context.</li>
+<li>What breaks: a lock across a 900 ms call, a deadlock from lock order, context lost or wrong in threads, callbacks and shared work, Futures completed from the wrong thread, primitives bound to another loop, and cache herds at 10 times the load.</li>
+<li>Lock vs single-flight vs an owner Task vs an immutable snapshot, chosen by the shape of the access.</li>
+</ul>
+<h3>What is still broken</h3>
+<ul>
+<li><strong>Deploys lose in-flight work.</strong> When <code>main()</code> returns, <code>asyncio.run</code> cancels every Task still running (Part 2). In gateway v8 that includes single-flight fills, which the run on this page measured, audit writes behind <code>shield()</code> (Part 5) and rows waiting in the audit queue (Part 6). Requests in progress at that moment are cut off too, and nothing tells the load balancer to stop sending new ones first.</li>
+<li><strong>Async generators clean up late.</strong> An async generator that its consumer leaves early, for example with <code>break</code>, stays paused with whatever it holds, such as a connection, until it is closed. Part 2 showed that <code>asyncio.run</code> closes leftover async generators only at the very end. A stream of offers read with <code>async for</code> and abandoned at the first good price keeps its seller connection open until then.</li>
+<li><strong>Threads outlive the loop.</strong> seller-e's feed thread can call <code>run_coroutine_threadsafe</code> while the loop is shutting down, and calls into a closed loop raise RuntimeError, as the bridge part noted.</li>
+</ul>
+<h3>Next: Part 8 — Shutting down and cleaning up</h3>
+<p>Part 8 keeps gateway v8 and teaches it to stop well: on SIGTERM, refuse new requests, let in-flight ones finish within a budget, wait for owned Tasks such as fills and audit writes, drain the audit queue, stop the feed's thread before the loop closes, and close async generators and clients deliberately.</p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: keeping shared state, request context and thread crossings correct.</li>
+<li>Still broken: work in flight at a deploy, async generators left open, threads that outlive the loop.</li>
+<li>Part 8: graceful shutdown of gateway v8.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v8 shares state safely while it runs; Part 8 makes it stop without losing the work it owns.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway from the toy loop to this page in the order they were built.</p>
+<ol>
+<li>v1 on the toy loop: five tasks on one thread, 900 ms, answer at the 250 ms budget</li>
+<li>v2: the toy loop plus a selector, the same answers from real sockets</li>
+<li>v3: asyncio streams and Tasks, with a hand-made budget and hand-made waiting</li>
+<li>v4: a TaskGroup, a shared Semaphore and one timeout_at deadline per request</li>
+<li>v5: seller-e's sync SDK in its own thread pool, ranking in a process pool, watched background metrics</li>
+<li>v6: a hang-up watcher that cancels the request, the deadline passed down to seller-e's SDK, a shielded audit row</li>
+<li>v7: a front door that answers busy, a cap, a line and a rate per seller, and a bounded audit queue</li>
+<li>v8: a single-flight price cache, a request id that follows the work, and seller-e's feed through a thread-safe bridge</li>
+</ol>
+<p class="ts-why">Each version fixes what the one before it could not do: fake I/O, the hand-written loop, the hand-made waiting and budget, the traps the loop cannot detect, work nobody wants any more, more work than the gateway can finish, and finally state and context shared by many requests and threads.</p>
+</div>
+</section>

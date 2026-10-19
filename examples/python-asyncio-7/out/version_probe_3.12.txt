@@ -1,0 +1,5 @@
+Python 3.12
+1. cancel() then uncancel() before any await: CancelledError arrived at the next await anyway
+2. a refused cancel, then a failing TaskGroup: handled the ValueError and carried on
+3. a shielded write fails after its caller left: asyncio reported ['Task exception was never retrieved']
+4. a hang-up while a failing group cleans up: wrote the audit row: the hang-up was lost

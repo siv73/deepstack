@@ -1,0 +1,7 @@
+  -- select(timeout=0.00 s)
+a runs and schedules c
+b runs
+  -- select(timeout=0.00 s)
+c runs
+  -- select(timeout=0.10 s)
+timer (100 ms) runs and stops the loop

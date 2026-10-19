@@ -1,0 +1,8 @@
+   80 ms  seller-a answered 1,249
+   80 ms  FIRST_COMPLETED: done ['seller-a']
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+  340 ms  timeout=0.25: done ['seller-a', 'seller-b', 'seller-c', 'seller-d'], pending ['seller-e']
+        pending Tasks cancelled by wait()? False
+        after our cancel(): ['seller-e']

@@ -1,0 +1,8 @@
+-- the cache is slow; nobody else cancels --
+  hand-made limit, no uncancel()   skipped the cache; cancelling()=1; asked the sellers
+  hand-made limit with uncancel()  skipped the cache; cancelling()=0; asked the sellers
+  asyncio.timeout(0.02)            skipped the cache; cancelling()=0; asked the sellers
+-- the shopper hangs up 10 ms into the lookup --
+  hand-made limit, no uncancel()   skipped the cache; cancelling()=1; asked the sellers; cancelled=False
+  hand-made limit with uncancel()  skipped the cache; cancelling()=0; asked the sellers; cancelled=False
+  asyncio.timeout(0.02)            stopped; cancelled=True

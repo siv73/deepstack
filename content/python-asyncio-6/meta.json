@@ -59,7 +59,7 @@
    "why": "this page: why memory climbs when work arrives faster than it leaves (Little's law), asyncio.Queue bounded and unbounded, backpressure, worker pools, task_done/join, shutdown, PriorityQueue and LifoQueue; gateway v7 sheds with busy (503), caps, lines and rate limits per seller, and a bounded audit queue; hung workers, standing queues, limits at 10x; Semaphore vs queue vs shedding vs broker"
   },
   {
-   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads",
+   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads", "slug": "python-asyncio-7",
    "why": "a price cache shared by requests, per-request context, and crossing between threads and the loop"
   },
   {

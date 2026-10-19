@@ -1,0 +1,11 @@
+1. new Future:           done=False cancelled=False
+   result() too early -> InvalidStateError
+2. after set_result:     done=True  cancelled=False
+   (the callback has not run yet: it was scheduled with call_soon)
+   done callback got Offer(seller='seller-b', price=1199)
+   a second set_result -> InvalidStateError
+3. after set_exception:  done=True  cancelled=False
+   exception() returns SellerError('seller-c failed')
+   cancel() returns True
+4. after cancel:         done=True  cancelled=True
+   result() -> CancelledError

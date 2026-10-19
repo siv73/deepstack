@@ -1,0 +1,21 @@
+-- 100 shoppers at once, kettle-1l, empty cache --
+  100 answered {'seller-b 1199': 100}, the last after 360 ms
+  seller calls made: {'seller-a': 1, 'seller-b': 1, 'seller-c': 1, 'seller-d': 1, 'seller-e': 1}
+-- 10 shoppers, 1 s later --
+  10 answered {'seller-e 1149': 10}, the last after 30 ms
+  seller calls made: none
+-- seller-e's feed pushes kettle-1l at 1,099 from its own thread --
+  the feed's callback returned ['applied']
+  1 answered {'seller-e 1099': 1}, the last after 20 ms
+  seller calls made: none
+-- one shopper asks for toaster-2s; the gateway stops right after --
+  1 answered {'seller-b 1199': 1}, the last after 270 ms
+  fills still in flight when stop() returned: ['fill seller-e toaster-2s']
+log lines, by whose id they carry: {'after-feed-*': 1, 'feed': 1, 'fill': 21, 'last-*': 1, 'later-*': 10, 'sale-*': 100}
+  [fill seller-e kettle-1l] gateway: calling seller-e
+  [fill seller-e kettle-1l] seller_e_sdk: get_price kettle-1l
+  [sale-7] gateway: answered seller-b at 1,199 after 260 ms
+  [fill seller-e kettle-1l] gateway: seller-e answered 1149
+  [feed seller-e] gateway: price change applied: kettle-1l 1099
+audit rows written: 113 | background failures: none
+after asyncio.run returned: fill seller-e toaster-2s cancelled = True

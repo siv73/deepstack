@@ -1,0 +1,2 @@
+threads waiting: 5
+cheapest: seller-e at 1,149 after 900 ms

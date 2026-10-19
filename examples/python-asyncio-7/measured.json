@@ -1,0 +1,10 @@
+{
+ "threads": 500,
+ "python": "3.14.6",
+ "system": "Linux x86_64",
+ "stack_size_setting": 0,
+ "stack_limit_kib": 8192,
+ "start_us_per_thread": 118,
+ "virtual_kib_per_thread": 10182,
+ "resident_kib_per_thread": 21
+}

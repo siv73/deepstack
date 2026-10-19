@@ -1,0 +1,5 @@
+call_soon returned a Handle; call_later returned a TimerHandle
+   0 ms  call_soon, first
+   0 ms  call_soon, second
+ 100 ms  call_later(0.1)
+ 200 ms  call_later(0.2)

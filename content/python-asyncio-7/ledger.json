@@ -1,0 +1,2115 @@
+{
+ "verified": "2026-10-17",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "asyncio: Synchronization Primitives",
+   "url": "https://docs.python.org/3.14/library/asyncio-sync.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s2",
+   "title": "CPython 3.14 Lib/asyncio/locks.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/locks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s3",
+   "title": "contextvars: Context Variables",
+   "url": "https://docs.python.org/3.14/library/contextvars.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s4",
+   "title": "asyncio: Coroutines and Tasks",
+   "url": "https://docs.python.org/3.14/library/asyncio-task.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s5",
+   "title": "asyncio: Event Loop",
+   "url": "https://docs.python.org/3.14/library/asyncio-eventloop.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s6",
+   "title": "asyncio: Futures",
+   "url": "https://docs.python.org/3.14/library/asyncio-future.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s7",
+   "title": "asyncio: Developing with asyncio",
+   "url": "https://docs.python.org/3.14/library/asyncio-dev.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s8",
+   "title": "CPython 3.14 Lib/asyncio/base_events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/base_events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s9",
+   "title": "CPython 3.14 Lib/asyncio/threads.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/threads.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s10",
+   "title": "CPython 3.14 Lib/asyncio/events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s11",
+   "title": "CPython 3.14 Lib/asyncio/tasks.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s12",
+   "title": "CPython 3.14 Lib/asyncio/mixins.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/mixins.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s13",
+   "title": "threading: Thread-based parallelism",
+   "url": "https://docs.python.org/3.14/library/threading.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s14",
+   "title": "Command line and environment",
+   "url": "https://docs.python.org/3.14/using/cmdline.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s15",
+   "title": "What's New In Python 3.14",
+   "url": "https://docs.python.org/3.14/whatsnew/3.14.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s16",
+   "title": "Python support for free threading",
+   "url": "https://docs.python.org/3.14/howto/free-threading-python.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s17",
+   "title": "logging: Logging facility for Python",
+   "url": "https://docs.python.org/3.14/library/logging.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s18",
+   "title": "Logging Cookbook",
+   "url": "https://docs.python.org/3.14/howto/logging-cookbook.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s19",
+   "title": "golang.org/x/sync/singleflight: singleflight.go",
+   "url": "https://github.com/golang/sync/blob/master/singleflight/singleflight.go",
+   "kind": "primary",
+   "publisher": "The Go Authors",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s20",
+   "title": "Scaling Memcache at Facebook (NSDI '13)",
+   "url": "https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf",
+   "kind": "primary",
+   "publisher": "USENIX / Facebook",
+   "accessed": "2026-10-17"
+  },
+  {
+   "id": "s21",
+   "title": "CPython 3.14 Lib/asyncio/futures.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-17"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "asyncio's synchronization primitives are not thread-safe and should not be used to synchronize OS threads, and their methods take no timeout argument; the docs point to asyncio.wait_for() for operations with a timeout.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Synchronization Primitives › introduction (two important caveats)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Synchronization Primitives › introduction (two important caveats)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Synchronization Primitives › introduction (two important caveats)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "An asyncio lock can be used to guarantee exclusive access to a shared resource, and the preferred way to use one is an async with statement, which is equivalent to await lock.acquire() followed by the block in a try with lock.release() in its finally.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Lock › class Lock()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Lock › class Lock()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Lock › class Lock()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "Acquiring a lock is fair: the coroutine that proceeds is the first coroutine that started waiting on the lock.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Lock › acquire()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Lock › acquire()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Lock › acquire()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "Releasing an unlocked Lock raises RuntimeError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Lock › release()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Lock › release()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Lock › release()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "An Event manages an internal flag, false initially, that set() sets to true and clear() resets to false; wait() returns True immediately if the flag is set and otherwise blocks until another task calls set().",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Event › class Event(); wait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Event › class Event(); wait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Event › class Event(); wait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "When an Event is set, all tasks waiting for it are awakened.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Event › set()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Event › set()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Event › set()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "A Condition combines the functionality of an Event and a Lock, and several Condition objects can share one Lock.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Condition › class Condition(lock=None)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Condition › class Condition(lock=None)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Condition › class Condition(lock=None)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "notify() and notify_all() must be called with the lock acquired, and released shortly after; called with an unlocked lock, they raise RuntimeError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Condition › notify(n=1); notify_all()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Condition › notify(n=1); notify_all()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Condition › notify(n=1); notify_all()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "Condition.wait() raises RuntimeError if the calling task has not acquired the lock; otherwise it releases the lock, blocks until it is awakened by notify() or notify_all(), re-acquires the lock and returns True.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Condition › wait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Condition › wait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Condition › wait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "A task may return from Condition.wait() spuriously, so the caller should re-check the state; wait_for(predicate) waits repeatedly until the predicate is true and returns its final value.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Condition › wait(); wait_for(predicate)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Condition › wait(); wait_for(predicate)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Condition › wait(); wait_for(predicate)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "Semaphore allows more release() calls than acquire() calls, while BoundedSemaphore raises ValueError in release() if it would increase the counter above its initial value.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Semaphore › release(); BoundedSemaphore",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Semaphore › release(); BoundedSemaphore",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Semaphore › release(); BoundedSemaphore",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "Barrier(parties) blocks Tasks in wait() until parties tasks are waiting, then unblocks them all simultaneously; it can be reused any number of times, and it was added in Python 3.11.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Barrier › class Barrier(parties); versionadded 3.11",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Barrier › class Barrier(parties); versionadded 3.11",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Barrier › class Barrier(parties); versionadded 3.11",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "The docs say Barrier.wait() returns an integer from 0 to parties − 1, different for each task, and a waiting task that is cancelled exits the barrier, which stays in the same state.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Barrier › wait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Barrier › wait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Barrier › wait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "abort() puts the barrier into a broken state, so that active and future calls to wait() fail with BrokenBarrierError, a subclass of RuntimeError; reset() returns the barrier to its empty state, and tasks waiting on it receive BrokenBarrierError.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Barrier › reset(); abort(); exception BrokenBarrierError",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Barrier › reset(); abort(); exception BrokenBarrierError",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "Barrier › reset(); abort(); exception BrokenBarrierError",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "The loop parameter of Lock, Event, Condition, Semaphore and BoundedSemaphore was removed in Python 3.10.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "versionchanged 3.10 under Lock, Event, Condition, Semaphore, BoundedSemaphore",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-sync.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "versionchanged 3.10 under Lock, Event, Condition, Semaphore, BoundedSemaphore",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-sync.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "versionchanged 3.10 under Lock, Event, Condition, Semaphore, BoundedSemaphore",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "In CPython 3.14's locks.py, Lock.acquire() takes the lock at once if it is unlocked and every waiter in line, if any, has been cancelled; otherwise it appends a new Future to a deque of waiters and awaits it, and release() sets the result of the first waiter's Future.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Lock.acquire(); Lock.release(); Lock._wake_up_first()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/locks.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Lock.acquire(); Lock.release(); Lock._wake_up_first()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/locks.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Lock.acquire(); Lock.release(); Lock._wake_up_first()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "In CPython 3.14's locks.py, the Lock class describes a primitive lock as not owned by a particular task when locked.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "class Lock docstring",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/locks.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "class Lock docstring",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/locks.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "class Lock docstring",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "In CPython 3.14's locks.py, Event.set() sets the result of every waiting Future, while Lock.release() wakes only the first.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Event.set(); Lock.release() and Lock._wake_up_first()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/locks.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Event.set(); Lock.release() and Lock._wake_up_first()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/locks.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Event.set(); Lock.release() and Lock._wake_up_first()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "The contextvars module, added in Python 3.7, provides APIs to manage, store and access context-local state, and its docs say that context managers that have state should use context variables instead of threading.local, to keep that state from bleeding into other code when used in concurrent code.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "module introduction; versionadded 3.7",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "module introduction; versionadded 3.7",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "module introduction; versionadded 3.7",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "ContextVar.get() returns the variable's value in the current context; if there is none, it returns the get() call's default argument if one was given, else the variable's own default if it was created with one, else it raises LookupError.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "ContextVar.get()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "ContextVar.get()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "ContextVar.get()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "ContextVar.set() sets a new value in the current context and returns a Token, which ContextVar.reset() uses to restore the value the variable had before that set(); the same token cannot be used twice.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "ContextVar.set(); ContextVar.reset()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "ContextVar.set(); ContextVar.reset()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "ContextVar.set(); ContextVar.reset()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "Context variables should be created at the top module level and never in closures, because Context objects hold strong references to them, which prevents them from being garbage collected.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "class ContextVar › Important",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "class ContextVar › Important",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "class ContextVar › Important",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "copy_context() returns a copy of the current Context, and Context.run() enters the context, calls the function, then exits; changes made with ContextVar.set() while it runs are recorded in that context.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "copy_context(); class Context; Context.run()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "copy_context(); class Context; Context.run()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "copy_context(); class Context; Context.run()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Support for using a Token as a context manager, which resets the variable when the block exits, was added in Python 3.14.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "ContextVar.set() and class Token › versionadded 3.14",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "ContextVar.set() and class Token › versionadded 3.14",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "ContextVar.set() and class Token › versionadded 3.14",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "Each thread has its own stack of contexts, so ContextVars behave like threading.local when values are set in different threads, and entering a context that is already entered, in any thread, raises RuntimeError.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "class Context (each thread's context stack)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "class Context (each thread's context stack)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "class Context (each thread's context stack)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "Context variables are natively supported in asyncio and are ready to be used without any extra configuration.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "asyncio support",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/contextvars.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "asyncio support",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/contextvars.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "asyncio support",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "If no context is provided, a Task copies the current context and later runs its coroutine in the copied context; asyncio.create_task() and the Task constructor accept a context argument to use a given Context instead, added in Python 3.11.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Task object › class Task (context); create_task() › versionchanged 3.11",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-task.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Task object › class Task (context); create_task() › versionchanged 3.11",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-task.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Task object › class Task (context); create_task() › versionchanged 3.11",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "Task.get_context() returns the Context associated with the task and was added in Python 3.12.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Task object › get_context(); versionadded 3.12",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-task.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Task object › get_context(); versionadded 3.12",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-task.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Task object › get_context(); versionadded 3.12",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "asyncio.to_thread() runs a function in a separate thread and propagates the current contextvars Context to it.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Running in threads › to_thread()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-task.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Running in threads › to_thread()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-task.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Running in threads › to_thread()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "run_coroutine_threadsafe(coro, loop) submits a coroutine to the given event loop, is thread-safe, returns a concurrent.futures.Future for waiting on the result from another OS thread, and is meant to be called from a different OS thread than the one running the loop.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Scheduling from other threads › run_coroutine_threadsafe()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-task.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Scheduling from other threads › run_coroutine_threadsafe()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-task.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Scheduling from other threads › run_coroutine_threadsafe()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "If the coroutine raises, the returned Future is notified, and the Future can be used to cancel the task in the event loop, for example after result(timeout) raises TimeoutError.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Scheduling from other threads › run_coroutine_threadsafe() (exceptions and cancel)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-task.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Scheduling from other threads › run_coroutine_threadsafe() (exceptions and cancel)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-task.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Scheduling from other threads › run_coroutine_threadsafe() (exceptions and cancel)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "In CPython 3.14's locks.py, Condition.wait() releases the lock, appends its Future to the condition's waiters and awaits it, and in a finally block re-acquires the lock even if the wait is cancelled.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Condition.wait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/locks.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Condition.wait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/locks.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "Condition.wait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "loop.call_soon() accepts an optional context argument for the callback to run in, and callbacks use the current context when none is provided.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Scheduling callbacks › loop.call_soon()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-eventloop.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Scheduling callbacks › loop.call_soon()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-eventloop.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Scheduling callbacks › loop.call_soon()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "call_soon_threadsafe() must be used when scheduling callbacks from another thread, because call_soon() is not thread-safe, and it raises RuntimeError if called on a loop that has been closed, which can happen on a secondary thread while the application shuts down.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Scheduling callbacks › loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-eventloop.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Scheduling callbacks › loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-eventloop.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Scheduling callbacks › loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "If a Future is already done when add_done_callback() is called, the callback is scheduled with loop.call_soon(); the current context is used when no context is given.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Future Object › add_done_callback()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-future.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Future Object › add_done_callback()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-future.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Future Object › add_done_callback()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "get_running_loop() returns the running event loop in the current OS thread and raises RuntimeError if there is none.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Obtaining the Event Loop › get_running_loop()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-eventloop.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Obtaining the Event Loop › get_running_loop()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-eventloop.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Obtaining the Event Loop › get_running_loop()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "The asyncio docs say almost all asyncio objects are not thread safe; code outside a Task or callback that needs a low-level asyncio API should use loop.call_soon_threadsafe(), and run_coroutine_threadsafe() should be used to schedule a coroutine object from a different OS thread.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/asyncio-dev.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/asyncio-dev.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "Concurrency and Multithreading",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "In CPython 3.14's threads.py, to_thread() copies the current context and runs the function through ctx.run with loop.run_in_executor(None, ...), so it always uses the loop's default executor.",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "to_thread()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/threads.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "to_thread()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/threads.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s9",
+     "locator": "to_thread()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "In CPython 3.14's base_events.py, run_in_executor() passes the function to executor.submit() and does not copy the current context.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "BaseEventLoop.run_in_executor()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/base_events.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "BaseEventLoop.run_in_executor()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/base_events.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "BaseEventLoop.run_in_executor()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "In CPython 3.14's events.py, a Handle created without a context takes a copy of the current context when it is created, and futures.py's add_done_callback() likewise copies the context current when the callback is added.",
+   "sources": [
+    "s10",
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "events.py Handle.__init__; futures.py Future.add_done_callback()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/events.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "events.py Handle.__init__; futures.py Future.add_done_callback()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/futures.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "events.py Handle.__init__; futures.py Future.add_done_callback()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/events.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "events.py Handle.__init__; futures.py Future.add_done_callback()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/futures.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s10",
+     "locator": "events.py Handle.__init__; futures.py Future.add_done_callback()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "events.py Handle.__init__; futures.py Future.add_done_callback()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "In CPython 3.14's base_events.py, call_soon() in debug mode checks that it runs on the loop's thread and otherwise raises RuntimeError(\"Non-thread-safe operation invoked on an event loop other than the current one\").",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "BaseEventLoop.call_soon(); BaseEventLoop._check_thread()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/base_events.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "BaseEventLoop.call_soon(); BaseEventLoop._check_thread()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/base_events.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "BaseEventLoop.call_soon(); BaseEventLoop._check_thread()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "In CPython 3.14's tasks.py, run_coroutine_threadsafe() creates a concurrent.futures.Future and uses loop.call_soon_threadsafe() to schedule a callback that wraps the coroutine in a Task on the loop and chains that Task's outcome to the Future.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "run_coroutine_threadsafe()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/tasks.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "run_coroutine_threadsafe()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/tasks.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "run_coroutine_threadsafe()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "In Python 3.14, a threading.Thread started without a context argument starts with a copy of the context of the caller of start() if sys.flags.thread_inherit_context is true, and with an empty context otherwise; the flag defaults to true on free-threaded builds and false otherwise.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Thread Objects › class Thread (context); versionchanged 3.14",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/threading.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Thread Objects › class Thread (context); versionchanged 3.14",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/threading.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s13",
+     "locator": "Thread Objects › class Thread (context); versionchanged 3.14",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "The flag can be set with -X thread_inherit_context or the PYTHON_THREAD_INHERIT_CONTEXT environment variable, both added in 3.14.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "-X thread_inherit_context; PYTHON_THREAD_INHERIT_CONTEXT (versionadded 3.14)",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/using/cmdline.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "-X thread_inherit_context; PYTHON_THREAD_INHERIT_CONTEXT (versionadded 3.14)",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/using/cmdline.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "-X thread_inherit_context; PYTHON_THREAD_INHERIT_CONTEXT (versionadded 3.14)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "Python 3.14's release notes say the free-threaded build is now supported and no longer experimental, the start of phase II, in which it is officially supported but still optional; whether it becomes the default build is still undecided.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Free-threaded Python is officially supported",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/whatsnew/3.14.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Free-threaded Python is officially supported",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/whatsnew/3.14.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Free-threaded Python is officially supported",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "In 3.14 the performance penalty on single-threaded code in free-threaded mode is roughly 5 to 10%, depending on the platform and C compiler.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Free-threaded mode improvements",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/whatsnew/3.14.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Free-threaded mode improvements",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/whatsnew/3.14.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Free-threaded mode improvements",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "In 3.14 asyncio has first class support for free-threading builds, which enables parallel execution of multiple event loops in different threads, scaling linearly with the number of threads.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Improved modules › asyncio",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/whatsnew/3.14.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Improved modules › asyncio",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/whatsnew/3.14.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Improved modules › asyncio",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "Python 3.14 adds python -m asyncio ps PID and python -m asyncio pstree PID, which inspect a running process and list its asyncio tasks with their coroutine stacks and which tasks are awaiting them: ps as a table, pstree as a tree.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "Asyncio introspection capabilities",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/whatsnew/3.14.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Asyncio introspection capabilities",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/whatsnew/3.14.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "Asyncio introspection capabilities",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "A free-threaded build can run with the GIL enabled at runtime through the PYTHON_GIL environment variable or the -X gil option, sys._is_gil_enabled() reports whether the GIL is actually disabled in the running process, and importing an extension module not marked as supporting free threading can enable the GIL automatically, with a warning.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Identifying free-threaded Python; The global interpreter lock in free-threaded Python",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/howto/free-threading-python.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Identifying free-threaded Python; The global interpreter lock in free-threaded Python",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/howto/free-threading-python.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Identifying free-threaded Python; The global interpreter lock in free-threaded Python",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "the free-threaded build aims to provide thread-safety at the Python level similar to the default build, with built-in types such as dict, list and set using internal locks, and the docs recommend threading.Lock or other synchronization primitives instead of relying on those internal locks.",
+   "sources": [
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Thread safety",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/howto/free-threading-python.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Thread safety",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/howto/free-threading-python.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Thread safety",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c51",
+   "text": "A logging Filter's filter(record) method decides whether a record is logged, and filters can modify log records in place; filters attached to handlers are consulted before the handler emits the event.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "Filter Objects",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/library/logging.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "Filter Objects",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/library/logging.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "Filter Objects",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c52",
+   "text": "The logging cookbook shows a filter that reads ContextVars set at the start of request processing and adds the request's attributes to every log record.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Use of contextvars",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Doc/howto/logging-cookbook.rst on raw.githubusercontent.com (PY_VERSION 3.14.8+)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Use of contextvars",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Doc/howto/logging-cookbook.rst on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "Use of contextvars",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c53",
+   "text": "Go's golang.org/x/sync/singleflight package provides a duplicate function call suppression mechanism: its Do method makes sure that only one execution is in flight for a given key at a time, and a duplicate caller waits for the original to complete and receives the same results.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "package comment; Group.Do doc comment",
+     "result": "supported",
+     "method": "verbatim read of singleflight.go from github.com/golang/sync (master)",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "package comment; Group.Do doc comment",
+     "result": "supported",
+     "method": "fresh verbatim read of singleflight.go from raw.githubusercontent.com/golang/sync (master); package comment and Do doc comment judged against the page sentence",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "package comment; Group.Do doc comment",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c54",
+   "text": "Facebook's NSDI 2013 paper on scaling memcache describes leases against thundering herds: a lease is a 64-bit token bound to the key a client asked for, servers by default return a token only once every 10 seconds per key, and in their measurement the peak database query rate was 17K/s without leases and 1.3K/s with them.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Section 3.2.1 Reducing Load › Leases",
+     "result": "supported",
+     "method": "read of the paper PDF on usenix.org, section 3.2.1, via WebFetch with a quote-or-NOT-IN-CONTENT prompt",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Section 3.2.1 Reducing Load › Leases",
+     "result": "supported",
+     "method": "fresh WebFetch of the paper PDF on usenix.org asking for verbatim quotes from section 3.2.1 or NOT IN CONTENT; all three figures quoted back",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "Section 3.2.1 Reducing Load › Leases",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  },
+  {
+   "id": "c55",
+   "text": "In CPython 3.14's mixins.py, an asyncio primitive records the running loop the first time it needs one, and raises RuntimeError saying it is bound to a different event loop if it is later used from another loop; locks.py asks for the loop only when it must create a Future for a waiter.",
+   "sources": [
+    "s12",
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "mixins.py _LoopBoundMixin._get_loop(); locks.py Lock.acquire(), Event.wait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/mixins.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "mixins.py _LoopBoundMixin._get_loop(); locks.py Lock.acquire(), Event.wait()",
+     "result": "supported",
+     "method": "verbatim read of the CPython 3.14 branch's Lib/asyncio/locks.py (PY_VERSION 3.14.8+); behaviour also run on 3.11 to 3.14",
+     "at": "2026-10-17T13:05"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "mixins.py _LoopBoundMixin._get_loop(); locks.py Lock.acquire(), Event.wait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/mixins.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "mixins.py _LoopBoundMixin._get_loop(); locks.py Lock.acquire(), Event.wait()",
+     "result": "supported",
+     "method": "fresh verbatim read of the v3.14.8 tag's Lib/asyncio/locks.py on raw.githubusercontent.com; each page sentence judged against the located passage",
+     "at": "2026-10-17T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "mixins.py _LoopBoundMixin._get_loop(); locks.py Lock.acquire(), Event.wait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "mixins.py _LoopBoundMixin._get_loop(); locks.py Lock.acquire(), Event.wait()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger and the check keys; fresh reads of CPython v3.14.8, golang/sync singleflight.go and the NSDI '13 memcache paper, plus behaviour runs on 3.14.6 default and free-threaded builds; no claim flagged",
+     "at": "2026-10-17T16:30"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "The Go singleflight package's Group uses a sync.Mutex around its map of calls.",
+   "reason": "read in the source, but the page only needs the duplicate-suppression contract; the mutex is described as reasoning, not as a claim about Go"
+  },
+  {
+   "text": "Facebook's leases also tell clients that ask within 10 seconds of a token to wait a short time and retry.",
+   "reason": "the page needs only the token rule and the measured rates; this part of section 3.2.1 was not re-read in pass 2"
+  },
+  {
+   "text": "A free-threaded build makes asyncio's single-loop code faster.",
+   "reason": "no primary source says so; the release notes describe parallel event loops in different threads and a 5 to 10% single-thread penalty, which the page states instead"
+  },
+  {
+   "text": "python -m asyncio pstree detects deadlocks between asyncio.Lock holders.",
+   "reason": "the 3.14 notes say pstree reports cycles in the await graph; a lock deadlock is not an await cycle between tasks, so the page only says the stuck tasks show their stacks"
+  }
+ ]
+}

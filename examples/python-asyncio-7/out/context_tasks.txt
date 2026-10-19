@@ -1,0 +1,7 @@
+1. Task created after set('shopper-1')         sees shopper-1
+2. the handler, after the child set its value  sees shopper-1
+3. Task created before set('shopper-2')        sees shopper-1
+4. call_soon callback                          sees shopper-2
+5. Task given context=Context()                sees -
+6. that Task kept its own value                set by the child
+7. main(), which never set a value             sees -

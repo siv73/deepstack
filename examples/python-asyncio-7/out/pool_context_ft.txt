@@ -1,0 +1,3 @@
+free-threaded build; sys.flags.thread_inherit_context = 1
+  run_in_executor                       shoppers 1, 2, 3 -> the SDK sees shopper-1, shopper-1, shopper-1
+  run_in_executor + copy_context().run  shoppers 1, 2, 3 -> the SDK sees shopper-1, shopper-2, shopper-3

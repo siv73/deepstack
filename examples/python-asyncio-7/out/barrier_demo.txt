@@ -1,0 +1,12 @@
+   0 ms  shopper-1 connected, waits at the barrier
+  30 ms  shopper-2 connected, waits at the barrier
+  50 ms  barrier: [filling, waiters:2/3]
+  70 ms  shopper-3 connected, waits at the barrier
+  70 ms  shopper-3 sends its request (position 2)
+  70 ms  shopper-1 sends its request (position 0)
+  70 ms  shopper-2 sends its request (position 1)
+after:    barrier: [filling, waiters:0/3]
+-- shopper-3 cannot connect: abort() --
+waiting shopper: BrokenBarrierError: Abort or reset of barrier
+waiting shopper: BrokenBarrierError: Abort or reset of barrier
+barrier: [broken]

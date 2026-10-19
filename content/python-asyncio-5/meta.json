@@ -55,7 +55,7 @@
    "slug": "python-asyncio-6"
   },
   {
-   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads",
+   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads", "slug": "python-asyncio-7",
    "why": "a price cache shared by requests, per-request context, and crossing between threads and the loop"
   },
   {

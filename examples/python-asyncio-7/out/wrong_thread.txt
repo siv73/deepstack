@@ -1,0 +1,9 @@
+-- the SDK's thread completes an asyncio Future --
+  set_result            waiter woken at 1000 ms; Future done: True
+  call_soon_threadsafe  waiter woken at  100 ms; Future done: True
+-- the same set_result() in debug mode --
+  in the SDK's thread: RuntimeError: Non-thread-safe operation invoked on an event loop other than the current one
+  set_result            waiter woken at 1500 ms; Future done: True
+-- one module-level Lock, used by two event loops in turn --
+  loop 1: two Tasks shared the lock
+  loop 2: RuntimeError: <asyncio.locks.Lock [locked]> is bound to a different event loop

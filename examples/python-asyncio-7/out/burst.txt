@@ -1,0 +1,4 @@
+-- 500 calls to seller-a at once, no cap, open-file limit 256 --
+answered 0 of 500; TaskGroup failed, error codes: ['EMFILE']
+-- 500 calls to seller-a at once, Semaphore(50), open-file limit 256 --
+answered 500 of 500 in about 900 ms; most open at once: 50

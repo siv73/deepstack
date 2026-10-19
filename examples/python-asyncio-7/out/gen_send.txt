@@ -1,0 +1,4 @@
+0
+120
+165
+TypeError: can't send non-None value to a just-started generator

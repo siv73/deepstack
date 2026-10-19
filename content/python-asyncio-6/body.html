@@ -1273,7 +1273,7 @@ Retry-After: 1</code></pre>
 <li><strong>Request data that does not follow the work.</strong> The audit writers run in Tasks started when the gateway started. They see the row's text and nothing else: a request id set by the handler, for logs and traces, is not visible in the writer that handles that request's row.</li>
 <li><strong>Threads that touch the loop's state.</strong> seller-e's SDK thread finishes in another thread; anything it hands back to the loop, or any state both sides touch, needs the right crossing, which Part 2 only introduced.</li>
 </ul>
-<h3>Next: Part 7 — Sharing state safely: locks, events, context and threads</h3>
+<h3>Next: <a href="../python-asyncio-7/index.html">Part 7 — Sharing state safely: locks, events, context and threads</a></h3>
 <p>Part 7 keeps gateway v7 and gives it a price cache shared by requests, with a lock so one fetch serves everyone, events to wake waiters, context variables so request data follows the work into other Tasks, and safe crossings between seller-e's threads and the loop.</p>
 <div class="ts-note" data-label="Points to remember">
 <ul>

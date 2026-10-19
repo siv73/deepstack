@@ -1,0 +1,5 @@
+except* SellerError got: ['seller-c failed', 'seller-b failed']
+except* OSError got: ['seller-d refused']
+both clauses ran; nothing is left to propagate
+handled: ['seller-c failed']
+left over and raised again: (ValueError("bad price 'abc'"),)

@@ -1,0 +1,2 @@
+1 writer(s): 9 rows in 180 ms, rows per writer [9]
+3 writer(s): 9 rows in 60 ms, rows per writer [3, 3, 3]

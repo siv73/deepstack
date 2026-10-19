@@ -1,0 +1,6 @@
+generator
+starting
+3
+2
+1
+finished, value = lift-off

@@ -1,0 +1,6 @@
+-- refill takes cache then quota; report takes quota then cache --
+  after 1 s: finished none; log []
+  still waiting: ['refill', 'report']
+  cache_lock [locked, waiters:1]; quota_lock [locked, waiters:1]
+-- both take cache, then quota --
+  after 1 s: finished ['refill', 'report']; log ['refill done', 'report done']

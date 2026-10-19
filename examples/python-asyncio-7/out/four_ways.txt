@@ -1,0 +1,5 @@
+-- 90 requests at once: 30 each for kettle-1l, toaster-2s, iron-x1; seller-c takes 150 ms --
+  OneLock       seller calls during the burst: 3; slowest wait 450 ms
+  PerKeyFlight  seller calls during the burst: 3; slowest wait 150 ms
+  OwnerTask     seller calls during the burst: 3; slowest wait 450 ms
+  Snapshot      seller calls during the burst: 0; slowest wait   0 ms

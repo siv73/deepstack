@@ -1,0 +1,11 @@
+-- no budget --
+  300 ms  seller-a answered 1,249
+  420 ms  seller-b answered 1,199
+  450 ms  seller-c answered 1,229
+  500 ms  seller-d answered 1,215
+ 1200 ms  seller-e answered 1,149
+cheapest: seller-e at 1,149 after 1,200 ms
+slow step: seller-b ran for 300 ms
+-- 250 ms budget --
+cheapest: none after 300 ms; missed: seller-a, seller-b, seller-c, seller-d, seller-e
+slow step: seller-b ran for 300 ms

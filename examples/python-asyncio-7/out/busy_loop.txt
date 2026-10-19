@@ -1,0 +1,2 @@
+spinning: waited about 900 ms; CPU busy over 50% of that time
+selector: waited about 900 ms; CPU busy under 5% of that time
