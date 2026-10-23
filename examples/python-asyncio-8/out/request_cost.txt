@@ -1,0 +1,2 @@
+1,000 requests waiting hold 6.5 MB of Python memory
+one waiting request: about 7 KB (its connection, buffers and Task)

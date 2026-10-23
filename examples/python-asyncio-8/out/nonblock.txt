@@ -1,0 +1,5 @@
+connect(): BlockingIOError, errno EINPROGRESS (still connecting)
+recv() at once: BlockingIOError, errno EAGAIN (no data yet)
+answer after about 80 ms: seller-a 1249
+recv() calls that would have blocked: over 1,000
+CPU busy during the wait: over 50%

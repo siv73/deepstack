@@ -1,0 +1,2 @@
+highest fd that worked: 63
+next socket(): OSError EMFILE (Too many open files)

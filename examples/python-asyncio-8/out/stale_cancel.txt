@@ -1,0 +1,3 @@
+hand-made limit, no uncancel()   the shopper gets: nothing (CancelledError); audit rows: 0
+hand-made limit with uncancel()  the shopper gets: 502 bad price data from a seller; audit rows: 1
+asyncio.timeout(0.02)            the shopper gets: 502 bad price data from a seller; audit rows: 1

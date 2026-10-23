@@ -1464,10 +1464,10 @@
 <h3>What is still broken</h3>
 <ul>
 <li><strong>Deploys lose in-flight work.</strong> When <code>main()</code> returns, <code>asyncio.run</code> cancels every Task still running (Part 2). In gateway v8 that includes single-flight fills, which the run on this page measured, audit writes behind <code>shield()</code> (Part 5) and rows waiting in the audit queue (Part 6). Requests in progress at that moment are cut off too, and nothing tells the load balancer to stop sending new ones first.</li>
-<li><strong>Async generators clean up late.</strong> An async generator that its consumer leaves early, for example with <code>break</code>, stays paused with whatever it holds, such as a connection, until it is closed. Part 2 showed that <code>asyncio.run</code> closes leftover async generators only at the very end. A stream of offers read with <code>async for</code> and abandoned at the first good price keeps its seller connection open until then.</li>
+<li><strong>Async generators clean up late.</strong> An async generator that its consumer leaves early, for example with <code>break</code>, stays paused with whatever it holds, such as a connection, until it is closed. Part 2 showed that <code>asyncio.run</code> closes leftover async generators only at the very end. A stream of offers read with <code>async for</code> and abandoned at the first good price runs its clean-up later and in another Task: soon after, if nothing refers to it, or only at that very end if something does.</li>
 <li><strong>Threads outlive the loop.</strong> seller-e's feed thread can call <code>run_coroutine_threadsafe</code> while the loop is shutting down, and calls into a closed loop raise RuntimeError, as the bridge part noted.</li>
 </ul>
-<h3>Next: Part 8 — Shutting down and cleaning up</h3>
+<h3>Next: <a href="../python-asyncio-8/index.html">Part 8 — Shutting down and cleaning up</a></h3>
 <p>Part 8 keeps gateway v8 and teaches it to stop well: on SIGTERM, refuse new requests, let in-flight ones finish within a budget, wait for owned Tasks such as fills and audit writes, drain the audit queue, stop the feed's thread before the loop closes, and close async generators and clients deliberately.</p>
 <div class="ts-note" data-label="Points to remember">
 <ul>

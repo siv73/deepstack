@@ -1,0 +1,6 @@
+-- naive cache: 100 requests at once, then 100 more 1 s later --
+  first 100: answers {'seller-b 1,199': 100}; seller calls {'seller-a': 100, 'seller-b': 100, 'seller-c': 100, 'seller-d': 100, 'seller-e': 100}
+  next 100 : answers {'seller-b 1,199': 100}; seller calls {'seller-e': 100}
+-- single-flight cache: 100 requests at once, then 100 more 1 s later --
+  first 100: answers {'seller-b 1,199': 100}; seller calls {'seller-a': 1, 'seller-b': 1, 'seller-c': 1, 'seller-d': 1, 'seller-e': 1}
+  next 100 : answers {'seller-e 1,149': 100}; seller calls none

@@ -1,0 +1,7 @@
+10 shoppers: {'no answer (connection closed)': 8, 'seller-b 1199': 2}, the last after 600 ms
+  shutdown:     0 ms  listeners closed; 10 requests in flight
+  shutdown:   500 ms  drain deadline: 8 requests still running
+  shutdown:   500 ms  cancelled 8 requests; 0 still unwinding
+  shutdown:   810 ms  fills: 1 finished, 0 cancelled
+  shutdown:  1170 ms  audit queue flushed: 10 rows written
+audit rows written: {'seller-b at 1,199': 10}; lost: 0

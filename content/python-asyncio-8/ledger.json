@@ -1,0 +1,1788 @@
+{
+ "verified": "2026-10-23",
+ "volatility": "evolving",
+ "strict": true,
+ "sources": [
+  {
+   "id": "s1",
+   "title": "Pod Lifecycle: Termination of Pods",
+   "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/",
+   "kind": "primary",
+   "publisher": "The Kubernetes Authors",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s2",
+   "title": "Container Lifecycle Hooks",
+   "url": "https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/",
+   "kind": "primary",
+   "publisher": "The Kubernetes Authors",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s3",
+   "title": "Explore Termination Behavior for Pods And Their Endpoints",
+   "url": "https://kubernetes.io/docs/tutorials/services/pods-and-endpoint-termination-flow/",
+   "kind": "primary",
+   "publisher": "The Kubernetes Authors",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s4",
+   "title": "Amazon EKS Best Practices: Load Balancing",
+   "url": "https://docs.aws.amazon.com/eks/latest/best-practices/load-balancing.html",
+   "kind": "primary",
+   "publisher": "Amazon Web Services",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s5",
+   "title": "docker container stop",
+   "url": "https://docs.docker.com/reference/cli/docker/container/stop/",
+   "kind": "primary",
+   "publisher": "Docker Inc.",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s6",
+   "title": "Build checks: JSONArgsRecommended",
+   "url": "https://docs.docker.com/reference/build-checks/json-args-recommended/",
+   "kind": "primary",
+   "publisher": "Docker Inc.",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s7",
+   "title": "asyncio: Event loop",
+   "url": "https://docs.python.org/3.14/library/asyncio-eventloop.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s8",
+   "title": "asyncio: Runners",
+   "url": "https://docs.python.org/3.14/library/asyncio-runner.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s9",
+   "title": "asyncio: Platform Support",
+   "url": "https://docs.python.org/3.14/library/asyncio-platforms.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s10",
+   "title": "signal: Set handlers for asynchronous events",
+   "url": "https://docs.python.org/3.14/library/signal.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s11",
+   "title": "Developing with asyncio: Asynchronous generators best practices",
+   "url": "https://docs.python.org/3.14/library/asyncio-dev.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s12",
+   "title": "contextlib: Utilities for with-statement contexts",
+   "url": "https://docs.python.org/3.14/library/contextlib.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s13",
+   "title": "The Python Language Reference: Asynchronous generator functions",
+   "url": "https://docs.python.org/3.14/reference/expressions.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s14",
+   "title": "CPython 3.14 Lib/asyncio/base_events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/base_events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s15",
+   "title": "CPython 3.14 Lib/asyncio/events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s16",
+   "title": "CPython 3.14 Lib/asyncio/runners.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/runners.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s17",
+   "title": "concurrent.futures: Executor.shutdown",
+   "url": "https://docs.python.org/3.14/library/concurrent.futures.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s18",
+   "title": "threading: Thread objects (daemon threads)",
+   "url": "https://docs.python.org/3.14/library/threading.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s19",
+   "title": "subprocess: Popen.returncode",
+   "url": "https://docs.python.org/3.14/library/subprocess.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s20",
+   "title": "select: Waiting for I/O completion",
+   "url": "https://docs.python.org/3.14/library/select.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-23"
+  },
+  {
+   "id": "s21",
+   "title": "aiohttp: Web Server Advanced, Graceful shutdown",
+   "url": "https://docs.aiohttp.org/en/stable/web_advanced.html",
+   "kind": "primary",
+   "publisher": "aiohttp contributors",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s22",
+   "title": "Uvicorn: Settings (Timeouts)",
+   "url": "https://uvicorn.dev/settings/",
+   "kind": "primary",
+   "publisher": "Encode / Uvicorn contributors",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s23",
+   "title": "Uvicorn: Server Behavior, Graceful Process Shutdown",
+   "url": "https://uvicorn.dev/server-behavior/",
+   "kind": "primary",
+   "publisher": "Encode / Uvicorn contributors",
+   "accessed": "2026-10-22"
+  },
+  {
+   "id": "s24",
+   "title": "asyncio: Queues",
+   "url": "https://docs.python.org/3.14/library/asyncio-queue.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-23"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "When a Pod is deleted, the kubelet has the container runtime send TERM (SIGTERM) to the main process in each container, with a grace period; many container runtimes send the image's STOPSIGNAL value instead when the image defines a different one.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Termination of Pods (first paragraphs)",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript (the page is too long for a fetch tool, which truncated before this section)",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Termination of Pods (first paragraphs)",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "The default terminationGracePeriodSeconds is 30 seconds.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Pod termination flow (step on the preStop hook)",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript (the page is too long for a fetch tool, which truncated before this section)",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Pod termination flow (step on the preStop hook)",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "When the grace period expires, the container runtime sends SIGKILL to any processes still running in any container in the Pod.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Pod termination flow › The kubelet ensures the Pod is shut down and terminated",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript (the page is too long for a fetch tool, which truncated before this section)",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Pod termination flow › The kubelet ensures the Pod is shut down and terminated",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "The Pod's termination grace period countdown begins before the PreStop hook runs, the hook must complete before the TERM signal can be sent, and the grace period applies to the total time of the hook and the container's normal stop (the docs' example: 60 s grace, a 55 s hook and a 10 s stop means the container is killed).",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Container hooks › PreStop; Hook handler execution",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Container hooks › PreStop; Hook handler execution",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "If the preStop hook is still running after the grace period expires, the kubelet requests a small, one-off grace period extension of 2 seconds.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Pod termination flow (preStop step)",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript (the page is too long for a fetch tool, which truncated before this section)",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Pod termination flow (preStop step)",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "At the same time as the kubelet starts graceful shutdown of the Pod, the control plane evaluates removing it from EndpointSlices; terminating endpoints always have ready set to false so load balancers do not use them for regular traffic, and the serving condition shows their actual readiness.",
+   "sources": [
+    "s1",
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Pod termination flow (EndpointSlice step)",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript (the page is too long for a fetch tool, which truncated before this section)",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Example flow with endpoint termination (closing paragraphs)",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Pod termination flow (EndpointSlice step)",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Example flow with endpoint termination (closing paragraphs)",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "kubectl delete supports --grace-period=<seconds> to override the default; force deletion needs --force together with --grace-period=0, and then the API server removes the Pod without waiting for the kubelet's confirmation.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Forced Pod termination",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript (the page is too long for a fetch tool, which truncated before this section)",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Forced Pod termination",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "Container hook handlers can be Exec (run a command in the container), HTTP (a request to an endpoint on the container) or Sleep (pause for a specified duration).",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Hook handler implementations",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Hook handler implementations",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "AWS's EKS best-practices guide says that when a Pod is terminated the Kubernetes API notifies the kubelet and the EndpointSlice controller at the same time, creating a race in which new requests can still be sent to the container after SIGTERM until iptables rules are updated, and recommends a PreStop hook that delays SIGTERM, such as a simple Exec handler running sleep 10.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Gracefully handle the client requests",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:41"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Gracefully handle the client requests",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Gracefully handle the client requests",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Per the same guide, once the ELB starts deregistering a target it stops sending it new requests and starts a deregistration delay, 300 seconds by default, during which in-flight requests drain; when it expires, in-flight requests to that target are dropped.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Pod deletion sequence (deregistration delay paragraph)",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:41"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Pod deletion sequence (deregistration delay paragraph)",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Pod deletion sequence (deregistration delay paragraph)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "The same guide says applications should respond to SIGTERM by starting graceful shutdown, completing in-flight requests and closing connections and files, and that the grace period should be set long enough for clean-up to finish.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Gracefully shutdown applications",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:41"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Gracefully shutdown applications",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "Gracefully shutdown applications",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "docker stop sends the container's main process SIGTERM first by default and SIGKILL after a grace period; the first signal can be changed with the STOPSIGNAL Dockerfile instruction or the --stop-signal option of docker run and docker create.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Description",
+     "result": "supported",
+     "method": "WebFetch read of the page (summary of the located passages); verbatim re-read in pass 2",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Description",
+     "result": "supported",
+     "method": "fresh verbatim re-read in a real browser (built-in browser pane) of the Description and the --signal and --timeout sections; each page sentence judged against them",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Description",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "The default grace period of docker stop is 10 seconds for Linux containers and 30 seconds for Windows containers; --timeout (-t) sets the seconds to wait before killing, and -1 means wait indefinitely.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Description; Options (--timeout)",
+     "result": "supported",
+     "method": "WebFetch read of the page (summary of the located passages); verbatim re-read in pass 2",
+     "at": "2026-10-22T23:38"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Description; Options (--timeout)",
+     "result": "supported",
+     "method": "fresh verbatim re-read in a real browser (built-in browser pane) of the Description and the --signal and --timeout sections; each page sentence judged against them",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "Description; Options (--timeout)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "Docker's JSONArgsRecommended check says that with shell-form ENTRYPOINT or CMD the executable runs as a child of a shell that does not pass signals, so it cannot respond to SIGTERM; exec (JSON) form runs it as the main process, PID 1, which brings PID 1's responsibilities such as reaping child processes.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "Description; Examples",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:41"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Description; Examples",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "Description; Examples",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "Python installs a small number of default signal handlers: SIGPIPE is ignored and SIGINT is translated into a KeyboardInterrupt exception (if the parent process has not changed it).",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "General rules",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "General rules",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "A Python signal handler is not executed inside the low-level C handler: the low-level handler sets a flag, and the Python handler runs at a later point, for example at the next bytecode instruction.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Execution of Python signal handlers",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Execution of Python signal handlers",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "Python signal handlers always run in the main thread of the main interpreter, only that thread may set a new handler, and signal.signal() called from another thread raises ValueError.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Signals and threads; signal.signal()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Signals and threads; signal.signal()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "On Windows, signal.signal() can only be called with SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM or SIGBREAK; a ValueError is raised in any other case.",
+   "sources": [
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "signal.signal()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "signal.signal()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "Since Python 3.5, select.select() and epoll.poll() are retried with a recomputed timeout when interrupted by a signal, unless the signal handler raises an exception (PEP 475), instead of raising InterruptedError.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "select.select(); epoll.poll()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-23T00:00"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "select.select(); epoll.poll()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "A negative Popen.returncode -N indicates that the child was terminated by signal N (POSIX only).",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "Popen.returncode",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:42"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Popen.returncode",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "loop.add_signal_handler() sets a callback that is invoked by the loop along with its other queued callbacks and runnable coroutines; unlike handlers registered with signal.signal(), it is allowed to interact with the event loop; like signal.signal(), it must be invoked in the main thread.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Unix signals › loop.add_signal_handler()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Unix signals › loop.add_signal_handler()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "All event loops on Windows do not support loop.add_signal_handler() and loop.remove_signal_handler().",
+   "sources": [
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "Windows",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "Windows",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "Server.close() stops serving by closing listening sockets and leaves the sockets of existing client connections open; Server.wait_closed() waits until the server is closed and all active connections have finished.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Server objects › close(); wait_closed()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Server objects › close(); wait_closed()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "Changed in 3.12: wait_closed() now waits until the server is closed and all active connections have finished; previously it returned immediately if the server was already closed, even with active connections. CPython's source notes that an attempted fix in 3.12.0 was still broken and that 3.12.1 should have it right.",
+   "sources": [
+    "s7",
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Server objects › wait_closed()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Server.wait_closed docstring (historical note)",
+     "result": "supported",
+     "method": "verbatim read of the raw 3.14 branch file on raw.githubusercontent.com in a real browser",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Server objects › wait_closed()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Server.wait_closed docstring (historical note)",
+     "result": "supported",
+     "method": "fresh verbatim re-read of the raw 3.14 branch file in a real browser; each page sentence judged against the located code",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "Server.wait_closed docstring (historical note)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent; GitHub was unreachable for it, so it checked the same code in the installed CPython 3.14.6 standard library; supported",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "Server.close_clients() and Server.abort_clients(), added in 3.13, close all existing incoming client connections by calling close() or abort() on their transports; close() should be called before them to avoid races with new clients connecting.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Server objects › close_clients(); abort_clients()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Server objects › close_clients(); abort_clients()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "AbstractServer's __aexit__ calls self.close() and then awaits self.wait_closed().",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "class AbstractServer › __aexit__",
+     "result": "supported",
+     "method": "verbatim read of the raw 3.14 branch file on raw.githubusercontent.com in a real browser",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "class AbstractServer › __aexit__",
+     "result": "supported",
+     "method": "fresh verbatim re-read of the raw 3.14 branch file in a real browser; each page sentence judged against the located code",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "class AbstractServer › __aexit__",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent; GitHub was unreachable for it, so it checked the same code in the installed CPython 3.14.6 standard library; supported",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "loop.close() must not be called while the loop is running; pending callbacks are discarded, and no other methods should be called after the loop is closed.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Running and stopping the loop › loop.close()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Running and stopping the loop › loop.close()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "loop.call_soon_threadsafe() raises RuntimeError if called on a loop that has been closed, which can happen on a secondary thread when the main application is shutting down.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Scheduling callbacks › loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Scheduling callbacks › loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "loop.shutdown_default_executor() waits for the default executor's threads to join; by default (timeout=None) with no limit; the timeout parameter, added in 3.12, makes it emit a RuntimeWarning and terminate the executor without waiting for its threads when reached.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Running and stopping the loop › loop.shutdown_default_executor()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Running and stopping the loop › loop.shutdown_default_executor()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "loop.shutdown_asyncgens() schedules all open async generators to close with aclose(); afterwards the loop warns if a new async generator is iterated; the docs' example calls it in a finally after run_forever() and before loop.close(), and say there is no need to call it with asyncio.run().",
+   "sources": [
+    "s7",
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Running and stopping the loop › loop.shutdown_asyncgens()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "BaseEventLoop._asyncgen_firstiter_hook; shutdown_asyncgens",
+     "result": "supported",
+     "method": "verbatim read of the raw 3.14 branch file on raw.githubusercontent.com in a real browser",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Running and stopping the loop › loop.shutdown_asyncgens()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "BaseEventLoop._asyncgen_firstiter_hook; shutdown_asyncgens",
+     "result": "supported",
+     "method": "fresh verbatim re-read of the raw 3.14 branch file in a real browser; each page sentence judged against the located code",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "BaseEventLoop._asyncgen_firstiter_hook; shutdown_asyncgens",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent; GitHub was unreachable for it, so it checked the same code in the installed CPython 3.14.6 standard library; supported",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "asyncio.Runner, added in 3.11, is a context manager for running async functions in one event loop and context; asyncio.run(main()) can be rewritten as with asyncio.Runner() as runner: runner.run(main()), and CPython's asyncio.run is implemented with a Runner.",
+   "sources": [
+    "s8",
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Runner context manager",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "def run(main, ...)",
+     "result": "supported",
+     "method": "verbatim read of the raw 3.14 branch file on raw.githubusercontent.com in a real browser",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Runner context manager",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "def run(main, ...)",
+     "result": "supported",
+     "method": "fresh verbatim re-read of the raw 3.14 branch file in a real browser; each page sentence judged against the located code",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "def run(main, ...)",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent; GitHub was unreachable for it, so it checked the same code in the installed CPython 3.14.6 standard library; supported",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "Runner.close() cancels all tasks still on the loop and runs gather() over them with no time limit, then runs loop.shutdown_asyncgens(), then loop.shutdown_default_executor(THREAD_JOIN_TIMEOUT), and finally closes the loop; the docs summarise it as finalize async generators, shut down the default executor, close the loop.",
+   "sources": [
+    "s16",
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Runner.close(); _cancel_all_tasks()",
+     "result": "supported",
+     "method": "verbatim read of the raw 3.14 branch file on raw.githubusercontent.com in a real browser",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Runner.close()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Runner.close(); _cancel_all_tasks()",
+     "result": "supported",
+     "method": "fresh verbatim re-read of the raw 3.14 branch file in a real browser; each page sentence judged against the located code",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Runner.close()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Runner.close(); _cancel_all_tasks()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent; GitHub was unreachable for it, so it checked the same code in the installed CPython 3.14.6 standard library; supported",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "asyncio.run gives the default executor a timeout of 5 minutes to shut down; if it has not finished, a warning is emitted and the executor is closed.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "asyncio.run()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "Runner.run() installs a custom SIGINT handler, in CPython only in the main thread and only if SIGINT still has the default handler; Ctrl-C cancels the main task, raising CancelledError inside it so try/finally blocks run, and after it is cancelled run() raises KeyboardInterrupt; a second Ctrl-C raises KeyboardInterrupt immediately.",
+   "sources": [
+    "s8",
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "Handling Keyboard Interruption",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Runner.run(); Runner._on_sigint()",
+     "result": "supported",
+     "method": "verbatim read of the raw 3.14 branch file on raw.githubusercontent.com in a real browser",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "Handling Keyboard Interruption",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Runner.run(); Runner._on_sigint()",
+     "result": "supported",
+     "method": "fresh verbatim re-read of the raw 3.14 branch file in a real browser; each page sentence judged against the located code",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s16",
+     "locator": "Runner.run(); Runner._on_sigint()",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent; GitHub was unreachable for it, so it checked the same code in the installed CPython 3.14.6 standard library; supported",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "If an async generator exits early by break, the caller task being cancelled, or other exceptions, its async clean-up code may run in an unexpected context, perhaps after the lifetime of tasks it depends on or during loop shutdown when the async-generator garbage-collection hook is called; to prevent this the caller must explicitly close it with aclose().",
+   "sources": [
+    "s13",
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Asynchronous generator functions",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Close asynchronous generators explicitly",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Asynchronous generator functions",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Close asynchronous generators explicitly",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "agen.aclose() returns an awaitable that throws GeneratorExit into the async generator at the point where it was paused; if the generator then exits gracefully or raises GeneratorExit, the awaitable completes; if the generator yields a value, a RuntimeError is raised by the awaitable.",
+   "sources": [
+    "s13"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "agen.aclose()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "agen.aclose()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "asyncio's async-generator finalizer hook removes the generator from the loop's set and, if the loop is not closed, calls call_soon_threadsafe(self.create_task, agen.aclose()).",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "BaseEventLoop._asyncgen_finalizer_hook",
+     "result": "supported",
+     "method": "verbatim read of the raw 3.14 branch file on raw.githubusercontent.com in a real browser",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "BaseEventLoop._asyncgen_finalizer_hook",
+     "result": "supported",
+     "method": "fresh verbatim re-read of the raw 3.14 branch file in a real browser; each page sentence judged against the located code",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "BaseEventLoop._asyncgen_finalizer_hook",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent; GitHub was unreachable for it, so it checked the same code in the installed CPython 3.14.6 standard library; supported",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "contextlib.aclosing(thing), added in 3.10, returns an async context manager that calls thing.aclose() when the block completes, supporting deterministic clean-up of async generators that exit early by break or an exception, so their exit code runs in the same context as their iterations.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "contextlib.aclosing()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "contextlib.aclosing()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "The asyncio docs recommend creating async generators only after the event loop has been created, and show that an async generator iterated with runner.run(anext(agen)) and then deleted outside the loop reports RuntimeError: async generator ignored GeneratorExit.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Create asynchronous generators only when the event loop is running",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Create asynchronous generators only when the event loop is running",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "The asyncio docs warn that async generators may be re-entered while another __anext__()/athrow()/aclose() call is in progress, which can lead to an inconsistent state, and recommend avoiding async generators in parallel tasks or across multiple event loops.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Avoid concurrent iteration and closure of the same generator",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Avoid concurrent iteration and closure of the same generator",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "contextlib.asynccontextmanager, added in 3.7, is a decorator applied to an async generator function that defines a factory for async context managers without writing __aenter__() and __aexit__().",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "contextlib.asynccontextmanager",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "contextlib.asynccontextmanager",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "contextlib.AsyncExitStack, added in 3.7, is an async context manager similar to ExitStack that combines synchronous and asynchronous context managers and coroutine clean-up; ExitStack invokes registered callbacks in reverse order of registration, and contexts already entered are released even if entering a later one raises.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "contextlib.AsyncExitStack; contextlib.ExitStack",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "contextlib.AsyncExitStack; contextlib.ExitStack",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "Executor.shutdown(wait=True, *, cancel_futures=False): regardless of wait, the program does not exit until all pending futures are done; cancel_futures=True, added in 3.9, cancels pending futures that have not started running.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "Executor.shutdown()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:42"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "Executor.shutdown()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c44",
+   "text": "Daemon threads are abruptly stopped at shutdown and their resources may not be released properly; the threading docs recommend non-daemonic threads with a suitable signalling mechanism such as an Event for a graceful stop.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Thread objects (daemon thread note)",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:42"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Thread objects (daemon thread note)",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "asyncio.Queue.shutdown(), added in 3.13, makes future put() calls raise QueueShutDown; with immediate false (the default) items already in the queue can still be taken with get(), and once the queue is empty get() raises QueueShutDown.",
+   "sources": [
+    "s24"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "Queue.shutdown()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-23T00:15"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "Queue.shutdown()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c46",
+   "text": "aiohttp's run_app() attempts a graceful shutdown by stopping each site so new connections are rejected, closing idle keep-alive connections, calling on_shutdown, waiting a short time (adjustable with shutdown_timeout) for running handlers, closing remaining connections and cancelling their handlers, calling on_cleanup, and cancelling remaining tasks.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Graceful shutdown",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Graceful shutdown",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "Graceful shutdown",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c47",
+   "text": "Uvicorn's --timeout-graceful-shutdown is the maximum number of seconds to wait for graceful shutdown; after this timeout the server starts terminating requests.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "Timeouts",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:41"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "Timeouts",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "Timeouts",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c48",
+   "text": "Uvicorn's docs describe graceful process shutdown as closing connections not waiting on an HTTP response, waiting for other connections to finalize their responses, and waiting for background tasks to run to completion.",
+   "sources": [
+    "s23"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "Graceful Process Shutdown",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:41"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "Graceful Process Shutdown",
+     "result": "supported",
+     "method": "fresh WebFetch read of the page (the browser pane had disconnected); the section's content matched each step in the claim",
+     "at": "2026-10-23T00:44"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "Graceful Process Shutdown",
+     "result": "supported",
+     "method": "strict mode: independent reviewer agent given only the ledger, the page and the check keys; fresh WebFetch read of the source; claim and page wording supported; all keyed answers judged correct",
+     "at": "2026-10-23T00:58"
+    }
+   ]
+  },
+  {
+   "id": "c49",
+   "text": "When first iterated, an async generator calls the registered first-iteration hook and stores the finalizer registered with sys.set_asyncgen_hooks(), records that the hook was called and does not call it again; the stored finalizer is called upon finalization.",
+   "sources": [
+    "s13",
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s13",
+     "locator": "Asynchronous generator functions",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:40"
+    },
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "Create asynchronous generators only when the event loop is running",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s13",
+     "locator": "Asynchronous generator functions",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "Create asynchronous generators only when the event loop is running",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "loop.call_soon_threadsafe() is safe to call from a reentrant context or a signal handler.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "Scheduling callbacks › loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "verbatim read in a real browser (built-in browser pane): the located section's text extracted with JavaScript",
+     "at": "2026-10-22T23:39"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Scheduling callbacks › loop.call_soon_threadsafe()",
+     "result": "supported",
+     "method": "fresh re-read in a real browser (built-in browser pane), the located passage extracted again with JavaScript; each page sentence that cites the claim judged against it",
+     "at": "2026-10-23T00:36"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "Kubernetes' ContainerStopSignals feature gate (alpha since v1.33) lets a container's lifecycle set its own stop signal.",
+   "reason": "read in pass 1, but alpha and disabled by default; the page needs only STOPSIGNAL in the image"
+  },
+  {
+   "text": "Sidecar containers receive TERM only after the last main container has terminated, in reverse order of definition.",
+   "reason": "read in pass 1; the gateway has no sidecars, so the page does not use it"
+  },
+  {
+   "text": "aiohttp's run_app() shutdown_timeout default value and its handle_signals behaviour.",
+   "reason": "the Server Reference page was behind a bot challenge in the browser and the fetch tool's copy did not contain run_app's parameters; not bypassed, so the page cites only the Web Server Advanced page"
+  },
+  {
+   "text": "A company engineering blog describing 502s on rolling deploys fixed with a preStop sleep.",
+   "reason": "searched; every result found was a third-party or personal blog, not a company's own engineering site, so the In the wild boxes use only framework and platform documentation"
+  },
+  {
+   "text": "shutdown_asyncgens() reports a failing aclose() with the message 'an error occurred during closing of asynchronous generator'.",
+   "reason": "read in base_events.py in pass 1; not needed by any part"
+  }
+ ],
+ "strict_note": "Pass 3 (independent reviewer) covered 16 of 50 claims: docs.python.org, github.com and the kubernetes.io termination sections were unreachable from its fetch tool. The other 34 rest on passes 1 and 2 (two separate verbatim reads), plus local behaviour runs for c17, c21, c23, c25, c28, c36 and c45. It flagged c35's wording (now 'may run') and c9 (AWS's text says SIGKILL where its own recommendation implies SIGTERM; the page follows the guide's recommendation and its grace-period paragraph)."
+}

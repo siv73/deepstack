@@ -63,7 +63,7 @@
    "why": "a price cache shared by requests, per-request context, and crossing between threads and the loop"
   },
   {
-   "label": "Python async, Part 8: shutting down and cleaning up",
+   "label": "Python async, Part 8: shutting down and cleaning up", "slug": "python-asyncio-8",
    "why": "finishing in-flight requests on SIGTERM and closing async generators and clients"
   },
   {

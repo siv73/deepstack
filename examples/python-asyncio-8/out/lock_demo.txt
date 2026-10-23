@@ -1,0 +1,11 @@
+-- 3 calls recorded at once, under one Lock --
+task-1 reads 0
+after one turn: <asyncio.locks.Lock [locked, waiters:2]>
+task-1 writes 1
+task-2 reads 1
+task-2 writes 2
+task-3 reads 2
+task-3 writes 3
+3 calls made, counter = 3
+-- 10 calls --
+counter = 10

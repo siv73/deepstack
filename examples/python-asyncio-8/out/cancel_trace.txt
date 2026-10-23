@@ -1,0 +1,8 @@
+   0 ms  step 1: coroutine awaits the Future
+   0 ms  Future: a done callback was added (the Task's wake-up)
+ 250 ms  Future: cancel() called by the Task, msg='deadline'
+ 250 ms  deadline timer: task.cancel() returned True
+ 250 ms  deadline timer: task.done()=False, cancelling()=1
+ 250 ms  step 2: CancelledError('deadline',) thrown in at the await
+ 250 ms  step 2: finally runs; the coroutine ends
+ 250 ms  the awaiter gets CancelledError('deadline',); task.cancelled()=True

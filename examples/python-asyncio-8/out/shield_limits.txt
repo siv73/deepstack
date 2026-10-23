@@ -1,0 +1,7 @@
+-- 1. shield() around a Task that the request's TaskGroup owns --
+  rows=0, lost=1: the group cancelled its own Task
+-- 2. a deadline around shield(): the caller stops waiting, the write goes on --
+  TimeoutError at 10 ms; write done=False
+  at 40 ms: rows=1
+-- 3. the shielded write fails after the caller has gone --
+  spawn() counted: {'audit': 1}

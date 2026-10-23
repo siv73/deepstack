@@ -1,0 +1,1286 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="9">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Gateway v8 from Part 7 answers seller-b at 1,199 within 250 ms, makes one call per seller and item however many shoppers ask, serves seller-e's 1,149 from its cache once the slow fill lands, and tags every log line with the right request id. It has never been stopped on purpose. Every deploy stops it, several times a day, and nothing in its code says what should happen then.</p>
+<h3>Introduction</h3>
+<p>This is Part 8 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Parts 1 to 7 are the prerequisites for this page. This part recaps them in one screen; if any line below is unfamiliar, read that part first.</p>
+<h3>What Parts 1 to 7 built</h3>
+<ol>
+<li>The five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149). The right answer within 250 ms is seller-b at 1,199, with seller-e missing.</li>
+<li>Parts 1 and 2: one loop on one thread overlaps the waits; Tasks switch only at an <code>await</code>. <code>asyncio.run</code> creates the loop, runs <code>main()</code>, and on the way out cancels what is left, closes leftover async generators and closes the loop.</li>
+<li>Part 3: a TaskGroup owns the five seller calls, a Semaphore caps them, one <code>timeout_at</code> deadline covers each request.</li>
+<li>Part 4: seller-e's sync SDK runs in a thread pool of its own, ranking runs in a process pool, background Tasks are owned with <code>spawn()</code>, and metrics are flushed in the background.</li>
+<li>Part 5: <code>cancel()</code> is a request that lands at the next <code>await</code>; <code>finally</code> blocks clean up; the audit row is written behind <code>shield()</code>.</li>
+<li>Part 6: a front door that answers <code>busy</code>, per-seller caps, lines and rates, and a bounded audit queue with <code>shutdown()</code> and <code>join()</code>.</li>
+<li>Part 7: a single-flight price cache, a request id in a ContextVar, and seller-e's price feed calling in from its own thread through <code>run_coroutine_threadsafe</code>.</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>Requests in flight at a deploy are cut off, and so are single-flight fills, shielded audit rows and rows waiting in the audit queue.</li>
+<li>An async generator left early, such as a stream of offers abandoned at the first good price, cleans up whenever the interpreter gets to it, not where the code left it.</li>
+<li>seller-e's feed thread can call into the loop after the loop has closed.</li>
+</ul>
+<h3>What this page adds</h3>
+<p>Rung 1 shows what a deploy does to gateway v8 and how a container is stopped. Rung 2 gives the tools: signal handlers on the loop, what <code>asyncio.Runner</code> does at exit, async generators and their clean-up, and async context managers. Rung 3 builds gateway v9 on them. Three things change in the running system from this page on, and later pages keep them:</p>
+<ol>
+<li><strong>A shutdown sequence.</strong> SIGTERM starts it instead of killing the process: stop accepting, let requests in flight finish within a deadline, cancel the rest, wait for fills, stop the feed thread, flush the audit queue and the metrics, then exit.</li>
+<li><strong>A quick quote.</strong> A second port answers with the first offer at or below 1,200, read from an async generator that is always closed where the request stops reading.</li>
+<li><strong>An orchestrator in the picture.</strong> The gateway now runs under something that stops it: Kubernetes or Docker, with a grace period and a load balancer that learns about the stop late.</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 8 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "one TCP connection", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "tg", "label": "Run together", "sub": "Part 3: group · cap · deadline", "col": 1, "row": 0},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2},
+ {"id": "sdk", "label": "SDK threads", "sub": "Part 4: seller-e's own pool", "col": 3, "row": 3},
+ {"id": "cpu", "label": "Process pool", "sub": "Part 4: ranking offers", "col": 1, "row": 3},
+ {"id": "met", "label": "Metrics service", "sub": "Part 4: counts per seller", "col": 0, "row": 0},
+ {"id": "watch", "label": "Hang-up watch", "sub": "Part 5: stops the request", "col": 3, "row": 0},
+ {"id": "audit", "label": "Audit store", "sub": "Part 6: bounded queue", "col": 0, "row": 3},
+ {"id": "limits", "label": "Seller limits", "sub": "Part 6: cap · line · rate", "col": 3, "row": 1},
+ {"id": "cache", "label": "Price cache", "sub": "Part 7: one fill per item", "col": 0, "row": 4},
+ {"id": "stop", "label": "Shutdown", "sub": "Part 8: drain · cancel · flush", "col": 2, "row": 4, "step": 7},
+ {"id": "orch", "label": "Orchestrator", "sub": "Part 8: SIGTERM · grace · SIGKILL", "col": 3, "row": 4, "step": 7}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "shopper-1 kettle-1l", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "tg", "label": "starts and bounds the calls", "step": 2},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 2},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 2},
+ {"from": "gw", "to": "sdk", "step": 3},
+ {"from": "sdk", "to": "se", "label": "sync SDK call", "step": 3},
+ {"from": "gw", "to": "cpu", "step": 3},
+ {"from": "gw", "to": "met", "label": "background flush", "step": 3},
+ {"from": "watch", "to": "gw", "label": "shopper left: cancel all", "step": 4, "dashed": true},
+ {"from": "gw", "to": "audit", "step": 4},
+ {"from": "gw", "to": "app", "label": "busy: refused at once", "step": 5, "dashed": true},
+ {"from": "tg", "to": "limits", "step": 5},
+ {"from": "gw", "to": "cache", "label": "fresh price? else one fill", "step": 6},
+ {"from": "sdk", "to": "cache", "label": "feed: price changes", "step": 6, "dashed": true},
+ {"from": "orch", "to": "stop", "label": "SIGTERM", "step": 7, "dashed": true},
+ {"from": "stop", "to": "gw", "label": "stop in order, each step timed", "step": 7}],
+ "captions": [
+ "The request: the shopping app sends one line over its own TCP connection, and the gateway asks sellers a to d over theirs.",
+ "Parts 2 and 3, unchanged: asyncio's loop runs the waits, and a TaskGroup, a cap and one deadline bound the seller calls.",
+ "Part 4, unchanged: seller-e is reached through its sync SDK in a pool of its own, ranking runs in processes, and counts go out in the background.",
+ "Part 5, unchanged: a watcher cancels the request when the shopper hangs up, and every request writes one audit row.",
+ "Part 6, unchanged: the front door answers busy when the gateway is full, and each seller has its own cap, line and rate.",
+ "Part 7, unchanged: a price cache shared by every request, one fill per seller and item, and seller-e's feed from the SDK's own thread.",
+ "New on this page: the orchestrator that stops the process, and the shutdown sequence that SIGTERM now starts, which stops every box above in a fixed order, each step with its own time limit."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 to 6 are Parts 1 to 7, unchanged. This page removes none of them.</li>
+<li>Step 7 adds two boxes at the bottom. The orchestrator is outside the process: it decides when the gateway stops and how long it may take.</li>
+<li>The shutdown box is inside the process. It has an arrow to the gateway only, because it stops the other boxes through the gateway, in an order rung 3 works out: listeners, requests, fills, feed thread, audit queue, metrics, pools.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Stopping is the easy part; the process just exits."</p>
+<p><strong>Why it is wrong:</strong> exiting is easy; exiting without losing the work in flight is not. Every box in the diagram holds something at any moment: a request half answered, a fill half done, a row in a queue, a thread inside a call. The next part counts what a deploy loses when nothing is done about them.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v8: v7's limits plus a single-flight cache, a request id that travels, and seller-e's feed from its own thread.</li>
+<li>Still broken: work in flight at a deploy, async generators closed late, a thread that outlives the loop.</li>
+<li>New: an orchestrator that sends SIGTERM, and a timed shutdown sequence in gateway v9; a quick quote read from an async generator.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 8 keeps gateway v8 and adds the part every service needs and few test: stopping in a fixed order, within a time limit, without losing the work in flight.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">This needs Part 7. A request for toaster-2s answers at 250 ms while seller-e's single-flight fill for toaster-2s is still running. Then <code>main()</code> returns and <code>asyncio.run</code> starts its clean-up. What happens to the fill?</p>
+<ol>
+<li data-why="The shield protected the fill from the request's deadline only; asyncio.run cancels every Task still running, shielded or not.">It finishes, because each request waited for it through <code>shield()</code></li>
+<li data-why="The fill is an owned Task, but owning it only means someone can wait for it; nothing in gateway v8 waits for fills before exiting.">It finishes, because <code>spawn()</code> owns it</li>
+<li>It is cancelled, and seller-e's price for toaster-2s is lost</li>
+</ol>
+<p class="ts-why">Part 7's last run showed it: the fill outlives the request, which is what the shield is for, but nothing waits for it at exit. <code>asyncio.run</code> cancels every Task still running when <code>main()</code> returns (Part 2), and the fill is one of them. Waiting for owned work before the loop closes is part of this page's shutdown.</p>
+</div>
+</section>
+<section class="ts-part" id="deploy-cuts-requests" data-rung="1" data-min="11">
+<h2>Every deploy cuts some requests in half</h2>
+<p class="ts-bridge">Last part: Part 8 adds a shutdown sequence. Still unsolved: what exactly goes wrong today, and how much of it.</p>
+<p class="ts-problem">The gateway is deployed four times a day. Each time, the support team gets a handful of tickets: "the app spun and said connection closed", always within seconds of the deploy. The audit store has no row for those shoppers, and the metrics show nothing unusual, because the process that would have counted them is gone.</p>
+<h3>Introduction</h3>
+<p>To replace a running gateway with a new version, the platform starts the new one and stops the old one. "Stops" means it sends the old process a signal. This part runs gateway v8 exactly as it was deployed before this page, sends it that signal while 20 shoppers are waiting for their answers, and counts what they get.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A notification the operating system delivers to a process, such as SIGTERM (please stop) or SIGKILL (stop now), identified by a number.">signal</dfn> is a notification the operating system delivers to a process, identified by a number. <code>SIGTERM</code> (15) asks a process to terminate; <code>SIGKILL</code> (9) ends it with no chance to react.</li>
+<li>A request is <dfn data-def="Accepted by the server but not yet answered: some of its work is done and some is not.">in flight</dfn> when the server has accepted it but not yet answered it.</li>
+<li>A <dfn data-def="Stopping a service so that the work it has accepted is finished or handed over, not dropped, within a time limit.">graceful shutdown</dfn> stops a service so that the work it has accepted is finished or handed over, within a time limit, instead of dropped.</li>
+</ol>
+<h3>Working: what SIGTERM does to gateway v8</h3>
+<ol class="ts-steps">
+<li><strong>0 ms:</strong> 20 shoppers connect and send their request lines. Gateway v8 starts asking the sellers for each.</li>
+<li><strong>100 ms:</strong> the stand-in orchestrator sends SIGTERM. Gateway v8 has no handler for it, so the operating system's default action applies: the process ends at once.</li>
+<li><strong>Same instant:</strong> the kernel closes every socket the process held. Each shopper's <code>readline()</code> returns an empty line: the connection closed with no answer.</li>
+<li><strong>150 ms:</strong> one more shopper arrives. Nothing listens on the port any more, so the connection is refused.</li>
+</ol>
+<h3>Program</h3>
+<p><code>deploy.py</code> is a small stand-in for the orchestrator: it starts a gateway process, sends shoppers, sends SIGTERM at 100 ms, tries one more shopper at 150 ms, and sends SIGKILL if the process is still running 3 s after SIGTERM. <code>server_v8.py</code> is gateway v8 started as a long-running server, the way it ran before this page.</p>
+<div class="ts-code" data-lang="python" data-title="deploy.py" data-file="deploy.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="server_v8.py" data-file="server_v8.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="deploy_v8.py" data-file="deploy_v8.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/deploy_v8.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>All 20 shoppers got "no answer (connection closed)", the last at 100 ms: the moment SIGTERM arrived. Not one of them got the 1,199 that was 150 ms away.</li>
+<li>The return code is -15. <span class="ts-claim" data-claim="c20" data-src="s19">For a child process on POSIX, a negative return code -N means the child was terminated by signal N.</span> Signal 15 is SIGTERM: the process did not exit, it was ended.</li>
+<li><strong>stderr lines: 0.</strong> No traceback, no log line, no metric: the process had no chance to say anything. That is why the tickets in the problem are the only evidence.</li>
+<li>The shopper at 150 ms was refused, which is correct: the old process should stop taking new work. The cost is that it also dropped the work it had already taken.</li>
+</ol>
+<h3>Solved example: what four deploys a day cost</h3>
+<p><strong>Given:</strong> 2,000 requests a second reach each gateway process; each takes about 250 ms; there are 8 processes and 4 deploys a day, each replacing every process once.</p>
+<p><strong>Step 1.</strong> Requests in flight in one process at any instant, by Little's law (Part 6): 2,000 × 0.25 = 500.</p>
+<p><strong>Step 2.</strong> One deploy ends 8 processes, so 8 × 500 = 4,000 requests are cut off.</p>
+<p><strong>Step 3.</strong> Four deploys: 16,000 cut-off requests a day, with no audit row and no metric for any of them.</p>
+<p><strong>Result:</strong> about 16,000 shoppers a day see "connection closed", and the gateway's own records say nothing happened. A smaller service sees fewer, which is how the problem survives testing: a deploy in a quiet test environment cuts off nobody.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Shoppers whose connection drops just retry, so nothing is lost."</p>
+<p><strong>Why it is wrong:</strong> some clients retry and some do not, and a retry is not free: it arrives at a fleet that is in the middle of replacing itself, and the original request may already have changed something (Part 5's audit row, a charge in a payments service). Retries make cut-off requests cheaper for reads; they do not make them safe.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A deploy stops the old process with a signal; gateway v8 has no handler, so SIGTERM ends it at once (return code -15).</li>
+<li>Every request in flight is cut off with "connection closed"; nothing is logged or counted.</li>
+<li>At 2,000 requests a second and 250 ms each, that is 500 cut-off requests per process per deploy.</li>
+</ul>
+</div>
+<p class="ts-takeaway">With no handler for SIGTERM, a deploy ends gateway v8 instantly and silently, cutting off every request in flight.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The stand-in orchestrator sends SIGTERM at 400 ms instead of 100 ms, when the 20 shoppers have already had their answers (the last at about 300 ms). What does the output change to?</p>
+<div class="ts-reveal"><p>All 20 shoppers now get seller-b 1,199: they were answered before the signal. The late shopper is still refused, the return code is still -15 and stderr is still empty. Nothing about the shutdown improved; the deploy just landed between requests. Whether a deploy hurts depends on what is in flight at that instant, which under real load is never nothing.</p></div>
+</div>
+</section>
+<section class="ts-part" id="how-containers-stop" data-rung="1" data-min="13">
+<h2>How a container is stopped: SIGTERM, a grace period, then SIGKILL</h2>
+<p class="ts-bridge">Last part: SIGTERM ends gateway v8 at once. Still unsolved: who sends it, what they wait for, and what happens to a process that does not exit.</p>
+<p class="ts-problem">The platform team says "we give you 30 seconds". The gateway team asks: 30 seconds from what? Before or after the load balancer stops sending traffic? Does the pre-stop hook count? And what arrives at second 31?</p>
+<h3>Introduction</h3>
+<p>Gateway v9 will run as a container under Kubernetes in production and under Docker on developer machines. Both stop a container the same way in outline: a polite signal, a wait, then a forced kill. The details decide how long the gateway has, and they are documented, so this part takes them from the documentation and not from habit.</p>
+<h3>Comparison</h3>
+<p>A shop closing for the night: at closing time the manager locks the front door and announces "we close in 30 minutes". Shoppers already inside finish at the tills. At the end of the 30 minutes the lights go off, whoever is still inside or not.</p>
+<ul>
+<li>The announcement = SIGTERM.</li>
+<li>The 30 minutes = the grace period.</li>
+<li>Lights off = SIGKILL.</li>
+</ul>
+<p>The comparison stops working at the door: in a cluster, the sign that sends shoppers to other shops (the load balancer) is updated by someone else, a little later. Rung 3 measures that.</p>
+<h3>Definitions</h3>
+<ol>
+<li>The <dfn data-def="The time an orchestrator waits after asking a container to stop before killing what is still running.">grace period</dfn> is the time the orchestrator waits after the stop signal before killing what is still running.</li>
+<li>A <dfn data-def="A Kubernetes container hook that runs before the stop signal is sent to the container.">preStop hook</dfn> is a Kubernetes hook that runs before the stop signal is sent.</li>
+<li>An <dfn data-def="The Kubernetes object listing the addresses of the Pods behind a Service, which load balancers and kube-proxy use to route traffic.">EndpointSlice</dfn> lists the Pod addresses behind a Kubernetes Service; load balancers route by it.</li>
+</ol>
+<h3>Working: a Kubernetes Pod being deleted</h3>
+<ol class="ts-steps">
+<li><strong>The Pod is marked terminating</strong> with its grace period. <span class="ts-claim" data-claim="c2" data-src="s1">The default terminationGracePeriodSeconds is 30 seconds.</span></li>
+<li><strong>The preStop hook runs, if there is one.</strong> <span class="ts-claim" data-claim="c4" data-src="s2">The grace period countdown starts before the preStop hook runs, the hook must finish before the stop signal is sent, and the grace period covers the hook and the container's own stop together.</span> <span class="ts-claim" data-claim="c8" data-src="s2">A hook handler can run a command in the container, make an HTTP request to it, or simply sleep for a given time.</span></li>
+<li><strong>SIGTERM.</strong> <span class="ts-claim" data-claim="c1" data-src="s1">The kubelet has the container runtime send TERM (SIGTERM) to the main process in each container; many runtimes send the image's STOPSIGNAL instead when the image defines a different one.</span></li>
+<li><strong>At the same time, traffic is moved away.</strong> <span class="ts-claim" data-claim="c6" data-src="s1 s3">When the kubelet starts the graceful shutdown, the control plane also evaluates removing the Pod from the Service's EndpointSlices; a terminating endpoint is reported with ready set to false, so load balancers stop using it for regular traffic, while a separate serving condition shows whether it can still answer.</span></li>
+<li><strong>SIGKILL.</strong> <span class="ts-claim" data-claim="c3" data-src="s1">When the grace period expires, the container runtime sends SIGKILL to any process still running in the Pod's containers.</span> <span class="ts-claim" data-claim="c5" data-src="s1">If the preStop hook itself is still running at that point, the kubelet grants a one-off extension of 2 seconds.</span></li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 2: a preStop sleep is not free time. Every second it sleeps is a second the gateway no longer has after SIGTERM.</li>
+<li>Steps 3 and 4 happen together. For a short while after SIGTERM, new requests can still arrive. Rung 3 deals with that.</li>
+<li>Step 5 is not negotiable. Whatever the gateway has not finished by then is lost exactly as in the last part.</li>
+</ul>
+<h3>Docker</h3>
+<p><span class="ts-claim" data-claim="c12" data-src="s5">docker stop sends the container's main process SIGTERM by default and SIGKILL after a grace period; the first signal can be changed with STOPSIGNAL in the Dockerfile or --stop-signal when the container is created.</span> <span class="ts-claim" data-claim="c13" data-src="s5">The default grace period is 10 seconds for Linux containers and 30 seconds for Windows containers; docker stop --timeout (-t) sets it for one stop, and -1 waits with no limit.</span></p>
+<p><span class="ts-claim" data-claim="c7" data-src="s1">In Kubernetes, kubectl delete --grace-period=&lt;seconds&gt; overrides the Pod's value, and --grace-period=0 with --force removes the Pod from the API at once without waiting for the kubelet to confirm that it stopped.</span> A forced delete is for stuck Pods, not deploys: it skips everything this page builds.</p>
+<h3>Solved example: how long does the gateway really have?</h3>
+<p><strong>Given:</strong> Kubernetes, the default grace period, and a preStop hook that sleeps 10 s (rung 3 explains why).</p>
+<p><strong>Step 1.</strong> The countdown starts when the Pod is marked terminating: 30 s.</p>
+<p><strong>Step 2.</strong> The hook sleeps 10 s inside those 30 s. SIGTERM reaches the gateway at second 10.</p>
+<p><strong>Step 3.</strong> SIGKILL arrives at second 30, so the gateway has 30 − 10 = 20 s from SIGTERM.</p>
+<p><strong>Result:</strong> the gateway's shutdown budget is 20 s, not 30. Under Docker on a laptop it is 10 s with no hook. Rung 3 divides that budget between the steps.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The preStop hook runs before the grace period starts, so it adds to the 30 seconds."</p>
+<p><strong>Why it is wrong:</strong> the Kubernetes documentation says the countdown begins before the hook runs, and gives the example of a 60 s grace period, a 55 s hook and a container that needs 10 s to stop: the container is killed before it finishes. The hook and the shutdown share one budget.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Kubernetes: preStop hook, then SIGTERM, then SIGKILL when the grace period ends; the hook counts against it. <span class="ts-claim" data-claim="c2" data-src="s1">The default terminationGracePeriodSeconds is 30 seconds.</span></li>
+<li>Endpoint removal starts at the same time as shutdown, so traffic can arrive after SIGTERM.</li>
+<li>Docker: <span class="ts-claim" data-claim="c13" data-src="s5">SIGTERM, then SIGKILL after a grace period of 10 seconds for Linux containers by default.</span></li>
+</ul>
+</div>
+<p class="ts-takeaway">An orchestrator stops a container with SIGTERM and kills it with SIGKILL when the grace period ends, and in Kubernetes the preStop hook spends part of that same grace period.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c2 c4">
+<p class="q">A Pod has terminationGracePeriodSeconds 30 and a preStop hook that sleeps 25 s. The gateway needs 8 s after SIGTERM to finish its requests. What happens?</p>
+<ol>
+<li data-why="The countdown started before the hook, so the 25 s of sleeping came out of the same 30 s.">The gateway gets SIGTERM at 25 s and has until 55 s, so it finishes</li>
+<li>The gateway gets SIGTERM at 25 s and SIGKILL at 30 s, 3 s short of finishing</li>
+<li data-why="The hook does not stop the container; it only delays the stop signal. The gateway serves throughout the sleep.">The hook kills the container at 25 s</li>
+</ol>
+<p class="ts-why">The grace countdown starts before the hook runs, and covers the hook and the stop together. 30 − 25 leaves 5 s after SIGTERM; the gateway needs 8 s, so it is killed 3 s early. Either shorten the hook or raise the grace period.</p>
+</div>
+<div class="ts-explain" data-points="A deploy stops the old process with SIGTERM, then SIGKILL when the grace period ends|With no SIGTERM handler, Python ends at once and every request in flight is cut off, with nothing logged|The preStop hook runs inside the grace period, so the time after SIGTERM is the grace period minus the hook|Traffic is moved away at the same time as shutdown starts, not before">
+<p class="q">In your own words: what happens to the 500 requests in flight in one gateway v8 process during a Kubernetes deploy, and what time does a gateway really have to stop?</p>
+<div class="ts-model"><p>The kubelet runs the preStop hook, then has SIGTERM sent to the gateway's main process. Gateway v8 has no handler for SIGTERM, so the process ends at once and the kernel closes every socket: all 500 shoppers get "connection closed", and no audit row or metric records it. The grace period, 30 s by default, starts before the hook, so the gateway's real budget is the grace period minus the hook; at the end, SIGKILL ends anything still running. Meanwhile the Pod's endpoint is being removed at the same time as shutdown starts, so a few new requests can still arrive after SIGTERM.</p></div>
+</div>
+</section>
+<section class="ts-part" id="signals-in-asyncio" data-rung="2" data-min="13">
+<h2>Catching SIGTERM in an asyncio program</h2>
+<p class="ts-bridge">Last part: the orchestrator sends SIGTERM and waits for the grace period. Still unsolved: how a program built on an event loop hears that signal at all.</p>
+<p class="ts-problem">A developer adds <code>signal.signal(SIGTERM, lambda *_: stop.set())</code> to a small asyncio service. In testing, stopping it works. In production, idle replicas ignore SIGTERM and are killed after 30 s on every deploy, while busy replicas stop fine.</p>
+<h3>Introduction</h3>
+<p>Python has two ways to run code when a signal arrives. The <code>signal</code> module's handler is the general one. asyncio's <code>loop.add_signal_handler</code> is the one made for event loops. The problem above is the difference between them, and this part measures it.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="Code registered to run when a process receives a given signal, instead of the signal's default action.">signal handler</dfn> is code registered to run when the process receives a given signal, instead of the default action.</li>
+<li>The <dfn data-def="What the operating system does with a signal when no handler is set; for SIGTERM, ending the process.">default action</dfn> is what the operating system does when no handler is set; for SIGTERM it ends the process. <span class="ts-claim" data-claim="c15" data-src="s10">Python itself installs only a few handlers: SIGPIPE is ignored, and SIGINT becomes a KeyboardInterrupt exception.</span> SIGTERM is not one of them, which is why gateway v8 simply ended.</li>
+</ol>
+<h3>Working: two ways a signal reaches the code</h3>
+<p><strong><code>signal.signal(SIGTERM, handler)</code></strong></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c16" data-src="s10">A Python signal handler does not run inside the operating system's low-level handler: the low-level handler only sets a flag, and the Python handler runs later, for example at the next bytecode instruction.</span></li>
+<li>An idle event loop executes no bytecode: it is blocked in the selector, waiting for a socket or a timer. <span class="ts-claim" data-claim="c19" data-src="s20">Since Python 3.5, select() and epoll's poll() are retried with a recomputed timeout when a signal interrupts them, unless the signal handler raises an exception.</span></li>
+<li>So the handler runs during that retry and sets the Event, but the selector goes straight back to waiting. The Tasks waiting on the Event are woken only when something else wakes the loop: a timer, a socket, another request.</li>
+</ol>
+<p><strong><code>loop.add_signal_handler(SIGTERM, callback)</code></strong></p>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c21" data-src="s7">loop.add_signal_handler sets a callback that the loop itself invokes along with its other queued callbacks; unlike a handler set with signal.signal, this callback may interact with the event loop, and it must be set from the main thread.</span></li>
+<li>To make that work, the loop arranges to be woken when the signal arrives (rung 4's program shows the call it makes), so the callback runs in the next loop iteration whatever the loop was waiting for.</li>
+</ol>
+<h3>Program</h3>
+<p>Each case runs as its own process. The child may start one 300 ms job, a stand-in for a request in flight, and then waits on an Event. The parent sends SIGTERM at 100 ms and SIGKILL if the child is still running at 2 s.</p>
+<div class="ts-code" data-lang="python" data-title="signal_handlers.py" data-file="signal_handlers.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/signal_handlers.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>No handler:</strong> return code -15 and no output. The job's <code>finally</code> never ran: that is gateway v8.</li>
+<li><strong>add_signal_handler, a job in flight:</strong> the stop is seen at 100 ms, the job still finishes at 300 ms, its <code>finally</code> runs, and the process exits with 0. Seeing the stop and stopping the work are separate decisions; this program chose to let the job finish.</li>
+<li><strong>add_signal_handler, idle:</strong> stop seen at 100 ms, exit at 100 ms.</li>
+<li><strong>signal.signal, a job in flight:</strong> the handler ran at 100 ms, but "stop seen" says 300 ms. The loop slept until the job's timer woke it, and only then ran the Task waiting on the Event.</li>
+<li><strong>signal.signal, idle:</strong> nothing wakes the loop, ever. The parent's SIGKILL at 2 s ends it: return code -9. This is the problem's idle replica, killed at the end of every grace period.</li>
+</ol>
+<h3>Difference between the two</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th></th><th><code>signal.signal</code></th><th><code>loop.add_signal_handler</code></th></tr></thead>
+<tbody>
+<tr><td>Where the code runs</td><td>Between bytecodes of the main thread, wherever it happens to be</td><td>As a loop callback, between Tasks</td></tr>
+<tr><td>May touch asyncio objects</td><td>No: it can run in the middle of the loop's own code</td><td><span class="ts-claim" data-claim="c21" data-src="s7">Yes, the documentation allows it</span></td></tr>
+<tr><td>Wakes an idle loop</td><td>No (measured: SIGKILL at 2 s)</td><td>Yes (measured: exit at 100 ms)</td></tr>
+<tr><td>Windows</td><td><span class="ts-claim" data-claim="c18" data-src="s10">Only SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM and SIGBREAK may be set</span></td><td><span class="ts-claim" data-claim="c22" data-src="s9">Not supported by any event loop on Windows</span></td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A signal handler runs the moment the signal arrives."</p>
+<p><strong>Why it is wrong:</strong> the operating system interrupts the process at once, but Python only notes the signal and runs the handler at its next chance. For an asyncio program, "ran" is still not "acted on": the loop must also wake up and run the Tasks the handler released. add_signal_handler arranges both; signal.signal arranges neither.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Python sets no SIGTERM handler of its own: the process just ends.</li>
+<li>Use <code>loop.add_signal_handler</code>: the callback runs on the loop and the loop is woken for it.</li>
+<li><code>signal.signal</code> + an Event never wakes an idle loop; the measured idle process was SIGKILLed.</li>
+</ul>
+</div>
+<p class="ts-takeaway">In an asyncio program, catch SIGTERM with loop.add_signal_handler, which runs the callback on the loop and wakes it, not with signal.signal, which can leave an idle loop asleep until it is killed.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c16 c19">
+<p class="q">The idle replica from the problem uses <code>signal.signal</code> and also runs a health-check Task that wakes every 5 s. The grace period is 30 s. When does it stop after SIGTERM?</p>
+<ol>
+<li>Within about 5 s, at the health check's next wake-up</li>
+<li data-why="The handler did run promptly; what was missing was a reason for the loop to wake. Any timer gives it one.">Never: it is still killed at 30 s</li>
+<li data-why="The handler sets the Event during the retried wait, but the selector goes back to sleep; nothing runs the waiting Task until the loop wakes.">At once, because the handler sets the Event immediately</li>
+</ol>
+<p class="ts-why">The handler runs during the retried selector wait and sets the Event, but the selector waits on. The health check's timer wakes the loop within 5 s, and in that iteration the waiting Task runs. The busy replicas in the problem stopped fine for the same reason: their traffic kept waking the loop.</p>
+</div>
+</section>
+<section class="ts-part" id="runner-and-run-exit" data-rung="2" data-min="12">
+<h2>What asyncio.Runner and asyncio.run do at exit</h2>
+<p class="ts-bridge">Last part: add_signal_handler lets SIGTERM release a Task on the loop. Still unsolved: once <code>main()</code> returns, what does <code>asyncio.run</code> do with everything still running, and in what order?</p>
+<p class="ts-problem">A developer presses Ctrl-C on the gateway in a terminal and it stops cleanly, with its <code>finally</code> blocks run. In a container, SIGTERM ends the same program instantly. "Ctrl-C works, so shutdown works" turns out to be false.</p>
+<h3>Introduction</h3>
+<p>Part 2 listed what <code>asyncio.run</code> does when <code>main()</code> returns. This part revisits it in the code it actually calls, <code>asyncio.Runner</code>, because every step there is a step gateway v9's shutdown must finish before, or must do itself with a time limit.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><span class="ts-claim" data-claim="c31" data-src="s8 s16">asyncio.Runner, added in Python 3.11, is a context manager that owns one event loop and one context; asyncio.run(main()) is the same as creating a Runner and calling its run() once, and CPython's asyncio.run is written exactly that way.</span></p>
+</div>
+<h3>Working: Runner.close(), step by step</h3>
+<p><span class="ts-claim" data-claim="c32" data-src="s16 s8">Runner.close() cancels every Task still running on the loop and waits for all of them with no time limit, then closes the open async generators with shutdown_asyncgens(), then shuts down the default executor, and finally closes the loop.</span></p>
+<ol class="ts-steps">
+<li><strong>Cancel every Task left.</strong> Each gets CancelledError at its next <code>await</code> (Part 5). The runner then waits for all of them, however long that takes.</li>
+<li><strong>Close async generators</strong> still open (the next part).</li>
+<li><strong>Shut down the default executor.</strong> <span class="ts-claim" data-claim="c33" data-src="s8">asyncio.run gives the default executor 5 minutes to shut down; after that a warning is emitted and the executor is closed.</span></li>
+<li><strong>Close the loop.</strong> <span class="ts-claim" data-claim="c27" data-src="s7">Closing the loop discards any pending callbacks, and no other loop method should be called after it.</span></li>
+</ol>
+<p><strong>Why each step matters</strong></p>
+<ul>
+<li>Step 1 has no time limit. One Task that does not finish after its cancel holds the whole exit (rung 4).</li>
+<li>Step 1 is also where single-flight fills die, as Part 7 showed: they are Tasks like any other.</li>
+<li>Step 3 waits for threads, which cannot be cancelled at all.</li>
+</ul>
+<h3>Working: Ctrl-C</h3>
+<p><span class="ts-claim" data-claim="c34" data-src="s8 s16">Runner.run() installs its own SIGINT handler, but only in the main thread and only if SIGINT still has Python's default handler; on Ctrl-C it cancels the main Task, so CancelledError is raised inside it and its finally blocks run, and after the main Task is cancelled run() raises KeyboardInterrupt; a second Ctrl-C raises KeyboardInterrupt at once.</span> There is no such handler for SIGTERM.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="runner_sigint.py" data-file="runner_sigint.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/runner_sigint.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>SIGINT:</strong> the main Task got CancelledError at its <code>await</code>, its <code>finally</code> ran, and <code>runner.run</code> raised KeyboardInterrupt, which the child caught. Return code 0.</li>
+<li><strong>SIGTERM:</strong> return code -15 and no output at all. The same program, the same moment, a different signal.</li>
+<li>That is the problem's "Ctrl-C works": the developer tested the one signal asyncio handles for them, and production sends the other.</li>
+</ol>
+<div class="ts-legacy">
+<p><strong>Code written before Python 3.11.</strong> Without Runner, programs ran the loop by hand and had to do the exit steps themselves: <span class="ts-claim" data-claim="c30" data-src="s7 s14">loop.shutdown_asyncgens() closes every open async generator with aclose(), after which the loop warns if a new async generator is iterated; the documentation's pattern runs it in a finally after run_forever() and before loop.close(), and says there is no need to call it when asyncio.run() is used.</span> You will meet <code>try: loop.run_forever() finally: ...</code> in older services. On 3.11 and later, use <code>asyncio.run</code> or a Runner, and put your own clean-up before <code>main()</code> returns.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "asyncio.run cleans up after me, so shutdown is handled."</p>
+<p><strong>Why it is wrong:</strong> it cleans up in its own order, with no time limits, by cancelling. It cancels requests instead of letting them finish, cancels fills instead of waiting for them, and waits forever for a Task that ignores the cancel. It is the last safety net, not the shutdown.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>asyncio.run</code> = a Runner; at exit: cancel all Tasks and wait (no limit), close async generators, shut down the default executor (5 min), close the loop.</li>
+<li>Ctrl-C cancels the main Task and raises KeyboardInterrupt; SIGTERM gets no handling at all.</li>
+<li>Your shutdown must run before <code>main()</code> returns.</li>
+</ul>
+</div>
+<p class="ts-takeaway">asyncio.run ends by cancelling whatever is left and waiting for it without a limit, so a service's real shutdown has to happen before main() returns.</p>
+<div class="ts-order" data-claims="c32">
+<p class="q">Put what happens after <code>main()</code> returns inside <code>asyncio.run</code> in order.</p>
+<ol>
+<li>Every Task still running is cancelled, and the runner waits for all of them</li>
+<li>Open async generators are closed with <code>aclose()</code></li>
+<li>The default executor is shut down, waiting for its threads</li>
+<li>The loop is closed and pending callbacks are discarded</li>
+</ol>
+<p class="ts-why">That is Runner.close() in CPython 3.14's runners.py: cancel and gather the Tasks, shutdown_asyncgens, shutdown_default_executor, then loop.close().</p>
+</div>
+</section>
+<section class="ts-part" id="async-generators-late" data-rung="2" data-min="13">
+<h2>Async generators, and why their clean-up runs late</h2>
+<p class="ts-bridge">Last part: asyncio.run closes leftover async generators near the end. Still unsolved: what an async generator is holding when the code that used it walks away, and when it lets go.</p>
+<p class="ts-problem">The quick quote reads offers as they arrive and stops at the first one at or below 1,200. Each answered quote leaves three seller asks still running behind it, holding seller connections and cap slots (Part 6) on behalf of requests that have already answered.</p>
+<h3>Introduction</h3>
+<p>Part 1 built generators by hand. An <dfn data-def="A function defined with async def that contains yield; calling it returns an object read with async for, which can await between values.">async generator</dfn> is the same idea inside <code>async def</code>: it yields values and can <code>await</code> between them, and it is read with <code>async for</code>. That makes it a natural shape for "offers as they arrive". It also gives it a problem plain generators rarely show: its clean-up code can itself need to <code>await</code>, so it can only run on a loop, in some Task.</p>
+<h3>Definitions</h3>
+<ol>
+<li><code>offers()</code> below is an async generator. Its <code>finally</code> is its clean-up: cancel the seller asks still waiting, and wait for them.</li>
+<li>A consumer <dfn data-def="Stops reading an async generator before it is exhausted, by break, return, an exception or a cancel, leaving it paused at a yield.">leaves early</dfn> when it stops reading before the generator is exhausted, by <code>break</code>, <code>return</code>, an exception or a cancel. The generator stays paused at its <code>yield</code>, and its <code>finally</code> has not run.</li>
+</ol>
+<h3>Working: three ways to leave the stream</h3>
+<p><span class="ts-claim" data-claim="c35" data-src="s13 s11">When an async generator is left early by break, by its caller being cancelled or by an exception, its async clean-up code may run in an unexpected context, possibly after the tasks it depends on have finished, or during loop shutdown when the garbage-collection hook calls it; to prevent this the caller must close it explicitly with aclose().</span> <span class="ts-claim" data-claim="c37" data-src="s14">When an async generator that was not closed is finalized while the loop is still open, asyncio's hook schedules its aclose() in a new Task with call_soon_threadsafe.</span></p>
+<ol class="ts-steps">
+<li><strong>Left open, nothing else refers to it.</strong> The request returns; the last reference to the generator goes; CPython finalizes it at once, and the hook schedules its <code>aclose()</code> in a new Task. The clean-up runs after the request has answered, in another Task.</li>
+<li><strong>Left open, something keeps a reference</strong> (a list for debugging, a cache, a closure). Nothing finalizes it, so its <code>finally</code> waits for <code>shutdown_asyncgens()</code> at the very end of <code>asyncio.run</code>.</li>
+<li><strong>Closed by the consumer</strong> (next part). The clean-up runs in the request's own Task, before the request answers.</li>
+</ol>
+<h3>Program</h3>
+<p>Three quick quotes for kettle-1l, each stopping at seller-b's 1,199. The asks are stand-in timers with the sellers' latencies. Every log line shows the time, the request id and the Task that wrote it.</p>
+<div class="ts-code" data-lang="python" data-title="offer_stream.py" data-file="offer_stream.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="asyncgen_late.py" data-file="asyncgen_late.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/asyncgen_late.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Left open:</strong> the request answered with 3 asks still waiting (seller-c, seller-d, seller-e). The stream's <code>finally</code> ran in Task-2, not in the request's Task. Here it ran within the same millisecond, because CPython frees the generator as soon as its last reference goes. The request id is still right because the hook ran while the request's context was current, and the new Task copied it.</li>
+<li><strong>aclosing:</strong> "offer stream closed" comes <em>before</em> "answered", in the request's own Task, and 0 asks are left waiting.</li>
+<li><strong>Kept:</strong> the request answered with 3 asks waiting, and nothing more happened until <code>main()</code> returned. Then <code>asyncio.run</code>'s <code>shutdown_asyncgens()</code> closed it in Task-4, with no request id ("-"), and found 0 asks to cancel: they had finished on their own long before. For a real stream holding a seller connection, that connection stayed open for the whole life of the process.</li>
+</ol>
+<div class="ts-note" data-label="Correction to Part 7">
+<p>Part 7's last part said an abandoned stream keeps its seller connection until <code>asyncio.run</code> ends. The measurement above is more precise: that happens only when something still refers to the generator. An unreferenced one is cleaned up almost at once, but in a different Task, after the request answered. Either way the clean-up is not where the code left the stream, which is the problem this rung fixes.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "<code>break</code> out of an <code>async for</code> closes the generator, like closing a file."</p>
+<p><strong>Why it is wrong:</strong> <code>break</code> only stops reading. The generator stays paused at its <code>yield</code> with its <code>finally</code> not run, and its clean-up happens whenever the garbage collector or the loop's shutdown gets to it, in whatever Task that is. The program shows both versions of "whenever".</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Leaving an <code>async for</code> early leaves the generator paused, its <code>finally</code> not run.</li>
+<li>Unreferenced: cleaned up soon, in another Task, after the request answered. Referenced: only at <code>shutdown_asyncgens()</code>.</li>
+<li>Explicit closing puts the clean-up back in the request's Task.</li>
+</ul>
+</div>
+<p class="ts-takeaway">An async generator left early runs its clean-up later and elsewhere, in a Task the garbage-collection hook or the loop's shutdown creates, unless the consumer closes it.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In the "left open" case, the request Task is cancelled by the hang-up watch (Part 5) while it is waiting for the second offer, instead of breaking out. Where does the stream's <code>finally</code> run, and before or after the request's own <code>finally</code>?</p>
+<div class="ts-reveal"><p>The CancelledError is raised at the request's <code>await</code> on the stream's next value, which is inside the generator's <code>as_completed</code> wait, so the generator itself is exited by the exception and its <code>finally</code> runs right there, in the request Task, during the unwinding, before the request's own <code>finally</code>. Leaving by cancel while the generator is running is not the late case; leaving it paused at a <code>yield</code> is. The program's three cases all leave it paused, because the request stops reading between offers.</p></div>
+</div>
+</section>
+<section class="ts-part" id="aclose-aclosing" data-rung="2" data-min="11">
+<h2>aclose() and contextlib.aclosing: closing where you stop reading</h2>
+<p class="ts-bridge">Last part: an async generator left early cleans up later and elsewhere. Still unsolved: making it clean up here and now, in the request that used it.</p>
+<p class="ts-problem">The quick quote must stop at the first good offer and leave nothing running behind it: no asks, no connections, no Tasks with another request's id.</p>
+<h3>Introduction</h3>
+<p>A file is closed with <code>close()</code> or a <code>with</code> block. An async generator is closed with <code>aclose()</code>, and the <code>with</code> block for it is <code>contextlib.aclosing</code>.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c36" data-src="s13">aclose() returns an awaitable that throws GeneratorExit into the async generator at the point where it is paused; if the generator then exits, the awaitable completes, and if the generator yields another value instead, a RuntimeError is raised.</span></li>
+<li><span class="ts-claim" data-claim="c38" data-src="s12">contextlib.aclosing(thing), added in Python 3.10, is an async context manager that awaits thing.aclose() when its block ends, so that an async generator left early by break or an exception runs its exit code in the same context as its iterations.</span></li>
+</ol>
+<h3>Working: aclosing around the quick quote</h3>
+<ol class="ts-steps">
+<li><code>async with aclosing(offers(...)) as stream:</code> creates the generator and enters the block.</li>
+<li><code>async for offer in stream:</code> reads offers; seller-a's 1,249 is not good enough; seller-b's 1,199 is, so the loop breaks.</li>
+<li>The block ends, so <code>aclosing</code> awaits <code>stream.aclose()</code>: GeneratorExit is thrown in at the <code>yield</code>, the <code>finally</code> cancels the three asks and waits for them, all in the request's Task.</li>
+<li>Only then does the request build its answer.</li>
+</ol>
+<h3>Program</h3>
+<p>Gateway v9's <code>quick()</code> (rung 3) is that working, line for line:</p>
+<div class="ts-code" data-lang="python" data-title="gateway_v9.py: quick()" data-verified="spec" data-claims="c38">
+<pre><code>best = None
+async with contextlib.aclosing(offers(ask, self.ports, item)) as stream:
+    async for offer in stream:
+        if best is None or offer.price &lt; best.price:
+            best = offer
+        if offer.price &lt;= self.good_enough:
+            break  # leaving early: aclosing() runs the stream's finally here, in this Task
+return Answer(best, [], [], ms_since(start), partial=True)</code></pre>
+</div>
+<p>The "aclosing" case of the last program is the measurement: the stream closed, then the request answered, with 0 asks waiting.</p>
+<h3>Rules for async generators that hold things</h3>
+<ul>
+<li>Close every one you leave early: <code>aclosing</code>, or <code>await gen.aclose()</code> in a <code>finally</code>.</li>
+<li>Never <code>yield</code> inside a <code>finally</code>: aclose() would get a value back and raise RuntimeError.</li>
+<li><span class="ts-claim" data-claim="c40" data-src="s11">The asyncio documentation warns that an async generator may be re-entered when another __anext__(), athrow() or aclose() call is already in progress, which can leave it inconsistent, and recommends not using async generators from parallel Tasks or across several event loops.</span> One reader per stream.</li>
+</ul>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "You expose results as an async generator that holds a database cursor. A caller breaks out after the first row. What happens to the cursor, and how do you make it deterministic?"</p>
+<p><strong>What a strong senior answer contains:</strong> <code>break</code> leaves the generator paused with its <code>finally</code> not run; the cursor is released only when the generator is finalized, which in asyncio means a new Task created by the garbage-collection hook, or at shutdown if something still refers to it, so it may run after the connection or Task it needs is gone, and outside the caller's context. The fix is on the caller side: <code>async with aclosing(gen)</code>, or an API that returns an async context manager so callers cannot forget. The candidate also notes that the clean-up then runs inside the caller's deadline and cancellation, so it must be quick.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The generator's <code>finally</code> is enough; it always runs."</p>
+<p><strong>Why it is wrong:</strong> it runs, eventually, but when and where depends on who closes the generator. The <code>finally</code> is the code; <code>aclosing</code> decides that it runs in the request that used the generator, before that request answers.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>aclose()</code> throws GeneratorExit in at the paused <code>yield</code> and awaits the <code>finally</code>.</li>
+<li><code>async with contextlib.aclosing(gen)</code> (3.10+) calls it where the block ends.</li>
+<li>One reader per async generator; no <code>yield</code> in its <code>finally</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Wrap every async generator that holds resources in contextlib.aclosing, so its clean-up runs in the consumer's Task at the moment the consumer stops reading.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c36">
+<p class="q">An async generator's <code>finally</code> contains <code>yield "closing"</code>. A consumer leaves early inside <code>async with aclosing(gen)</code>. What happens when the block ends?</p>
+<ol>
+<li data-why="aclose() does not read values; a yield during closing is an error, not a final value.">The block receives "closing" as a last value</li>
+<li>aclose() raises RuntimeError, because the generator yielded instead of exiting</li>
+<li data-why="GeneratorExit is thrown in, and the generator's response decides the result; a yield is not ignored.">The yield is skipped and the generator exits</li>
+</ol>
+<p class="ts-why">aclose() throws GeneratorExit at the paused <code>yield</code>; the <code>finally</code> runs and yields again, and the documented result is a RuntimeError from the awaitable. Clean-up code in a generator must only clean up.</p>
+</div>
+<div class="ts-explain" data-points="Leaving an async for early leaves the generator paused at a yield with its finally not run|Its clean-up then runs later in another Task: soon via the garbage-collection hook, or only at shutdown_asyncgens if something still refers to it|aclosing awaits aclose() where the block ends, so the finally runs in the consumer's Task before it continues|asyncio.run cancels what is left and closes generators with no time limit, so real shutdown must happen before main() returns">
+<p class="q">In your own words: why did the quick quote leave three asks running after it answered, and what exactly does aclosing change?</p>
+<div class="ts-model"><p>The quick quote breaks out of its async for at seller-b's offer, which leaves the offers() generator paused at its yield with its finally, the code that cancels the remaining asks, not yet run. Nothing closes it there, so the finally runs only when the generator is finalized: almost at once in a new Task if nothing refers to it, or at asyncio.run's shutdown if something does. Either way it runs after the request answered and in a Task that is not the request's. aclosing awaits aclose() when its block ends, which throws GeneratorExit in at the yield and runs the finally right there, in the request's Task, before the answer is built, so no ask outlives the request.</p></div>
+</div>
+</section>
+<section class="ts-part" id="async-context-managers" data-rung="2" data-min="10">
+<h2>Async context managers and AsyncExitStack: close what you opened, in reverse</h2>
+<p class="ts-bridge">Last part: aclosing closes one async generator where its block ends. Still unsolved: a gateway opens many things at start-up, and closing them in the wrong order, or forgetting one when start-up fails half-way, is how shutdowns go wrong.</p>
+<p class="ts-problem">Gateway v9 starts its audit writers, its metrics flusher, seller-e's feed and its listener, in that order. One morning the listener's port is still taken by the old process: start-up fails, and the feed thread it had already started keeps the process alive for 30 s, until SIGKILL.</p>
+<h3>Introduction</h3>
+<p>An <dfn data-def="An object with async __aenter__ and __aexit__ methods, used with async with, whose set-up and tear-down may await.">async context manager</dfn> is used with <code>async with</code>; its set-up and its tear-down may both await. Most things a gateway opens are one: a server, a connection, a lock, a TaskGroup, <code>aclosing</code> itself. The question is how to combine several of them so that whatever was opened is always closed, last opened first.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c41" data-src="s12">contextlib.asynccontextmanager, added in Python 3.7, turns an async generator function into a factory of async context managers: the code before its yield is the set-up and a finally around the yield is the tear-down.</span></li>
+<li><span class="ts-claim" data-claim="c42" data-src="s12">contextlib.AsyncExitStack, added in Python 3.7, combines synchronous and asynchronous context managers and coroutine clean-up functions; like ExitStack, it calls what was registered in reverse order of registration, and everything already entered is released even if entering a later one raises.</span></li>
+<li><span class="ts-claim" data-claim="c26" data-src="s15">An asyncio Server can itself be used with async with; leaving the block calls close() and then awaits wait_closed().</span> Rung 4 shows what that wait can do.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="exit_stack.py" data-file="exit_stack.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/exit_stack.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Normal run:</strong> opened audit writers, metrics flusher, feed, listener; closed listener, feed, flusher, writers. The listener closes first, so no new work arrives while the rest is still up; the audit writers close last, so everything before them can still write rows.</li>
+<li><strong>The listener cannot open:</strong> the stack closes the three things already opened, in reverse, and only then lets the OSError out. That is the problem's half-started gateway, fixed.</li>
+<li>Each <code>close</code> waits 10 ms: tear-down that awaits is the normal case, which is why these are async context managers.</li>
+</ol>
+<h3>Why reverse order is the right default</h3>
+<ul>
+<li>Things opened later usually depend on things opened earlier: requests need the audit writers; the listener brings requests.</li>
+<li>So closing in reverse removes the users of a thing before the thing. Rung 4 shows the opposite order losing every audit row.</li>
+<li>Reverse order is a default, not a proof. Gateway v9's shutdown has steps no stack would infer, such as "wait for fills before stopping the feed", so rung 3 writes the order out by hand.</li>
+</ul>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If start-up fails, the process exits, so nothing needs closing."</p>
+<p><strong>Why it is wrong:</strong> the process only exits when its non-daemon threads and its pools let it. A started feed thread or thread pool keeps it alive, and the measured result in the problem is a 30 s wait for SIGKILL. Start-up failure is a shutdown too, of whatever got opened.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>@asynccontextmanager</code>: set-up before <code>yield</code>, tear-down in <code>finally</code>.</li>
+<li><code>AsyncExitStack</code> closes everything entered, last first, even when entering a later one fails.</li>
+<li><code>async with server</code> = <code>close()</code> + <code>await wait_closed()</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Open a service's parts as async context managers on an AsyncExitStack, and they are closed in reverse order whether the service stops normally or fails half-way through starting.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">In <code>exit_stack.py</code>, the seller-e feed, not the listener, fails to open. Which lines does the second run print before "start failed"?</p>
+<ol>
+<li>open audit writers, open metrics flusher, close metrics flusher, close audit writers</li>
+<li data-why="The feed never opened, so it has nothing to close; only entered context managers are on the stack.">The same plus "close seller-e feed"</li>
+<li data-why="The stack closes what was entered when the exception passes through it, before the exception reaches the caller.">open audit writers, open metrics flusher, and nothing closes</li>
+</ol>
+<p class="ts-why">Only the two context managers that were entered are on the stack, and the exception closes them in reverse order on its way out; the listener is never reached.</p>
+</div>
+</section>
+<section class="ts-part" id="shutdown-plan" data-rung="3" data-min="14">
+<h2>The shutdown plan: what stops, in what order, in how long</h2>
+<p class="ts-bridge">Last part: close things in reverse order of opening. Still unsolved: the gateway's real list of things to stop, the order they must stop in, and how to fit it all inside the grace period.</p>
+<p class="ts-problem">Gateway v9 gets SIGTERM with 20 s before SIGKILL. It has 500 requests in flight, a seller-e fill half done, a feed thread that calls into the loop every 200 ms, rows in its audit queue, unflushed metrics, a thread pool inside seller-e's SDK and a process pool. Everything must be finished or deliberately abandoned, in an order where nothing is used after it is closed, and the process must exit before second 20.</p>
+<h3>Introduction</h3>
+<p>Rung 2 gave the parts: a SIGTERM callback on the loop, the knowledge that <code>asyncio.run</code> cancels and waits with no limit, and closing in reverse order. This part turns them into a plan. Rung 3's remaining parts build each step and then gateway v9.</p>
+<h3>Definitions</h3>
+<ol>
+<li>To <dfn data-def="To stop taking new work and let the work already accepted finish.">drain</dfn> is to stop taking new work and let the work already accepted finish.</li>
+<li>A <dfn data-def="The longest time one shutdown step may take before the next step starts anyway.">step deadline</dfn> is the longest one shutdown step may take before the next step starts anyway.</li>
+<li><dfn data-def="Work the process started on its own behalf that no single request waits for, such as cache fills, queued audit rows and background flushes.">Owned work</dfn> is work the process started that no single request waits for: fills, queued audit rows, flushes.</li>
+</ol>
+<h3>Working: the order, and why</h3>
+<ol class="ts-steps">
+<li><strong>Stop accepting.</strong> Close the listeners and mark the gateway draining. Nothing else can stop while new work keeps arriving.</li>
+<li><strong>Drain requests</strong>, up to the drain deadline. Requests are the reason everything else exists, so they get the first and largest share of the time.</li>
+<li><strong>Cancel the requests still running</strong>, and give their <code>finally</code> blocks a short deadline. They may still write an audit row, so the audit queue must still be open.</li>
+<li><strong>Wait for fills</strong>, up to a deadline; cancel the rest. Fills use seller-e's SDK pool, so the pool must still be open.</li>
+<li><strong>Stop the feed thread</strong> and wait for it. Its callbacks run on the loop and write audit rows, so it must stop while the loop and the audit queue are still up.</li>
+<li><strong>Flush the audit queue and the metrics.</strong> Everything that writes rows has stopped, so the queue can be closed and emptied.</li>
+<li><strong>Return from <code>main()</code>.</strong> <code>asyncio.run</code> now finds almost nothing to cancel; then the pools' <code>with</code> blocks shut the pools down.</li>
+</ol>
+<figure class="ts-seq" data-title="Gateway v9 after SIGTERM">
+<script type="application/json">
+{"actors": [
+ {"id": "orch", "label": "Orchestrator", "sub": "kubelet / docker"},
+ {"id": "gw", "label": "Gateway v9", "sub": "shutdown()"},
+ {"id": "req", "label": "Requests", "sub": "in flight"},
+ {"id": "own", "label": "Owned work", "sub": "fills · feed thread"},
+ {"id": "aud", "label": "Audit and metrics", "sub": "queue · flusher"}],
+ "steps": [
+ {"from": "orch", "to": "gw", "label": "SIGTERM", "note": "add_signal_handler's callback sets the stop Event on the loop; run() calls shutdown()."},
+ {"from": "gw", "to": "gw", "label": "1. close listeners, draining = True", "note": "No new connections. A connection accepted just before is answered busy."},
+ {"from": "gw", "to": "req", "label": "2. wait until idle, up to the drain deadline", "dashed": true, "note": "Requests finish normally and write their audit rows."},
+ {"from": "gw", "to": "req", "label": "3. cancel the rest", "note": "Each cancelled request writes a 'stopped by shutdown' row, so the audit queue is still open."},
+ {"from": "gw", "to": "own", "label": "4. wait for fills; 5. stop the feed, join", "note": "Fills still need seller-e's SDK pool; the feed still needs the loop and the audit queue."},
+ {"from": "gw", "to": "aud", "label": "6. close the queue, flush metrics", "note": "Nothing writes rows any more, so the queue is shut down, emptied and joined."},
+ {"from": "gw", "to": "orch", "label": "exit 0 before the grace period ends", "dashed": true, "note": "main() returns; asyncio.run has almost nothing left; the pools' with blocks shut them down."}]}
+</script>
+</figure>
+<h3>Solved example: dividing 20 seconds</h3>
+<p><strong>Given:</strong> grace period 30 s, preStop sleep 10 s (rung 1's solved example), so 20 s from SIGTERM; requests have a 250 ms budget; a fill's deadline is 2 s (Part 7); the audit store's slowest normal write is 200 ms.</p>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Step</th><th>Deadline</th><th>Why that much</th></tr></thead>
+<tbody>
+<tr><td>2. Drain requests</td><td>5 s</td><td>20 times the 250 ms budget: covers ranking and audit writes behind it on a bad day</td></tr>
+<tr><td>3. Cancelled requests unwind</td><td>1 s</td><td>Their <code>finally</code> blocks only write one row each</td></tr>
+<tr><td>4. Fills</td><td>3 s</td><td>Longer than a fill's own 2 s deadline, so a running fill ends one way or the other</td></tr>
+<tr><td>5. Feed thread</td><td>1 s</td><td>It wakes at once on its stop Event; the margin is for one callback in progress</td></tr>
+<tr><td>6. Audit and metrics flush</td><td>5 s</td><td>Rows queued at the end of a drain at 200 ms each; rung 4 does the arithmetic at 10 times the load</td></tr>
+<tr><td>Total</td><td>15 s</td><td>5 s left for <code>asyncio.run</code>'s own steps, the pools and the process exit</td></tr>
+</tbody>
+</table></div>
+<p><strong>Result:</strong> every step has a deadline, and the deadlines add up to less than the time SIGKILL leaves. A step that hits its deadline costs that step's work, not the whole shutdown. The programs on this page scale these down (drain 1 s, flush 0.5 s) so they run in about a second.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "One overall timeout around the whole shutdown is enough."</p>
+<p><strong>Why it is wrong:</strong> with one timeout, a slow first step eats the time of every later step: a long drain leaves no time to flush the audit queue, and the rows of every request that did finish are lost. Separate deadlines decide in advance what is sacrificed first: the slowest requests, not the records of the fast ones.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Order: stop accepting, drain, cancel the rest, fills, feed thread, audit and metrics, then return.</li>
+<li>Each step closes only what no later step needs.</li>
+<li>Each step has its own deadline, and the sum fits inside the grace period minus the preStop hook.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A graceful shutdown is an ordered list of steps, each with its own deadline, where nothing is closed while a later step still needs it and the deadlines add up to less than the grace period.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put gateway v9's shutdown steps in order.</p>
+<ol>
+<li>Close the listeners and mark the gateway draining</li>
+<li>Wait for requests in flight, up to the drain deadline</li>
+<li>Cancel the requests still running</li>
+<li>Wait for single-flight fills, then stop the feed thread</li>
+<li>Close and flush the audit queue and the metrics</li>
+</ol>
+<p class="ts-why">New work stops first; requests get the most time; cancelled requests still write rows; fills and the feed still use the pool, the loop and the audit queue; the queue closes when nothing writes to it.</p>
+</div>
+</section>
+<section class="ts-part" id="stop-accepting" data-rung="3" data-min="13">
+<h2>Stop accepting, and the load balancer that has not heard yet</h2>
+<p class="ts-bridge">Last part: the first step is to stop accepting new work. Still unsolved: the load balancer keeps sending requests for a while after SIGTERM, and they are refused.</p>
+<p class="ts-problem">After gateway v9 closes its listeners on SIGTERM, every deploy still produces a burst of "connection refused" errors at the load balancer, a second or two long, from new requests sent to the old Pod after it stopped listening.</p>
+<h3>Introduction</h3>
+<p>Closing the listener is the right first step for the process. It is the wrong first step for the cluster if the cluster still sends traffic there. Rung 1 noted that the endpoint is removed at the same time as SIGTERM is sent, not before. This part measures the gap and closes it.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c23" data-src="s7">Server.close() stops serving: it closes the listening sockets and leaves the sockets of existing client connections open; Server.wait_closed() waits until the server is closed and all active connections have finished.</span></li>
+<li>A <dfn data-def="A Kubernetes check whose failure takes a Pod out of its Service's endpoints without restarting it.">readiness probe</dfn> is a Kubernetes check whose failure takes a Pod out of the Service's endpoints without restarting it.</li>
+</ol>
+<h3>Working: the race</h3>
+<ol class="ts-steps">
+<li><strong>SIGTERM and endpoint removal start together.</strong> <span class="ts-claim" data-claim="c9" data-src="s4">AWS's EKS best-practices guide explains that on Pod deletion the API notifies the kubelet and the EndpointSlice controller at the same time, so new requests can still reach the container after SIGTERM until every node's rules are updated, and recommends a preStop hook that delays SIGTERM, such as a sleep of 10 seconds.</span></li>
+<li><strong>The gateway closes its listener at once</strong>, and every request sent to it before the update lands is refused.</li>
+<li><strong>With a preStop sleep</strong>, the gateway keeps serving normally while the endpoint update spreads; by the time SIGTERM arrives, almost nothing new is being sent.</li>
+</ol>
+<h3>Program</h3>
+<p>Two stand-in backends, "old" and "new", answer after 50 ms. A stand-in load balancer sends a request every 10 ms, alternating between the backends it believes are in service. At 100 ms the old one is told to stop; the balancer learns of it 300 ms later.</p>
+<div class="ts-code" data-lang="python" data-title="lb_race.py" data-file="lb_race.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/lb_race.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>No pause:</strong> 14 refused. During the 300 ms lag the balancer sent about 30 requests, half of them to the old backend, which had stopped listening.</li>
+<li><strong>A 400 ms pause, longer than the lag:</strong> 0 refused. The old backend served 18 requests, 13 of them during the pause, and was out of the balancer's list before it closed. 400 ms is to 300 ms here what a 10 s sleep is to a few seconds of propagation in a cluster.</li>
+<li>The count without a pause varies by one or two between runs; it is never zero.</li>
+</ol>
+<h3>What the gateway does</h3>
+<ul>
+<li><strong>Kubernetes:</strong> a preStop sleep longer than the endpoint propagation, and a grace period that covers the sleep plus the shutdown (rung 1's arithmetic).</li>
+<li><strong>Connections accepted just before close:</strong> gateway v9's <code>serve()</code> checks <code>draining</code> first and answers <code>busy</code>, Part 6's 503, instead of starting work it may not finish.</li>
+<li><strong>Load balancers that drain:</strong> <span class="ts-claim" data-claim="c10" data-src="s4">an AWS load balancer target that is being deregistered stops getting new requests and drains its existing connections for a deregistration delay of 300 seconds by default, after which in-flight requests to it are dropped.</span> That delay is longer than the default grace period, so it is the Pod's grace period that ends the drain.</li>
+</ul>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c11" data-src="s4">AWS's EKS guide asks applications to answer SIGTERM by starting a graceful shutdown, finishing in-flight requests and closing connections and files, and to set the grace period long enough for that clean-up.</span> It pairs that with the preStop pause above, because the application cannot fix a race that happens outside the process.</p>
+</div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Our service handles SIGTERM perfectly: it stops accepting and drains. We still see 502s on every rolling deploy. Why?"</p>
+<p><strong>What a strong senior answer contains:</strong> endpoint removal and SIGTERM start at the same moment, and the load balancer's and every node's view update later, so for a short window traffic still goes to a Pod that has closed its listener. The fix is outside the code: a preStop sleep longer than that propagation, with the grace period raised to cover sleep plus drain; optionally keep accepting during the first seconds of SIGTERM instead of closing at once. The candidate checks the arithmetic (the hook spends grace time), mentions connections accepted at the edge that must still be answered, and keep-alive connections that should be closed after their current request.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A preStop sleep is a hack; the app should just handle SIGTERM properly."</p>
+<p><strong>Why it is wrong:</strong> the program's backend handled the stop perfectly and still caused 14 refusals, because the problem is when other machines learn about the stop. Only waiting before closing can cover that, and the preStop hook is where the platform lets you wait.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Endpoint removal and SIGTERM start together; the balancer catches up later.</li>
+<li>Closing the listener at once refuses what arrives in that gap (14 of 80 in the program).</li>
+<li>Fix: a preStop pause longer than the propagation, inside a grace period that covers pause plus drain.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Stopping accepting must wait until the load balancer has stopped sending, which in Kubernetes means a preStop pause longer than the endpoint propagation, paid for out of the grace period.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c4 c9">
+<p class="q">A team adds a preStop <code>sleep 20</code> to stop the refusals, and keeps terminationGracePeriodSeconds at 30. Their drain takes up to 15 s. What do they see?</p>
+<ol>
+<li data-why="The refusals are fixed, but the sleep came out of the 30 s; there are only 10 s left after SIGTERM.">No refusals and clean drains</li>
+<li data-why="A longer sleep only reduces refusals; it cannot add any.">More refusals than before</li>
+<li>No refusals, but drains are cut off by SIGKILL 10 s after SIGTERM</li>
+</ol>
+<p class="ts-why">The preStop sleep spends the grace period: SIGTERM arrives at 20 s, SIGKILL at 30 s, and a 15 s drain is killed half-way. Raise the grace period to at least sleep + drain + flush, or sleep for less.</p>
+</div>
+</section>
+<section class="ts-part" id="drain-then-cancel" data-rung="3" data-min="13">
+<h2>Drain within a deadline, then cancel the rest</h2>
+<p class="ts-bridge">Last part: the gateway stops accepting once traffic has moved away. Still unsolved: how long to wait for requests in flight, and what to do with the ones still running when that time is up.</p>
+<p class="ts-problem">On a day when the audit store is slow, a deploy cuts off eight shoppers who had already been sent nothing. The audit store, checked afterwards, says all ten of them were answered at 1,199.</p>
+<h3>Introduction</h3>
+<p>Gateway v9 keeps every request Task in a set. Draining is waiting until the set is empty; the drain deadline bounds the wait; then each Task left is cancelled, with Part 5's mechanics: CancelledError at its next <code>await</code>, <code>finally</code> blocks run, and a short wait for them. This part runs that on a bad day and finds a trap.</p>
+<h3>Working: gateway v9's steps 2 and 3</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v9.py: drain, then cancel" data-verified="spec" data-claims="c23">
+<pre><code>try:  # 2. drain: let requests in flight finish, up to budget.drain
+    async with asyncio.timeout(budget.drain):
+        await self.idle.wait()
+    note("drained: no request left in flight")
+except TimeoutError:
+    note(f"drain deadline: {len(self.requests)} requests still running")
+
+left = list(self.requests)  # 3. cancel the rest, and give their clean-up a moment
+for task in left:
+    task.cancel("shutdown")
+if left:
+    await asyncio.wait(left, timeout=budget.cancel)</code></pre>
+</div>
+<ol class="ts-steps">
+<li><code>serve()</code> adds its own Task to <code>self.requests</code> and clears the <code>idle</code> Event; when the last one leaves, it sets <code>idle</code> (Part 7's Event).</li>
+<li>The drain waits on <code>idle</code> under a timeout, so it ends at the first of "no request left" and the deadline.</li>
+<li>The cancel is labelled <code>"shutdown"</code>. <code>handle()</code> checks <code>draining</code> to tell this cancel from a shopper's hang-up, so the audit row and the metric say which it was.</li>
+<li><code>asyncio.wait(..., timeout=...)</code> waits for the cancelled Tasks to unwind but never longer than the step's deadline; unlike <code>wait_for</code>, it cancels nothing more when the timeout passes.</li>
+</ol>
+<h3>Program</h3>
+<p>The audit store is slow today: 200 ms per write and only 2 writers, so each answer waits behind the rows before it. 10 shoppers arrive together; shutdown starts at 100 ms with a 500 ms drain deadline.</p>
+<div class="ts-code" data-lang="python" data-title="drain_deadline.py" data-file="drain_deadline.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/drain_deadline.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>The answers were ready at about 250 ms. Each then waited for its audit row: 10 rows, 2 at a time, 200 ms each. By the drain deadline, 2 shoppers had their answer; 8 requests were still waiting for their rows.</li>
+<li>The 8 were cancelled and unwound at once: "0 still unwinding". Their shoppers got "no answer (connection closed)".</li>
+<li>The fill for seller-e finished at about 810 ms and was cached; the flush step then wrote every queued row.</li>
+<li><strong>The trap:</strong> all 10 audit rows say "seller-b at 1,199". The row is written through Part 5's shielded, owned write, which a cancel does not stop, and it records the answer that was computed, not the answer that was delivered. The 8 cancelled shoppers have a row saying they were answered.</li>
+</ol>
+<div class="ts-trap">
+<p><strong>An audit trail that records intentions as facts.</strong> When the record is written before the response is sent, any cut-off between the two (a shutdown, a hang-up, a network error) leaves a record of something the client never got. Either write the row after the response is sent and say "delivered", or write two events, "answered" and "delivered", and treat a missing second one as not delivered. And size the drain deadline from the slowest dependency the request waits on, here the audit store, not from the request's own 250 ms budget.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If the drain deadline is longer than the request budget, every request finishes."</p>
+<p><strong>Why it is wrong:</strong> the budget covers the seller calls; the request is not finished until its row is written and its answer sent, and those wait on other things. Here 500 ms was twice the budget and 8 of 10 shoppers were still cut off.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Track request Tasks in a set; drain = wait until it is empty, under a timeout.</li>
+<li>Then cancel the rest with a label, and wait for their clean-up with <code>asyncio.wait(timeout=...)</code>.</li>
+<li>Records written before the response can describe answers that were never delivered.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Drain by waiting for the set of request Tasks to empty under a deadline sized from the slowest thing a request waits on, then cancel what is left and give it a bounded time to unwind.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">The same bad day, but the drain deadline is raised to 1.5 s. How many of the 10 shoppers get their answer?</p>
+<ol>
+<li data-why="The rows are the bottleneck, but 2 writers at 200 ms clear all 10 rows in about 1 s, well inside 1.5 s.">2, because the audit store is still slow</li>
+<li>All 10: the last row is written about 1 s after the answers, before the deadline</li>
+<li data-why="The deadline is now longer than the whole queue of rows; nothing is left to cancel.">8, because the deadline still cancels some</li>
+</ol>
+<p class="ts-why">10 rows on 2 writers at 200 ms each take 5 × 200 = 1,000 ms after the answers at about 250 ms, so all 10 are written by about 1,250 ms, inside a drain that ends at 100 + 1,500 = 1,600 ms. The deadline is right when it covers the slowest dependency's queue, not the request budget.</p>
+</div>
+</section>
+<section class="ts-part" id="owned-work" data-rung="3" data-min="12">
+<h2>Owned work: fills, the feed thread, the audit queue and the pools</h2>
+<p class="ts-bridge">Last part: requests are drained, then cancelled. Still unsolved: the work no request waits for, which <code>asyncio.run</code> would cancel or wait for without a limit.</p>
+<p class="ts-problem">After the drain, gateway v9 still owns a fill for seller-e that is 700 ms into its 900 ms call, a feed thread sleeping until its next price change, 25 audit rows in the queue, a metrics batch, seller-e's SDK thread pool and the ranking process pool. Each needs its own way to stop.</p>
+<h3>Introduction</h3>
+<p>Each kind of owned work has a different stopping tool: a Task can be awaited or cancelled, a thread can only be asked, a queue can be shut down and joined, a pool can be shut down with or without waiting. This part goes through gateway v9's steps 4 to 6 and the pools after them.</p>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><strong>Fills (step 4).</strong> They are Tasks in Part 7's SingleFlight. <code>asyncio.wait(fills, timeout=budget.fills)</code> lets them finish and be cached, then the late ones are cancelled. A fill that finishes here is a price the next process does not have to fetch.</li>
+<li><strong>The feed thread (step 5).</strong> Page 7's feed thread slept with <code>time.sleep</code> and was a daemon. <span class="ts-claim" data-claim="c44" data-src="s18">The threading documentation warns that daemon threads are stopped abruptly at shutdown, without releasing their resources properly, and recommends non-daemon threads stopped through a signalling mechanism such as an Event.</span> <code>StoppableFeed</code> does that: it sleeps in <code>stopped.wait(at)</code>, so <code>stop()</code> wakes it at once, and the gateway joins it from a worker thread with <code>asyncio.to_thread</code>, so the loop keeps running meanwhile.</li>
+<li><strong>The audit queue (step 6).</strong> Part 6's <code>close()</code>: <span class="ts-claim" data-claim="c45" data-src="s24">asyncio.Queue.shutdown(), added in Python 3.13, makes later put() calls raise QueueShutDown; by default the items already in the queue can still be taken with get(), and once it is empty get() raises QueueShutDown too.</span> The writers finish the queued rows and return; <code>join()</code> waits for the last one.</li>
+<li><strong>Metrics.</strong> Part 4's flusher is cancelled and one last <code>flush()</code> sends the final counts.</li>
+<li><strong>Pools, after <code>asyncio.run</code> returns.</strong> <span class="ts-claim" data-claim="c43" data-src="s17">Executor.shutdown(wait=True) frees the pool once pending futures are done, the whole program does not exit until they are done whatever wait says, and cancel_futures=True, added in Python 3.9, cancels the futures that have not started.</span> seller-e's SDK calls carry their deadline (Part 5), so the pool's wait is bounded by the longest call.</li>
+</ol>
+<h3>What stops each kind of work</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Work</th><th>Can be cancelled?</th><th>How gateway v9 stops it</th><th>What bounds the wait</th></tr></thead>
+<tbody>
+<tr><td>Request Tasks</td><td>Yes</td><td>Drain, then <code>cancel("shutdown")</code></td><td>The drain and cancel deadlines</td></tr>
+<tr><td>Fill Tasks</td><td>Yes, but the price is lost</td><td><code>asyncio.wait(timeout=...)</code>, then cancel</td><td>The fills deadline</td></tr>
+<tr><td>Feed thread</td><td>No</td><td>Stop Event, then join from a worker thread</td><td>The join timeout; the thread wakes at once</td></tr>
+<tr><td>Audit queue</td><td>Rows: no, they are records</td><td><code>shutdown()</code>, writers drain, <code>join()</code></td><td>The flush deadline</td></tr>
+<tr><td>Thread and process pools</td><td>Running calls: no</td><td><code>with</code> blocks: shutdown(wait=True)</td><td>Each call's own deadline (Part 5)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-legacy">
+<p><strong>Python 3.11 and 3.12: no Queue.shutdown().</strong> Part 6 showed the earlier way: put one sentinel value per writer, and each writer returns when it takes one. It works, but nothing stops a producer from putting rows after the sentinels. On 3.13 and later, use <code>shutdown()</code>.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Mark background threads as daemons so they never block shutdown."</p>
+<p><strong>Why it is wrong:</strong> they do not block shutdown because they are killed in the middle of whatever they were doing, here possibly half-way through a price change the SDK believes was delivered. A non-daemon thread with a stop Event stops at a point it chose, and the join tells the gateway that it did.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Fills: wait with a timeout, then cancel; a finished fill is a cached price.</li>
+<li>Threads cannot be cancelled: give them a stop Event and join them, before the loop closes.</li>
+<li>Audit queue: <code>shutdown()</code> then <code>join()</code>; pools: shut down after the loop, bounded by each call's deadline.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Owned work is stopped with the tool its kind allows: Tasks are awaited then cancelled, threads are asked through an Event and joined, queues are shut down and joined, and pools are shut down last.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c43">
+<p class="q">A seller-e SDK call is running in its thread pool when <code>asyncio.run</code> returns, and the pool's <code>with</code> block exits. The call has no deadline and the vendor hangs. What happens?</p>
+<ol>
+<li>The process does not exit until the call returns, so it is killed by SIGKILL at the end of the grace period</li>
+<li data-why="cancel_futures only cancels futures that have not started; a running call cannot be cancelled.">The pool cancels the running call with cancel_futures</li>
+<li data-why="Pool threads are not daemons that get dropped; the program waits for pending futures whatever wait says.">The thread is dropped and the process exits at once</li>
+</ol>
+<p class="ts-why">Executor.shutdown waits for pending futures, and the program will not exit until they are done regardless of <code>wait</code>; a running call cannot be cancelled. Only the call's own deadline, passed down as in Part 5, bounds that wait.</p>
+</div>
+</section>
+<section class="ts-part" id="gateway-v9" data-rung="3" data-min="17">
+<h2>Gateway v9: a deploy that loses nothing</h2>
+<p class="ts-bridge">Last part: each kind of owned work has its own way to stop. Still unsolved: putting the whole sequence into the gateway and running the same deploy that cut off every shopper in rung 1.</p>
+<p class="ts-problem">The same deploy as rung 1: 20 shoppers in flight, plus 5 quick quotes on the new port, SIGTERM at 100 ms, one late shopper at 150 ms, SIGKILL if the process is still running 3 s after SIGTERM. Gateway v9 must answer everyone it accepted, refuse the late shopper, lose no audit row, stop the feed thread and exit by itself with 0.</p>
+<h3>Introduction</h3>
+<p>Gateway v9 is gateway v8 with the changes from this rung: <code>serve()</code> tracks request Tasks and answers <code>busy</code> while draining; <code>handle()</code> labels shutdown cancels; a quick-quote port reads <code>offers()</code> inside <code>aclosing</code>; <code>shutdown()</code> runs the six steps with a <code>Budget</code> of deadlines; <code>StoppableFeed</code> replaces the daemon feed thread; and <code>run()</code> sets SIGTERM and SIGINT handlers with <code>add_signal_handler</code>. Everything else is gateway v8's code, unchanged.</p>
+<h3>Working: one deploy through gateway v9</h3>
+<ol class="ts-steps">
+<li><strong>SIGTERM</strong> runs the loop callback, which sets <code>stop</code>; <code>run()</code> wakes and calls <code>shutdown()</code>.</li>
+<li><strong>Listeners closed</strong>: 25 requests in flight. The late shopper is refused by the kernel, because nothing listens.</li>
+<li><strong>Drain</strong>: the 20 and the 5 finish normally and write their rows.</li>
+<li><strong>Fills</strong>: seller-e's fill for kettle-1l is allowed to finish and is cached.</li>
+<li><strong>Feed, audit, metrics</strong>: the feed thread stops and is joined; the queue is closed and emptied; the metrics are flushed; <code>run()</code> returns and the process exits.</li>
+</ol>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v9.py" data-file="gateway_v9.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="deploy_v9.py" data-file="deploy_v9.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/deploy_v9.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Shoppers:</strong> all 20 got seller-b at 1,199, the last at about 300 ms; in rung 1, all 20 got "connection closed" at 100 ms.</li>
+<li><strong>Quick quotes:</strong> all 5 got seller-b at 1,199 at about 160 ms: the first offer at or below 1,200 is seller-b's at 120 ms, and <code>aclosing</code> cancelled the other asks inside each request.</li>
+<li><strong>The late shopper</strong> was refused, as it should be: traffic belongs to the new process.</li>
+<li><strong>The report:</strong> 25 in flight at SIGTERM; drained by 200 ms; the fill finished at about 810 ms, which is seller-e's 900 ms counted from the first request; the feed thread stopped with <code>alive = False</code>; 29 audit rows written: 25 requests and the feed's 4 price changes.</li>
+<li><strong>lost: 0; stopped: 0; return code 0; stderr lines: 0.</strong> Nothing was cancelled, nothing was lost, and the process exited by itself 1 s after SIGTERM, well inside the 3 s grace period.</li>
+</ol>
+<h3>Testing the program</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Case</th><th>Expected</th><th>Test</th></tr></thead>
+<tbody>
+<tr><td>Deploy of gateway v8</td><td>20 × connection closed; return code -15</td><td><code>test_deploy_counts_are_exact</code></td></tr>
+<tr><td>Deploy of gateway v9</td><td>20 + 5 answered; late shopper refused; 29 rows, 0 lost; return code 0</td><td>the same test</td></tr>
+<tr><td>Drain deadline passes</td><td>2 answered, 8 cancelled, 10 rows</td><td><code>test_timed_output_matches_within_tolerance</code></td></tr>
+<tr><td>Quick quote closes its stream</td><td>Stream closed before the answer, 0 asks waiting</td><td>the same test, on <code>asyncgen_late</code></td></tr>
+<tr><td>Times</td><td>Within 60 ms of the recorded run</td><td>the same test</td></tr>
+<tr><td>Earlier pages' gateways</td><td>Unchanged</td><td>every test from Parts 1 to 7, in this folder</td></tr>
+</tbody>
+</table></div>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>Grace period</td><td>3 s (the stand-in orchestrator)</td><td><span class="ts-claim" data-claim="c2" data-src="s1">30 s by default in Kubernetes</span>, raised to cover preStop + all step deadlines</td></tr>
+<tr><td>preStop pause</td><td>None (no load balancer)</td><td>Longer than endpoint propagation; <span class="ts-claim" data-claim="c9" data-src="s4">AWS's guide gives sleep 10 as an example</span></td></tr>
+<tr><td>Drain deadline</td><td>1 s</td><td>Several times the slowest request including its audit write; 5 s in rung 3's plan</td></tr>
+<tr><td>Fills, feed, flush deadlines</td><td>1 s, 0.5 s, 0.5 s</td><td>3 s, 1 s, 5 s in the plan; each measured and alerted on when hit</td></tr>
+<tr><td>Readiness</td><td>Not modelled</td><td>Fail readiness when draining starts, so nothing new is routed here</td></tr>
+<tr><td>Keep-alive connections</td><td>One request per connection</td><td>Close idle ones at once, active ones after their current response</td></tr>
+<tr><td>Shutdown report</td><td>Printed lines</td><td>Structured logs and a metric per step: duration, items finished, items abandoned</td></tr>
+</tbody>
+</table></div>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c46" data-src="s21">aiohttp's run_app() shuts down in this order: stop each site so new connections are rejected, close idle keep-alive connections, call the on_shutdown signal, wait a short time adjustable with shutdown_timeout for running handlers, close remaining connections and cancel their handlers, call on_cleanup, then cancel remaining tasks.</span> It is gateway v9's order, with the framework's hooks where gateway v9 has its owned-work steps.</p>
+</div>
+<div class="ts-case">
+<p><span class="ts-claim" data-claim="c47" data-src="s22">Uvicorn's --timeout-graceful-shutdown sets the maximum number of seconds to wait for a graceful shutdown, after which the server starts terminating requests.</span> <span class="ts-claim" data-claim="c48" data-src="s23">Its documentation describes the shutdown as closing connections that are not waiting on a response, letting the others finish their responses, and waiting for background tasks to run to completion.</span> The drain deadline, under another name.</p>
+</div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Walk me through how your async service shuts down on SIGTERM, with numbers."</p>
+<p><strong>What a strong senior answer contains:</strong> the signal reaches the loop through <code>add_signal_handler</code> (not <code>signal.signal</code>), and the program is PID 1 or behind an init that forwards signals; a preStop pause covers endpoint propagation; then an ordered sequence with deadlines that fit the grace period: stop accepting, drain in-flight requests, cancel the rest with a label, wait for owned background work, stop threads that call into the loop, flush queues and metrics, close pools. Numbers: grace period, pause, each deadline, and what is lost when each is hit. Then how it is observed: a log line or metric per step, so a deploy that hit a deadline is visible.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A graceful shutdown makes deploys slower, so keep it short."</p>
+<p><strong>Why it is wrong:</strong> the old process drains while the new one is already serving, so the drain time is not time anyone waits for; it only delays the moment the old process frees its resources. What it buys is every request it accepted, here 25 of 25 instead of 0 of 20.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v9 = gateway v8 + SIGTERM on the loop + tracked requests + quick quotes through <code>aclosing</code> + a six-step timed shutdown + a stoppable feed thread.</li>
+<li>Same deploy: 0 of 20 answered with v8; 25 of 25 with v9, 0 rows lost, exit 0.</li>
+<li>Production: grace period ≥ preStop pause + the step deadlines, with a metric per step.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v9 turns SIGTERM into an ordered, timed shutdown, and the same deploy that cut off every shopper now answers all of them and exits by itself.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">In the gateway v9 deploy, seller-e's SDK hangs, so the fill for kettle-1l never finishes on its own. The fill's own deadline is 2 s (Part 7); the fills step allows 1 s; the stand-in orchestrator sends SIGKILL 3 s after SIGTERM. What does the report show, and does the process exit by itself?</p>
+<div class="ts-reveal"><p>The fills step times out 1 s after the drain ended and cancels the fill: "fills: 0 finished, 1 cancelled" at about 1,200 ms. The feed and flush steps follow at once, and <code>run()</code> returns. The SDK call itself is a thread and cannot be cancelled, but it received its 2 s deadline (Part 5), so its socket gives up about 2 s after the call started, and the pool's <code>with</code> block, which waits for it, ends then. The process exits by itself with 0, before SIGKILL at 3 s. Without the deadline passed down, the pool would wait forever and SIGKILL would end it at 3 s.</p></div>
+</div>
+<div class="ts-explain" data-points="Stop accepting only after the load balancer has stopped sending: a preStop pause inside the grace period|Drain under a deadline sized from the slowest dependency, then cancel the rest with a label and a short wait|Owned work in dependency order: fills, then the feed thread with a stop Event and a join, then the audit queue shutdown and join, then metrics and pools|Every step has its own deadline and the deadlines fit inside the grace period minus the pause">
+<p class="q">In your own words: describe gateway v9's shutdown from SIGTERM to exit, and why each step comes where it does.</p>
+<div class="ts-model"><p>SIGTERM arrives, after a preStop pause long enough for the load balancer to stop sending. add_signal_handler's callback sets an Event on the loop, and run() calls shutdown(). The listeners close and the gateway starts answering busy to anything accepted late. It waits for the set of request Tasks to empty, under a drain deadline sized from the slowest thing a request waits on, then cancels what is left with a "shutdown" label and gives it a short time to unwind; those requests still need the audit queue for their rows. Then it waits a bounded time for single-flight fills, which still need seller-e's pool, stops the feed thread through its Event and joins it while the loop and the queue can still serve its callbacks, and finally shuts down and joins the audit queue and flushes the metrics. main() returns, asyncio.run has almost nothing left to cancel, and the pools shut down, bounded by each call's own deadline. All deadlines together fit inside the grace period minus the pause.</p></div>
+</div>
+</section>
+<section class="ts-part" id="shutdown-hangs" data-rung="4" data-min="13">
+<h2>Shutdowns that never finish</h2>
+<p class="ts-bridge">Last part: gateway v9 exits 1 s after SIGTERM. Still unsolved: what happens when one thing in the process does not stop, and how you would know.</p>
+<p class="ts-problem">After a library upgrade, every deploy takes exactly 30 s per Pod, and each old Pod's last log line is "shutdown starts". Nothing errors. The Pods are SIGKILLed, so their audit queues are never flushed.</p>
+<h3>Introduction</h3>
+<p>Rung 2 found two waits with no limit at the end of <code>asyncio.run</code>: the wait for cancelled Tasks, and the wait for the default executor's threads. A third comes from rung 2's async context managers: <code>async with server</code> waits for every open connection. This part makes each one hang, then fixes it. Each case runs as its own process; the parent sends SIGTERM at 200 ms and SIGKILL 1.5 s later.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="hang_forever.py" data-file="hang_forever.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/hang_forever.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>A Task that refuses to be cancelled.</strong> <code>asyncio.run</code> cancelled it, it caught CancelledError and carried on: Part 4's trap 5. The runner waits for every cancelled Task with no limit, so it waited until SIGKILL. Fixed: the handler re-raises, and the process exits in about 300 ms.</li>
+<li><strong>A connection that never closes.</strong> An idle keep-alive client is connected. Leaving <code>async with server</code> called <code>close()</code> and then <code>wait_closed()</code>, which waits for that connection to finish, which it never does. Fixed: <code>close_clients()</code> closes it, and the wait has its own timeout.</li>
+<li><strong>A thread that is still running.</strong> A 30 s blocking call in the default executor. <code>asyncio.run</code> shuts the executor down and waits for its threads, up to 5 minutes, far beyond any grace period. Fixed: the call gets a 0.3 s time limit, its deadline passed down as in Part 5.</li>
+</ol>
+<h3>The waits, and their limits</h3>
+<ul>
+<li><span class="ts-claim" data-claim="c25" data-src="s7">Server.close_clients() and Server.abort_clients(), added in Python 3.13, close all existing client connections, by calling close() or abort() on their transports; close() should be called first so new clients cannot connect in between.</span></li>
+<li><span class="ts-claim" data-claim="c29" data-src="s7">loop.shutdown_default_executor() waits for the default executor's threads with no limit by default; Python 3.12 added a timeout parameter, after which a RuntimeWarning is emitted and the executor is shut down without waiting for its threads.</span> <span class="ts-claim" data-claim="c33" data-src="s8">asyncio.run uses a 5-minute timeout for it.</span></li>
+<li>The wait for cancelled Tasks has no limit to set. The only fix is Tasks that let a cancel finish, which is why gateway v9 cancels its own Tasks with a deadline before <code>main()</code> returns.</li>
+</ul>
+<div class="ts-legacy">
+<p><strong>Python 3.11 and 3.12.</strong> <span class="ts-claim" data-claim="c24" data-src="s7 s14">Before Python 3.12, Server.wait_closed() returned at once if the server was already closed, even while connections were still active; the CPython source notes that a first fix in 3.12.0 was still incomplete and that 3.12.1 should have it right.</span> So the second case did not hang on 3.11: it exited at once and cut the idle connection, and the open requests on it, without waiting. There is no <code>close_clients()</code> before 3.13: keep your own set of writers and close them. The version check in rung 5 runs on all four versions.</p>
+</div>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Cause</th><th>What the user sees</th><th>The signal</th><th>The fix</th></tr></thead>
+<tbody>
+<tr><td>A Task swallows CancelledError</td><td>Every deploy takes the whole grace period; cut-off requests and lost rows at SIGKILL</td><td>The shutdown report's last line is a step that never logged its end; the Pod ends by SIGKILL, not with 0</td><td>Re-raise CancelledError (Part 4); own background Tasks and cancel them inside a step with a deadline</td></tr>
+<tr><td>Open connections at <code>async with server</code></td><td>The same, only on Pods with long-lived or keep-alive clients</td><td>Hangs in <code>wait_closed()</code>; clients connected to the old Pod until SIGKILL</td><td><code>close_clients()</code> (3.13+) or your own set of writers; a timeout around <code>wait_closed()</code></td></tr>
+<tr><td>A thread inside a blocking call</td><td>The same, up to 5 minutes outside a container</td><td>No "asyncio.run returned" line; a thread dump shows the blocking call</td><td>A deadline on every blocking call (Part 5); <code>shutdown_default_executor(timeout=...)</code> (3.12+) where you run the loop yourself</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "SIGKILL at the end of the grace period is the safety net, so a hanging shutdown is harmless."</p>
+<p><strong>Why it is wrong:</strong> SIGKILL ends the hang by throwing away everything the later steps would have saved: audit rows in the queue, the last metrics, fills. A hang in step 1 costs the work of steps 2 to 6. And every deploy now takes the full grace period per Pod, which with many Pods makes deploys slow for no benefit.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Three unbounded waits at exit: cancelled Tasks, open connections, executor threads.</li>
+<li>Each shows up as "every deploy takes exactly the grace period" and a missing "done" line in the shutdown report.</li>
+<li>Fixes: re-raise cancels; <code>close_clients()</code> + a timeout; a deadline on every blocking call.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A shutdown hangs whenever it waits without a limit for something that will not end on its own, so every wait in a shutdown needs either a deadline or a guarantee that the thing waited for ends.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c24">
+<p class="q">The "connection that never closes" case, unfixed, runs on Python 3.11. What happens?</p>
+<ol>
+<li data-why="The hang comes from wait_closed() waiting for connections, which 3.11 does not do.">It hangs until SIGKILL, as on 3.14</li>
+<li>It exits at once: <code>wait_closed()</code> returns immediately on a closed server, and the idle connection is cut</li>
+<li data-why="close_clients() does not exist before 3.13; nothing closes the connection politely.">It closes the idle connection politely with <code>close_clients()</code></li>
+</ol>
+<p class="ts-why">Before 3.12, <code>wait_closed()</code> returned at once if the server was closed, whatever connections were still open. The version check measures it: "returns at once" on 3.11, "waits for the open connection" on 3.12 to 3.14. Faster on 3.11, but by not waiting at all.</p>
+</div>
+</section>
+<section class="ts-part" id="cleanup-ordering" data-rung="4" data-min="12">
+<h2>Cleanup ordering bugs</h2>
+<p class="ts-bridge">Last part: a step that waits forever. Still unsolved: steps that finish quickly and in the wrong order, which is worse, because nothing looks stuck.</p>
+<p class="ts-problem">A refactor moves <code>await gateway.stop()</code> to the top of the shutdown, "to make sure the audit queue is flushed". Deploys get fast and quiet. A week later the audit team finds no rows for any request that was in flight during a deploy, and the error logs have ten "Unhandled exception" lines per deploy that nobody connected to it.</p>
+<h3>Introduction</h3>
+<p>Rung 3 ordered the steps by what each one still needs. This part breaks that order twice and measures the damage: the audit queue closed before the drain, and seller-e's feed thread left running after the loop closed.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="cleanup_order.py" data-file="cleanup_order.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/cleanup_order.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Audit queue closed first.</strong> The 10 requests computed seller-b at 1,199, then each tried to put its row into a queue that had been shut down: Part 6's queue raises QueueShutDown on <code>put()</code>. The background write failed (10 failures), <code>handle()</code> raised, and the connection handler died with "Unhandled exception in client_connected_cb". All 10 shoppers got "connection closed", 0 rows were written, and the drain step reported success: "drained: no request left in flight". Every step finished; the order lost everything.</li>
+<li><strong>Feed thread still running after the loop closed.</strong> One price change was applied while the loop ran. The next one came after <code>asyncio.run</code> had closed the loop: <span class="ts-claim" data-claim="c28" data-src="s7">call_soon_threadsafe raises RuntimeError when called on a loop that has been closed, which the documentation notes can happen on a secondary thread while the application is shutting down.</span> <code>run_coroutine_threadsafe</code> uses it, so the feed thread died with "Event loop is closed", and the coroutine it had created was never awaited, hence the RuntimeWarning. The SDK never learned whether its change was applied.</li>
+</ol>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Bug</th><th>What the user sees</th><th>The signal</th><th>The fix</th></tr></thead>
+<tbody>
+<tr><td>A shared resource closed before its users</td><td>Requests in flight at a deploy fail; their records are missing</td><td>Errors from the resource's "closed" state (QueueShutDown, "pool is closed", "connection closed") clustered at deploy times</td><td>Close in dependency order: users first, then what they use; write the order down (rung 3) and test it</td></tr>
+<tr><td>A thread outlives the loop it calls</td><td>A partner's callbacks fail at every deploy; changes they pushed are unconfirmed</td><td>"Event loop is closed" and "coroutine was never awaited" from a non-main thread after shutdown</td><td>Stop and join every thread that calls into the loop before <code>main()</code> returns</td></tr>
+</tbody>
+</table></div>
+<div class="ts-trap">
+<p><strong>A shutdown report that says "success".</strong> In the first case every step logged its normal line. A report that only says each step ended cannot see an ordering bug; it needs the counts: rows written against requests answered, fills cached against fills started. 0 rows for 10 answered requests is the line that would have caught it at the first deploy.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Flush the queue first, to make sure nothing is lost."</p>
+<p><strong>Why it is wrong:</strong> flushing a queue only saves what is already in it. Closing it first guarantees that everything that would have been put into it afterwards is lost, and during a drain that is every row of every request still in flight. A queue is flushed last, after everything that writes to it has stopped.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Closing a resource before its users fails every user still running, quickly and quietly.</li>
+<li>A thread that calls into the loop must be stopped and joined before the loop closes.</li>
+<li>Report counts at each step, not just "done", or ordering bugs look like success.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Shutdown steps must run in dependency order, users before what they use, because a step done too early fails every later user without anything looking stuck.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c28">
+<p class="q">In the second case, the feed calls <code>loop.call_soon_threadsafe(...)</code> directly instead of <code>run_coroutine_threadsafe</code>, after the loop is closed. What happens?</p>
+<ol>
+<li data-why="A closed loop never runs callbacks again; queuing one is refused, not deferred.">The callback is queued and runs when the loop next starts</li>
+<li data-why="Nothing is silently dropped: the documentation says the call raises.">The call does nothing</li>
+<li>It raises RuntimeError in the feed thread</li>
+</ol>
+<p class="ts-why"><code>call_soon_threadsafe</code> raises RuntimeError on a closed loop; <code>run_coroutine_threadsafe</code> raised the same error because it is built on it. Either way the fix is ordering: stop the thread first.</p>
+</div>
+</section>
+<section class="ts-part" id="wrong-loop" data-rung="4" data-min="11">
+<h2>Async generators finalized on the wrong loop</h2>
+<p class="ts-bridge">Last part: a thread outlives the loop. Still unsolved: an async generator can outlive its loop too, or belong to a different loop than the one running when it is dropped.</p>
+<p class="ts-problem">A test suite creates an offers stream in a module-level fixture, reads one offer in one test, and drops the stream in another. Some runs print "Exception ignored ... async generator ignored GeneratorExit"; in others, a seller connection opened by the first test is closed only when the whole test session ends.</p>
+<h3>Introduction</h3>
+<p>Rung 2 showed the asyncio hook that finalizes an abandoned async generator. Which loop's hook, though? <span class="ts-claim" data-claim="c49" data-src="s13 s11">An async generator calls the registered first-iteration hook and stores the registered finalizer when it is first iterated, and does not call the hook again; when it is later finalized, that stored finalizer is called.</span> So a generator belongs to the loop that was running when it was first iterated, wherever it is dropped.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="wrong_loop.py" data-file="wrong_loop.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/wrong_loop.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Dropped while no loop is running.</strong> <span class="ts-claim" data-claim="c39" data-src="s11">The asyncio documentation recommends creating async generators only while the event loop is running, and shows that an async generator iterated with Runner.run(anext(...)) and then deleted outside the loop reports "RuntimeError: async generator ignored GeneratorExit".</span> The program reproduces it: the <code>finally</code> starts on no running loop, reaches its <code>await</code>, and Python reports the error as ignored. The clean-up after the <code>await</code> never ran.</li>
+<li><strong>First iterated on loop 1, dropped while loop 2 runs.</strong> The <code>finally</code> did not run on loop 2. Loop 1's hook queued the clean-up on loop 1, which was not running, so it ran only when loop 1 ran again: at its <code>close()</code>, whose <code>shutdown_asyncgens()</code> step ran the queued work. Had loop 1 been closed already, the clean-up would not have run at all.</li>
+</ol>
+<h3>Where this happens</h3>
+<ul>
+<li>Tests: fixtures and tests that use different event loops, so a generator from one is dropped in another.</li>
+<li>Sync code that calls <code>asyncio.run()</code> once per call and keeps a generator between calls: every call is a new loop.</li>
+<li>Generators kept at module level or in a cache, outliving the loop that started them.</li>
+</ul>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What the user sees</th><th>The signal</th><th>The fix</th></tr></thead>
+<tbody>
+<tr><td>Connections or cursors released much later than expected, or never; flaky tests</td><td>"async generator ignored GeneratorExit" in stderr; ResourceWarnings; clean-up log lines appearing at session end</td><td>Create, iterate and close each async generator in one Task on one loop, with <code>aclosing</code>; never keep one across <code>asyncio.run</code> calls</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "An async generator is cleaned up by whichever loop is running when it is garbage-collected."</p>
+<p><strong>Why it is wrong:</strong> it is cleaned up by the finalizer it stored at its first iteration, which belongs to the loop running then. The program dropped it while loop 2 ran, and its <code>finally</code> ran on loop 1, later.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>An async generator belongs to the loop running at its first iteration.</li>
+<li>Dropped with no loop running: "ignored GeneratorExit", clean-up cut short.</li>
+<li>Dropped under another loop: clean-up runs on the first loop, if and when it runs again.</li>
+</ul>
+</div>
+<p class="ts-takeaway">An async generator is finalized by the loop it was first iterated on, so creating it on one loop and dropping it elsewhere delays or loses its clean-up; close it with aclosing where it is used.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Case 2 again, but <code>loop_one.close()</code> is called before loop 2 runs, and the generator is dropped while loop 2 runs. What does the program print for gen 2?</p>
+<div class="ts-reveal"><p>Its <code>finally</code> runs earlier, not later: <code>loop_one.close()</code> runs <code>shutdown_asyncgens()</code>, which finds gen 2 still open and closes it right then, printing "finally starts, on loop 1" and "finally done" during the close, before loop 2 starts. When gen 2 is later dropped it is already finished, so there is nothing left to do. The clean-up happened early, at the wrong place, but completely, because <code>shutdown_asyncgens()</code> closes every generator its loop knows about.</p></div>
+</div>
+</section>
+<section class="ts-part" id="signals-threads-windows" data-rung="4" data-min="12">
+<h2>Signals, threads and Windows</h2>
+<p class="ts-bridge">Last part: a generator tied to the wrong loop. Still unsolved: a loop that is not in the main thread, a platform without Unix signals, and a container where the signal never reaches Python at all.</p>
+<p class="ts-problem">Three teams copy gateway v9's <code>run()</code>. One runs the loop in a background thread of a sync web app: start-up crashes. One develops on Windows: start-up crashes differently. One ships the unchanged code in a container whose Dockerfile says <code>CMD python gateway_v9.py</code>: every deploy waits for SIGKILL, and the shutdown report never appears.</p>
+<h3>Introduction</h3>
+<p>Signals have rules about where they can be handled. <span class="ts-claim" data-claim="c17" data-src="s10">Python signal handlers always run in the main thread of the main interpreter, and only that thread may set a handler; signal.signal() called from another thread raises ValueError.</span> asyncio adds its own rules. This part measures them on Linux and takes the Windows and Docker facts from their documentation.</p>
+<h3>Program: a loop outside the main thread (Linux)</h3>
+<div class="ts-code" data-lang="python" data-title="signals_threads.py" data-file="signals_threads.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/signals_threads.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>In the main thread, <code>add_signal_handler</code> works.</li>
+<li>In a worker thread it raises RuntimeError: "set_wakeup_fd only works in main thread of the main interpreter". That message is the mechanism from rung 2: <code>add_signal_handler</code> registers a wake-up file descriptor so the signal wakes the loop, and only the main thread may do that.</li>
+<li><code>signal.signal</code> in the worker thread raises ValueError, as documented.</li>
+<li>A Runner in a worker thread installs no Ctrl-C handler at all: SIGINT keeps Python's default, so Ctrl-C raises KeyboardInterrupt in the main thread and the loop's Tasks are never cancelled.</li>
+</ol>
+<h3>The fix for a loop in another thread</h3>
+<p>Catch the signal in the main thread and hand it to the loop's thread with the one call made for that. <span class="ts-claim" data-claim="c50" data-src="s7">The documentation says call_soon_threadsafe is safe to call from a signal handler.</span></p>
+<div class="ts-code" data-lang="python" data-title="Main thread: forward SIGTERM to a loop in another thread" data-verified="spec" data-claims="c17 c50">
+<pre><code>def forward(signum, frame):
+    loop.call_soon_threadsafe(stop.set)  # queues stop.set on the loop and wakes it
+
+signal.signal(signal.SIGTERM, forward)  # the main thread may set handlers</code></pre>
+</div>
+<h3>Windows (from the documentation, not measured here)</h3>
+<ul>
+<li><span class="ts-claim" data-claim="c22" data-src="s9">No event loop on Windows supports loop.add_signal_handler() or loop.remove_signal_handler().</span> Gateway v9's <code>run()</code> fails there at its first line.</li>
+<li><span class="ts-claim" data-claim="c18" data-src="s10">On Windows, signal.signal() can only be called with SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM or SIGBREAK; anything else raises ValueError.</span></li>
+<li>So on Windows, use <code>signal.signal</code> for SIGINT (and SIGBREAK) with the forwarding handler above, and accept rung 2's caveat: the handler runs between bytecodes, so the forward must be <code>call_soon_threadsafe</code>, which also wakes the loop.</li>
+</ul>
+<h3>Docker: the signal that never arrives</h3>
+<p><span class="ts-claim" data-claim="c14" data-src="s6">Docker's build checks warn that with the shell form of ENTRYPOINT or CMD the program runs as a child of a shell that does not pass signals on, so it cannot react to SIGTERM; the exec (JSON) form runs it as the container's main process, PID 1, which brings PID 1's duties such as reaping child processes.</span> The third team's <code>CMD python gateway_v9.py</code> is shell form: SIGTERM went to the shell, the gateway never heard it, and Docker sent SIGKILL at the end of the grace period. <code>CMD ["python", "gateway_v9.py"]</code> fixes it.</p>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setup</th><th>What happens</th><th>The fix</th></tr></thead>
+<tbody>
+<tr><td>Loop in a worker thread</td><td>RuntimeError at <code>add_signal_handler</code>; Ctrl-C does not reach the loop</td><td>Handle the signal in the main thread; forward with <code>call_soon_threadsafe</code></td></tr>
+<tr><td>Windows</td><td><code>add_signal_handler</code> not supported</td><td><code>signal.signal</code> for SIGINT/SIGBREAK, forwarded with <code>call_soon_threadsafe</code></td></tr>
+<tr><td>Shell-form CMD in Docker</td><td>No shutdown report; SIGKILL after the grace period on every stop</td><td>Exec form, so Python is PID 1; or an init that forwards signals</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "My SIGTERM handler is tested, so the container stops gracefully."</p>
+<p><strong>Why it is wrong:</strong> the handler only runs if the signal reaches the Python process. With a shell in between, Python is not the process the runtime signals. Test the container, not the script: <code>docker stop</code> it and check that the shutdown report appears and the exit is not a kill.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Signal handlers are set and run only in the main thread; <code>add_signal_handler</code> too.</li>
+<li>Loop elsewhere: catch in the main thread, forward with <code>call_soon_threadsafe</code>. Windows: no <code>add_signal_handler</code>.</li>
+<li>Docker: exec-form CMD, or the signal never reaches Python.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A SIGTERM handler works only in the main thread, only where the platform supports it, and only if the signal reaches the Python process, so check all three for every place the service runs.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c14">
+<p class="q">A Dockerfile has <code>ENTRYPOINT python gateway_v9.py</code>. <code>docker stop</code> is run with the default settings on Linux. What happens?</p>
+<ol>
+<li>The shell gets SIGTERM and does not pass it on; the gateway is killed with SIGKILL after 10 s, with no shutdown report</li>
+<li data-why="The shell does not pass signals to its child, so the gateway's handler is never called.">The gateway shuts down gracefully in about 1 s</li>
+<li data-why="docker stop waits for the grace period before SIGKILL; it does not kill at once.">The container is killed at once</li>
+</ol>
+<p class="ts-why">Shell form runs <code>/bin/sh -c</code> as the main process, and the shell does not forward signals. docker stop waits 10 s by default on Linux, then sends SIGKILL to the container. Exec form puts Python in the shell's place.</p>
+</div>
+</section>
+<section class="ts-part" id="ten-x" data-rung="4" data-min="12">
+<h2>Deploys at ten times the load</h2>
+<p class="ts-bridge">Last part: making sure the signal reaches the loop. Still unsolved: whether the shutdown budget planned for a normal day holds on a sale day, when every number in it is ten times larger.</p>
+<p class="ts-problem">A fix needs deploying during the sale, at ten times the normal traffic. The fleet has scaled from 8 to 80 gateway processes, and the rollout replaces 20 at a time. Which part of the shutdown fails first?</p>
+<h3>Introduction</h3>
+<p>The shutdown plan in rung 3 was sized for one process on a normal day. At ten times the load, the per-process numbers may not change much, because the fleet scales out, but everything the processes share does: the audit store, the sellers, the load balancer. This part works through it with the arithmetic from earlier parts. The assumptions are stated in each step; they are for the example, not measured.</p>
+<h3>Solved example</h3>
+<p><strong>Given:</strong> 80 processes at 2,000 requests a second each, 250 ms per request; 20 processes replaced at a time; endpoint updates take 2 s to reach every node; 1,000 items are being bought. These are the example's assumptions.</p>
+<p><strong>Step 1: in flight.</strong> Per process: 2,000 × 0.25 = 500 (Little's law). The drain deadline of 5 s is per process and still 20 times one request: it holds.</p>
+<p><strong>Step 2: audit rows.</strong> The 500 draining requests write their rows through Part 6's bounded queue and 50 writers. At 20 ms a row that is 500 × 20 ms ÷ 50 = 200 ms; on a slow day at 200 ms a row, 2 s. Both fit inside the drain: it holds.</p>
+<p><strong>Step 3: capacity during the batch.</strong> If the 20 old processes stop before their replacements are ready, the other 60 carry 160,000 ÷ 60 ≈ 2,667 requests a second each, a third more than they were sized for. Part 6's front door answers <code>busy</code> to the overflow. Starting the replacements and waiting for them to be ready before stopping the old ones avoids it.</p>
+<p><strong>Step 4: without a preStop pause.</strong> Each stopping process keeps being sent 2,000 requests a second for the 2 s the endpoint update takes: 4,000 refused per process, 80,000 per batch, 320,000 for the rollout. With a pause longer than 2 s: none.</p>
+<p><strong>Step 5: cold caches.</strong> The 20 new processes start with empty price caches. Each makes one fill per seller and item (Part 7): 20 × 5 × 1,000 = 100,000 seller calls in the first seconds of each batch, against sellers already at ten times their normal load. seller-e's 4 SDK threads per process at 900 ms clear about 4.4 calls a second, so caching seller-e's price for 1,000 items takes each new process almost 4 minutes.</p>
+<p><strong>Result:</strong> the per-process shutdown holds; what breaks is around it: lost capacity if old processes stop before new ones are ready, refusals without the preStop pause, and the cold caches of the replacements, which is Part 7's herd, now caused by the deploy. The old processes' fills, finished in step 4 of their shutdown, are cached only in the memory of a process about to exit.</p>
+<h3>What the user sees, the signal, the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>What breaks</th><th>What the user sees</th><th>The signal</th><th>The fix</th></tr></thead>
+<tbody>
+<tr><td>Refusals during endpoint propagation</td><td>Connection errors in bursts at each batch</td><td>Refused or 502 counts at the load balancer, aligned with Pod terminations</td><td>preStop pause longer than propagation; grace period raised to match</td></tr>
+<tr><td>Cold caches after each batch</td><td>Fewer seller-e prices and slower answers for minutes</td><td>Fill counts and seller latency jump after each batch</td><td>A shared cache across processes (Part 7) so replacements start warm; smaller batches; prewarm hot items before readiness</td></tr>
+<tr><td>Capacity lost during a batch</td><td><code>busy</code> answers fleet-wide while the batch is stopping</td><td>Refusal counts at the front door rise at each batch while the old processes drain</td><td>Start replacements and wait for readiness before stopping old processes; smaller batches</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If one process shuts down cleanly, a rollout of the fleet shuts down cleanly."</p>
+<p><strong>Why it is wrong:</strong> a rollout stops processes in batches, and each batch's flushes, refusals and cold starts land on shared dependencies at the same moment. The per-process plan held in every step above; the shared numbers decided the outcome.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Per-process numbers stay the same as the fleet scales out; the batch size multiplies lost capacity and what hits shared dependencies.</li>
+<li>Without a preStop pause, refusals grow with traffic × propagation time × batch size.</li>
+<li>Replacements start with cold caches: the deploy itself causes Part 7's herd.</li>
+</ul>
+</div>
+<p class="ts-takeaway">At ten times the load, a correct per-process shutdown still fails at the fleet level, through refusals during endpoint propagation, bursts on shared stores and cold caches in the replacements.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">The team halves the batch from 20 processes to 10. Which numbers in the solved example change, and how?</p>
+<ol>
+<li data-why="The drain is per process; 500 requests in flight per process does not depend on the batch size.">The per-process drain halves</li>
+<li>The capacity lost and the seller calls per batch halve, and the rollout takes twice as many batches</li>
+<li data-why="Refusals per stopping process depend on its traffic and the propagation time, not on how many stop together.">Refusals per stopping process halve</li>
+</ol>
+<p class="ts-why">Batch size multiplies what lands on the rest of the fleet at once: the other 70 carry 160,000 ÷ 70 ≈ 2,286 requests a second each instead of 2,667, and the new processes make 50,000 cold-cache seller calls instead of 100,000. Per-process numbers stay the same, and the total refused over the whole rollout stays the same too, spread over twice as many batches.</p>
+</div>
+<div class="ts-explain" data-points="asyncio.run waits without a limit for cancelled Tasks, open connections via wait_closed, and executor threads, so each needs a deadline or a guarantee it ends|Steps in the wrong order fail quietly: closing the audit queue before the drain lost every row while every step reported success|An async generator belongs to the loop of its first iteration; dropped elsewhere its clean-up is delayed or lost|Signals: main thread only, no add_signal_handler on Windows, shell-form CMD never forwards SIGTERM; at fleet scale, lost capacity, refusals and cold caches dominate">
+<p class="q">In your own words: name the ways a shutdown that looks correct in code still fails in production, and for each, what you would see and what you would change.</p>
+<div class="ts-model"><p>It can hang: a Task that swallows its cancel, a server waiting for a keep-alive client, or a thread in a blocking call each make asyncio.run wait until SIGKILL, which shows as every deploy taking the whole grace period and a step that never logs its end; re-raise cancels, close clients with a timeout, and give every blocking call a deadline. It can run in the wrong order: closing the audit queue before the drain failed every request in flight while each step reported success, so report counts, not just "done". Async generators can belong to another loop and be cleaned up late or never; close them with aclosing where they are used. The signal may never reach the loop: handlers only in the main thread, no add_signal_handler on Windows, and a shell-form CMD in Docker that swallows SIGTERM. And at fleet scale, a correct shutdown still loses capacity while a batch drains, causes refusals without a preStop pause, and leaves cold caches in the replacements.</p></div>
+</div>
+</section>
+<section class="ts-part" id="drain-vs-hard-vs-handoff" data-rung="5" data-min="14">
+<h2>Drain, hard stop or durable handoff: choosing how work survives a stop</h2>
+<p class="ts-bridge">Last part: at fleet scale, a correct shutdown still has costs. Still unsolved: when draining is the wrong tool altogether, because the work cannot finish inside any grace period, or must not be lost even when the process is killed.</p>
+<p class="ts-problem">A payments worker beside the gateway charges orders from a queue: charge (100 ms), then record the charge (100 ms). Each job takes 200 ms; the worker runs two at a time. Deploys and crashes must not leave an order uncharged, charged twice, or charged with no record.</p>
+<h3>Introduction</h3>
+<p>Gateway v9 drains because its work is short and can be redone: a price comparison lost at a deploy costs one shopper a retry. Some work is long, or has effects outside the process, such as a charge. For that work, how it survives a stop is a design decision, made before the shutdown code. This part compares three answers on the same eight jobs.</p>
+<h3>Definitions</h3>
+<ol>
+<li><dfn data-def="Stopping without letting work in progress finish: SIGKILL, a crash, or cancelling everything at once.">Hard stop</dfn>: the work in progress stops where it is. A crash, an out-of-memory kill and SIGKILL are all hard stops, whatever the shutdown code says.</li>
+<li><dfn data-def="Stopping new work and letting the work in progress finish within a deadline.">Drain</dfn>: no new work; the work in progress finishes within a deadline.</li>
+<li><dfn data-def="Keeping work in a store outside the process, such as a message broker or an outbox table, and marking it done only after it is finished, so another process can take over whatever was not finished.">Durable handoff</dfn>: the work lives outside the process, in a broker or an outbox table, and is acknowledged only after it is done, so whatever a stopped process had not finished is delivered again to another one.</li>
+<li><dfn data-def="Every job is delivered until it is acknowledged, so a job can be delivered, and run, more than once.">At-least-once delivery</dfn>: a job is delivered until it is acknowledged, so it can run more than once. An <dfn data-def="A unique key per job that makes doing the job twice have the same effect as doing it once.">idempotency key</dfn> makes running it twice have the effect of running it once.</li>
+</ol>
+<h3>Program</h3>
+<p>8 jobs, a stop at 350 ms, then a replacement worker that processes whatever the first one left. A job taken from the in-process queue is gone from it as soon as it is taken; a job taken from the broker is acknowledged only after it is recorded.</p>
+<div class="ts-code" data-lang="python" data-title="stop_ways.py" data-file="stop_ways.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/stop_ways.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Hard stop, in-process queue:</strong> jobs 5 to 8 were never charged: they were in a queue that died with the process. Jobs 3 and 4 were charged and not recorded: they were cut between the two steps. The worst row.</li>
+<li><strong>Drain, in-process queue:</strong> the two jobs in progress finished, but jobs 5 to 8 are still lost. A drain finishes work in progress; it does not save work waiting in memory.</li>
+<li><strong>Hard stop, broker, no key:</strong> nothing is lost, because the broker redelivered 3 and 4 and kept 5 to 8. But 3 and 4 were charged twice: the first worker charged them and died before acknowledging.</li>
+<li><strong>Drain, broker:</strong> clean, because nothing was in progress when the worker stopped.</li>
+<li><strong>Hard stop, broker, with an idempotency key:</strong> clean. The redelivered 3 and 4 found their charges already made and did not repeat them. This is the only row that is clean whether the stop was graceful or a crash.</li>
+</ol>
+<h3>Difference between the three</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Way</th><th>Survives SIGKILL or a crash?</th><th>Work waiting in memory</th><th>Duplicates</th><th>Costs</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>Hard stop</td><td>Nothing to survive: it is what a crash does</td><td>Lost</td><td>None, and some work half done</td><td>Nothing to build</td><td>Work that is cheap to lose and safe to cut half-way, such as a read the client retries</td></tr>
+<tr><td>Drain</td><td>No: a crash is still a hard stop</td><td>Lost unless finished in the deadline</td><td>None</td><td>Shutdown code; deploys take up to the drain deadline</td><td>Short requests whose clients are connected: the gateway</td></tr>
+<tr><td>Durable handoff (broker or outbox, ack after done)</td><td>Yes</td><td>Kept outside the process</td><td>Yes, at least once: needs idempotency keys</td><td>A broker or outbox to run; keys and dedup storage; slower per job</td><td>Work with effects outside the process, or longer than any grace period: charges, emails, long jobs</td></tr>
+</tbody>
+</table></div>
+<h3>Decision rules</h3>
+<ul>
+<li><strong>Can the work be lost and redone by the client?</strong> Drain, and accept that a crash loses it. The gateway.</li>
+<li><strong>Does it change something outside the process?</strong> Durable handoff with an idempotency key; then also drain, so normal deploys cause no redeliveries.</li>
+<li><strong>Is it longer than the grace period?</strong> Durable handoff, checkpointing progress, or a longer grace period for that workload alone; a drain cannot finish it.</li>
+<li><strong>Is the queue in memory?</strong> Then a drain does not save it, as row 2 shows; Part 6's audit queue is safe only because it is flushed in its own step, and still not across a crash.</li>
+</ul>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "We drain gracefully on SIGTERM. Is our job processing safe across deploys?"</p>
+<p><strong>What a strong senior answer contains:</strong> safe across deploys that go as planned, not across crashes, out-of-memory kills or a drain that hits its deadline, which are all hard stops. What survives a hard stop is only what is stored outside the process, so jobs belong in a broker or an outbox and are acknowledged after they are done; that makes delivery at-least-once, so each job needs an idempotency key checked where the effect happens. Then drain on top, to keep redeliveries rare. Numbers: job length against the grace period, and the redelivery rate after deploys as the metric that shows it working.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A good graceful shutdown means no work is ever lost."</p>
+<p><strong>Why it is wrong:</strong> graceful shutdown only runs when the process is asked to stop. Crashes and kills skip it entirely, and even a drain loses work queued in memory. Only work stored outside the process survives every kind of stop, and then it must be safe to run twice.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Hard stop: what crashes do. Drain: finishes work in progress, not work queued in memory.</li>
+<li>Durable handoff: ack after done; survives crashes; delivers at least once.</li>
+<li>At-least-once needs idempotency keys; with them, even a hard stop is clean.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Drain for short work clients can redo; for work with outside effects or longer than the grace period, keep it in a durable store, acknowledge it after it is done, and make it idempotent, because only that survives a crash.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">In <code>stop_ways.py</code>, the broker worker acknowledges each job when it takes it, before charging. A hard stop at 350 ms, no idempotency key. What does the line show?</p>
+<ol>
+<li data-why="Acknowledged jobs are never redelivered, so nothing is charged twice; the damage is the opposite.">Charged twice [3, 4]</li>
+<li data-why="Jobs 5 to 8 were never taken, so the broker still has them and the replacement charges them.">Never charged [5, 6, 7, 8]</li>
+<li>Charged but not recorded [3, 4], and nothing charged twice</li>
+</ol>
+<p class="ts-why">Acknowledging on take turns the broker into at-most-once for the jobs in progress: 3 and 4 were already acknowledged, so they are not redelivered, and the cut left them charged with no record. 5 to 8 were never taken and are processed by the replacement. Ack after done is what makes the handoff durable.</p>
+</div>
+</section>
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: stopping an async service</h2>
+<p class="ts-bridge">Last part: choose drain, hard stop or durable handoff by the kind of work. Still unsolved: explaining it out loud, with the mechanism, the numbers and the trade-offs, the way an interviewer asks.</p>
+<p class="ts-problem">"How does your service shut down?" A weak answer says "it handles SIGTERM". A strong one says what happens to each kind of work in flight, in what order, in how long, and what is lost when a step runs out of time.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. Each draws on this page and at least one earlier part. Try each before opening the reference answer.</p>
+<h3>Prompt 1: "Every deploy causes 502s, and sometimes takes 30 seconds per Pod"</h3>
+<div class="ts-predict" data-claims="c4 c6 c9 c14">
+<p class="q">An asyncio API in Kubernetes: grace period 30 s, no preStop hook, Dockerfile <code>CMD python app.py</code>, SIGTERM handled with <code>add_signal_handler</code>. During every rollout, the load balancer reports a burst of 502s, and each old Pod takes exactly 30 s to go away. Diagnose both and fix them.</p>
+<div class="ts-reveal"><p>The 30 s: the CMD is in shell form, so SIGTERM goes to <code>/bin/sh</code>, which does not forward it; the handler never runs and the kubelet sends SIGKILL at 30 s, losing whatever the shutdown would have flushed. Fix: exec form, so Python is PID 1. The 502s: endpoint removal starts at the same time as SIGTERM, so the load balancer keeps sending for a while; today those requests hit a process that is about to be killed, and after the first fix they will hit a closed listener. Fix: a preStop sleep longer than the propagation, and a grace period that covers the sleep plus the shutdown's step deadlines, since the hook spends grace time. Then verify with a deploy under load: zero refusals, every Pod exiting with 0 well before the grace period, and a shutdown report per Pod.</p></div>
+</div>
+<h3>Prompt 2: "Design shutdown for a streaming service"</h3>
+<div class="ts-explain" data-points="Stop accepting after the load balancer stops sending; streams are long, so a drain cannot wait for them to end on their own|Tell open streams to finish: a close message, or a final event, then a short deadline; aiohttp's on_shutdown hook exists for this|Async generators that produce stream data must be closed with aclosing so their clean-up runs in the stream's Task|Clients must reconnect to another instance and resume, so resumption from a position is part of the design">
+<p class="q">An asyncio service streams price updates to 50,000 open WebSocket clients per instance, from async generators that each hold a seller subscription. Design what happens on SIGTERM.</p>
+<div class="ts-model"><p>After a preStop pause, close the listener and fail readiness. Streams never end on their own, so draining by waiting is pointless: send every client a "going away" close with a reconnect hint, then give the closes a short deadline; aiohttp, for example, has an on_shutdown hook for closing websockets before it waits for handlers. Each stream's data comes from an async generator holding a subscription, so each handler reads it inside aclosing, and closing the stream runs the generator's clean-up in the handler's own Task, releasing the subscription there and not at loop shutdown. Clients reconnect to another instance, so they need to resume from the last update they saw, which the server supports with a sequence number. Spread the closes over a second or two, or 50,000 clients reconnect at once to the remaining instances. Then the usual owned-work steps and flushes, each with a deadline.</p></div>
+</div>
+<h3>Prompt 3: "Our jobs take 10 minutes and the grace period is 30 seconds"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">An asyncio worker processes video jobs from an in-memory queue fed by an HTTP endpoint. Jobs take up to 10 minutes and write results to object storage. Each deploy loses jobs. What do you change, and what does each option cost?</p>
+<div class="ts-reveal"><p>A drain cannot fix it: 10 minutes do not fit in 30 s, and the in-memory queue dies with the process anyway. Move jobs into a durable queue or outbox and acknowledge each only after its result is written, so a stopped worker's jobs are redelivered. That makes delivery at least once, so the result write must be idempotent, for example keyed by job id. To avoid redoing 10 minutes of work, checkpoint progress to storage and resume from the checkpoint. On SIGTERM: stop taking jobs, checkpoint the jobs in progress within the grace period, and exit without acknowledging them. Alternatives: a very long grace period for this workload alone, which makes deploys and node drains take as long as the longest job; or running jobs outside the deployed service entirely. Cost of the durable design: a queue to operate, idempotent writes and checkpoint code.</p></div>
+</div>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it starts from the kinds of work in flight and what each costs to lose, not from the signal; it gets the platform facts right (the hook spends the grace period, endpoints update in parallel, shell-form CMD swallows SIGTERM); it orders the steps by dependency and gives each a deadline that adds up; it treats crashes as the case graceful shutdown cannot cover and answers it with durable handoff and idempotency; and it says how a deploy is observed, with counts per step, so a step that hits its deadline is visible.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "In an interview, 'handle SIGTERM and drain' is the complete answer."</p>
+<p><strong>Why it is wrong:</strong> it skips the questions interviewers actually probe: does the signal reach the process, does traffic stop before the listener closes, what is the order, what are the deadlines, what happens to work that cannot finish, and what about crashes. Each of the three prompts above fails on one of those, not on the signal.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Platform: exec-form CMD, preStop pause, grace period ≥ pause + step deadlines.</li>
+<li>Process: ordered steps, each with a deadline; close async generators where they are used.</li>
+<li>Work that must survive anything: durable store, ack after done, idempotent.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A senior answer about shutdown follows each kind of work in flight to its end, inside a time budget, and names what survives a crash.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">This needs Part 5. During gateway v9's drain, a shopper hangs up. Part 5's hang-up watch cancels the request Task. How does the audit row label it, and why?</p>
+<ol>
+<li>"stopped by shutdown", because <code>handle()</code> only checks <code>draining</code>, which is already True</li>
+<li data-why="handle() does not look at the cancel message; it checks the draining flag, which is set for the whole shutdown.">"hung up", because the cancel came from the watcher, not from shutdown()</li>
+<li data-why="The cancelled request still writes a row in its except block, through the audit queue, which is still open during the drain.">No row, because cancelled requests write nothing</li>
+</ol>
+<p class="ts-why"><code>handle()</code> decides the label from <code>self.draining</code>, which is True from the first step of shutdown. A hang-up during the drain is therefore counted as stopped by shutdown. Telling them apart exactly would need the cancel's message, <code>"shutdown"</code>, which v9 passes to <code>cancel()</code> but does not read: a small inaccuracy in a metric, found by asking where a value comes from.</p>
+</div>
+</section>
+<section class="ts-part" id="whats-next" data-rung="5" data-min="8">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: everything on this page was checked by running it and comparing times within a tolerance, and nothing yet shows which Task a stuck shutdown is waiting for.</p>
+<p class="ts-problem">Gateway v9 stops in order, within its budget, and loses nothing on a normal deploy. Then one Pod's shutdown hangs in production. Its report ends normally, with "cancelled 3 requests; 1 still unwinding" and then "audit queue flushed", but the process never exits: <code>asyncio.run</code> is waiting for that one request Task. Which request, awaiting what, where in the code? And the tests that would catch it next time take seconds each and fail when the test machine is busy.</p>
+<h3>What this page added</h3>
+<ul>
+<li>What a deploy does: SIGTERM, a grace period, SIGKILL; preStop hooks spend the grace period; endpoints are removed while shutdown starts; gateway v8 cut off 20 of 20 shoppers.</li>
+<li>The tools: <code>loop.add_signal_handler</code> (not <code>signal.signal</code>, which left an idle loop asleep until SIGKILL); what <code>asyncio.Runner</code> does at exit; async generators, their late clean-up, <code>aclose()</code> and <code>aclosing</code>; async context managers and <code>AsyncExitStack</code>.</li>
+<li>Gateway v9: a preStop pause against the load balancer race, and a six-step shutdown with a deadline per step: stop accepting, drain, cancel, fills, feed thread, audit and metrics. The same deploy: 25 of 25 answered, 0 rows lost, exit 0.</li>
+<li>What breaks: shutdowns that hang (Tasks that refuse cancels, open connections, threads), steps in the wrong order, generators on the wrong loop, signals outside the main thread, on Windows and behind a shell, and deploys at ten times the load.</li>
+<li>Drain vs hard stop vs durable handoff, and an interview drill.</li>
+</ul>
+<h3>Program: what your Python version gives you</h3>
+<p>The version-dependent parts of gateway v9's shutdown, checked on each version this series covers.</p>
+<div class="ts-code" data-lang="python" data-title="version_probe8.py" data-file="version_probe8.py" data-verified="ran"></div>
+<div class="ts-tabs">
+<div data-tab="3.11"><div class="ts-code" data-lang="text" data-title="Output on Python 3.11" data-file="out/version_probe8_3.11.txt" data-verified="ran"></div></div>
+<div data-tab="3.12"><div class="ts-code" data-lang="text" data-title="Output on Python 3.12" data-file="out/version_probe8_3.12.txt" data-verified="ran"></div></div>
+<div data-tab="3.13"><div class="ts-code" data-lang="text" data-title="Output on Python 3.13" data-file="out/version_probe8_3.13.txt" data-verified="ran"></div></div>
+<div data-tab="3.14"><div class="ts-code" data-lang="text" data-title="Output on Python 3.14" data-file="out/version_probe8_3.14.txt" data-verified="ran"></div></div>
+</div>
+<p><strong>Explanation of the program:</strong> on 3.11, <code>wait_closed()</code> returns at once with a connection open, and there is no <code>close_clients()</code>, no <code>Queue.shutdown()</code> and no executor timeout; 3.12 adds the waiting and the timeout; 3.13 adds <code>close_clients()</code> and <code>Queue.shutdown()</code>, which gateway v9 needs as written. <code>asyncio.Runner</code> exists on all four.</p>
+<h3>What is still broken</h3>
+<ul>
+<li><strong>A stuck Task cannot be seen in production.</strong> When a shutdown step hangs, the report shows which step, not which Task, what it is awaiting or where in its code. This page diagnosed every hang by reading the program; a production process cannot be read that way.</li>
+<li><strong>None of this is tested deterministically.</strong> Every program here runs in real time and is compared within 60 ms. The drain deadline, the order of steps and the race with the load balancer are timing questions, and real-time tests of timing are slow and flaky.</li>
+</ul>
+<h3>Next: Part 9 — Seeing and testing async code</h3>
+<p>Part 9 keeps gateway v9 and makes it observable and testable: debug mode and loop-lag measurement, dumping every Task with its stack while the process runs, and tests that control time instead of waiting for it, so a shutdown's order and deadlines are checked in milliseconds, the same way every run.</p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: stopping gateway v9 in order, within a budget, without losing work.</li>
+<li>Still broken: no view of a stuck Task in production; no deterministic tests of timing.</li>
+<li>Part 9: seeing and testing async code.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v9 stops well when the plan holds; Part 9 makes it possible to see why it did not, and to test the plan without waiting for real time.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway from the toy loop to this page in the order they were built.</p>
+<ol>
+<li>v1 on the toy loop: five tasks on one thread, 900 ms, answer at the 250 ms budget</li>
+<li>v2: the toy loop plus a selector, the same answers from real sockets</li>
+<li>v3: asyncio streams and Tasks, with a hand-made budget and hand-made waiting</li>
+<li>v4: a TaskGroup, a shared Semaphore and one timeout_at deadline per request</li>
+<li>v5: seller-e's sync SDK in its own thread pool, ranking in a process pool, watched background metrics</li>
+<li>v6: a hang-up watcher that cancels the request, the deadline passed down to seller-e's SDK, a shielded audit row</li>
+<li>v7: a front door that answers busy, a cap, a line and a rate per seller, and a bounded audit queue</li>
+<li>v8: a single-flight price cache, a request id that follows the work, and seller-e's feed through a thread-safe bridge</li>
+<li>v9: SIGTERM on the loop, a timed shutdown in dependency order, a stoppable feed thread, and quick quotes through aclosing</li>
+</ol>
+<p class="ts-why">Each version fixes what the one before it could not do: fake I/O, the hand-written loop, hand-made waiting, the traps, work nobody wants, more work than fits, state shared by many requests and threads, and finally stopping without losing what it holds.</p>
+</div>
+</section>

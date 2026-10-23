@@ -1,0 +1,4 @@
+10 processes, 5,000 hot items, TTL 30 s; calls to one seller
+  cache per process, fixed TTL     long-run 1,667 calls/s; worst second after the deploy: 50,000 (at 30 s)
+  cache per process, TTL +/- 10%   long-run 1,667 calls/s; worst second after the deploy:  8,449 (at 30 s)
+  one shared cache, TTL +/- 10%    long-run   167 calls/s; worst second after the deploy:    901 (at 27 s)

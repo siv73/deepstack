@@ -1,0 +1,18 @@
+-- normal start and stop --
+  open  audit writers
+  open  metrics flusher
+  open  seller-e feed
+  open  listener
+  serving
+  close listener
+  close seller-e feed
+  close metrics flusher
+  close audit writers
+-- the listener cannot open --
+  open  audit writers
+  open  metrics flusher
+  open  seller-e feed
+  close seller-e feed
+  close metrics flusher
+  close audit writers
+  start failed: listener: address already in use

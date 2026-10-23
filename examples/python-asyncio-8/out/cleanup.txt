@@ -1,0 +1,9 @@
+-- one cancel at 250 ms --
+  250 ms  CancelledError arrived: log it, then let it travel on
+  250 ms  finally: closing the connection (an await)
+  270 ms  finally: connection closed
+  270 ms  task done, cancelled=True
+-- a second cancel at 260 ms, during the clean-up --
+  250 ms  CancelledError arrived: log it, then let it travel on
+  250 ms  finally: closing the connection (an await)
+  260 ms  task done, cancelled=True

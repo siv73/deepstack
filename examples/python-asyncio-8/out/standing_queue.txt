@@ -1,0 +1,4 @@
+maxsize=10000: 300 arrived; on time 57, late 243, dropped stale 0, busy 0
+  queue depth when arrivals stopped: 102; longest wait in the queue 1060 ms
+maxsize=10, deadline checked: 300 arrived; on time 208, late 0, dropped stale 0, busy 92
+  queue depth when arrivals stopped: 10; longest wait in the queue 100 ms

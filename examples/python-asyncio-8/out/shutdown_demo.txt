@@ -1,0 +1,2 @@
+immediate=False: put after shutdown raises QueueShutDown; written ['row-0', 'row-1', 'row-2', 'row-3', 'row-4']; writers ended by themselves: True
+immediate=True: put after shutdown raises QueueShutDown; written ['row-0', 'row-1', 'row-2', 'row-3']; writers ended by themselves: True

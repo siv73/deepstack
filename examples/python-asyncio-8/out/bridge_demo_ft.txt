@@ -1,0 +1,10 @@
+1. a blocking call, from a coroutine
+   to_thread:                       thread asyncio_0, request_id shopper-1
+   run_in_executor(own pool):       thread seller-e-sdk_0, request_id shopper-1
+   run_in_executor + ctx.run:       thread seller-e-sdk_0, request_id shopper-1
+2. a callback, from the SDK's thread: fire and forget
+   call_soon_threadsafe ran put() in thread MainThread, request_id shopper-1
+   cache now {'kettle-1l': 1099}; the feed's callback returned ['queued']
+3. a coroutine, from the SDK's thread: wait for its result
+   applied kettle-1l 1,079 (thread MainThread, request_id shopper-1)
+   failed: bad price -5

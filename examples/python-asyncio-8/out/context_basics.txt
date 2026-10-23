@@ -1,0 +1,9 @@
+nothing set yet                          request_id = -
+after set('shopper-1')                   request_id = shopper-1
+after reset(token)                       request_id = -
+a variable with no value and no default  get() raises LookupError
+inside ctx.run(), after set              request_id = shopper-2
+outside, after ctx.run() returned        request_id = -
+the snapshot itself                      ctx[request_id] = shopper-2
+inside with request_id.set('shopper-3')  request_id = shopper-3
+after the with block                     request_id = -

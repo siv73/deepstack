@@ -1,0 +1,4 @@
+SIGTERM at 100 ms, while the shoppers were in flight
+  20 shoppers: {'no answer (connection closed)': 20}, the last after 100 ms
+  a shopper arriving at 150 ms: refused (ConnectionRefusedError)
+process exited by itself; return code -15; stderr lines: 0

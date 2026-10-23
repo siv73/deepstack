@@ -1,0 +1,6 @@
+   0 ms  create_task: scheduled, not started (done=False)
+   0 ms  step 1: coroutine starts and awaits a Future
+   0 ms  Future: a done callback was added (the Task's wake-up)
+ 120 ms  Future: set_result(1199) called by the timer
+ 120 ms  step 2: coroutine resumed with 1,199
+ 120 ms  Task done: result 1,199

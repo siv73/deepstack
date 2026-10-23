@@ -1,0 +1,9 @@
+-- 30 shoppers at once; room for 10 requests --
+  10 answered {'seller-b 1199': 10}, the last after 340 ms
+  20 told 'busy', the last after 50 ms
+  refused at the door: 20; seller calls not made: {'seller-c: line full': 5, 'seller-d: over its rate': 5, 'seller-e: line full': 6}
+-- audit store at 200 ms a write: 10 shoppers, 10 more at 300 ms --
+  at 300 ms: 10 requests in progress, 8 rows in the audit queue
+  10 answered {'seller-b 1199': 10}, the last after 1150 ms
+  10 told 'busy', the last after 0 ms
+audit rows written: 20 | background failures: none

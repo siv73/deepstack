@@ -1,0 +1,16 @@
+-- gateway v4: TaskGroup, cap of 100, 250 ms deadline --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  200 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; timed out: seller-e
+-- the same, with a cap of 3 calls in flight --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+cheapest: seller-b at 1,199 after 250 ms; timed out: seller-d, seller-e
+-- cap of 100, seller-c failing --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+  200 ms  seller-d answered 1,215
+cheapest: seller-b at 1,199 after 250 ms; failed: seller-c (SellerError: seller-c failed); timed out: seller-e

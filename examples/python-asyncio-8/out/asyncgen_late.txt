@@ -1,0 +1,11 @@
+-- left open --
+ 120 ms [quick-left open] in request left open: answered seller-b 1,199; asks still waiting: 3
+ 120 ms [quick-left open] in Task-2: offer stream closed: 3 asks cancelled
+-- aclosing --
+ 290 ms [quick-aclosing] in request aclosing: offer stream closed: 3 asks cancelled
+ 290 ms [quick-aclosing] in request aclosing: answered seller-b 1,199; asks still waiting: 0
+-- kept --
+ 470 ms [quick-kept] in request kept: answered seller-b 1,199; asks still waiting: 3
+-- main() returns; asyncio.run shuts down --
+ 520 ms [-] in Task-4: offer stream closed: 0 asks cancelled
+asyncio.run returned

@@ -1,0 +1,6 @@
+        Queue: ['shopper-1', 'shopper-2', 'shopper-3']
+    LifoQueue: ['shopper-3', 'shopper-2', 'shopper-1']
+PriorityQueue: ['shopper-2', 'shopper-1', 'shopper-3']
+equal priorities, objects that cannot be compared: '<' not supported between instances of 'Request' and 'Request'
+  and yet qsize() is now 2 - the failed put left its item in the heap
+with a counter: ['shopper-2', 'shopper-1', 'shopper-3']

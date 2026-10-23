@@ -1,0 +1,4 @@
+   0 ms  [shopper-1] asking seller-b            (written by shopper-1's handler)
+  50 ms  [shopper-2] asking seller-b            (written by shopper-2's handler)
+ 120 ms  [shopper-2] seller-b answered 1,199    (written by shopper-1's handler)
+ 170 ms  [shopper-2] seller-b answered 1,199    (written by shopper-2's handler)

@@ -1,0 +1,4 @@
+-- clean-up awaits a 400 ms call --
+cheapest: seller-b at 1,199 after 650 ms; timed out: seller-e
+-- clean-up bounded to 20 ms --
+cheapest: seller-b at 1,199 after 270 ms; timed out: seller-e

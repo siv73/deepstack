@@ -1,0 +1,11 @@
+-- 1. dropped while no loop is running --
+  first price: 1199
+  gen 1: finally starts, on no running loop
+  ignored: RuntimeError: async generator ignored GeneratorExit
+  generator dropped
+-- 2. first iterated on loop 1, dropped while loop 2 runs --
+  first price: 1199
+  loop 2: generator dropped; loop 2 finishes
+  closing loop 1
+  gen 2: finally starts, on loop 1
+  gen 2: finally done

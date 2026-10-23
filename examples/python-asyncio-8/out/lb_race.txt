@@ -1,0 +1,2 @@
+preStop pause 0 ms: {'ok new': 61, 'ok old': 5, 'refused': 14}
+preStop pause 400 ms: {'ok new': 62, 'ok old': 18}

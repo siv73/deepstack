@@ -1,0 +1,15 @@
+-- await seller-a, then await seller-b --
+   80 ms  seller-a answered 1,249
+  200 ms  seller-b answered 1,199
+total: 200 ms
+-- create both Tasks, then await them --
+   80 ms  seller-a answered 1,249
+  120 ms  seller-b answered 1,199
+total: 120 ms
+-- await all five in a row --
+   80 ms  seller-a answered 1,249
+  200 ms  seller-b answered 1,199
+  350 ms  seller-c answered 1,229
+  560 ms  seller-d answered 1,215
+ 1460 ms  seller-e answered 1,149
+total: 1,460 ms

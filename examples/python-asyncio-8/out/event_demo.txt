@@ -1,0 +1,8 @@
+ 100 ms  cache warm: set()
+ 100 ms  shopper-1 served (arrived 0 ms)
+ 100 ms  shopper-2 served (arrived 20 ms)
+ 100 ms  shopper-3 served (arrived 40 ms)
+ 150 ms  shopper-4 served (arrived 150 ms)
+ 200 ms  cache cleared for a reload: clear()
+ 300 ms  cache warm again: set()
+ 300 ms  shopper-5 served (arrived 250 ms)

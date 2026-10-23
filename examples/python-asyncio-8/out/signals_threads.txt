@@ -1,0 +1,4 @@
+asyncio.run in the main thread, add_signal_handler: set
+asyncio.run in a worker thread, add_signal_handler: RuntimeError: set_wakeup_fd only works in main thread of the main interpreter
+signal.signal in a worker thread: ValueError: signal only works in main thread of the main interpreter
+Runner in a worker thread, SIGINT handler afterwards: default_int_handler

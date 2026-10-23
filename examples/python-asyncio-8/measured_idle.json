@@ -1,0 +1,27 @@
+{
+ "python": "3.14.6",
+ "system": "Linux x86_64",
+ "calls_per_point": 2000,
+ "rows": [
+  {
+   "idle": 10,
+   "select_us": 1.5,
+   "epoll_us": 0.4
+  },
+  {
+   "idle": 100,
+   "select_us": 4.9,
+   "epoll_us": 0.4
+  },
+  {
+   "idle": 500,
+   "select_us": 19.7,
+   "epoll_us": 0.4
+  },
+  {
+   "idle": 5000,
+   "select_us": null,
+   "epoll_us": 0.3
+  }
+ ]
+}

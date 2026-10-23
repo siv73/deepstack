@@ -1,0 +1,13 @@
+SIGTERM at 100 ms, while the shoppers were in flight
+  20 shoppers: {'seller-b 1199': 20}, the last after 300 ms
+  5 quick quotes: {'seller-b 1199': 5}, the last after 160 ms
+  a shopper arriving at 150 ms: refused (ConnectionRefusedError)
+  process: SIGTERM: shutdown starts
+  process:     0 ms  listeners closed; 25 requests in flight
+  process:   200 ms  drained: no request left in flight
+  process:   810 ms  fills: 1 finished, 0 cancelled
+  process:   810 ms  feed thread stopped: alive = False
+  process:   810 ms  audit queue flushed: 29 rows written
+  process: audit rows: 29, lost: 0; stopped: 0
+  process: exit 0
+process exited by itself; return code 0; stderr lines: 0

@@ -1,0 +1,4 @@
+task_done in finally=False: join() still waiting after 1 s; written ['row-0', 'row-1', 'row-3', 'row-4', 'row-5'];
+  writers alive 1 of 2; died with ["BadRow('store rejected row-2')"]; rows left in the queue 0
+task_done in finally=True: join() returned; written ['row-0', 'row-1', 'row-3', 'row-4', 'row-5'];
+  writers alive 2 of 2; died with nothing; rows left in the queue 0

@@ -1,0 +1,6 @@
+Python 3.11
+Server.close_clients(): False
+Server.wait_closed() after close(), one connection open: returns at once
+Queue.shutdown(): False
+shutdown_default_executor(timeout=...): False
+asyncio.Runner: True
