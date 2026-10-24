@@ -1,0 +1,6 @@
+loop: asyncio.unix_events._UnixSelectorEventLoop; a SelectorEventLoop: True
+  20 shoppers: {'seller-b 1199': 20}; 20 more, 1 s later: {'seller-e 1149': 20}
+  seller calls: {'seller-a answered': 1, 'seller-b answered': 1, 'seller-c answered': 1, 'seller-d answered': 1, 'seller-e answered': 1}
+loop: uvloop.Loop; a SelectorEventLoop: False
+  20 shoppers: {'seller-b 1199': 20}; 20 more, 1 s later: {'seller-e 1149': 20}
+  seller calls: {'seller-a answered': 1, 'seller-b answered': 1, 'seller-c answered': 1, 'seller-d answered': 1, 'seller-e answered': 1}

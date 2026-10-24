@@ -1,0 +1,7 @@
+5 shoppers, audit store working: {'seller-b 1199': 5}
+-- the audit store stops answering; 5 more shoppers, each waits up to 2 s --
+log lines while they wait: 0; errors or warnings: 0
+seller outcomes on the dashboard: {'seller-a answered': 10, 'seller-b answered': 10, 'seller-c answered': 10, 'seller-d answered': 10, 'seller-e timed out': 10}
+loop lag, worst in 500 ms: 0 ms
+requests in progress: 5; audit rows waiting in the queue: 3
+5 shoppers, audit store stopped: {'no answer after 2,000 ms': 5}

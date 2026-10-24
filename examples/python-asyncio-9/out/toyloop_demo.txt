@@ -1,0 +1,11 @@
+   0 ms  tea starts, waits 30 ms
+   0 ms  eggs starts, waits 20 ms
+  20 ms  eggs ready
+  30 ms  tea ready
+results: tea, eggs; clock: 30 ms
+   0 | tea sleeps 30 ms  | ready ['eggs'] | timers [(30, 'tea')]
+   0 | eggs sleeps 20 ms | ready [] | timers [(20, 'eggs'), (30, 'tea')]
+  20 | wake eggs         | ready ['eggs'] | timers [(30, 'tea')]
+  20 | eggs finished     | ready [] | timers [(30, 'tea')]
+  30 | wake tea          | ready ['tea'] | timers []
+  30 | tea finished      | ready [] | timers []

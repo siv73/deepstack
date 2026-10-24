@@ -1,0 +1,5 @@
+hard stop memory idempotent=False: never charged [5, 6, 7, 8], charged twice [], charged but not recorded [3, 4]
+drain     memory idempotent=False: never charged [5, 6, 7, 8], charged twice [], charged but not recorded []
+hard stop broker idempotent=False: never charged [], charged twice [3, 4], charged but not recorded []
+drain     broker idempotent=False: never charged [], charged twice [], charged but not recorded []
+hard stop broker idempotent=True : never charged [], charged twice [], charged but not recorded []

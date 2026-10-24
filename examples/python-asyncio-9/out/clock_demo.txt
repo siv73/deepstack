@@ -1,0 +1,5 @@
+start                                          loop.time() = 0.000 s   real time so far: 0 ms
+after asyncio.sleep(0.9)                       loop.time() = 0.900 s   real time so far: 0 ms
+after asyncio.timeout(0.25) fired              loop.time() = 1.150 s   real time so far: 0 ms
+first of two sleeps done: the 0.1 s one        loop.time() = 1.250 s   real time so far: 0 ms
+after time.sleep(0.05) on the loop's thread    loop.time() = 1.350 s   real time so far: 50 ms

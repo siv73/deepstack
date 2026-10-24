@@ -1,0 +1,1856 @@
+{
+ "verified": "2026-10-24",
+ "volatility": "evolving",
+ "strict": true,
+ "strict_note": "Pass 3 (independent reviewer) returned SUPPORTED for all 45 claims. Acted on: c40 now names the 30-day window; the dump quiz cites c14; the label quiz says the last bucket is unbounded. Noted, unchanged: c2 follows the docs (with no running loop the call raises RuntimeError); c33 follows uvloop's code where its README prose says '3.11 and earlier'; Python 3.14.9 is the latest 3.14, so the page says 3.14.8 or later.",
+ "sources": [
+  {
+   "id": "s1",
+   "title": "Python 3.14 docs: Call graph introspection",
+   "url": "https://docs.python.org/3.14/library/asyncio-graph.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s2",
+   "title": "Python 3.14 docs: Command-line introspection tools",
+   "url": "https://docs.python.org/3.14/library/asyncio-tools.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s3",
+   "title": "Python 3.14 docs: Remote debugging attachment protocol (Permission requirements)",
+   "url": "https://docs.python.org/3.14/howto/remote_debugging.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s4",
+   "title": "Python 3.14 docs: Coroutines and tasks",
+   "url": "https://docs.python.org/3.14/library/asyncio-task.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s5",
+   "title": "Python 3.14 docs: Developing with asyncio",
+   "url": "https://docs.python.org/3.14/library/asyncio-dev.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s6",
+   "title": "Python 3.14 docs: Runners",
+   "url": "https://docs.python.org/3.14/library/asyncio-runner.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s7",
+   "title": "Python 3.14 docs: Event loop",
+   "url": "https://docs.python.org/3.14/library/asyncio-eventloop.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s8",
+   "title": "Python 3.14 docs: unittest (IsolatedAsyncioTestCase)",
+   "url": "https://docs.python.org/3.14/library/unittest.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s9",
+   "title": "What's new in Python 3.14",
+   "url": "https://docs.python.org/3/whatsnew/3.14.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s10",
+   "title": "Python 3.14 changelog",
+   "url": "https://docs.python.org/3.14/whatsnew/changelog.html",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s11",
+   "title": "CPython 3.14 Lib/asyncio/base_events.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/asyncio/base_events.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s12",
+   "title": "CPython 3.14 Lib/unittest/async_case.py",
+   "url": "https://github.com/python/cpython/blob/3.14/Lib/unittest/async_case.py",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s14",
+   "title": "uvloop on PyPI",
+   "url": "https://pypi.org/project/uvloop/",
+   "kind": "primary",
+   "publisher": "MagicStack (uvloop project)",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s15",
+   "title": "uvloop release v0.23.0",
+   "url": "https://github.com/MagicStack/uvloop/releases/tag/v0.23.0",
+   "kind": "primary",
+   "publisher": "MagicStack (uvloop project)",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s15b",
+   "title": "uvloop releases",
+   "url": "https://github.com/MagicStack/uvloop/releases",
+   "kind": "primary",
+   "publisher": "MagicStack (uvloop project)",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s16",
+   "title": "uvloop README",
+   "url": "https://github.com/MagicStack/uvloop",
+   "kind": "primary",
+   "publisher": "MagicStack (uvloop project)",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s17",
+   "title": "pytest-asyncio 1.4.0 docs: Markers",
+   "url": "https://pytest-asyncio.readthedocs.io/en/stable/reference/markers/index.html",
+   "kind": "primary",
+   "publisher": "pytest-asyncio project",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s18",
+   "title": "Prometheus docs: Instrumentation",
+   "url": "https://prometheus.io/docs/practices/instrumentation/",
+   "kind": "primary",
+   "publisher": "Prometheus project",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s19",
+   "title": "Prometheus docs: Metric and label naming",
+   "url": "https://prometheus.io/docs/practices/naming/",
+   "kind": "primary",
+   "publisher": "Prometheus project",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s20",
+   "title": "Site Reliability Engineering, Chapter 6: Monitoring Distributed Systems",
+   "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+   "kind": "primary",
+   "publisher": "Google",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s21",
+   "title": "The Site Reliability Workbook, Chapter 5: Alerting on SLOs",
+   "url": "https://sre.google/workbook/alerting-on-slos/",
+   "kind": "primary",
+   "publisher": "Google",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s22",
+   "title": "OWASP Logging Cheat Sheet",
+   "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+   "kind": "primary",
+   "publisher": "OWASP",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s23",
+   "title": "CPython issue gh-155143: asyncio.shield(long_lived_future) leaks a reference to the calling task",
+   "url": "https://github.com/python/cpython/issues/155143",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  },
+  {
+   "id": "s24",
+   "title": "CPython issue gh-156408: asyncio.print_call_graph() raises AttributeError on a finished task",
+   "url": "https://github.com/python/cpython/issues/156408",
+   "kind": "primary",
+   "publisher": "Python Software Foundation",
+   "accessed": "2026-10-24"
+  }
+ ],
+ "claims": [
+  {
+   "id": "c1",
+   "text": "asyncio's call graph functions, print_call_graph(), format_call_graph() and capture_call_graph(), were added in Python 3.14.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "page intro: 'Added in version 3.14'; print_call_graph, format_call_graph, capture_call_graph",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Call graph introspection: 'Added in version 3.14'",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written (SUPPORTED/CONTRADICTED/NOT FOUND)",
+     "at": "2026-10-24T15:05"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "text": "capture_call_graph() returns a FutureCallGraph whose call_stack is a tuple of FrameCallGraphEntry objects and whose awaited_by is a tuple of FutureCallGraph objects; with no argument it uses the current task, and it returns None if there is no current task.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "capture_call_graph(); FutureCallGraph; FrameCallGraphEntry",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "capture_call_graph(); FutureCallGraph",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:05"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c3",
+   "text": "print_call_graph() prints the graph starting from the top frame and going down towards the invocation point, and format_call_graph() returns the same text as a string.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "print_call_graph(); format_call_graph()",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "print_call_graph(); format_call_graph()",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:05"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "text": "The limit argument keeps at most abs(limit) entries of each call stack: a positive limit keeps the entries closest to the invocation point, a negative one keeps the topmost, and 0 prints only the awaited-by information.",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "print_call_graph(): limit argument",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "print_call_graph(): limit",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written; behaviour also run in test_page9 (limit=-2 keeps the top frames)",
+     "at": "2026-10-24T15:05"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c5",
+   "text": "The documentation says the call graph needs cooperation from control flow structures such as shield() and TaskGroup, and that code which connects tasks through intermediate Futures with low-level APIs such as add_done_callback() should record the link with future_add_to_awaited_by() and later remove it with future_discard_from_awaited_by().",
+   "sources": [
+    "s1"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s1",
+     "locator": "Low level utility functions",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s1",
+     "locator": "Low level utility functions",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:05"
+    },
+    {
+     "pass": 3,
+     "source": "s1",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c6",
+   "text": "python -m asyncio ps PID and python -m asyncio pstree PID inspect the task graph of another running Python process without modifying or restarting it, and they read its state without executing any code in it.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "page intro, first paragraphs",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Command-line introspection tools (intro)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c7",
+   "text": "The commands are available only on supported platforms and may require permission to inspect another process.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "page intro: 'only available on supported platforms and may require permission'",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Command-line introspection tools (intro)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c8",
+   "text": "ps prints a flat table of all pending tasks; each row shows the event-loop thread id, the task's id and name, its coroutine stack, and the awaiting task's stack, name and id, if any.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Command-line options: ps PID",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Command-line options: ps PID",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c9",
+   "text": "pstree prints the tasks as a tree, each task with its coroutine stack nested under the task awaiting it; if the await graph contains a cycle, pstree reports an error instead, while ps prints every task regardless.",
+   "sources": [
+    "s2"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "Command-line options: pstree PID (cycles) and ps PID",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "Command-line options: pstree PID; ps PID",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c10",
+   "text": "Both commands were added in Python 3.14.",
+   "sources": [
+    "s2",
+    "s9"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s2",
+     "locator": "'Added in version 3.14'",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 1,
+     "source": "s9",
+     "locator": "asyncio introspection capabilities",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s2",
+     "locator": "'Added in version 3.14' (applies to the asyncio.tools interface)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 2,
+     "source": "s9",
+     "locator": "New features: Asyncio introspection capabilities",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 3,
+     "source": "s2",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c11",
+   "text": "On Linux, some distributions enable ptrace restrictions (Yama); setpriv --ptracer any, from util-linux 2.41, loosens them for one process and is applied to the process being debugged.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Permission requirements: Linux (Yama, setpriv --ptracer any)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Permission requirements: Linux",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c12",
+   "text": "Docker 19.03 or newer and containerd 1.6.7 or newer allow the ptrace system call inside containers on Linux kernel 4.8 or higher; the CAP_SYS_PTRACE capability may also work, but the docs say it is equivalent to superuser access and should only be used in low-security environments.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Permission requirements: Linux (containers; CAP_SYS_PTRACE note)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Permission requirements: Linux (containers; CAP_SYS_PTRACE)",
+     "result": "supported",
+     "method": "fresh WebFetch of the reworded claim ('may also work', 'should only be used'), tested as written",
+     "at": "2026-10-24T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c13",
+   "text": "A process can have only one tracer at a time, so a process already attached to strace or gdb cannot be inspected this way at the same time.",
+   "sources": [
+    "s3"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s3",
+     "locator": "Permission requirements: Linux, last paragraph (one tracer at a time)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s3",
+     "locator": "Permission requirements: Linux (one tracer)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s3",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c14",
+   "text": "asyncio.all_tasks() returns the set of not yet finished Task objects run by the loop.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Introspection: asyncio.all_tasks()",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Introspection: all_tasks()",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c15",
+   "text": "Task.get_stack() returns the stack frames where the Task's coroutine is suspended, and only one stack frame is returned for a suspended coroutine.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Task object: get_stack()",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Task object: get_stack()",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written; one frame also asserted in test_page9",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c16",
+   "text": "Task.print_stack() prints output similar to the traceback module's for the frames that get_stack() returns.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Task object: print_stack()",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Task object: print_stack()",
+     "result": "supported",
+     "method": "fresh WebFetch of the reworded claim ('similar to'), tested as written",
+     "at": "2026-10-24T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c17",
+   "text": "If no name has been given to a Task, the default Task implementation generates one when the Task is created.",
+   "sources": [
+    "s4"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s4",
+     "locator": "Task object: get_name()",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s4",
+     "locator": "Task object: get_name()",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s4",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c18",
+   "text": "The docs list four ways to enable it: the PYTHONASYNCIODEBUG environment variable set to 1, the Python Development Mode, debug=True passed to asyncio.run(), or loop.set_debug().",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Debug Mode: ways to enable",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Debug Mode",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c19",
+   "text": "In debug mode, callbacks taking longer than 100 milliseconds are logged, and loop.slow_callback_duration sets the minimum duration, in seconds, that counts as slow.",
+   "sources": [
+    "s5",
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Debug Mode: 'Callbacks taking longer than 100 milliseconds are logged'",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "loop.slow_callback_duration",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Debug Mode",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "loop.slow_callback_duration (default 100 ms)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c20",
+   "text": "In CPython 3.14's base_events.py, debug mode reads the loop's own time() before and after each callback and logs the callback when the difference is at least slow_callback_duration.",
+   "sources": [
+    "s11"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s11",
+     "locator": "BaseEventLoop._run_once: debug branch, t0 = self.time() ... dt >= self.slow_callback_duration",
+     "result": "supported",
+     "method": "read of CPython 3.14.6's Lib/asyncio/base_events.py as installed (3.14 branch file)",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s11",
+     "locator": "BaseEventLoop._run_once, ready-callback loop: t0 = self.time(); dt = self.time() - t0; if dt >= self.slow_callback_duration",
+     "result": "supported",
+     "method": "fresh verbatim read of the 3.14.6 file (the WebFetch of the GitHub page was truncated before _run_once and answered NOT IN CONTENT); behaviour also run: test_page9 debug-mode test",
+     "at": "2026-10-24T15:16"
+    },
+    {
+     "pass": 3,
+     "source": "s11",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c21",
+   "text": "loop.time() returns the current time according to the event loop's internal monotonic clock, and loop.call_at() schedules callbacks using the same time reference as loop.time().",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "loop.time(); loop.call_at()",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Scheduling delayed callbacks: loop.time(); loop.call_at()",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c22",
+   "text": "SelectorEventLoop uses the most efficient selector for the platform, and can be given the exact selector to use; the documentation's example passes asyncio.run() a loop_factory that creates a SelectorEventLoop with a chosen selector.",
+   "sources": [
+    "s7"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s7",
+     "locator": "class asyncio.SelectorEventLoop (selector example)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s7",
+     "locator": "Event loop implementations: SelectorEventLoop",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s7",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c23",
+   "text": "asyncio.run() gained the loop_factory parameter in Python 3.12, and asyncio.Runner, added in 3.11, takes a loop_factory too.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "asyncio.run (Changed in version 3.12: loop_factory); class asyncio.Runner (Added in version 3.11)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Running an asyncio Program (3.12); Runner context manager (3.11)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:07"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c24",
+   "text": "The documentation recommends configuring the event loop with loop_factory rather than policies, and says the policy system is deprecated and will be removed in Python 3.16.",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "asyncio.run: loop_factory recommendation and policy-system note",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Running an asyncio Program: recommendation and policy note",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:07"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c25",
+   "text": "unittest.IsolatedAsyncioTestCase, added in Python 3.8, accepts coroutines as test methods, and its loop_factory attribute, added in 3.13, is the loop_factory passed to asyncio.Runner.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "IsolatedAsyncioTestCase (Added in 3.8); loop_factory (Added in 3.13)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "IsolatedAsyncioTestCase; loop_factory",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c26",
+   "text": "The documentation says that at the end of each test all the tasks in its event loop are cancelled.",
+   "sources": [
+    "s8"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s8",
+     "locator": "IsolatedAsyncioTestCase.run()",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s8",
+     "locator": "IsolatedAsyncioTestCase.run()",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s8",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c27",
+   "text": "CPython 3.14's IsolatedAsyncioTestCase creates that runner with debug=True.",
+   "sources": [
+    "s12"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s12",
+     "locator": "IsolatedAsyncioTestCase._setupAsyncioRunner: asyncio.Runner(debug=True, loop_factory=self.loop_factory)",
+     "result": "supported",
+     "method": "read of CPython 3.14.6's Lib/unittest/async_case.py as installed (3.14 branch file)",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s12",
+     "locator": "IsolatedAsyncioTestCase._setupAsyncioRunner",
+     "result": "supported",
+     "method": "fresh verbatim read of the 3.14.6 file; behaviour also run: test_isolated10 asserts loop.get_debug()",
+     "at": "2026-10-24T15:16"
+    },
+    {
+     "pass": 3,
+     "source": "s12",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c28",
+   "text": "the policy system is deprecated and will be removed in Python 3.16",
+   "sources": [
+    "s6"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s6",
+     "locator": "asyncio.run: note on the policy system",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s6",
+     "locator": "Running an asyncio Program: policy note",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:07"
+    },
+    {
+     "pass": 3,
+     "source": "s6",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c29",
+   "text": "uvloop describes itself as a fast, drop-in replacement for the built-in asyncio event loop, implemented in Cython and using libuv under the hood.",
+   "sources": [
+    "s14",
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "project description, first sentences",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "README, first paragraph",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "project description",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "README introduction",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c30",
+   "text": "The latest uvloop release on PyPI is 0.23.0, released on 1 October 2026.",
+   "sources": [
+    "s14"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "release history / latest version 0.23.0, Oct 1, 2026",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "header and release history: 0.23.0, Oct 1, 2026, latest release",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c31",
+   "text": "Its release notes add Python 3.15 wheel builds and support for create_task()'s eager_start argument.",
+   "sources": [
+    "s15"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15",
+     "locator": "v0.23.0 Changes: Python 3.15 wheels (#758); eager_start (#748)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s15",
+     "locator": "Changes (#758, #748)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s15",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c32",
+   "text": "uvloop 0.22.0's release notes list fixes for Python 3.14 and added free-threading support.",
+   "sources": [
+    "s15b"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s15b",
+     "locator": "v0.22.0: 'Fixes for Python 3.14' (#638); 'Add free-threading support' (#693)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s15b",
+     "locator": "v0.22.0 Changes (#638, #693)",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s15b",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c33",
+   "text": "Since uvloop 0.18 the recommended way to use it is uvloop.run(), and on Python 3.11 and newer it can also be passed as asyncio.Runner(loop_factory=uvloop.new_event_loop).",
+   "sources": [
+    "s14",
+    "s16"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s14",
+     "locator": "Using uvloop",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 1,
+     "source": "s16",
+     "locator": "Using uvloop",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s14",
+     "locator": "Using uvloop",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written; the prose before the Runner snippet says 'Python 3.11 and earlier' while its code branches on >= 3.11; the page follows the code, and asyncio.run(..., loop_factory=uvloop.new_event_loop) was run on 3.14.6",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 2,
+     "source": "s16",
+     "locator": "Using uvloop",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written (same prose/code note)",
+     "at": "2026-10-24T15:10"
+    },
+    {
+     "pass": 3,
+     "source": "s14",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c34",
+   "text": "Its instrumentation guide suggests keeping the cardinality of a metric below 10 as a general guideline, and investigating alternatives for any metric over 100 or likely to grow that large.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Things to watch out for: Do not overuse labels",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Do not overuse labels",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c35",
+   "text": "Prometheus's naming guide warns that every unique combination of label values is a new time series, and says not to use labels for dimensions with high cardinality such as user IDs, email addresses or other unbounded sets of values.",
+   "sources": [
+    "s19"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s19",
+     "locator": "Labels (CAUTION)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s19",
+     "locator": "Labels",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:13"
+    },
+    {
+     "pass": 3,
+     "source": "s19",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c36",
+   "text": "Prometheus's instrumentation guide says every failure should increment a counter, and that failures should generally come with another metric counting all attempts.",
+   "sources": [
+    "s18"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s18",
+     "locator": "Subsystems: Failures",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s18",
+     "locator": "Failures",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 3,
+     "source": "s18",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c37",
+   "text": "The same chapter names the four golden signals as latency, traffic, errors and saturation, and says to distinguish the latency of successful requests from the latency of failed ones.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "The Four Golden Signals: Latency",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "The Four Golden Signals",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:13"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c38",
+   "text": "Google's SRE book warns against designing monitoring around means, and recommends recording request counts in latency buckets, rendered as a histogram, with roughly exponential bucket boundaries.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Worrying About Your Tail (or, Instrumentation and Performance)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Worrying About Your Tail",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:13"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c39",
+   "text": "Google's SRE book frames monitoring as two questions, what is broken (the symptom) and why (the cause), says every page should be actionable, and says it is better to spend much more effort catching symptoms than causes.",
+   "sources": [
+    "s20"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s20",
+     "locator": "Symptoms Versus Causes; Tying These Principles Together",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s20",
+     "locator": "Symptoms Versus Causes; Tying These Principles Together",
+     "result": "supported",
+     "method": "fresh WebFetch of the reworded claim ('says' instead of 'concludes'), tested as written",
+     "at": "2026-10-24T15:20"
+    },
+    {
+     "pass": 3,
+     "source": "s20",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c40",
+   "text": "The SRE workbook defines burn rate as how fast, relative to the SLO, the service consumes its error budget, and for a 99.9% SLO over a 30-day window recommends paging when the burn rate is 14.4 over both the last hour and the last 5 minutes, which is 2% of the budget, or 6 over 6 hours and 30 minutes, which is 5%.",
+   "sources": [
+    "s21"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s21",
+     "locator": "Burn rate definition; Table 5-8 (recommended parameters for a 99.9% SLO)",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s21",
+     "locator": "Ways to Alert: 4 Alert on Burn Rate; 6 Multiwindow, Multi-Burn-Rate Alerts; Table 5-8",
+     "result": "supported",
+     "method": "fresh WebFetch of the reworded claim (adds the 30-day window the reviewer flagged), tested as written",
+     "at": "2026-10-24T16:05"
+    },
+    {
+     "pass": 3,
+     "source": "s21",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c41",
+   "text": "OWASP's logging cheat sheet treats event data as untrusted, says to sanitize it against log injection (carriage return, line feed and delimiter characters), and notes that parameterized logging alone does not stop CR/LF injection, while a structured encoder that escapes values does.",
+   "sources": [
+    "s22"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s22",
+     "locator": "Event data sources; Event collection; Log Injection",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s22",
+     "locator": "Event data sources; Event collection; Log Injection",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:13"
+    },
+    {
+     "pass": 3,
+     "source": "s22",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c42",
+   "text": "CPython issue gh-155143 reported that asyncio.shield() keeps the calling task in the inner future's await graph after the shield is cancelled, while the inner future is still pending; the fix is listed in the Python 3.14.8 changelog.",
+   "sources": [
+    "s23",
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s23",
+     "locator": "issue description",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Python 3.14.8 final: gh-155143",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s23",
+     "locator": "issue description and reproducer",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written; the behaviour also reproduced on 3.14.6 (graph_bug.py)",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Python 3.14.8 final, Library: gh-155143",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 3,
+     "source": "s23",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c43",
+   "text": "Issue gh-156408 reported that asyncio.print_call_graph() raised AttributeError on a task that had already finished; its fix is also in 3.14.8.",
+   "sources": [
+    "s24",
+    "s10"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s24",
+     "locator": "issue description",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 1,
+     "source": "s10",
+     "locator": "Python 3.14.8 final: gh-156408",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s24",
+     "locator": "issue description",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 2,
+     "source": "s10",
+     "locator": "Python 3.14.8 final, Library: gh-156408",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 3,
+     "source": "s24",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c45",
+   "text": "The asyncio documentation warns that network logging can block the event loop, and recommends handling logs in a separate thread or with non-blocking IO.",
+   "sources": [
+    "s5"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s5",
+     "locator": "Logging",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s5",
+     "locator": "Logging",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:06"
+    },
+    {
+     "pass": 3,
+     "source": "s5",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  },
+  {
+   "id": "c50",
+   "text": "pytest-asyncio runs each test in its own event loop by default, and tests can share one loop by passing a loop_scope of function, class, module, package or session to the asyncio mark.",
+   "sources": [
+    "s17"
+   ],
+   "status": "verified",
+   "checks": [
+    {
+     "pass": 1,
+     "source": "s17",
+     "locator": "pytest.mark.asyncio; loop_scope",
+     "result": "supported",
+     "method": "WebFetch of the page, locator-first prompt with a NOT IN CONTENT guard",
+     "at": "2026-10-24T13:10"
+    },
+    {
+     "pass": 2,
+     "source": "s17",
+     "locator": "Markers: pytest.mark.asyncio",
+     "result": "supported",
+     "method": "fresh WebFetch, claims tested as written",
+     "at": "2026-10-24T15:12"
+    },
+    {
+     "pass": 3,
+     "source": "s17",
+     "locator": "independent reviewer",
+     "result": "supported",
+     "method": "independent reviewer agent: own WebFetch reads or the 3.14.6 source, plus runs",
+     "at": "2026-10-24T15:55"
+    }
+   ]
+  }
+ ],
+ "cut": [
+  {
+   "text": "uvloop makes asyncio 2-4x faster.",
+   "reason": "the project's own marketing figure, not a measurement of this service; the page measures instead"
+  },
+  {
+   "text": "uvloop debug mode crashes on Python 3.14 during async generator finalization (uvloop issue #715).",
+   "reason": "issue state and fix status were not in the content read; reported against 0.22.1, not confirmed for 0.23.0"
+  },
+  {
+   "text": "pytest-asyncio's default test discovery mode is strict.",
+   "reason": "read only on the v1.1.0 docs, not on the current 1.4.0 docs; not needed for the comparison"
+  },
+  {
+   "text": "python -m asyncio ps and pstree accept --retries N.",
+   "reason": "added in Python 3.15, not 3.14; this page's baseline is 3.14"
+  },
+  {
+   "text": "'Task was destroyed but it is pending' identifies a leaked Task in tests.",
+   "reason": "not read in the 3.14 docs fetched for this page; replaced with the order-dependence signal the page measured"
+  }
+ ]
+}

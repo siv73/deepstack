@@ -1,0 +1,4 @@
+real clock    quiet machine answered at 250 ms -> pass   (the test took 260 ms)
+real clock    busy machine  answered at 300 ms -> FAIL   (the test took 310 ms)
+virtual clock quiet machine answered at 250 ms -> pass   (the test took 0 ms)
+virtual clock busy machine  answered at 250 ms -> pass   (the test took 60 ms)

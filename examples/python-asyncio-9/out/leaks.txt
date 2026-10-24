@@ -1,0 +1,9 @@
+one loop shared by both tests:
+  test A passes; Tasks it leaves running: {'audit-writer': 50, 'fill seller-e kettle-1l': 1, 'loop-lag': 1, 'metrics-flush': 1}
+  test B FAILS: background failures {'metrics-flush': 1}
+a fresh loop for each test:
+  test A passes; Tasks it leaves running: {'audit-writer': 50, 'fill seller-e kettle-1l': 1, 'loop-lag': 1, 'metrics-flush': 1}
+  test B passes
+a module-level asyncio.Event, two tests on two loops:
+  first test passes (timed out waiting, as intended)
+  second test FAILS: RuntimeError: <asyncio.locks.Event object at 0x… [unset]> is bound to a different event loop

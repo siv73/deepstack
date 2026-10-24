@@ -1,0 +1,3 @@
+highest fd number is over 1023: True
+SelectSelector: ValueError: filedescriptor out of range in select()
+EpollSelector: select() works

@@ -1,0 +1,4 @@
+Lock, released twice:              RuntimeError: Lock is not acquired.
+Semaphore(1), released twice:      no error; after one acquire, locked() = False
+BoundedSemaphore(1), released twice: ValueError: BoundedSemaphore released too many times
+Lock released by another Task:     allowed; locked() = False

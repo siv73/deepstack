@@ -1,0 +1,6 @@
+  80 ms  seller-a added; offers so far: 1
+ 120 ms  seller-b added; offers so far: 2
+ 150 ms  seller-c added; offers so far: 3
+ 150 ms  quorum of 3: best so far seller-b at 1,199
+ 200 ms  seller-d added; offers so far: 4
+notify() without the lock: RuntimeError: cannot notify on un-acquired lock

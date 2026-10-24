@@ -1,0 +1,14 @@
+-- the shared fill, started in shopper-1's context --
+[shopper-1] gateway: calling seller-e for kettle-1l
+[shopper-1] gateway: seller-e answered
+[shopper-1] gateway: done callback: fill finished
+[shopper-1] gateway: got 1,149
+[shopper-2] gateway: got 1,149
+[shopper-3] gateway: got 1,149
+-- the shared fill, fresh Context() and its own id --
+[fill kettle-1l] gateway: calling seller-e for kettle-1l
+[fill kettle-1l] gateway: seller-e answered
+[shopper-1] gateway: done callback: fill finished
+[shopper-1] gateway: got 1,149
+[shopper-2] gateway: got 1,149
+[shopper-3] gateway: got 1,149

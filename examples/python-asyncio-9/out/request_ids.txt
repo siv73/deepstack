@@ -1,0 +1,26 @@
+-- seller-e's SDK called with run_in_executor --
+[-] seller_e_sdk: get_price kettle-1l
+[-] seller_e_sdk: get_price kettle-1l
+[shopper-1] gateway: asking seller-a
+[shopper-1] gateway: asking seller-b
+[shopper-1] gateway: seller-a answered
+[shopper-1] gateway: seller-b answered
+[shopper-1] gateway: answer sent
+[shopper-2] gateway: asking seller-a
+[shopper-2] gateway: asking seller-b
+[shopper-2] gateway: seller-a answered
+[shopper-2] gateway: seller-b answered
+[shopper-2] gateway: answer sent
+-- seller-e's SDK called with copy_context().run --
+[shopper-1] gateway: asking seller-a
+[shopper-1] gateway: asking seller-b
+[shopper-1] gateway: seller-a answered
+[shopper-1] gateway: seller-b answered
+[shopper-1] seller_e_sdk: get_price kettle-1l
+[shopper-1] gateway: answer sent
+[shopper-2] gateway: asking seller-a
+[shopper-2] gateway: asking seller-b
+[shopper-2] gateway: seller-a answered
+[shopper-2] gateway: seller-b answered
+[shopper-2] seller_e_sdk: get_price kettle-1l
+[shopper-2] gateway: answer sent

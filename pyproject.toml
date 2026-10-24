@@ -16,6 +16,7 @@ examples = [
     "a2a-sdk[http-server]==1.1.5",
     "mcp==2.2.0",
     "pyjwt[crypto]>=2.10",
+    "uvloop==0.23.0",
 ]
 dev = [
     "pytest>=8.3",

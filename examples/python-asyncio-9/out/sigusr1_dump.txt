@@ -1,0 +1,15 @@
+Python 3.14: the dump lists 8 tasks; two of them:
+* Task(name='audit-writer', id=0x…)
+  + Call stack:
+  |   File 'asyncio/locks.py', in async Event.wait()
+  |   File 'stubs.py', line 59, in async StallingAuditStore.write()
+  |   File 'audit_queue.py', line 33, in async AuditQueue._writer()
+* Task(name='shop-7 kettle-1l', id=0x…)
+  + Call stack:
+  |   File 'gateway_v6.py', line 79, in async Gateway._audit()
+  |   File 'gateway_v10.py', line 91, in async Gateway._audit()
+  |   File 'gateway_v9.py', line 116, in async Gateway.handle()
+  |   File 'gateway_v10.py', line 56, in async Gateway.handle()
+  |   File 'gateway_v6.py', line 87, in async Gateway.serve()
+  |   File 'gateway_v7.py', line 52, in async Gateway.serve()
+  |   File 'gateway_v9.py', line 94, in async Gateway.serve()

@@ -1,0 +1,5 @@
+SIGINT: return code 0
+    main task: CancelledError at its await
+    main task: finally ran
+    runner.run raised KeyboardInterrupt
+SIGTERM: return code -15

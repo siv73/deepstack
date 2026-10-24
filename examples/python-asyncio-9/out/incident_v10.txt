@@ -1,0 +1,14 @@
+request Tasks by name: ['shop-10 kettle-1l', 'shop-6 kettle-1l', 'shop-7 kettle-1l', 'shop-8 kettle-1l', 'shop-9 kettle-1l']
+format_call_graph(one of them, limit=-3):
+* Task(name='shop-6 kettle-1l', id=0x…)
+  + Call stack:
+  |   File 'gateway_v6.py', line 79, in async Gateway._audit()
+  |   File 'gateway_v10.py', line 91, in async Gateway._audit()
+  |   File 'gateway_v9.py', line 116, in async Gateway.handle()
+5 shoppers, audit store stopped: {'seller-b 1199': 5}
+JSON log lines for shop-6, from the moment the store stopped:
+  {'at_ms': 1256, 'level': 'WARNING', 'event': 'audit row not confirmed', 'request_id': 'shop-6', 'waited_ms': 1000}
+  {'at_ms': 1256, 'level': 'INFO', 'event': 'answered seller-b at 1,199 after 260 ms', 'request_id': 'shop-6'}
+  {'at_ms': 1256, 'level': 'INFO', 'event': 'request done', 'request_id': 'shop-6', 'best': 'seller-b 1199', 'ms': 1260}
+audit timeouts: 5; requests: {'partial': 10}
+request ms, histogram p50/p99 (upper bounds): (500, 2500)

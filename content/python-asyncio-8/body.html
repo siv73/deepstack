@@ -1258,7 +1258,7 @@ signal.signal(signal.SIGTERM, forward)  # the main thread may set handlers</code
 <li><strong>A stuck Task cannot be seen in production.</strong> When a shutdown step hangs, the report shows which step, not which Task, what it is awaiting or where in its code. This page diagnosed every hang by reading the program; a production process cannot be read that way.</li>
 <li><strong>None of this is tested deterministically.</strong> Every program here runs in real time and is compared within 60 ms. The drain deadline, the order of steps and the race with the load balancer are timing questions, and real-time tests of timing are slow and flaky.</li>
 </ul>
-<h3>Next: Part 9 — Seeing and testing async code</h3>
+<h3>Next: <a href="../python-asyncio-9/index.html">Part 9 — Seeing and testing async code</a></h3>
 <p>Part 9 keeps gateway v9 and makes it observable and testable: debug mode and loop-lag measurement, dumping every Task with its stack while the process runs, and tests that control time instead of waiting for it, so a shutdown's order and deadlines are checked in milliseconds, the same way every run.</p>
 <div class="ts-note" data-label="Points to remember">
 <ul>

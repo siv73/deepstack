@@ -1,0 +1,8 @@
+-- gateway v5 behind a plain server: the shopper hangs up at 100 ms --
+   80 ms  seller-a answered 1,249
+  100 ms  shopper-2 hung up
+  120 ms  seller-b answered 1,199
+  150 ms  seller-c answered 1,229
+  210 ms  seller-d answered 1,215
+  270 ms  answer ready: seller-b at 1,199 after 250 ms; written to a closed connection
+        seller-e's SDK thread ended at 900 ms

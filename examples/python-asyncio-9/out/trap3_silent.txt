@@ -1,0 +1,7 @@
+-- create_task(), kept in self.flusher, never awaited --
+flusher Task: done=True; failure reported: nowhere
+-- create_task(), no reference kept --
+flusher Task: no reference left; failure reported: asyncio: Task exception was never retrieved
+-- spawn(): a strong reference plus a done callback that reads the exception --
+flusher Task: done=True; failure reported: gateway.background: background task metrics-flush failed: ConnectionRefusedError: metrics service refused the connection
+background failures counted: {'metrics-flush': 1}

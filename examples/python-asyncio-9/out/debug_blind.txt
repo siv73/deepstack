@@ -1,0 +1,4 @@
+debug mode: True; slow_callback_duration: 0.05 s
+asyncio log records in 500 ms with 5 requests stuck: 0
+asyncio log records after one 200 ms blocking callback: 1 (took 0.200 seconds)
+5 shoppers, audit store stopped: {'no answer after 2,000 ms': 5}

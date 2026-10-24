@@ -1,0 +1,9 @@
+1. 1,000 requests: 985 at 250 ms, 15 at 2,250 ms
+   mean 280 ms; p50 <= 250 ms; p99 <= 2500 ms
+2. seller-c on a bad day: 100 requests for 100 items; 3 calls in 10 hang until the 2 s deadline
+   answered calls only: 70 calls, p99 <= 250 ms
+   every call: 100 calls, p99 <= 2500 ms; {'answered': 70, 'timed out': 30}
+3. one request while the audit store is stalled
+   Answer.ms (compare() alone): 250 ms; the shopper waited: 1250 ms
+4. loop lag over one minute: 1,200 samples, one 300 ms stall
+   average 0.25 ms; worst 300 ms

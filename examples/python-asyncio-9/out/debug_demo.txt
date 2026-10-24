@@ -1,0 +1,7 @@
+-- trap 2: seller-e's sync SDK called on the loop --
+asyncio WARNING: Executing <Task coro=Blocking._ask()> took 0.9 seconds
+-- trap 1: a coroutine that was never awaited --
+RuntimeWarning: coroutine 'MetricsClient.record' was never awaited
+  Coroutine created at (most recent call last): ... trap1_forgotten_await.py:20 in compare
+-- trap 3: a background Task that failed, never read --
+asyncio: Task exception was never retrieved; created at trap3_silent.py:26 in start_bare

@@ -1,0 +1,3 @@
+weigh box-1
+weigh box-2
+total weight: 8

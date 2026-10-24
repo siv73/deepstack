@@ -1,0 +1,14 @@
+-- 1. audit queue closed before the drain --
+10 shoppers: {'no answer (connection closed)': 10}, the last after 260 ms
+  shutdown:     0 ms  listeners closed; 10 requests in flight
+  shutdown:   160 ms  drained: no request left in flight
+  shutdown:   800 ms  fills: 1 finished, 0 cancelled
+  shutdown:   810 ms  audit queue flushed: 0 rows written
+audit rows written: 0; background failures: {'audit': 10}
+errors logged: {'background task audit failed': 10, 'Unhandled exception in client_connected_cb': 10}
+-- 2. feed thread still running when asyncio.run closed the loop --
+  shutdown:     0 ms  listeners closed; 0 requests in flight
+  shutdown:     0 ms  drained: no request left in flight
+  shutdown:     0 ms  audit queue flushed: 1 rows written
+  feed callbacks that returned: ['applied']
+  feed thread ended with: ['RuntimeError: Event loop is closed', "RuntimeWarning: coroutine 'Gateway.apply_price_change' was never awaited"]

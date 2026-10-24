@@ -63,7 +63,7 @@
    "why": "finishing in-flight requests on SIGTERM and closing async generators and clients"
   },
   {
-   "label": "Python async, Part 9: seeing and testing async code",
+   "label": "Python async, Part 9: seeing and testing async code", "slug": "python-asyncio-9",
    "why": "debug mode, loop lag, task dumps, and deterministic tests for the gateway"
   },
   {

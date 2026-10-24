@@ -1,0 +1,4 @@
+-- healthy API, 40 ms per call, 100 workers --
+answered 500, timed out 0, failed 0 of 500 in about 600 ms; most in flight: 50
+-- slow API, 180 ms per call, 100 workers --
+answered 250, timed out 250, failed 0 of 500 in about 1,000 ms; most in flight: 50

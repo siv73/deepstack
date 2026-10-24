@@ -1,0 +1,18 @@
+$ python -m asyncio ps PID   -> 25 rows, header: tid | task id | task name | coroutine stack | awaiter chain | awaiter name | awaiter id
+the gateway's rows, as task name | coroutine stack | awaiter name:
+  5 x Task-N | Gateway._audit -> Gateway.handle -> Gateway.serve -> Gateway.serve -> Gateway.serve | -
+  5 x audit | AuditQueue.write | Task-N
+  2 x audit-writer | Event.wait -> StallingAuditStore.write -> AuditQueue._writer | -
+$ python -m asyncio pstree PID   -> the first stuck request's branch:
+└── (T) Task-N
+    └──  Gateway.serve gateway_v9.py:94
+        └──  Gateway.serve gateway_v7.py:52
+            └──  Gateway.serve gateway_v6.py:87
+                └──  Gateway.handle gateway_v9.py:116
+                    └──  Gateway._audit gateway_v6.py:79
+                        ├── (T) Task-N
+                        │   └──  watch_for_hang_up gateway_v6.py:29
+                        │       └──  StreamReader.read asyncio/streams.py
+                        │           └──  StreamReader._wait_for_data asyncio/streams.py
+                        └── (T) audit
+                            └──  AuditQueue.write audit_queue.py:24

@@ -1,0 +1,7 @@
+   80 ms  seller-a answered 1,249
+   80 ms  handled seller-a
+  120 ms  seller-b answered 1,199
+  120 ms  handled seller-b
+good enough: seller-b at 1,199
+still running after the loop: ['seller-e', 'seller-d', 'seller-c']
+cancelled: ['seller-e', 'seller-d', 'seller-c']

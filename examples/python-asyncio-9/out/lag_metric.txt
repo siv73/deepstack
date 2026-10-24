@@ -1,0 +1,5 @@
+idle, 500 ms                                 worst lag    0 ms  (12 samples)
+one 300 ms blocking call                     worst lag  270 ms  (4 samples)
+30 requests x 10 ms of CPU, all at once      worst lag  270 ms  (3 samples)
+5 requests stuck on an await, 500 ms         worst lag    0 ms  (12 samples)
+all samples: 31; at or under 50 ms: 29; over 250 ms: 2

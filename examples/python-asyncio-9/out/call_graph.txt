@@ -1,0 +1,26 @@
+-- asyncio.format_call_graph(one stuck request Task) --
+* Task(name='Task-N', id=0x…)
+  + Call stack:
+  |   File 'gateway_v6.py', line 79, in async Gateway._audit()
+  |   File 'gateway_v9.py', line 116, in async Gateway.handle()
+  |   File 'gateway_v6.py', line 87, in async Gateway.serve()
+  |   File 'gateway_v7.py', line 52, in async Gateway.serve()
+  |   File 'gateway_v9.py', line 94, in async Gateway.serve()
+-- asyncio.format_call_graph(one audit-writer Task) --
+* Task(name='audit-writer', id=0x…)
+  + Call stack:
+  |   File 'asyncio/locks.py', in async Event.wait()
+  |   File 'stubs.py', line 59, in async StallingAuditStore.write()
+  |   File 'audit_queue.py', line 33, in async AuditQueue._writer()
+-- asyncio.format_call_graph(one of the 5 'audit' Tasks) --
+* Task(name='audit', id=0x…)
+  + Call stack:
+  |   File 'audit_queue.py', line 24, in async AuditQueue.write()
+  + Awaited by:
+    * Task(name='Task-N', id=0x…)
+      + Call stack:
+      |   File 'gateway_v6.py', line 79, in async Gateway._audit()
+      |   File 'gateway_v9.py', line 116, in async Gateway.handle()
+      |   File 'gateway_v6.py', line 87, in async Gateway.serve()
+      |   File 'gateway_v7.py', line 52, in async Gateway.serve()
+      |   File 'gateway_v9.py', line 94, in async Gateway.serve()

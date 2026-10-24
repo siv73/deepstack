@@ -1,0 +1,5 @@
+lint_cases.py:14:5: ASYNC251 Async functions should not call `time.sleep`
+lint_cases.py:18:12: ASYNC210 Async functions should not call blocking HTTP methods
+lint_cases.py:26:5: RUF006 Store a reference to the return value of `asyncio.create_task`
+lint_cases.py:32:12: BLE001 Do not catch blind exception: `BaseException`
+Found 4 errors.

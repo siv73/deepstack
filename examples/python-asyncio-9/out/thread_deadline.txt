@@ -1,0 +1,4 @@
+-- seller-e's SDK with its own 5 s socket timeout --
+the wait was cut at 250 ms (future cancelled=True); the thread ended at 900 ms
+-- the same call with the deadline passed down as its timeout (0.25 s) --
+the wait was cut at 250 ms (future cancelled=True); the thread ended at 250 ms

@@ -1,0 +1,7 @@
+Python 3.12
+asyncio.format_call_graph(): False
+python -m asyncio ps / pstree: False
+Task.get_stack(): True
+asyncio.run(..., loop_factory=): True
+IsolatedAsyncioTestCase.loop_factory: False
+virtual clock through asyncio.Runner: sleep(0.9) ends at 0.9 s, in under 0.5 s real: True

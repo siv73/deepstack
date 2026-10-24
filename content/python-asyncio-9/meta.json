@@ -1,0 +1,93 @@
+{
+ "slug": "python-asyncio-9",
+ "title": "Python async (asyncio), Part 9: seeing and testing async code",
+ "tldr": "A request that waits forever raises nothing, logs nothing and uses no CPU: measured on gateway v9, an audit store that stops answering leaves 5 shoppers with no answer, 0 log lines, a green per-seller dashboard and 0 ms of loop lag. The tools, each run on that incident: debug mode, which times callbacks and so sees blocking but not waiting; asyncio.all_tasks() and Task.get_stack(), one frame per Task; Python 3.14's call graph (format_call_graph, capture_call_graph) with each Task's whole await chain and who awaits it; python -m asyncio ps and pstree from outside the process, and the permissions they need; and loop lag as a metric. Gateway v10 adds seller and request histograms that include every outcome, JSON log lines with the request id, Tasks named by shopper, a 1 s limit on the audit wait and a task dump on SIGUSR1, and runs unchanged on uvloop. Tests replace the sellers at one seam, run the pools inline and use a loop whose clock jumps to the next timer, so the 250 ms budget, a hang-up, Part 8's shutdown report and a stalled store are asserted exactly in milliseconds. Then flaky tests (real sleeps, leaked Tasks, shared loops), a call-graph bug in Python 3.14.0 to 3.14.7, metrics that lie, telemetry at 10 times the load, what to page on, a comparison of testing approaches, an observability checklist and an interview drill.",
+ "category": "Python",
+ "created": "2026-10-24",
+ "level": "senior backend engineer (product company)",
+ "prereqs": [
+  {
+   "label": "Python async, Part 1: coroutines from scratch, build your own event loop",
+   "slug": "python-asyncio-1"
+  },
+  {
+   "label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks",
+   "slug": "python-asyncio-2"
+  },
+  {
+   "label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines",
+   "slug": "python-asyncio-3"
+  },
+  {
+   "label": "Python async, Part 4: the six traps that break async services",
+   "slug": "python-asyncio-4"
+  },
+  {
+   "label": "Python async, Part 5: cancellation in depth",
+   "slug": "python-asyncio-5"
+  },
+  {
+   "label": "Python async, Part 6: bounding work: queues and backpressure",
+   "slug": "python-asyncio-6"
+  },
+  {
+   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads",
+   "slug": "python-asyncio-7"
+  },
+  {
+   "label": "Python async, Part 8: shutting down and cleaning up",
+   "slug": "python-asyncio-8"
+  }
+ ],
+ "related": [
+  {
+   "label": "Python async, Part 1: coroutines from scratch, build your own event loop",
+   "slug": "python-asyncio-1",
+   "why": "previous page: generators, coroutines and a toy event loop; the gateway reaches 900 ms on one thread and answers at the 250 ms budget"
+  },
+  {
+   "label": "Python async, Part 2: inside asyncio's event loop: sockets, selectors, Futures, Tasks",
+   "slug": "python-asyncio-2",
+   "why": "previous page: real sockets, selectors (epoll, kqueue), one loop iteration, Futures, Tasks and asyncio.run; a failing seller stays inside its own Task"
+  },
+  {
+   "label": "Python async, Part 3: running work concurrently: TaskGroup, limits and deadlines",
+   "slug": "python-asyncio-3",
+   "why": "previous page: TaskGroup, ExceptionGroup and except*, gather, as_completed, eager tasks, a Semaphore cap and asyncio.timeout_at; gateway v4 answers within 250 ms with seller-e timed out"
+  },
+  {
+   "label": "Python async, Part 4: the six traps that break async services",
+   "slug": "python-asyncio-4",
+   "why": "previous page: forgotten awaits, blocking calls (seller-e's sync SDK, CPU work), lost tasks, gather leaks, swallowed cancellation and silent timeouts, with debug mode and static checks to find them; gateway v5"
+  },
+  {
+   "label": "Python async, Part 5: cancellation in depth",
+   "slug": "python-asyncio-5",
+   "why": "previous page: cancel() as a request, traced through Task stepping; try/finally clean-up; cancelling() and uncancel() and how timeout and TaskGroup use them; gateway v6 stops when the shopper hangs up, passes the deadline to seller-e's thread and shields its audit row; refused and stale cancels, slow clean-up; shield vs owned task vs outbox"
+  },
+  {
+   "label": "Python async, Part 6: bounding work: queues and backpressure",
+   "slug": "python-asyncio-6",
+   "why": "previous page: why memory climbs when work arrives faster than it leaves (Little's law), asyncio.Queue bounded and unbounded, backpressure, worker pools, task_done/join, shutdown, PriorityQueue and LifoQueue; gateway v7 sheds with busy (503), caps, lines and rate limits per seller, and a bounded audit queue; hung workers, standing queues, limits at 10x; Semaphore vs queue vs shedding vs broker"
+  },
+  {
+   "label": "Python async, Part 7: sharing state safely: locks, events, context and threads",
+   "slug": "python-asyncio-7",
+   "why": "previous page: races on one thread (check-then-act across an await, logs with another request's id); Lock, Event, Condition, Semaphore/BoundedSemaphore and Barrier; contextvars and the context copy each Task gets; gateway v8 with a single-flight price cache, a request id that follows the work into Tasks and threads, and the thread bridges (to_thread, run_in_executor with copy_context, call_soon_threadsafe, run_coroutine_threadsafe); free-threaded 3.14; locks held across awaits, deadlocks, lost context, wrong-thread calls, cache herds at 10x; lock vs single-flight vs owner task vs snapshot"
+  },
+  {
+   "label": "Python async, Part 8: shutting down and cleaning up",
+   "slug": "python-asyncio-8",
+   "why": "previous page: SIGTERM, grace periods and SIGKILL in Kubernetes and Docker; the preStop race with the load balancer; loop.add_signal_handler vs signal.signal; what asyncio.Runner does at exit; async generators, aclose and aclosing; AsyncExitStack; gateway v9's timed shutdown in dependency order (stop accepting, drain, cancel, fills, feed thread, audit and metrics); hangs, ordering bugs, generators on the wrong loop, signals in threads, on Windows and behind a shell; drain vs hard stop vs durable handoff"
+  },
+  {
+   "label": "Python async, Part 9: seeing and testing async code",
+   "why": "this page: a stuck request with nothing in the logs; debug mode (blind to waits), all_tasks and get_stack, the 3.14 call graph and python -m asyncio ps/pstree, loop lag as a metric; gateway v10 with seller histograms, JSON logs with the request id, named Tasks, an audit limit and a task dump; stub sellers and a virtual-clock loop for exact tests of timeouts, cancellation and shutdown; uvloop; flaky tests, metrics that lie, what to alert on",
+   "slug": "python-asyncio-9"
+  },
+  {
+   "label": "Python async, Part 10: the whole gateway: sizing, failures and a full mock interview",
+   "why": "integrates every layer, sizes it, walks its failures across layers, and ends with a mock interview"
+  }
+ ]
+}

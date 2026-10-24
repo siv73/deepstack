@@ -1,0 +1,10 @@
+log lines per cached request: 2, 302 bytes
+  today, 8 processes x 2,000: 32,000 lines a second, 4.8 MB a second, 0.42 TB a day
+  at 10 times the load: 320,000 lines a second, 48.3 MB a second, 4.17 TB a day
+seller-call counters by seller and outcome: 20 series per process
+  add an item label, 50,000 items: 1,000,000 series per process
+a request id with a newline in it: text format writes 2 lines:
+  [abc
+  {"event":"refund approved","request_id":"admin"}] demo: audit row not confirmed
+JSON format writes 1 line:
+  {"at_ms":null,"level":"WARNING","logger":"demo","event":"audit row not confirmed","request_id":"abc\n{\"event\":\"refund approved\",\"request_id\":\"admin\"}"}

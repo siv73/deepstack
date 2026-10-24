@@ -1,0 +1,15 @@
+no handler, a job in flight: exited, return code -15
+add_signal_handler, a job in flight: exited, return code 0
+    100 ms stop seen
+    300 ms job finished
+    300 ms job's finally ran
+    300 ms exit
+add_signal_handler, idle: exited, return code 0
+    100 ms stop seen
+    100 ms exit
+signal.signal, a job in flight: exited, return code 0
+    300 ms stop seen
+    300 ms job finished
+    300 ms job's finally ran
+    300 ms exit
+signal.signal, idle: SIGKILL at 2 s, return code -9

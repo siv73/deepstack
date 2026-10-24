@@ -1,0 +1,9 @@
+Python 3.13: the dump lists 8 tasks; two of them:
+* audit-writer (one frame)
+Stack for <Task pending name='audit-writer' coro=<AuditQueue._writer() running at audit_queue.py:33> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[_finished() at spawn.py:20]> (most recent call last):
+  File "audit_queue.py", line 33, in _writer
+    await self.store.write(row)
+* shop-7 kettle-1l (one frame)
+Stack for <Task pending name='shop-7 kettle-1l' coro=<Gateway.serve() running at gateway_v9.py:94> wait_for=<Future pending cb=[shield.<locals>._outer_done_callback() at asyncio/tasks.py, Task.task_wakeup()]>> (most recent call last):
+  File "gateway_v9.py", line 94, in serve
+    await super().serve(reader, writer)  # gateway v7's door, v6's hang-up watch, v8's handle()

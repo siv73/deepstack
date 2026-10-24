@@ -1,0 +1,1391 @@
+<section class="ts-part" id="system-so-far" data-rung="1" data-min="9">
+<h2>The system so far, and what this page adds to it</h2>
+<p class="ts-problem">Gateway v9 from Part 8 answers seller-b at 1,199 within 250 ms, shares one seller call per item among every shopper who asks, and on a deploy answers all 25 requests in flight and exits by itself. Every one of those facts was checked by running the program in real time and comparing its times within 60 ms. Nobody has yet watched it misbehave in production, and nobody can test its timing without waiting for it.</p>
+<h3>Introduction</h3>
+<p>This is Part 9 of a ten-part series. Every part works on the same system: a price-comparison gateway that asks five sellers for a price and must answer within a budget of 250 ms. Parts 1 to 8 are the prerequisites for this page. This part recaps them in one screen; if any line below is unfamiliar, read that part first.</p>
+<h3>What Parts 1 to 8 built</h3>
+<ol>
+<li>The five sellers: seller-a (80 ms, 1,249), seller-b (120 ms, 1,199), seller-c (150 ms, 1,229), seller-d (200 ms, 1,215) and seller-e (900 ms, 1,149). The right answer within 250 ms is seller-b at 1,199, with seller-e missing.</li>
+<li>Parts 1 and 2: one loop on one thread overlaps the waits; Tasks switch only at an <code>await</code>; a Task's coroutine is driven step by step, and every wait ends in a Future.</li>
+<li>Part 3: a TaskGroup owns the five seller calls, a Semaphore caps them, one <code>timeout_at</code> deadline covers each request.</li>
+<li>Part 4: the six traps, debug mode as their detector, seller-e's sync SDK in a thread pool of its own, ranking in a process pool, owned background Tasks, metrics counted per seller and flushed in the background.</li>
+<li>Part 5: <code>cancel()</code> is a request that lands at the next <code>await</code>; the hang-up watch cancels a request whose shopper left; the audit row is written behind <code>shield()</code>.</li>
+<li>Part 6: a front door that answers <code>busy</code>, per-seller caps, lines and rates, and a bounded audit queue whose writers each wait for the store.</li>
+<li>Part 7: a single-flight price cache, a request id in a ContextVar, and seller-e's price feed calling in from its own thread.</li>
+<li>Part 8: SIGTERM on the loop, and a six-step shutdown, each step with its own deadline: stop accepting, drain, cancel, fills, feed thread, audit queue and metrics.</li>
+</ol>
+<h3>What was still broken</h3>
+<ul>
+<li>When a request is stuck, nothing shows which request, waiting for what, at which line. Part 8 found every hang by reading its own code.</li>
+<li>Every test so far waits in real time and compares times within a tolerance: slow, and wrong whenever the test machine is busy.</li>
+</ul>
+<h3>What this page adds</h3>
+<p>Rung 1 shows the failure this page is about: requests that stop answering while every signal the gateway has says it is healthy. Rung 2 gives the tools that can see it: debug mode (and why it cannot), <code>asyncio.all_tasks()</code> and <code>get_stack()</code>, Python 3.14's call graph and its <code>ps</code> and <code>pstree</code> commands, and loop lag as a metric. Rung 3 builds gateway v10 and its tests. Three things change in the running system from this page on, and Part 10 keeps them:</p>
+<ol>
+<li><strong>Telemetry.</strong> Loop lag, a latency histogram and outcome counts for every seller call, one JSON log line per request and per seller call carrying the request id, request Tasks named after their shopper, and a task dump on SIGUSR1.</li>
+<li><strong>A time limit on the audit wait.</strong> A stuck audit store now costs a request one second and shows up as a count and a log line, instead of a request that never answers.</li>
+<li><strong>Tests that control time.</strong> Stub sellers inside the process and a loop whose clock jumps from timer to timer, so the 250 ms budget, a hang-up, a drain deadline and a stalled store are each checked to the millisecond in a few milliseconds of real time.</li>
+</ol>
+<h3>Diagram</h3>
+<figure class="ts-graph" data-title="The series map: what Part 9 adds">
+<script type="application/json">
+{"nodes": [
+ {"id": "app", "label": "Shopping app", "sub": "one TCP connection", "col": 0, "row": 1},
+ {"id": "gw", "label": "Gateway", "sub": "budget 250 ms", "col": 1, "row": 1},
+ {"id": "tg", "label": "Run together", "sub": "Part 3: group · cap · deadline", "col": 1, "row": 0},
+ {"id": "loop", "label": "Scheduler", "sub": "Part 2: asyncio's loop", "col": 1, "row": 2},
+ {"id": "os", "label": "Selector", "sub": "the OS: epoll / kqueue", "col": 0, "row": 2},
+ {"id": "sa", "label": "seller-a", "sub": "80 ms · 1,249", "col": 2, "row": 0},
+ {"id": "sb", "label": "seller-b", "sub": "120 ms · 1,199", "col": 2, "row": 1},
+ {"id": "sc", "label": "seller-c", "sub": "150 ms · 1,229", "col": 2, "row": 2},
+ {"id": "sd", "label": "seller-d", "sub": "200 ms · 1,215", "col": 2, "row": 3},
+ {"id": "se", "label": "seller-e", "sub": "900 ms · 1,149", "col": 3, "row": 2},
+ {"id": "sdk", "label": "SDK threads", "sub": "Part 4: seller-e's own pool", "col": 3, "row": 3},
+ {"id": "cpu", "label": "Process pool", "sub": "Part 4: ranking offers", "col": 1, "row": 3},
+ {"id": "met", "label": "Metrics service", "sub": "Part 4: counts per seller", "col": 0, "row": 0},
+ {"id": "watch", "label": "Hang-up watch", "sub": "Part 5: stops the request", "col": 3, "row": 0},
+ {"id": "audit", "label": "Audit store", "sub": "Part 6: bounded queue", "col": 0, "row": 3},
+ {"id": "limits", "label": "Seller limits", "sub": "Part 6: cap · line · rate", "col": 3, "row": 1},
+ {"id": "cache", "label": "Price cache", "sub": "Part 7: one fill per item", "col": 0, "row": 4},
+ {"id": "stop", "label": "Shutdown", "sub": "Part 8: drain · cancel · flush", "col": 2, "row": 4},
+ {"id": "orch", "label": "Orchestrator", "sub": "Part 8: SIGTERM · grace · SIGKILL", "col": 3, "row": 4},
+ {"id": "tele", "label": "Telemetry", "sub": "Part 9: lag · histograms · JSON logs", "col": 1, "row": 4, "step": 8},
+ {"id": "tests", "label": "Tests", "sub": "Part 9: stub sellers · virtual clock", "col": 1, "row": 5, "step": 8}],
+ "edges": [
+ {"from": "app", "to": "gw", "label": "shopper-1 kettle-1l", "step": 1},
+ {"from": "gw", "to": "sa", "step": 1},
+ {"from": "gw", "to": "sb", "label": "one TCP connection each", "step": 1},
+ {"from": "gw", "to": "sc", "step": 1},
+ {"from": "gw", "to": "sd", "step": 1},
+ {"from": "gw", "to": "tg", "label": "starts and bounds the calls", "step": 2},
+ {"from": "gw", "to": "loop", "label": "runs the waits", "step": 2},
+ {"from": "loop", "to": "os", "label": "which sockets are ready?", "step": 2},
+ {"from": "gw", "to": "sdk", "step": 3},
+ {"from": "sdk", "to": "se", "label": "sync SDK call", "step": 3},
+ {"from": "gw", "to": "cpu", "step": 3},
+ {"from": "gw", "to": "met", "label": "background flush", "step": 3},
+ {"from": "watch", "to": "gw", "label": "shopper left: cancel all", "step": 4, "dashed": true},
+ {"from": "gw", "to": "audit", "step": 4},
+ {"from": "gw", "to": "app", "label": "busy: refused at once", "step": 5, "dashed": true},
+ {"from": "tg", "to": "limits", "step": 5},
+ {"from": "gw", "to": "cache", "label": "fresh price? else one fill", "step": 6},
+ {"from": "sdk", "to": "cache", "label": "feed: price changes", "step": 6, "dashed": true},
+ {"from": "orch", "to": "stop", "label": "SIGTERM", "step": 7, "dashed": true},
+ {"from": "stop", "to": "gw", "label": "stop in order, each step timed", "step": 7},
+ {"from": "stop", "to": "tele", "label": "flushed last", "step": 8},
+ {"from": "tests", "to": "tele", "label": "drive the gateway, read it", "step": 8, "dashed": true}],
+ "captions": [
+ "The request: the shopping app sends one line over its own TCP connection, and the gateway asks sellers a to d over theirs.",
+ "Parts 2 and 3, unchanged: asyncio's loop runs the waits, and a TaskGroup, a cap and one deadline bound the seller calls.",
+ "Part 4, unchanged: seller-e is reached through its sync SDK in a pool of its own, ranking runs in processes, and counts go out in the background.",
+ "Part 5, unchanged: a watcher cancels the request when the shopper hangs up, and every request writes one audit row.",
+ "Part 6, unchanged: the front door answers busy when the gateway is full, and each seller has its own cap, line and rate.",
+ "Part 7, unchanged: a price cache shared by every request, one fill per seller and item, and seller-e's feed from the SDK's own thread.",
+ "Part 8, unchanged: the orchestrator sends SIGTERM, and the shutdown stops every box in a fixed order, each step with its own time limit.",
+ "New on this page: telemetry that every request and every seller call writes to, and tests that drive the same gateway with stub sellers on a clock they control, then read that telemetry."]}
+</script>
+</figure>
+<p><strong>Explanation of the diagram</strong></p>
+<ol>
+<li>Steps 1 to 7 are Parts 1 to 8, unchanged. This page removes none of them and changes no answer the gateway gives.</li>
+<li>Step 8 adds two boxes. Telemetry sits inside the process: every request and every seller call writes to it, and it decides nothing. The one arrow drawn into it is the shutdown's, because Part 8's sequence flushes it last; arrows from every box that writes to it would cover the whole map.</li>
+<li>Tests sit outside the running process. The dashed arrow says they do not change the gateway: they drive the same code with stub sellers and read the same telemetry a dashboard would.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If the tests pass and the dashboard is green, the service works."</p>
+<p><strong>Why it is wrong:</strong> both only see what they were built to see. The next part runs gateway v9 into a failure that passes every test this series has written and leaves the dashboard green, while five shoppers get no answer at all.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v9: limits, a shared cache, a travelling request id, and a timed shutdown.</li>
+<li>Still broken: no way to see where a stuck request waits; no way to test timing without waiting for it.</li>
+<li>New: telemetry, a time limit on the audit wait, and tests on a clock the test controls.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Part 9 keeps gateway v9's behaviour and adds the two things it lacks: a way to see where its requests are waiting, and tests that do not wait for real time.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">This needs Part 8. A drain step reports "cancelled 3 requests; 1 still unwinding", and then the process never exits. Which part of Part 8's machinery is waiting, and what is it waiting for?</p>
+<ol>
+<li data-why="SIGKILL ends a process whatever it is doing; it does not wait for anything. Until it arrives, it is the process that waits.">The orchestrator's SIGKILL, which is late</li>
+<li><code>asyncio.run</code>'s exit, which cancels every Task left and waits for all of them with no time limit</li>
+<li data-why="The drain step has its own deadline and already ended: it printed its line. The wait without a limit comes after it.">The drain step, which has no deadline</li>
+</ol>
+<p class="ts-why">Part 8 traced <code>Runner.close()</code>: it cancels every Task still running and waits for them with no limit. One request Task that does not finish after its cancel holds the whole exit. Which Task, and where, is exactly what nothing in gateway v9 can tell you.</p>
+</div>
+</section>
+<section class="ts-part" id="stuck-request" data-rung="1" data-min="12">
+<h2>A request is stuck, and nothing is in the logs</h2>
+<p class="ts-bridge">Last part: Part 9 adds a way to see where requests wait. Still unsolved: what the failure looks like from outside, and why every existing signal misses it.</p>
+<p class="ts-problem">At 14:02 the support team gets tickets: "the app spins and never shows a price". The on-call engineer opens the dashboard: every seller answered, nothing failed, CPU is low. The logs since 14:02 hold no error, no warning, nothing at all from the requests that hang. Restarting the gateway would make it go away, and would also destroy the only evidence.</p>
+<h3>Introduction</h3>
+<p>This part reproduces that incident on gateway v9, exactly as Part 8 left it. The audit store (Part 6) is a database reached over the network. At some moment its connection stops answering: no error, no reset, just silence. Five shoppers arrive before that moment and five after. The program then asks each signal the gateway has what it saw.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A request the server has accepted that is neither answered nor failed, and is not making progress.">stuck request</dfn> is one the server accepted that is neither answered nor failed, and is not making progress.</li>
+<li>A <dfn data-def="Anything a running service emits that tells you about its state: a metric, a log line, a trace, a dump.">signal</dfn> is anything a running service emits about its own state: a metric, a log line, a dump of what it is doing.</li>
+<li>A <dfn data-def="A number a service keeps and exports over time, such as a count of requests or a histogram of latencies, for dashboards and alerts.">metric</dfn> is a number a service keeps and exports over time, such as a count of seller answers. A log line is a record of one event.</li>
+</ol>
+<h3>Comparison</h3>
+<p>A shop whose card machine has frozen mid-payment. The till's sales log shows every sale up to the freeze and nothing after. The camera shows customers standing at the till, not moving. The shop's "busy?" sign shows normal, because the shop is not busy: nobody is doing anything.</p>
+<ul>
+<li>The sales log = the gateway's log lines: they are written when something finishes, and nothing finishes.</li>
+<li>The "busy?" sign = loop lag and CPU: they measure work, and waiting is not work.</li>
+<li>The camera = this page's task dumps: the only view that shows who is standing where.</li>
+</ul>
+<p>The comparison stops at the camera: a real camera is always recording, while a task dump has to be asked for at the right moment, which rung 2 shows how to do.</p>
+<h3>Program</h3>
+<p><code>incident.py</code> runs gateway v9 on real sockets with Part 2's seller stubs and Part 4's pools, sends the shoppers, stops the audit store, and calls a <code>look()</code> function while the last five are waiting. <code>stuck_v9.py</code>'s <code>look()</code> reads every signal gateway v9 has.</p>
+<div class="ts-code" data-lang="python" data-title="incident.py" data-file="incident.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="stuck_v9.py" data-file="stuck_v9.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/stuck_v9.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Before the store stops:</strong> 5 of 5 shoppers get seller-b at 1,199. The system works.</li>
+<li><strong>Log lines while they wait: 0.</strong> Gateway v8's "answered" line is written after the audit row, so it never comes. The seller prices were already in the cache from the first five, so no "calling seller-x" line either. Silence is the only symptom, and silence is not something a log search can find.</li>
+<li><strong>The dashboard:</strong> 10 answers from each of sellers a to d, and 10 timeouts for seller-e, exactly as on a healthy day. <code>compare()</code> records those counts before the request waits for its audit row, so the stuck requests look like successes.</li>
+<li><strong>Loop lag: 0 ms.</strong> The loop is not busy; it is idle, with five requests parked at an <code>await</code>.</li>
+<li><strong>Requests in progress: 5; rows in the queue: 3.</strong> The only number that moved. Two rows are with the two writers, both inside the store's write; three wait in the queue. Nothing on the dashboard shows either number.</li>
+<li><strong>After 2 s:</strong> all five shoppers give up with no answer.</li>
+</ol>
+<h3>Solved example: what this costs</h3>
+<p><strong>Given:</strong> one process takes 2,000 requests a second (Part 8's figure); the audit store stalls for 30 s; the gateway's front door admits at most 200 requests in progress (Part 6).</p>
+<p><strong>Step 1.</strong> Each stuck request holds one of the 200 places. At 2,000 a second, all 200 are taken after 200 ÷ 2,000 = 0.1 s.</p>
+<p><strong>Step 2.</strong> From then on the front door answers <code>busy</code> to every new request: 2,000 × 29.9 ≈ 59,800 refusals in the 30 s.</p>
+<p><strong>Step 3.</strong> The 200 stuck shoppers wait the whole 30 s, or until they give up.</p>
+<p><strong>Result:</strong> a 30-second stall of a dependency that no request needs for its answer turns into a 30-second outage, with no error logged and every seller counter green. The busy count is the only alarm, and it says "too much traffic", which is the wrong diagnosis.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If something were wrong, it would be in the logs."</p>
+<p><strong>Why people hold it:</strong> most failures raise an exception, and exceptions get logged.</p>
+<p><strong>Why it is wrong:</strong> a wait with no time limit raises nothing. A log line is written when code runs, and a parked Task runs no code. The failures that hurt most in async services are often waits, and a wait leaves no trace until something with a deadline gives up.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>A stalled audit store left 5 requests stuck, with 0 log lines, a green dashboard and 0 ms of loop lag.</li>
+<li>Counters written before the stuck step make stuck requests look like successes.</li>
+<li>The only moving numbers were requests in progress and the audit queue's size, and neither was exported.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A request that waits forever raises nothing, logs nothing and uses no CPU, so every signal built around errors or work reports a healthy gateway.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">Suppose gateway v9 had exported one more number: requests in progress. During the 30 s stall in the solved example, what would that graph show, and would it tell the on-call engineer the cause?</p>
+<div class="ts-reveal"><p>It would climb to the front door's limit of 200 within 0.1 s and stay flat at 200 for the whole 30 s, while the busy count climbs. That says requests are not finishing, which is far better than a green dashboard. It does not say why: a slow seller, a lock, the audit store and a deadlock all draw the same flat line. Getting from "not finishing" to "waiting at line 79 of gateway_v6.py, for the audit queue" needs a view of each Task and where it waits, which is rung 2.</p></div>
+</div>
+<div class="ts-explain" data-points="The requests are parked at an await on the audit queue, so they run no code|Log lines are written when code runs, so a wait with no time limit writes nothing|Seller counters are recorded before the audit wait, so stuck requests count as successes|Loop lag and CPU measure work, and waiting is not work">
+<p class="q">In your own words: why did every signal gateway v9 has report a healthy service while five shoppers got no answer?</p>
+<div class="ts-model"><p>Each stuck request is a Task parked at an await, waiting for its audit row to be confirmed by a store that stopped answering. A parked Task runs no code, so it writes no log line and raises no error; the "answered" line comes after the audit wait and never arrives. The seller counters were recorded inside compare(), before the audit wait, so the dashboard counted those requests as normal. The loop had nothing to do, so loop lag and CPU stayed near zero. Only requests in progress and the audit queue's length moved, and neither was exported.</p></div>
+</div>
+</section>
+<section class="ts-part" id="debug-mode-blind" data-rung="2" data-min="11">
+<h2>Debug mode sees slow steps, not long waits</h2>
+<p class="ts-bridge">Last part: five requests stuck, nothing logged. Still unsolved: whether the detector from Part 4, asyncio's debug mode, would have caught it.</p>
+<p class="ts-problem">A colleague suggests turning on debug mode on one replica: "it found the blocking SDK call in Part 4 within a minute". The replica runs through another stall of the audit store with debug mode on and the slow-step threshold lowered to 50 ms.</p>
+<h3>Introduction</h3>
+<p>Part 4 taught debug mode as the detector for three of its traps. This part does not re-teach it; it asks one question about it. What exactly does debug mode measure, and is a stuck request one of those things?</p>
+<h3>Definition (recap from Part 4)</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="asyncio's development setting that adds checks and timings to the event loop, so mistakes such as blocking calls and never-awaited coroutines are reported with the code location.">Debug mode</dfn> is asyncio's development setting. <span class="ts-claim" data-claim="c18" data-src="s5">The docs list four ways to enable it: the PYTHONASYNCIODEBUG environment variable set to 1, the Python Development Mode, debug=True passed to asyncio.run(), or loop.set_debug().</span></p>
+</div>
+<h3>Working: what the slow-step report measures</h3>
+<ol class="ts-steps">
+<li><span class="ts-claim" data-claim="c19" data-src="s5 s7">In debug mode, callbacks taking longer than 100 milliseconds are logged, and loop.slow_callback_duration sets the minimum duration, in seconds, that counts as slow.</span></li>
+<li><span class="ts-claim" data-claim="c20" data-src="s11">In CPython 3.14's base_events.py, debug mode reads the loop's own time() before and after each callback and logs the callback when the difference is at least slow_callback_duration.</span></li>
+<li>A Task step is one callback (Part 2). A Task parked at an <code>await</code> has no step to run, so there is nothing to time.</li>
+</ol>
+<p><strong>Why it matters</strong></p>
+<ul>
+<li>Step 1: debug mode is a stopwatch on code that runs. It answers "what held the loop?".</li>
+<li>Step 3: a stuck request holds nothing. The question "what is everyone waiting for?" is a different question, and needs a different tool.</li>
+</ul>
+<h3>Program</h3>
+<p>The same incident as the last part, with <code>debug=True</code>. While the five requests are stuck, the program collects every record the asyncio logger writes for 500 ms. For comparison it then runs one callback that blocks the loop for 200 ms.</p>
+<div class="ts-code" data-lang="python" data-title="debug_blind.py" data-file="debug_blind.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/debug_blind.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Debug mode is on and the threshold is 50 ms, stricter than the default.</li>
+<li><strong>0 records</strong> in 500 ms with five requests stuck: no step was slow, because no step ran.</li>
+<li><strong>1 record</strong> for the single 200 ms blocking callback, timed at 0.200 seconds. The detector works; it is pointed at a different failure.</li>
+</ol>
+<h3>Difference between a slow step and a long wait</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th></th><th>Slow step (Part 4's trap 2)</th><th>Long wait (this incident)</th></tr></thead>
+<tbody>
+<tr><td>What the loop does</td><td>Runs one callback for a long time; everything else waits behind it</td><td>Runs other work normally; one Task is parked</td></tr>
+<tr><td>Who is hurt</td><td>Every request on the process</td><td>Only the requests waiting on that thing</td></tr>
+<tr><td>Debug mode</td><td>Logs the callback by name</td><td>Logs nothing</td></tr>
+<tr><td>Loop lag (later this rung)</td><td>Rises</td><td>Stays near 0</td></tr>
+<tr><td>Tool that finds it</td><td>Debug mode, loop lag</td><td>A dump of every Task and where it waits (next parts)</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Debug mode shows everything wrong with an asyncio program."</p>
+<p><strong>Why it is wrong:</strong> it reports slow callbacks, slow selector calls, calls from the wrong thread, and adds creation tracebacks to never-awaited and never-retrieved warnings (Part 4). Every one of those is about code that ran. A coroutine waiting on a Future that nobody will complete runs no code, and debug mode has nothing to say about it.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Debug mode times callbacks: it finds what held the loop.</li>
+<li>Measured: 0 records for 5 stuck requests; 1 record for a 200 ms blocking callback.</li>
+<li>Stuck requests need a view of Tasks, not of steps.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Debug mode is a stopwatch on the loop's callbacks, so it catches code that holds the loop and stays silent about Tasks that wait forever.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c19 c20">
+<p class="q">With debug mode on and the default threshold, which of these does asyncio log?</p>
+<ol>
+<li data-why="The Task is parked at await; no callback runs for it, so nothing is timed.">A request awaiting a lock that is never released</li>
+<li data-why="Waiting inside a thread pool is not a loop callback; the loop keeps running other steps meanwhile.">seller-e's 900 ms SDK call running in its own thread pool</li>
+<li>A request that parses a 3 MB JSON body for 140 ms between two awaits</li>
+</ol>
+<p class="ts-why">Only the JSON parse is a callback that runs for at least 100 ms. The lock wait and the thread-pool wait are waits: the loop is free the whole time, and debug mode has nothing to time.</p>
+</div>
+</section>
+<section class="ts-part" id="all-tasks-get-stack" data-rung="2" data-min="12">
+<h2>Listing every Task, and the one line each is waiting at</h2>
+<p class="ts-bridge">Last part: debug mode times steps, and a stuck Task takes none. Still unsolved: a list of every Task in the process and where each one is parked.</p>
+<p class="ts-problem">The on-call engineer wants one answer before restarting: "which requests are stuck, and on what?" Python has had a public API for listing Tasks since 3.7. This part asks it.</p>
+<h3>Introduction</h3>
+<p>Part 2 showed that a Task holds its coroutine and that a suspended coroutine is paused at one <code>await</code>. If the program can list its Tasks and ask each where its coroutine is paused, it has the camera from the shop comparison. Two APIs do that, on every version this series covers.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c14" data-src="s4">asyncio.all_tasks() returns the set of not yet finished Task objects run by the loop.</span></li>
+<li><span class="ts-claim" data-claim="c15" data-src="s4">Task.get_stack() returns the stack frames where the Task's coroutine is suspended, and only one stack frame is returned for a suspended coroutine.</span> <span class="ts-claim" data-claim="c16" data-src="s4">Task.print_stack() prints output similar to the traceback module's for the frames that get_stack() returns.</span></li>
+<li>A <dfn data-def="One function call in progress, with its code, its current line and its local variables; a stack is the chain of calls that led to the current one.">frame</dfn> is one function call in progress: its code, its current line, its local variables.</li>
+<li><span class="ts-claim" data-claim="c17" data-src="s4">If no name has been given to a Task, the default Task implementation generates one when the Task is created.</span> On CPython these look like <code>Task-53</code>.</li>
+</ol>
+<h3>Program</h3>
+<p>The same incident; this time <code>look()</code> lists every Task of the gateway with its name, its coroutine and the frame <code>get_stack()</code> returns, grouped where several are the same. Default names are shown as <code>Task-N</code>, because the numbers change from run to run.</p>
+<div class="ts-code" data-lang="python" data-title="task_dump.py" data-file="task_dump.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/task_dump.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>18 Tasks.</strong> Five <code>Gateway.serve</code> Tasks: the five stuck requests, one per connection, started by <code>asyncio.start_server</code> with default names. Five hang-up watchers (Part 5). Five <code>audit</code> Tasks: the owned writes from Part 6's <code>_audit()</code>. Two audit writers. One metrics flusher.</li>
+<li><strong>Every stack has 1 frame.</strong> For the request Tasks it is <code>gateway_v9.py:94 in serve</code>: the line <code>await super().serve(reader, writer)</code>. That is where the Task's own coroutine is paused, and it says nothing about what the four inherited <code>serve()</code> and <code>handle()</code> calls below it are waiting for.</li>
+<li>The <code>audit</code> Tasks are paused at <code>audit_queue.py:24</code>, which is <code>await committed</code>: each waits for a writer to confirm its row.</li>
+<li>The two writers are paused at <code>audit_queue.py:33</code>, <code>await self.store.write(row)</code>. That is the clue, and it is still one level short: it says the writers are inside the store, not where the store is stuck.</li>
+</ol>
+<h3>Solved example: reading the dump by hand</h3>
+<p><strong>Given:</strong> the dump above and the code of Parts 6 to 9.</p>
+<p><strong>Step 1.</strong> 5 request Tasks are alive while the front door says 5 requests are in progress: none has finished.</p>
+<p><strong>Step 2.</strong> 5 <code>audit</code> Tasks at <code>await committed</code>: one per request. So each request has reached its audit step.</p>
+<p><strong>Step 3.</strong> 2 writers at <code>store.write</code> and the queue holds 3: the writers took 2 rows and never came back.</p>
+<p><strong>Result:</strong> the audit store's write does not return. It took three steps of reasoning across three files, because each Task shows one frame. With 200 stuck requests and 50 writers, the same reasoning works but the dump is 400 lines long.</p>
+<div class="ts-legacy">
+<p><strong>Python 3.11 to 3.13.</strong> <code>all_tasks()</code>, <code>get_stack()</code> and <code>print_stack()</code> are all a 3.11 to 3.13 service has for this. They work on any loop and need no permissions, which is why gateway v10 keeps them as its fallback in rung 3.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "get_stack() gives the whole chain of awaits, like a traceback."</p>
+<p><strong>Why it is wrong:</strong> the documentation says a suspended coroutine gives one frame, and the dump confirms it: every one of 18 Tasks shows exactly 1. A traceback is built while an exception unwinds through every frame; a suspended coroutine's callers are other coroutines, each paused inside the next, and <code>get_stack()</code> does not follow them.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>all_tasks()</code>: every unfinished Task; <code>get_stack()</code>: one frame each, where its own coroutine is paused.</li>
+<li>Default names (<code>Task-53</code>) make the list hard to read; naming Tasks is cheap.</li>
+<li>The dump located the stall, but only after reasoning across three files.</li>
+</ul>
+</div>
+<p class="ts-takeaway">all_tasks() and get_stack() list every Task and the one line its own coroutine is paused at, which locates a stall only after reasoning across the code by hand.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c15">
+<p class="q">A request Task's <code>get_stack()</code> shows <code>gateway_v9.py:94 in serve</code>. The request is really waiting inside <code>_audit()</code>, four calls deeper. Why is <code>_audit()</code> not in the list?</p>
+<ol>
+<li>A suspended coroutine gives only its own frame; the coroutines it awaits are not followed</li>
+<li data-why="_audit() is not a separate Task; it is a coroutine awaited inside the request Task, so all_tasks() would not list it separately either.">_audit() runs in its own Task, which all_tasks() lists separately</li>
+<li data-why="get_stack() has a limit argument, but by default returns all available frames; for a suspended coroutine only one is available.">The default limit of get_stack() is 1</li>
+</ol>
+<p class="ts-why">The documentation states it: one frame for a suspended coroutine. The four inherited calls are coroutines the Task's coroutine awaits, and the next part shows the 3.14 tool that follows them.</p>
+</div>
+</section>
+<section class="ts-part" id="call-graph" data-rung="2" data-min="13">
+<h2>The whole await chain, and who awaits whom: Python 3.14's call graph</h2>
+<p class="ts-bridge">Last part: get_stack() shows one frame per Task. Still unsolved: the full chain of awaits inside a Task, and which Task is waiting for which.</p>
+<p class="ts-problem">The dump says "request Task at <code>gateway_v9.py:94</code>, a writer at <code>audit_queue.py:33</code>". The engineer needs the request's whole chain down to <code>_audit()</code>, the writer's chain down into the store, and the link between them.</p>
+<h3>Introduction</h3>
+<p>Python 3.14 added call-graph introspection to asyncio. It follows the chain of coroutines inside a Task, and it records which Task awaits which, across Tasks. This part runs it on the same incident.</p>
+<h3>Definitions</h3>
+<ol>
+<li>An <dfn data-def="The chain of coroutines inside one Task, from the Task's own coroutine down to the await where it is paused.">await chain</dfn> is the chain of coroutines inside one Task, from its own coroutine down to the <code>await</code> where it is paused.</li>
+<li>A Task is <dfn data-def="Another Task or Future is waiting for this Task's result: the waiter is said to await it.">awaited by</dfn> another Task when the other one is waiting for its result.</li>
+<li><span class="ts-claim" data-claim="c1" data-src="s1">asyncio's call graph functions, print_call_graph(), format_call_graph() and capture_call_graph(), were added in Python 3.14.</span></li>
+<li><span class="ts-claim" data-claim="c2" data-src="s1">capture_call_graph() returns a FutureCallGraph whose call_stack is a tuple of FrameCallGraphEntry objects and whose awaited_by is a tuple of FutureCallGraph objects; with no argument it uses the current task, and it returns None if there is no current task.</span></li>
+<li><span class="ts-claim" data-claim="c3" data-src="s1">print_call_graph() prints the graph starting from the top frame and going down towards the invocation point, and format_call_graph() returns the same text as a string.</span></li>
+<li><span class="ts-claim" data-claim="c4" data-src="s1">The limit argument keeps at most abs(limit) entries of each call stack: a positive limit keeps the entries closest to the invocation point, a negative one keeps the topmost, and 0 prints only the awaited-by information.</span></li>
+</ol>
+<h3>Program</h3>
+<p>Three graphs from the same incident: one stuck request Task, one audit writer, and one of the <code>audit</code> Tasks. Paths are cut to file names and ids hidden, so the output is the same on every machine; line numbers inside asyncio itself are dropped because they change between releases.</p>
+<div class="ts-code" data-lang="python" data-title="call_graph.py" data-file="call_graph.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/call_graph.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>The request Task:</strong> five frames, top first. The chain is v9's <code>serve</code>, v7's <code>serve</code>, v6's <code>serve</code>, v9's <code>handle</code>, and v6's <code>_audit</code> at line 79: <code>await asyncio.shield(task)</code>. The request is waiting for its audit row.</li>
+<li><strong>The writer:</strong> <code>AuditQueue._writer</code>, then the store's <code>write</code>, then <code>Event.wait</code>. The stall is inside the store, in one line.</li>
+<li><strong>An <code>audit</code> Task:</strong> its own chain is one coroutine, paused at <code>await committed</code>; under "Awaited by" is the request Task with its full chain. The graph links the request to the Task it is waiting for.</li>
+<li>What the graph does not link: the <code>audit</code> Task to the writer. The <code>audit</code> Task awaits <code>committed</code>, a bare Future that the writer will complete, and nothing tells asyncio that.</li>
+</ol>
+<h3>Why the chain stops at a bare Future</h3>
+<p><span class="ts-claim" data-claim="c5" data-src="s1">The documentation says the call graph needs cooperation from control flow structures such as shield() and TaskGroup, and that code which connects tasks through intermediate Futures with low-level APIs such as add_done_callback() should record the link with future_add_to_awaited_by() and later remove it with future_discard_from_awaited_by().</span> Part 6's audit queue hands a Future from one Task to another through a queue: exactly the case the documentation describes. Recording the link would add the writer under "Awaited by" for that Future; the page leaves the queue unchanged and lets the writer's own chain show the stall.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "The call graph shows what each Task is waiting for."</p>
+<p><strong>Why it is wrong:</strong> it shows where each Task is waiting, its own chain, and which Tasks wait for it. It does not point from a waiter to the thing that will wake it, because a Future does not know who will complete it. In the output, the request points at nothing below <code>_audit()</code>; the writer's chain had to be read separately.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>3.14: <code>format_call_graph(task)</code> prints the whole await chain plus "Awaited by".</li>
+<li>Measured: request → <code>_audit</code> line 79; writer → store → <code>Event.wait</code>.</li>
+<li>Links through bare Futures are invisible unless recorded with <code>future_add_to_awaited_by()</code>.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Python 3.14's call graph prints each Task's whole await chain and the Tasks waiting on it, which turns three files of reasoning into two short readings.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c3 c4">
+<p class="q">A dump of 200 stuck requests should show only the three frames nearest to where each request is paused. The graph prints the top frame, the one paused, first. Which call gives that?</p>
+<ol>
+<li>format_call_graph(task, limit=-3)</li>
+<li data-why="A positive limit keeps the entries closest to the invocation point: the outermost serve() calls, the least useful ones here.">format_call_graph(task, limit=3)</li>
+<li data-why="depth only skips frames when the graph is taken of the current task, and it skips frames from the top, which removes the frames you want.">format_call_graph(task, depth=3)</li>
+</ol>
+<p class="ts-why">The paused frame is the top one, printed first, and a negative limit keeps the topmost entries. The invocation point is the other end: the Task's own outermost coroutine. Rung 3's program uses <code>limit=-3</code> and gets <code>_audit</code>, <code>_audit</code>, <code>handle</code>.</p>
+</div>
+</section>
+<section class="ts-part" id="ps-pstree" data-rung="2" data-min="13">
+<h2>Looking from outside the process: python -m asyncio ps and pstree</h2>
+<p class="ts-bridge">Last part: the call graph shows each Task's chain, from code running inside the process. Still unsolved: the stuck process in production has no code that prints call graphs, and restarting it to add some destroys the evidence.</p>
+<p class="ts-problem">Gateway v9 is running, five requests stuck, and its code has no dump function. The on-call engineer has a shell on the machine and must not restart the process.</p>
+<h3>Introduction</h3>
+<p>The call graph from the last part has a second user: Python 3.14 ships two commands that read the same information out of another running process. They need no code in the target and no restart.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c6" data-src="s2">python -m asyncio ps PID and python -m asyncio pstree PID inspect the task graph of another running Python process without modifying or restarting it, and they read its state without executing any code in it.</span> <span class="ts-claim" data-claim="c10" data-src="s2 s9">Both commands were added in Python 3.14.</span></li>
+<li><span class="ts-claim" data-claim="c8" data-src="s2">ps prints a flat table of all pending tasks; each row shows the event-loop thread id, the task's id and name, its coroutine stack, and the awaiting task's stack, name and id, if any.</span></li>
+<li><span class="ts-claim" data-claim="c9" data-src="s2">pstree prints the tasks as a tree, each task with its coroutine stack nested under the task awaiting it; if the await graph contains a cycle, pstree reports an error instead, while ps prints every task regardless.</span></li>
+<li><span class="ts-claim" data-claim="c7" data-src="s2">The commands are available only on supported platforms and may require permission to inspect another process.</span></li>
+</ol>
+<h3>Working: what an operator does</h3>
+<ol class="ts-steps">
+<li>Find the process id (from the orchestrator, or <code>pgrep</code>).</li>
+<li>Run <code>python -m asyncio ps PID</code> with a Python 3.14 that can read the target: the table of every Task and its awaiter.</li>
+<li>Run <code>python -m asyncio pstree PID</code>: the same, as a tree, which shows which branch of a request is stuck.</li>
+<li>Only then decide whether to restart.</li>
+</ol>
+<h3>Program</h3>
+<p>The same incident; <code>look()</code> runs both commands against its own process id, as an operator would from a shell. ps's columns overflow on long chains, so the program re-lays out the gateway's rows as "task name | coroutine stack | awaiter name"; the pstree branch is printed as the tool prints it, with paths cut to file names.</p>
+<div class="ts-code" data-lang="python" data-title="ps_demo.py" data-file="ps_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/ps_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>ps:</strong> 25 rows, the 18 gateway Tasks plus the program's own. The five request Tasks show the chain <code>Gateway._audit -&gt; Gateway.handle -&gt; Gateway.serve -&gt; ...</code>, innermost first; nobody awaits them ("-"), because the server started them. The five <code>audit</code> Tasks are awaited by a request Task each. The two writers' stack ends in <code>StallingAuditStore.write -&gt; Event.wait</code>.</li>
+<li><strong>pstree:</strong> one stuck request's branch: three <code>serve</code> frames, <code>handle</code>, then <code>_audit</code> at <code>gateway_v6.py:79</code>, and under it the two Tasks recorded as awaited by this request: the hang-up watcher from its TaskGroup, reading the socket, and, through the shield, the <code>audit</code> Task at <code>audit_queue.py:24</code>.</li>
+<li>Every request is named <code>Task-N</code>. With 200 stuck requests the operator cannot tell which shopper is which; rung 3 names them.</li>
+</ol>
+<h3>Permissions</h3>
+<p>Reading another process's memory is a debugger's privilege, and production systems restrict it.</p>
+<ul>
+<li><span class="ts-claim" data-claim="c11" data-src="s3">On Linux, some distributions enable ptrace restrictions (Yama); setpriv --ptracer any, from util-linux 2.41, loosens them for one process and is applied to the process being debugged.</span> The program's <code>allow_inspection()</code> makes the same <code>prctl</code> call on itself, which is what lets it run on CI runners.</li>
+<li><span class="ts-claim" data-claim="c12" data-src="s3">Docker 19.03 or newer and containerd 1.6.7 or newer allow the ptrace system call inside containers on Linux kernel 4.8 or higher; the CAP_SYS_PTRACE capability may also work, but the docs say it is equivalent to superuser access and should only be used in low-security environments.</span></li>
+<li><span class="ts-claim" data-claim="c13" data-src="s3">A process can have only one tracer at a time, so a process already attached to strace or gdb cannot be inspected this way at the same time.</span></li>
+</ul>
+<div class="ts-trap">
+<p>The tools need a Python 3.14 on the machine and permission to read the target. A container image built from a slim base often has neither a second Python nor the right to attach, and the first time anyone finds out is during an incident. Gateway v10 therefore also prints its own dump on a signal, which needs no permission at all (rung 3).</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Attaching a tool to a production process is risky, so restart and reproduce instead."</p>
+<p><strong>Why it is wrong:</strong> the documentation says the commands read the target's state without executing any code in it, and a stall like this one rarely reproduces on demand: it depends on a dependency's behaviour at that moment. A restart cancels every Task and erases exactly the evidence the tool reads.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>python -m asyncio ps PID</code>: a table; <code>pstree PID</code>: a tree. 3.14+, no code in the target, no restart.</li>
+<li>Needs permission to read the process: Yama, container ptrace rules, one tracer at a time.</li>
+<li>Default Task names make the output hard to use at scale.</li>
+</ul>
+</div>
+<p class="ts-takeaway">python -m asyncio ps and pstree read every Task's await chain out of a running 3.14 process without touching it, provided the operator is allowed to read that process.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c9 c13">
+<p class="q">pstree prints "ERROR: await-graph contains cycles" for a process. What should the engineer run next?</p>
+<ol>
+<li data-why="A cycle is in the target's await graph, not a problem reading the process; more attempts read the same graph.">The same pstree command again, since reading a live process can fail</li>
+<li data-why="strace would take the process's only tracer slot, and it shows system calls, not Tasks.">strace on the process, to see what it is doing</li>
+<li><code>python -m asyncio ps PID</code>, which prints every Task even when the graph has a cycle</li>
+</ol>
+<p class="ts-why">The documentation says pstree refuses a cyclic graph while ps prints all tasks regardless. Tasks awaiting each other in a cycle are a deadlock (Part 7), and ps shows both of them with their awaiters.</p>
+</div>
+</section>
+<section class="ts-part" id="loop-lag-metric" data-rung="2" data-min="11">
+<h2>Loop lag as a metric: what it sees, and what it cannot</h2>
+<p class="ts-bridge">Last part: ps and pstree show where every Task waits, when someone runs them. Still unsolved: a number a dashboard can graph all day, which says whether the loop itself is healthy.</p>
+<p class="ts-problem">Part 2 measured loop lag once, in a program. Part 4 named it the production metric for blocking calls. A dashboard needs it as a series, sampled continuously, from every process, and the team needs to know which incidents it will catch.</p>
+<h3>Introduction</h3>
+<p>Part 2's probe asked "how late does a 100 ms timer fire?". Kept running in an owned Task, the same question gives a metric. This part runs it through four situations, including this page's incident.</p>
+<h3>Definition</h3>
+<div class="ts-note" data-label="Definition">
+<p><dfn data-def="How late a timer fires compared with when it was due: the time the loop spent on other work, or blocked, before it could run the timer's callback.">Loop lag</dfn> is how late a timer fires compared with when it was due. A sampler sleeps for a fixed interval, compares the loop's clock with the expected wake-up time, and records the difference.</p>
+</div>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li>Every 50 ms the <code>loop-lag</code> Task records "expected = now + 50 ms" and sleeps.</li>
+<li>If the loop is free, the timer fires on time and the lag is about 0.</li>
+<li>If something holds the loop, the timer fires late by however long the loop was held after the timer was due.</li>
+<li>The sample goes into a histogram, and the worst value since the last scrape is kept as a gauge.</li>
+</ol>
+<h3>Program</h3>
+<p>Four phases, one sampler. <code>LagMonitor</code> is in <code>observe.py</code> (rung 3 shows it); here only its numbers matter.</p>
+<div class="ts-code" data-lang="python" data-title="lag_metric.py" data-file="lag_metric.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/lag_metric.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Idle:</strong> 0 ms over 12 samples.</li>
+<li><strong>One 300 ms blocking call:</strong> worst lag 270 ms, not 300. The sampler's next timer fell due 30 ms into the block and could fire only when the block ended, 270 ms late. Lag reports how late the next timer was, which is at most the length of the block.</li>
+<li><strong>30 requests × 10 ms of CPU, all at once:</strong> also 270 ms. No single step is slow (debug mode at its default threshold would log nothing), but 30 steps of 10 ms queued ahead of the timer delay it just the same. Lag sees overload that debug mode cannot.</li>
+<li><strong>5 requests stuck on an await:</strong> 0 ms. This page's incident is invisible to loop lag, as rung 1 showed.</li>
+<li>Over all 31 samples, 29 were at or under 50 ms and 2 were over 250 ms: a histogram keeps those two visible; an average would not.</li>
+</ol>
+<h3>What loop lag tells you</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Situation</th><th>Loop lag</th><th>Debug mode</th><th>Task dump</th></tr></thead>
+<tbody>
+<tr><td>One blocking call</td><td>Rises</td><td>Names the callback</td><td>Shows nothing unusual afterwards</td></tr>
+<tr><td>Too much CPU work in total</td><td>Rises</td><td>Silent if each step is under the threshold</td><td>Many Tasks, all runnable</td></tr>
+<tr><td>Tasks stuck on an await</td><td>0</td><td>Silent</td><td>Shows them and where</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Loop lag near 0 means the async service is healthy."</p>
+<p><strong>Why it is wrong:</strong> it means the loop is free. A service whose requests are all parked on a dead dependency has a perfectly free loop, as the stuck phase measured: 0 ms. Lag is a saturation signal; it must be read next to a signal of requests finishing, such as requests in progress or the latency of answered requests.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Loop lag = how late a periodic timer fires; sample it in an owned Task and keep a histogram plus the worst value.</li>
+<li>Rises for blocking calls and for overload; stays at 0 for stuck awaits.</li>
+<li>It reports at most the length of a block, depending on where the timer fell.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Loop lag measures how busy the loop is, so it catches blocking calls and overload that debug mode misses, and reads 0 while requests sit stuck on an await.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">The sampler's interval is raised from 50 ms to 1 s to save work. A blocking call of 300 ms now happens at a random moment. What does the worst-lag gauge show, on average?</p>
+<div class="ts-reveal"><p>Usually 0. The lag is non-zero only if the sampler's timer falls due while the block is running: with a 1 s interval that happens about 300 times in 1,000, about 30% of the time, and then the reading is between 0 and 300 ms depending on where it fell. With a 50 ms interval a timer is due during every block longer than 50 ms. The interval sets the shortest stall the metric can be relied on to see; 50 ms costs 20 tiny wake-ups a second, which is far cheaper than missing the stall.</p></div>
+</div>
+<div class="ts-explain" data-points="Debug mode times callbacks, so it finds code that holds the loop, not Tasks that wait|all_tasks and get_stack list every Task with one frame each, on every version|The 3.14 call graph and ps/pstree show each Task's whole await chain and who awaits it|Loop lag rises for blocking and overload and stays at 0 for stuck awaits">
+<p class="q">In your own words: which of this rung's tools would have found the stuck audit store, which would not, and why?</p>
+<div class="ts-model"><p>Debug mode would not: it times callbacks, and a stuck Task runs none. Loop lag would not: the loop was idle, so its timers fired on time. all_tasks() with get_stack() would have, slowly: it lists every Task with the one line its own coroutine is paused at, and reading the request, audit and writer Tasks together leads to the store. On 3.14 the call graph, or ps and pstree from outside the process, show each request's whole chain down to _audit and each writer's chain down into the store's write, which finds it in two readings. The common thread: tools that measure work miss waits, and tools that list Tasks find them.</p></div>
+</div>
+</section>
+<section class="ts-part" id="seller-metrics" data-rung="3" data-min="13">
+<h2>Metrics for every seller call: a latency histogram and outcome counts</h2>
+<p class="ts-bridge">Last part: loop lag says whether the loop is free, and nothing about requests. Still unsolved: numbers that say how each seller is behaving and how long requests really take, kept so the tail is visible.</p>
+<p class="ts-problem">Part 4's metrics count one outcome per seller per request: "seller-e timed out" ten times for ten requests. They cannot answer "how long does seller-c take on a bad day?" or "how many requests took over a second?", and the stuck requests of rung 1 were counted as successes.</p>
+<h3>Introduction</h3>
+<p>Gateway v10 adds two kinds of metric. Counts say how often each outcome happens; a histogram says how long things take, including the slow few. Both are cheap enough to update on every seller call and every request.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A count that only goes up, such as seller calls that timed out; dashboards show its rate per second.">counter</dfn> only goes up; a dashboard shows its rate. <span class="ts-claim" data-claim="c36" data-src="s18">Prometheus's instrumentation guide says every failure should increment a counter, and that failures should generally come with another metric counting all attempts.</span></li>
+<li>A <dfn data-def="A metric that counts values into fixed ranges, such as how many requests took at most 250 ms, at most 500 ms and so on, so percentiles can be estimated later.">histogram</dfn> counts each value into the range it falls in: how many calls took at most 50 ms, at most 100 ms, and so on.</li>
+<li>A <dfn data-def="The value below which a given share of values fall: p99 is the value 99 in 100 requests are at or under.">percentile</dfn> such as p99 is the value 99 in 100 measurements are at or under. From a histogram it can only be bounded: "p99 is at most 2,500 ms".</li>
+</ol>
+<h3>Why a histogram and not an average</h3>
+<p><span class="ts-claim" data-claim="c38" data-src="s20">Google's SRE book warns against designing monitoring around means, and recommends recording request counts in latency buckets, rendered as a histogram, with roughly exponential bucket boundaries.</span> <span class="ts-claim" data-claim="c37" data-src="s20">The same chapter names the four golden signals as latency, traffic, errors and saturation, and says to distinguish the latency of successful requests from the latency of failed ones.</span> Gateway v10's bounds are 50, 100, 250, 500, 1,000 and 2,500 ms: about twice apart, with the 250 ms budget as one of them, so "answered within budget" is read straight off one bucket.</p>
+<h3>Working: what gateway v10 records</h3>
+<ol class="ts-steps">
+<li><strong>Every seller call</strong> (Part 7's fill, the one real call per seller and item): its duration into that seller's histogram, whatever the outcome, and one count of <code>"seller-c timed out"</code>, <code>"answered"</code>, <code>"failed"</code> or <code>"skipped"</code>.</li>
+<li><strong>Every request:</strong> its duration from the line arriving to the answer, into one histogram; one count of answered, partial, hung up or stopped by shutdown.</li>
+<li><strong>The loop:</strong> lag samples into a histogram, and the worst value since the last read.</li>
+<li><strong>The audit wait:</strong> a count of rows not confirmed in time (next parts).</li>
+</ol>
+<p><strong>Why each is needed</strong></p>
+<ul>
+<li>Step 1 records failures with their durations: a seller that hangs for 2 s shows in its histogram, not only as a count.</li>
+<li>Step 2 starts the clock when the shopper's line arrives, not when <code>compare()</code> starts, so time spent after the answer is computed (the audit wait) is counted.</li>
+<li>Steps 3 and 4 cover the two failures this page has measured: a busy loop and a stuck dependency.</li>
+</ul>
+<h3>Program</h3>
+<p><code>observe.py</code> holds the building blocks: <code>Histogram</code>, <code>LagMonitor</code>, a JSON log formatter (next part) and <code>dump_tasks()</code>. It uses only public asyncio APIs and reads time from the running loop, so it works the same on asyncio's loop, on uvloop and on the virtual clock of the testing parts.</p>
+<div class="ts-code" data-lang="python" data-title="observe.py" data-file="observe.py" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>Histogram.observe()</code> adds one to the first bucket whose bound the value is at or under, and keeps a count and a sum, so a rate, a mean and percentile bounds can all be read later.</li>
+<li><code>quantile(q)</code> returns the smallest bound with at least q of the values at or under it: an honest upper bound, never an invented exact value.</li>
+<li><code>LagMonitor</code> is Part 2's probe kept running in an owned Task (Part 4's <code>spawn</code>), with a histogram and the worst value since the last <code>take_worst()</code>.</li>
+<li><code>dump_tasks()</code> prints every Task: on 3.14 with <code>format_call_graph()</code>, otherwise, or if the call graph fails (rung 4), with the one frame from <code>print_stack()</code>.</li>
+</ol>
+<h3>Solved example: reading a histogram</h3>
+<p><strong>Given:</strong> 1,000 requests: 985 answered at 250 ms and 15 at 2,250 ms (stuck behind the audit store for 2 s).</p>
+<p><strong>Step 1.</strong> Buckets: 985 in "at most 250", 15 in "at most 2,500".</p>
+<p><strong>Step 2.</strong> p50: 500 of 1,000 are reached in the 250 bucket, so p50 ≤ 250 ms.</p>
+<p><strong>Step 3.</strong> p99: 990 values are needed; the 250 bucket has 985, so the answer is the next bucket: p99 ≤ 2,500 ms.</p>
+<p><strong>Step 4.</strong> Mean: (985 × 250 + 15 × 2,250) ÷ 1,000 = 280 ms.</p>
+<p><strong>Result:</strong> the mean, 280 ms, looks like a slightly slow day; the histogram says 15 in 1,000 shoppers waited ten times longer than the rest. Rung 4's program prints exactly these numbers.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Record latency only for successful calls; failures are counted separately anyway."</p>
+<p><strong>Why it is wrong:</strong> a call that times out after 2 s cost a cap slot and a connection for 2 s. Leaving it out of the histogram makes a seller that hangs look faster as it gets worse, because only its fast calls are measured. Gateway v10 records every call's duration, and keeps the outcome as a separate count.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Counters for outcomes, with a total; histograms for durations, every outcome included.</li>
+<li>Bucket bounds about ×2 apart, with the budget as one bound.</li>
+<li>A histogram gives percentile bounds; a mean hides the tail.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Count every outcome and put every duration, failures included, into a histogram whose buckets include the budget, so the slow few stay visible.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">seller-d's histogram over one minute: 600 calls, 590 at most 250 ms, 10 in the 500 ms bucket. What can you say about seller-d's p99?</p>
+<ol>
+<li data-why="99% of 600 is 594 calls, and only 590 are at or under 250 ms, so p99 is beyond that bucket.">p99 ≤ 250 ms</li>
+<li>p99 ≤ 500 ms, and it is above 250 ms</li>
+<li data-why="A histogram never gives an exact percentile; it says which bucket the value is in.">p99 = 375 ms, halfway through the bucket</li>
+</ol>
+<p class="ts-why">594 values must be at or under p99. 590 are at most 250 ms; the 500 ms bucket brings the count to 600. So p99 lies in (250, 500]: the histogram bounds it and no more.</p>
+</div>
+</section>
+<section class="ts-part" id="structured-logs" data-rung="3" data-min="12">
+<h2>One JSON line per event, with the request id in every line</h2>
+<p class="ts-bridge">Last part: metrics say how many and how long. Still unsolved: for one particular shopper who complained, what happened to their request, step by step.</p>
+<p class="ts-problem">A shopper reports "shop-6, kettle, 14:02, it hung for a second". Metrics can say that 5 requests took over a second; only logs can say whether shop-6 was one of them and why.</p>
+<h3>Introduction</h3>
+<p>Part 7 put the request id into a ContextVar and every text log line. Gateway v10 keeps that and changes the format: each line is one JSON object with fixed keys, so a log store can filter by any field without parsing sentences.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A log line written as data with named fields, such as one JSON object per line, instead of a sentence, so tools can filter and count by field.">structured log</dfn> line is data with named fields, here one JSON object per line.</li>
+<li>Every line gets <code>at_ms</code>, <code>level</code>, <code>logger</code>, <code>event</code> and <code>request_id</code>; the code adds fields such as <code>seller</code>, <code>outcome</code> and <code>ms</code> with <code>extra=fields(...)</code>.</li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>handle()</code> sets the request id once, at the edge (Part 7).</li>
+<li>Every log call, in the request Task, in its child Tasks, or in seller-e's SDK thread through <code>copy_context()</code>, reads it from the context it runs in.</li>
+<li><code>JsonFormatter</code> writes the standard fields, then the extra ones, with <code>json.dumps</code>.</li>
+<li>Gateway v10 writes one <code>"request done"</code> line per answered request, one <code>"request cancelled"</code> line per cancelled one, one <code>"seller call"</code> line per real seller call, and one <code>"audit row not confirmed"</code> warning per audit wait that ran out.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1 at the edge: every line after it carries the id without passing it by hand.</li>
+<li>Step 3 uses an encoder, not string formatting. <span class="ts-claim" data-claim="c41" data-src="s22">OWASP's logging cheat sheet treats event data as untrusted, says to sanitize it against log injection (carriage return, line feed and delimiter characters), and notes that parameterized logging alone does not stop CR/LF injection, while a structured encoder that escapes values does.</span> Rung 4 measures the difference.</li>
+<li>Step 4 writes a line when a request ends in any way, so a request with a start and no end is visible as the absence of one line with its id.</li>
+</ul>
+<h3>Program</h3>
+<p>The incident of rung 1, now on gateway v10 (built in the next part), with JSON lines collected in a list. The program prints shop-6's lines from the moment the store stopped.</p>
+<div class="ts-code" data-lang="python" data-title="incident_v10.py" data-file="incident_v10.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/incident_v10.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Request Tasks by name:</strong> <code>shop-6 kettle-1l</code> and the others, instead of five <code>Task-N</code>. The call graph of one of them, limited to the three innermost frames, ends in <code>_audit</code>: the same place rung 2 found, now with a shopper's name on it.</li>
+<li><strong>The shoppers:</strong> 5 of 5 answered seller-b at 1,199, about 1.25 s after asking. The store is still stalled; the audit wait now has a deadline of 1 s (next part).</li>
+<li><strong>shop-6's lines:</strong> a WARNING "audit row not confirmed" after 1,000 ms of waiting, then v8's "answered" line, then "request done" with <code>ms</code> about 1,260. Every line carries <code>"request_id": "shop-6"</code>, so one filter finds the whole story.</li>
+<li><strong>Metrics:</strong> 5 audit timeouts, and the request histogram's p99 bound is 2,500 ms: the stall is now on the dashboard.</li>
+</ol>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>Where lines go</td><td>A list, for the program to print</td><td>stdout, collected by the platform; never a network call from the loop's thread</td></tr>
+<tr><td>Time field</td><td><code>at_ms</code> from the loop's clock, exact under the virtual clock</td><td>An ISO 8601 wall-clock timestamp as well, to join with other services' logs</td></tr>
+<tr><td>Level</td><td>INFO, every request</td><td>INFO for request ends, sampled if volume demands it; WARNING and above never sampled</td></tr>
+<tr><td>Request id</td><td>The shopper's name</td><td>A generated id, or an incoming trace id after validation (rung 4)</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c45" data-src="s5">The asyncio documentation warns that network logging can block the event loop, and recommends handling logs in a separate thread or with non-blocking IO.</span> A log handler that writes to a socket from the loop's thread is Part 4's trap 2 in a new place.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Structured logging means adding the request id to the message string."</p>
+<p><strong>Why it is wrong:</strong> an id inside a sentence has to be parsed back out, and any character in it, a newline included, becomes part of the line's text. A field is found by name, and its value is escaped by the encoder, so it cannot break the line or pretend to be another field.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>One JSON object per line; fixed keys; the request id from the ContextVar in every line.</li>
+<li>Write a line when a request ends in any way; a missing end line is itself a signal.</li>
+<li>Never log over the network from the loop's thread.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Structured logs make one request's whole story one filter away, provided every line carries the request id as a field and every request writes a line when it ends.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">This needs Part 7. Seller-e's SDK logs "get_price kettle-1l" from a thread in its pool. Which request id does that JSON line carry in gateway v10?</p>
+<ol>
+<li>The fill's id, "fill seller-e kettle-1l", because the fill runs the SDK call with copy_context().run</li>
+<li data-why="The fill runs in its own fresh context (Part 7's single-flight), so the first shopper's id is not in it.">The id of the first shopper who asked for kettle-1l</li>
+<li data-why="Threads do not inherit ContextVars by themselves, but Part 7's gateway copies the context into the call explicitly.">"-", because threads never see ContextVars</li>
+</ol>
+<p class="ts-why">Part 7's <code>_fill</code> sets the id to "fill seller-e kettle-1l" in its own context and runs the SDK call inside a copy of it. The JSON formatter reads the id in whatever context the log call runs in, so the SDK's line carries the fill's id. Tying a fill to the requests that waited for it needs its own field, which is a Part 10 sizing question, not a new mechanism.</p>
+</div>
+</section>
+<section class="ts-part" id="gateway-v10" data-rung="3" data-min="15">
+<h2>Gateway v10: a gateway that can be seen</h2>
+<p class="ts-bridge">Last part: JSON lines with the request id, and metrics with histograms. Still unsolved: putting them into the gateway, naming its Tasks, giving the audit wait a limit, and a dump that works without permissions or 3.14.</p>
+<p class="ts-problem">Rung 1's incident again: the audit store stalls. Gateway v10 must answer every shopper within a bounded time, count and log the stall with each shopper's id, show request Tasks by shopper in any dump, and print its own dump when asked, from inside the process.</p>
+<h3>Introduction</h3>
+<p>Gateway v10 is gateway v9 with six changes, and nothing it answers is different. <code>start()</code> and <code>stop()</code> start and stop the lag monitor; <code>handle()</code> names the request Task, counts the outcome and writes the request's end line; <code>_fill()</code> times every seller call; <code>_audit()</code> waits for the row at most <code>audit_s</code> seconds; <code>snapshot()</code> returns what a metrics scrape would read; <code>install_dump_on_sigusr1()</code> prints every Task on SIGUSR1.</p>
+<h3>Working: the audit wait with a limit</h3>
+<ol class="ts-steps">
+<li><code>_audit(row)</code> starts the owned, shielded write as before (Part 5 and Part 6).</li>
+<li>It waits for it inside <code>asyncio.timeout(audit_s)</code>, 1 s.</li>
+<li>If the store answers in time, nothing changes.</li>
+<li>If not, the timeout cancels only the wait; the shield keeps the write going (Part 5). The request counts one audit timeout, logs a WARNING with its id, and answers.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 2: Part 6 made requests wait for their row on purpose, so a slow store slows the front door instead of piling up rows. The limit keeps that backpressure for up to 1 s, then lets go.</li>
+<li>Step 4: the row is late, not lost: it stays in the bounded queue and is written when the store recovers, which a test checks below.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="gateway_v10.py" data-file="gateway_v10.py" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>handle()</code>: <code>asyncio.current_task()</code> is the connection's Task, so <code>set_name()</code> renames the request as the shopper and item. Every dump, call graph and <code>ps</code> row from now on shows <code>shop-6 kettle-1l</code> instead of <code>Task-53</code>.</li>
+<li><code>handle()</code> catches <code>CancelledError</code> only to count and log it, then re-raises it (Part 5's rule).</li>
+<li><code>_fill()</code> wraps v8's fill in <code>try/finally</code>, so a call that is cancelled is still timed and counted, as <code>"cancelled"</code>.</li>
+<li><code>_audit()</code> is the working above, in five lines.</li>
+<li><code>install_dump_on_sigusr1()</code> uses Part 8's <code>add_signal_handler</code>, so the dump runs as a loop callback, between Tasks, where reading them is safe.</li>
+</ol>
+<h3>The dump on a signal</h3>
+<p>For an operator who cannot use <code>ps</code> (no permission, no 3.14 on the host), <code>kill -USR1 &lt;pid&gt;</code> makes the gateway print its own Tasks. The program stalls the store, sends itself SIGUSR1 500 ms into a request, and prints two of the dumped Tasks.</p>
+<div class="ts-code" data-lang="python" data-title="sigusr1_dump.py" data-file="sigusr1_dump.py" data-verified="ran"></div>
+<div class="ts-tabs">
+<div data-tab="3.14"><div class="ts-code" data-lang="text" data-title="Output on Python 3.14" data-file="out/sigusr1_dump.txt" data-verified="ran"></div></div>
+<div data-tab="3.13"><div class="ts-code" data-lang="text" data-title="Output on Python 3.13" data-file="out/sigusr1_dump_3.13.txt" data-verified="ran"></div></div>
+</div>
+<p><strong>Explanation of the program:</strong> on 3.14 the request <code>shop-7 kettle-1l</code> shows its whole chain, through v10's and v6's <code>_audit</code>, and the writer shows the store's <code>Event.wait</code>. On 3.13 each Task shows one frame and the line of code there, as in rung 2; the request's line still names the shield it is waiting in. Both are produced by the same <code>dump_tasks()</code>.</p>
+<h3>Testing the program</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Case</th><th>Expected</th><th>Test</th></tr></thead>
+<tbody>
+<tr><td>Audit store stalled</td><td>Answer after 1,250 ms; 1 audit timeout; a WARNING at 1,250 ms with the request id; the row written once the store recovers</td><td><code>test_a_stalled_audit_store_costs_one_second_and_is_counted_and_logged</code></td></tr>
+<tr><td>Incident on gateway v10</td><td>5 of 5 answered; Tasks named by shopper; 5 audit timeouts</td><td><code>test_timed_output_matches_within_tolerance[incident_v10]</code></td></tr>
+<tr><td>SIGUSR1</td><td>The dump lists the request by name, waiting in <code>_audit</code></td><td><code>test_exact_output[sigusr1_dump]</code></td></tr>
+<tr><td>Earlier pages' gateways</td><td>Unchanged</td><td>every test from Parts 1 to 8, in this folder</td></tr>
+</tbody>
+</table></div>
+<h3>Production defaults vs tutorial defaults</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Setting</th><th>On this page</th><th>In production</th></tr></thead>
+<tbody>
+<tr><td>Lag sampling</td><td>Every 50 ms</td><td>Every 50 to 100 ms; export the worst value per scrape and the histogram</td></tr>
+<tr><td>Histogram bounds</td><td>50 to 2,500 ms, about ×2 apart</td><td>The same shape, with the SLO's threshold as one bound</td></tr>
+<tr><td>Audit wait limit</td><td>1 s</td><td>Below the client's own timeout, so the shopper gets the answer, not a client-side failure</td></tr>
+<tr><td>Task names</td><td>Shopper and item</td><td>Request id and route; never secrets, they appear in dumps</td></tr>
+<tr><td>Task dump</td><td>SIGUSR1 to a buffer</td><td>SIGUSR1 to stderr, or an admin endpoint behind authentication</td></tr>
+<tr><td>Debug mode</td><td>Off</td><td>Off in production (Part 4); on in tests, where IsolatedAsyncioTestCase turns it on anyway</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your async service has requests that hang with nothing in the logs. What do you add so the next one takes five minutes to diagnose?"</p>
+<p><strong>What a strong senior answer contains:</strong> a time limit on every wait for a dependency, including ones that are not on the response path, so a hang becomes a counted, logged timeout; latency histograms measured from the request's arrival, not from the start of the main work; a metric for requests in progress; an end-of-request log line with the request id for every way a request can end; named Tasks; and a way to dump every Task's await chain from a live process: <code>python -m asyncio pstree</code> on 3.14, plus an in-process dump on a signal for when the tool cannot attach. Then the trade-off: each limit turns a hang into a partial failure, so the team must decide what is safe to give up on, such as an audit row written late.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Adding a timeout to the audit wait loses audit rows."</p>
+<p><strong>Why it is wrong:</strong> the timeout cancels the request's wait, not the write. The write is an owned Task behind <code>shield()</code> (Part 5), so it stays in the bounded queue and is committed when the store recovers. The test checks it: one row, written after the store answers again.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Gateway v10 = v9 + lag monitor + seller histograms and counts + JSON lines + named request Tasks + a 1 s audit wait + a SIGUSR1 dump.</li>
+<li>The stalled store now costs 1 s per request, with a count and a WARNING per request.</li>
+<li>The dump works without permissions and on 3.11 to 3.13, one frame per Task there.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v10 turns the silent hang into a one-second delay that is counted, logged with the shopper's id, and visible by name in any dump of its Tasks.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">This needs Part 6. The audit store stays stalled for a whole minute at 200 requests a second. The audit queue holds 8 rows and there are 50 writers. What do shoppers see after the first few seconds, with gateway v10?</p>
+<div class="ts-reveal"><p>The 50 writers each take one row and stay inside the stalled write; the queue fills its 8 places; every later <code>put()</code> waits, which is Part 6's backpressure. Each request still stops waiting after 1 s, so shoppers get their price about 1.25 s after asking, and the audit timeout count rises by 200 a second. The rows themselves are not all safe: each request's write Task keeps waiting in <code>put()</code>, so about 200 new Tasks a second pile up behind the full queue, about 12,000 of them in memory after a minute. A test on the virtual clock measured the rest of the story with 30 requests and 2 writers: given a second after the store recovers, all 30 rows land; but a deploy right after it recovers closes the queue (Part 8's flush step), the 20 writes still waiting in <code>put()</code> fail with <code>QueueShutDown</code>, and the shutdown report says "audit queue flushed: 10 rows written". The limit fixed the shoppers' side; the owned writes need a limit and a count of their own, which is one of the failure modes Part 10 walks across layers.</p></div>
+</div>
+</section>
+<section class="ts-part" id="stub-sellers" data-rung="3" data-min="12">
+<h2>Tests that need nothing outside the process: stub sellers and one seam</h2>
+<p class="ts-bridge">Last part: gateway v10 can be seen. Still unsolved: testing it without seller servers, threads and process pools, which make every test slow and some of them flaky.</p>
+<p class="ts-problem">Parts 1 to 8 tested the gateway by starting five seller servers on real ports, a thread pool for seller-e and a process pool for ranking, then comparing times within 60 ms. A test of one budget takes 300 ms of real time, more on a busy machine, and fails when the machine is slow.</p>
+<h3>Introduction</h3>
+<p>A unit test should exercise the gateway's own logic: the budget, the caps, the cache, the cancellations, the shutdown order. The sellers are input. This part replaces them, and the pools, with objects inside the test process, by changing one method.</p>
+<h3>Definitions</h3>
+<ol>
+<li>A <dfn data-def="A stand-in for a dependency that returns fixed answers, in the test's own process, so a test controls what the dependency does.">stub</dfn> is a stand-in for a dependency that returns answers the test chose. <code>StubSellers</code> answers from the five sellers' table, and a test can make any seller fail or hang.</li>
+<li>A <dfn data-def="The one place in the code where a dependency is called, so a test can replace the dependency by replacing that place.">seam</dfn> is one place in the code where a dependency is called, so a test can replace it there. Gateway v6 and v8 route every seller call through <code>_call_by()</code>: the gateway already has a seam.</li>
+</ol>
+<h3>Working</h3>
+<ol class="ts-steps">
+<li><code>TestGateway</code> is gateway v10 with <code>_call_by()</code> replaced: it awaits <code>stubs.ask(name, item)</code>, which sleeps for the seller's latency and returns its offer.</li>
+<li><code>InlineExecutor</code> replaces both pools: <code>run_in_executor()</code> gets a Future that is already done, so ranking runs in the caller and no thread or process exists.</li>
+<li><code>connection(line)</code> gives <code>serve()</code> a real <code>asyncio.StreamReader</code> fed with the shopper's line, and a <code>FakeWriter</code> that keeps what was sent. <code>hang_up(reader)</code> feeds end-of-file, which is what the hang-up watch waits for.</li>
+<li><code>make_gateway()</code> builds the gateway with production's caps, lines and rates (Part 6), so the tested code is the shipped code.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: the stubs wait with <code>asyncio.sleep()</code>, a timer, which the next part's clock can skip.</li>
+<li>Step 2: a thread or process finishes in real time, and nothing can speed it up; inline, it finishes at once.</li>
+<li>Step 3: <code>serve()</code>, the hang-up watch and the shutdown's tracking of requests are tested through their real code paths.</li>
+<li>Step 4: a test that builds the gateway differently from production tests something else.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="stubs.py" data-file="stubs.py" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>StubSellers.ask()</code> records each call, waits forever for a seller in <code>hanging</code>, otherwise sleeps for its latency, and raises for a seller in <code>failing</code>.</li>
+<li><code>StallingAuditStore</code> is rung 1's stalled database as a test double: <code>answering.clear()</code> stops it, <code>answering.set()</code> starts it again.</li>
+<li><code>TestGateway</code> overrides nothing but <code>_call_by()</code>; <code>__test__ = False</code> stops pytest from collecting a helper class whose name starts with "Test".</li>
+<li><code>PORTS</code> holds the five names and no ports: nothing listens anywhere.</li>
+</ol>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Stubbing the sellers means the tests no longer test the real gateway."</p>
+<p><strong>Why it is wrong:</strong> everything above <code>_call_by()</code> is the shipped code: the TaskGroup, the cap, the deadline, the cache, the single-flight, the audit queue, the shutdown. What the stubs remove is the network and the pools, which are tested separately by the real-socket programs every page has kept. Unit tests and integration tests check different layers; rung 5 compares them.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>One seam, <code>_call_by()</code>, replaces every seller with a stub that sleeps and answers.</li>
+<li><code>InlineExecutor</code> replaces the pools; <code>StreamReader</code> + <code>FakeWriter</code> replace the socket.</li>
+<li>Build the test gateway with production's settings.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Replacing one method, the seam every seller call already goes through, puts the whole gateway under test with nothing outside the process.</p>
+<div class="ts-quiz" data-answer="c" data-kind="reasoning">
+<p class="q">A test wants seller-c to answer only after the request's 250 ms deadline. Which change to the stubs is enough?</p>
+<ol>
+<li data-why="Hanging never answers; the test wants a late answer, which also checks that the late value is not used.">Add seller-c to <code>stubs.hanging</code></li>
+<li data-why="The price does not change when the answer arrives; the latency table does.">Set seller-c's price above 1,249</li>
+<li><code>StubSellers(latency_ms={"seller-c": 400})</code></li>
+</ol>
+<p class="ts-why">The stub's latency table decides when <code>ask()</code> returns. At 400 ms the request's deadline at 250 ms comes first, so seller-c is reported as timed out, while its fill, under its own 2 s deadline, still finishes at 400 ms and fills the cache.</p>
+</div>
+</section>
+<section class="ts-part" id="virtual-clock" data-rung="3" data-min="13">
+<h2>Controlling time: a loop whose clock jumps to the next timer</h2>
+<p class="ts-bridge">Last part: stubs remove the network and the pools. Still unsolved: the stubs still sleep for real, so a test of seller-e's 900 ms takes 900 ms, and timing still depends on how busy the machine is.</p>
+<p class="ts-problem">The shutdown test needs a fill that lands at 900 ms and a drain deadline of 1 s. In real time that is a second per test, and the exact report lines ("170 ms drained") can only be checked within a tolerance.</p>
+<h3>Introduction</h3>
+<p>Every wait in the gateway with stub sellers is a timer: <code>sleep()</code>, <code>timeout()</code>, <code>timeout_at()</code>. Part 2 showed that each loop iteration computes how long until the next timer is due, then waits in the selector for that long. If the loop's clock could jump forward by that amount instead of waiting, every test would run as fast as its code, with exact times.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c21" data-src="s7">loop.time() returns the current time according to the event loop's internal monotonic clock, and loop.call_at() schedules callbacks using the same time reference as loop.time().</span></li>
+<li><span class="ts-claim" data-claim="c22" data-src="s7">SelectorEventLoop uses the most efficient selector for the platform, and can be given the exact selector to use; the documentation's example passes asyncio.run() a loop_factory that creates a SelectorEventLoop with a chosen selector.</span></li>
+<li><span class="ts-claim" data-claim="c23" data-src="s6">asyncio.run() gained the loop_factory parameter in Python 3.12, and asyncio.Runner, added in 3.11, takes a loop_factory too.</span> <span class="ts-claim" data-claim="c24" data-src="s6">The documentation recommends configuring the event loop with loop_factory rather than policies, and says the policy system is deprecated and will be removed in Python 3.16.</span></li>
+<li>A <dfn data-def="A clock that a test controls instead of real time: it moves only when the code is waiting for a timer, by exactly the time until that timer.">virtual clock</dfn> moves only when every Task is waiting for a timer, and then by exactly the time until that timer.</li>
+</ol>
+<h3>Working: one iteration of the virtual-clock loop</h3>
+<ol class="ts-steps">
+<li>The loop runs every ready callback (Part 2).</li>
+<li>It computes the time until the next timer, say 0.08 s for seller-a's stub, and asks the selector to wait that long.</li>
+<li><code>VirtualSelector.select()</code> first checks real sockets, including the loop's own wake-up pipe, without waiting. If any is ready, it returns them: real I/O still works.</li>
+<li>If none is ready, it adds 0.08 to the loop's <code>now</code> and returns at once. <code>VirtualClockLoop.time()</code> returns <code>now</code>.</li>
+<li>The loop then runs every timer due by <code>time()</code>, exactly as it would after a real 80 ms wait.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 3: signals, wake-ups from other threads and real sockets arrive through file descriptors; ignoring them would hang the test.</li>
+<li>Step 4 changes nothing else in the loop: both pieces it overrides are public, the selector given to the constructor and the <code>time()</code> method every timer reads.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="virtual_clock.py" data-file="virtual_clock.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="python" data-title="clock_demo.py" data-file="clock_demo.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/clock_demo.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><code>sleep(0.9)</code> ends with <code>loop.time()</code> at exactly 0.900 and 0 ms of real time.</li>
+<li><code>asyncio.timeout(0.25)</code> fires at exactly 1.150: the clock jumped to the deadline because nothing else was due.</li>
+<li>Two sleeps of 0.2 s and 0.1 s: the 0.1 s one finishes first, at 1.250. Order between timers is preserved.</li>
+<li><code>time.sleep(0.05)</code> on the loop's thread: 50 ms of real time pass, and <code>loop.time()</code> does not move except for the earlier sleeps. A blocking call costs nothing on this clock, which the next block warns about.</li>
+</ol>
+<h3>What the virtual clock cannot do</h3>
+<ul>
+<li><strong>Threads and processes.</strong> Their work takes real time, but the clock may jump past a deadline while they run. Tests on this clock replace pools with <code>InlineExecutor</code>.</li>
+<li><strong>Real network I/O.</strong> A real socket's reply takes real time; if a timer is due meanwhile, the clock jumps to it first. Stub the network.</li>
+<li><strong>Blocking calls and debug mode.</strong> A blocking call is invisible on this clock, and since debug mode times callbacks with the loop's own <code>time()</code> (rung 2), its slow-callback report is blind here too. Keep one real-time test with debug mode on for that trap.</li>
+<li><strong>uvloop.</strong> Its loop is not a <code>SelectorEventLoop</code> and takes no selector, so this technique applies to asyncio's own loop only.</li>
+</ul>
+<div class="ts-legacy">
+<p><strong>Python 3.11.</strong> <code>asyncio.run()</code> has no <code>loop_factory</code> before 3.12; use <code>with asyncio.Runner(loop_factory=VirtualClockLoop) as runner: runner.run(main())</code>, which this page's version probe checks on 3.11. Older test suites change the loop through an event loop policy; <span class="ts-claim" data-claim="c28" data-src="s6">the policy system is deprecated and will be removed in Python 3.16</span>, so new tests should not.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "To test timeouts without waiting, shorten them: a 250 ms budget becomes 2.5 ms in tests."</p>
+<p><strong>Why it is wrong:</strong> scaled-down times make scheduling noise relatively 100 times larger, so the tests get flakier, not faster, and they test a configuration nobody runs. The virtual clock keeps the real values, 250 ms, 900 ms, 1 s, and makes them cost nothing.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li><code>VirtualClockLoop</code>: a <code>SelectorEventLoop</code> whose selector jumps the clock to the next timer instead of waiting.</li>
+<li>Use with <code>asyncio.run(main(), loop_factory=VirtualClockLoop)</code> (3.12+) or <code>asyncio.Runner</code> (3.11+).</li>
+<li>Only for code whose waits are timers: stub the network and the pools; keep a real-time test for blocking calls.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A loop whose selector jumps the clock to the next timer runs every timer-based wait in no real time with exact values, as long as the test has no threads, processes or real sockets.</p>
+<div class="ts-predict" data-claims="c21">
+<p class="q">On the virtual clock, a test starts seller-e's SDK call in a real thread pool (900 ms of real time) and awaits it with <code>asyncio.timeout(1.0)</code>. What happens?</p>
+<div class="ts-reveal"><p>The timeout fires, almost at once in real time. While the thread works, no socket is ready and the only timer is the 1 s deadline, so the selector jumps the clock to it. The test sees a TimeoutError for a call that would have finished at 900 ms. That is why the testing parts replace pools with <code>InlineExecutor</code>: on this clock, anything that takes real time loses every race against a timer.</p></div>
+</div>
+</section>
+<section class="ts-part" id="deterministic-tests" data-rung="3" data-min="15">
+<h2>Testing timeouts, cancellation and shutdown to the millisecond</h2>
+<p class="ts-bridge">Last part: a clock the test controls. Still unsolved: the tests themselves, for the behaviours Parts 3, 5, 7 and 8 measured in real time, plus this page's audit limit and loop lag.</p>
+<p class="ts-problem">Part 8's shutdown report ("170 ms drained", "800 ms fills") was checked within 60 ms on a quiet machine. On the virtual clock the same lines can be checked exactly, every run, in a few milliseconds, and so can every other timing claim this series has made.</p>
+<h3>Introduction</h3>
+<p>Each test below builds gateway v10 with stub sellers, runs one scenario on a fresh virtual-clock loop, and asserts exact times and outcomes. A small helper also fails any test that leaves a Task running, and a fixture resets the one piece of module-level state the gateway has: Part 4's count of background failures.</p>
+<h3>Working: the shape of every test</h3>
+<ol class="ts-steps">
+<li><code>run(main)</code> runs <code>main()</code> with <code>asyncio.run(..., loop_factory=VirtualClockLoop)</code>: a new loop, and a clock starting at 0.</li>
+<li><code>main()</code> builds the gateway with <code>make_gateway()</code>, starts it, drives one scenario, and stops it with Part 8's <code>shutdown()</code>, because <code>stop()</code> alone leaves seller-e's fill running.</li>
+<li>After <code>main()</code> returns, <code>run()</code> checks <code>asyncio.all_tasks()</code>: anything still running fails the test with its name.</li>
+<li>The test asserts on what <code>main()</code> returned: answers, audit rows, report lines, counters.</li>
+</ol>
+<p><strong>Why each step is needed</strong></p>
+<ul>
+<li>Step 1: a fresh loop per test, so no Task, Future or lock from one test can reach the next (rung 4 shows what happens otherwise).</li>
+<li>Step 2: <code>shutdown()</code> waits for owned work; the first draft of these tests used <code>stop()</code>, and step 3 failed them with "Tasks left running: fill seller-e kettle-1l".</li>
+<li>Step 3: <code>asyncio.run</code> would cancel leftovers silently (Part 8); the check turns a leak into a failure.</li>
+</ul>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="test_gateway10.py" data-file="test_gateway10.py" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Budget:</strong> seller-b at 1,199 at exactly 250 ms, seller-e timed out, and the test's real time under a second (it is a few milliseconds).</li>
+<li><strong>A hanging seller:</strong> seller-c timed out in the answer; its call, under the fill's own 2 s deadline (Part 7), is counted as timed out; seller-e's 900 ms call is counted as answered.</li>
+<li><strong>A failing seller:</strong> seller-b fails, so the cheapest left is seller-d at 1,215, and seller-b is listed in <code>failed</code>.</li>
+<li><strong>A hang-up at 100 ms:</strong> nothing sent, the row "hung up after 100 ms", and seller-e's 1,149 in the cache afterwards: the shared fill outlived the request (Part 7).</li>
+<li><strong>Shutdown at 100 ms:</strong> the exact report Part 8 printed within a tolerance: drained at 170 ms, fills done at 800 ms (seller-e's 900 ms counted from the start), 3 rows.</li>
+<li><strong>A drain deadline of 50 ms:</strong> 2 requests cancelled and labelled "stopped by shutdown after 150 ms"; of the fills, seller-d's lands at 200 ms and seller-e's is cancelled.</li>
+<li><strong>A stalled store:</strong> 1,250 ms, one timeout, the WARNING at 1,250 ms with <code>shop-1</code>, and the row written after the store recovers.</li>
+<li><strong>Loop lag:</strong> <code>loop.advance(0.3)</code> inside a callback at 60 ms makes that step "take" 300 ms; the sample due at 100 ms fires at 360 ms, lag 260 ms, exactly.</li>
+</ol>
+<h3>The same tests with the standard library only</h3>
+<p><span class="ts-claim" data-claim="c25" data-src="s8">unittest.IsolatedAsyncioTestCase, added in Python 3.8, accepts coroutines as test methods, and its loop_factory attribute, added in 3.13, is the loop_factory passed to asyncio.Runner.</span> <span class="ts-claim" data-claim="c26" data-src="s8">The documentation says that at the end of each test all the tasks in its event loop are cancelled.</span> <span class="ts-claim" data-claim="c27" data-src="s12">CPython 3.14's IsolatedAsyncioTestCase creates that runner with debug=True.</span></p>
+<div class="ts-code" data-lang="python" data-title="test_isolated10.py" data-file="test_isolated10.py" data-verified="ran"></div>
+<p><strong>Explanation of the program:</strong> <code>loop_factory = VirtualClockLoop</code> gives every test method a fresh virtual-clock loop. <code>asyncTearDown</code> shuts the gateway down and fails on leftovers, because the runner's own clean-up would cancel them without a word. The first test checks Part 7's single-flight: two requests, five seller calls. The second checks that debug mode is on, and that the clock starts at 0.</p>
+<h3>Testing the program</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Behaviour (page)</th><th>Before this page</th><th>On the virtual clock</th></tr></thead>
+<tbody>
+<tr><td>250 ms budget (Part 3)</td><td>Real time, ±60 ms</td><td>Exactly 250 ms, in milliseconds of real time</td></tr>
+<tr><td>Hanging and failing sellers (Parts 3 and 4)</td><td>Seller servers in fault mode</td><td><code>stubs.hanging</code>, <code>stubs.failing</code></td></tr>
+<tr><td>Hang-up cancels, fill survives (Parts 5 and 7)</td><td>A real client closing a socket</td><td><code>hang_up(reader)</code> at exactly 100 ms</td></tr>
+<tr><td>Shutdown order and deadlines (Part 8)</td><td>A child process and SIGTERM, ±60 ms</td><td>Exact report lines</td></tr>
+<tr><td>Audit limit (this page)</td><td>-</td><td>1,250 ms exactly, WARNING with the request id</td></tr>
+<tr><td>Loop lag (this page)</td><td>A real blocking call, ±60 ms</td><td>260 ms exactly, from <code>advance(0.3)</code></td></tr>
+<tr><td>No Task left behind (every page)</td><td>Not checked</td><td>Every test</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "How do you test that a 30 s timeout fires, without a 30 s test?"</p>
+<p><strong>What a strong senior answer contains:</strong> not by shrinking the timeout to 30 ms, which tests a different configuration and makes scheduling noise decisive; control time instead. In asyncio every timer reads <code>loop.time()</code>, so a loop whose clock jumps to the next due timer when everything waits (a custom selector on <code>SelectorEventLoop</code>, passed with <code>loop_factory</code>) runs the real 30 s in milliseconds, with exact values. Its condition: every wait in the test must be a timer, so dependencies are stubbed at a seam and thread or process pools run inline; one separate real-time test keeps blocking calls and debug mode honest. And every test runs on a fresh loop and fails if it leaves Tasks behind.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "IsolatedAsyncioTestCase cleans up after each test, so leaked Tasks are not a problem."</p>
+<p><strong>Why it is wrong:</strong> it cancels them, which hides them. A leaked Task in a test is usually a leaked Task in production, like the seller-e fill that <code>stop()</code> left running here. Cancel-on-exit makes the suite green; an explicit check in <code>asyncTearDown</code> makes the bug visible.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>One scenario per test, a fresh virtual-clock loop, exact assertions on times and outcomes.</li>
+<li>Stop with the real shutdown; fail any test that leaves a Task running.</li>
+<li><code>IsolatedAsyncioTestCase.loop_factory</code> (3.13+) gives the same in the standard library, with debug mode on.</li>
+</ul>
+</div>
+<p class="ts-takeaway">On a fresh virtual-clock loop per test, every timing behaviour of the gateway is asserted exactly, and every leaked Task fails the test that leaked it.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the steps of the shutdown test in the order they happen on the virtual clock.</p>
+<ol>
+<li>Three requests for grill-9 start at 0 ms and the fills begin</li>
+<li>SIGTERM's shutdown starts at 100 ms and closes the listeners</li>
+<li>The three requests answer at 250 ms and write their rows by 270 ms</li>
+<li>The fills step waits for seller-e's fill, which lands at 900 ms</li>
+<li>The audit queue is flushed, and the test checks no Task is left</li>
+</ol>
+<p class="ts-why">Report times count from the shutdown's start at 100 ms: drained at 270 − 100 = 170 ms, fills done at 900 − 100 = 800 ms, then the flush. The leak check runs last, after <code>main()</code> returns.</p>
+</div>
+<div class="ts-explain" data-points="Stub sellers at the _call_by seam and inline pools leave only timer waits|A loop whose selector jumps the clock to the next timer makes those waits cost nothing and exact|Each test runs on a fresh loop, stops with the real shutdown and fails on leftover Tasks|Blocking calls and debug mode need one real-time test, because the virtual clock cannot see them">
+<p class="q">In your own words: how does this page test the 250 ms budget, a hang-up and the shutdown order exactly and in milliseconds, and what can it not test that way?</p>
+<div class="ts-model"><p>The sellers are replaced at the one seam every seller call goes through, _call_by, by stubs that sleep for each seller's latency, and the pools run inline, so every wait in the test is a timer. The loop is a SelectorEventLoop with a selector that, when nothing is ready, moves the clock to the next due timer instead of sleeping, so 900 ms of seller-e costs no real time and every time is exact. Each test runs on a fresh loop, uses the real shutdown, and fails if any Task is left. What it cannot test is anything that takes real time: threads, processes, real sockets, and blocking calls, which the virtual clock does not see and debug mode then cannot time; those need a separate real-time test.</p></div>
+</div>
+</section>
+<section class="ts-part" id="uvloop" data-rung="3" data-min="10">
+<h2>uvloop: a different loop under the same gateway</h2>
+<p class="ts-bridge">Last part: tests on a virtual clock built on asyncio's own loop. Still unsolved: whether the gateway, and its telemetry, work on the other loop teams commonly deploy, and what that loop changes for testing.</p>
+<p class="ts-problem">A colleague proposes running the gateway on uvloop in production, "because it is faster". Part 2 said a loop can be swapped if the code uses only public APIs. Gateway v10 now has telemetry and tests that touch the loop; do they still hold?</p>
+<h3>Introduction</h3>
+<p><span class="ts-claim" data-claim="c29" data-src="s14 s16">uvloop describes itself as a fast, drop-in replacement for the built-in asyncio event loop, implemented in Cython and using libuv under the hood.</span> This part checks its current status, then runs gateway v10 on both loops.</p>
+<h3>Status (October 2026)</h3>
+<ul>
+<li><span class="ts-claim" data-claim="c30" data-src="s14">The latest uvloop release on PyPI is 0.23.0, released on 1 October 2026.</span> <span class="ts-claim" data-claim="c31" data-src="s15">Its release notes add Python 3.15 wheel builds and support for create_task()'s eager_start argument.</span></li>
+<li><span class="ts-claim" data-claim="c32" data-src="s15b">uvloop 0.22.0's release notes list fixes for Python 3.14 and added free-threading support.</span></li>
+<li><span class="ts-claim" data-claim="c33" data-src="s14 s16">Since uvloop 0.18 the recommended way to use it is uvloop.run(), and on Python 3.11 and newer it can also be passed as asyncio.Runner(loop_factory=uvloop.new_event_loop).</span> This page's tests ran on uvloop 0.23.0 with Python 3.14.6.</li>
+</ul>
+<h3>Program</h3>
+<p>The same 20 shoppers, then 20 more a second later, on asyncio's loop and on uvloop, through <code>asyncio.run(..., loop_factory=...)</code>. The gateway's code is identical.</p>
+<div class="ts-code" data-lang="python" data-title="uvloop_run.py" data-file="uvloop_run.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/uvloop_run.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li>Both loops give the same answers: 20 × seller-b at 1,199, then 20 × seller-e at 1,149 once its fill is cached, with one call per seller (Part 7's single-flight) and the same telemetry.</li>
+<li>asyncio's loop is a <code>SelectorEventLoop</code>; <code>uvloop.Loop</code> is not. So the virtual clock, which needs a selector to replace, works only on asyncio's loop.</li>
+</ol>
+<h3>What changes for testing</h3>
+<ul>
+<li>The unit tests stay on asyncio's loop with the virtual clock: they test the gateway's logic, which is the same on both loops.</li>
+<li>If production runs uvloop, run the real-socket programs, the integration layer, on uvloop as well, as this one does. Differences between loops show up in I/O and timing, which is exactly what that layer exercises.</li>
+<li>The telemetry works on both: it uses <code>loop.time()</code>, Tasks and the logging module, all public. The call-graph functions read Tasks and coroutines, not the loop, and printed the same chains on uvloop when this page was tested.</li>
+</ul>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "uvloop will make the gateway's requests faster."</p>
+<p><strong>Why it is wrong:</strong> the gateway's 250 ms is set by the sellers and the budget; a faster loop shortens only the loop's own time per event, which loop lag measures. If loop lag is near 0 and CPU on the loop's thread is low, uvloop changes almost nothing users see (Part 2's drill made the same point). It earns its place when the loop's own CPU time is the limit, and then the gain must be measured on this service, not taken from a benchmark.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>uvloop 0.23.0 (October 2026): Python 3.14 fixed in 0.22.0; use <code>uvloop.run()</code> or <code>loop_factory=uvloop.new_event_loop</code>.</li>
+<li>Same gateway, same answers, same telemetry on both loops (measured).</li>
+<li>The virtual clock needs asyncio's <code>SelectorEventLoop</code>; run integration tests on the loop you deploy.</li>
+</ul>
+</div>
+<p class="ts-takeaway">uvloop runs gateway v10 unchanged, so deploy it only when loop lag shows the loop's own time is the limit, and keep unit tests on asyncio's loop with integration tests on both.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">Loop lag on the gateway is 0 to 2 ms all day, CPU on the loop's thread is 15%, and p99 latency is 250 ms. What does switching to uvloop most likely change?</p>
+<ol>
+<li data-why="p99 is the budget, set by the sellers and the deadline; the loop's speed does not move it.">p99 drops well below 250 ms</li>
+<li>Little that shoppers notice; the loop is not the limit</li>
+<li data-why="Loop lag is already near 0; there is no lag left to remove.">Loop lag drops from 2 ms to 0</li>
+</ol>
+<p class="ts-why">With a free loop and low CPU, the loop's own speed is not what shoppers wait for; the sellers and the budget are. A faster loop helps when loop lag and CPU on the loop's thread show it is saturated.</p>
+</div>
+</section>
+<section class="ts-part" id="flaky-tests" data-rung="4" data-min="14">
+<h2>Flaky tests: real sleeps, leaked Tasks and shared loops</h2>
+<p class="ts-bridge">Last part: the same gateway on two loops. Still unsolved: why async test suites go red at random, and which of this page's habits stop it.</p>
+<p class="ts-problem">The gateway's CI fails about once a week. Re-running makes it pass. The failing test changes each time: a timing assertion one day, "background failures {'metrics-flush': 1}" in a test that never touched metrics another, "bound to a different event loop" a third. Developers have started re-running instead of reading.</p>
+<h3>Introduction</h3>
+<p>A <dfn data-def="A test that passes or fails without any change to the code it tests, depending on timing, order or the machine.">flaky test</dfn> passes or fails without any change to the code it tests. Async suites have three common causes, and each one is measured below on gateway v10.</p>
+<h3>Cause 1: real sleeps and real deadlines</h3>
+<div class="ts-code" data-lang="python" data-title="flaky_time.py" data-file="flaky_time.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/flaky_time.txt" data-verified="ran"></div>
+<p><strong>Explanation:</strong> one assertion, "answered at 250 ms, within 30 ms". On the real clock, a 60 ms stall of the loop's thread just before the deadline, the kind a CI machine shared with other jobs causes, moves the answer to 300 ms and fails the test. On the virtual clock the same stall changes nothing: 250 ms both times, and the test takes no time of its own. The last line is also the virtual clock's warning: the stall itself was invisible to it.</p>
+<h3>Causes 2 and 3: a leaked Task, and a shared loop</h3>
+<div class="ts-code" data-lang="python" data-title="leaks.py" data-file="leaks.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/leaks.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Test A</strong> starts a gateway whose metrics service is down and never stops it: it leaves 50 audit writers, seller-e's fill, the lag monitor and the metrics flusher running. Test A passes.</li>
+<li><strong>One loop shared by both tests</strong> (what a session-wide loop does): test A's flusher wakes during test B, fails against A's broken metrics service, and Part 4's module-level failure count goes to 1. Test B fails for something it never did.</li>
+<li><strong>A fresh loop per test:</strong> A's leftovers are cancelled when A's loop closes, and B passes. The leak is still there; it just stops hurting other tests. <code>test_gateway10.py</code>'s leak check is what makes A itself fail.</li>
+<li><strong>A module-level <code>asyncio.Event</code>:</strong> the first test that waits on it binds it to its loop (Part 7); the second test, on another loop, gets "is bound to a different event loop". Run the second test alone and it passes.</li>
+</ol>
+<h3>What the user sees, the signal and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Cause</th><th>What the team sees</th><th>Signal</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Real sleeps and deadlines</td><td>Timing assertions fail on busy runners</td><td>Failures cluster when CI is busy; the same test passes on re-run</td><td>Virtual clock for logic; one real-time test, with a generous bound, for blocking calls</td></tr>
+<tr><td>Leaked Tasks</td><td>Failures in tests that did not cause them; order-dependent</td><td>A test fails only after another runs, and passes alone</td><td>Stop with the real shutdown; fail any test that leaves a Task; reset module-level state in a fixture</td></tr>
+<tr><td>Shared loops</td><td>"bound to a different event loop", or leaks crossing tests</td><td>Fails in the full suite, passes alone</td><td>A fresh loop per test; create asyncio objects inside the test, never at import time</td></tr>
+</tbody>
+</table></div>
+<p><span class="ts-claim" data-claim="c50" data-src="s17">pytest-asyncio runs each test in its own event loop by default, and tests can share one loop by passing a loop_scope of function, class, module, package or session to the asyncio mark.</span> A shared scope is a deliberate choice, for expensive fixtures; with it, leaked Tasks and loop-bound objects cross tests exactly as in the first run above.</p>
+<div class="ts-trap">
+<p>This series has its own example. While this page was being built, the copied Part 7 test of <code>condition_demo</code>, which compares real times exactly, failed once when the whole suite ran next to other heavy work, and passed when re-run alone. Real-time tests with exact output are the first to go when a CI machine is busy; they are kept in this series only as integration tests, and new timing tests here use the virtual clock.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A test that passes on re-run is fine; the CI machine was slow."</p>
+<p><strong>Why it is wrong:</strong> the machine being slow is the trigger, not the cause. The cause is a test whose result depends on timing, order or shared state, and the same dependency exists in production, where re-running is not an option. Each cause above maps to a production bug: a timing assumption, a leaked Task, an object bound to the wrong loop.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Real time: a 60 ms stall turned 250 into 300 ms and failed the test; the virtual clock is immune.</li>
+<li>Leaks: on a shared loop, test A's flusher failed test B; a fresh loop hides it, a leak check exposes it.</li>
+<li>Module-level asyncio objects bind to the first loop that waits on them.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Async tests flake for three reasons, real time, leaked Tasks and shared loops, and a virtual clock, a fresh loop per test and a check for leftover Tasks remove all three.</p>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">This needs Part 7. A test module creates <code>CACHE = PriceCache(ttl=30)</code> at import time and two tests use it, each on its own virtual-clock loop. Neither test waits on anything inside the cache. Will they interfere?</p>
+<div class="ts-reveal"><p>Yes, through time, not through a loop binding. <code>PriceCache</code> stores "expires at" from <code>loop.time()</code> (Part 7). The first test fills kettle-1l at 0.5 s on its loop; the second test's loop starts at 0, so the entry looks fresh for 30 s on the second loop's clock, and the second test reads a price it never fetched. On real loops the clocks are both monotonic and roughly agree, so the bug appears only with the virtual clock, or with any two clocks that differ. Shared state across tests is the bug; the fix is a new cache per test.</p></div>
+</div>
+</section>
+<section class="ts-part" id="tools-break" data-rung="4" data-min="12">
+<h2>When the tools themselves break</h2>
+<p class="ts-bridge">Last part: tests that fail for reasons outside the code. Still unsolved: the inspection tools this page relies on can fail too, at the worst moment, during an incident.</p>
+<p class="ts-problem">During a second audit-store stall, the on-call engineer sends SIGUSR1 to a gateway running Python 3.14.6, and the dump stops with an <code>AttributeError</code> traceback inside asyncio. <code>python -m asyncio pstree</code> from the host says it cannot read the process. The engineer is back to restarting blind.</p>
+<h3>Introduction</h3>
+<p>Every diagnostic is code, and it fails in its own ways. This part collects the three this page met while it was being built: a bug in 3.14's call graph, permissions for the outside tools, and the virtual clock's blind spots.</p>
+<h3>Failure 1: the call graph on 3.14.0 to 3.14.7</h3>
+<p>Gateway v8's single-flight makes each request wait for a shared fill through <code>shield()</code>. When the request's deadline cancels that wait, the request moves on and finishes; the fill keeps running.</p>
+<div class="ts-code" data-lang="python" data-title="graph_bug.py" data-file="graph_bug.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output on Python 3.14.6" data-file="out/graph_bug.txt" data-verified="ran"></div>
+<p><strong>Explanation:</strong> after the request answered at 250 ms, the fill's awaited-by set still holds the finished Task that waited for it. Formatting the fill's graph walks into that finished Task, which has no frame, and raises <code>AttributeError</code>. <span class="ts-claim" data-claim="c42" data-src="s23 s10">CPython issue gh-155143 reported that asyncio.shield() keeps the calling task in the inner future's await graph after the shield is cancelled, while the inner future is still pending; the fix is listed in the Python 3.14.8 changelog.</span> <span class="ts-claim" data-claim="c43" data-src="s24 s10">Issue gh-156408 reported that asyncio.print_call_graph() raised AttributeError on a task that had already finished; its fix is also in 3.14.8.</span> Gateway v10's <code>dump_tasks()</code> catches the <code>AttributeError</code> and prints that Task's one frame instead, so one bad Task cannot stop the dump of the other 199.</p>
+<h3>Failure 2: the outside tools cannot attach</h3>
+<ul>
+<li>Yama restrictions, an old container runtime or a seccomp profile block reading the process (rung 2's permissions).</li>
+<li>A debugger already attached takes the only tracer slot.</li>
+<li>The image has no Python 3.14 to run <code>python -m asyncio</code> with.</li>
+</ul>
+<p>Signal: the command errors at once. Fix: decide before an incident; test <code>pstree</code> against a staging Pod as part of the runbook, and keep the in-process dump on SIGUSR1, which needs none of it.</p>
+<h3>Failure 3: what the virtual clock hides</h3>
+<p>The virtual clock gave exact, fast tests, and the price is that anything taking real time is invisible to it: the blocking call in the last part's flaky test, and therefore debug mode's slow-callback report, since that report times callbacks with the loop's own clock. A suite that runs only on the virtual clock will never catch Part 4's trap 2.</p>
+<h3>What the user sees, the signal and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure</th><th>What the engineer sees</th><th>Signal</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Call graph AttributeError (3.14.0 to 3.14.7)</td><td>Dump stops part-way</td><td>A traceback in <code>asyncio/graph.py</code></td><td>Upgrade to 3.14.8 or later; catch per Task in your own dump</td></tr>
+<tr><td>Outside tool cannot attach</td><td>Permission or "operation not permitted" errors</td><td>The command fails at once</td><td>Settle ptrace policy in advance; keep an in-process dump</td></tr>
+<tr><td>Virtual clock hides blocking</td><td>Green suite, blocked loop in production</td><td>Loop lag rises in production only</td><td>One real-time test with debug mode on and a lowered threshold</td></tr>
+</tbody>
+</table></div>
+<div class="ts-interview">
+<p><strong>Probing question:</strong> "Your runbook says 'run pstree'. What could make that fail during an incident, and what is your fallback?"</p>
+<p><strong>What a strong senior answer contains:</strong> the tool needs a matching Python on the host, permission to read the process (Yama, container ptrace rules, no debugger already attached), and a supported platform; the fix is to rehearse it on staging, not to discover it in an incident. The fallback is in the process: a signal or an admin endpoint that dumps every Task with <code>format_call_graph()</code>, falling back to one frame per Task on older versions or when the graph fails, which needs no extra permission. And the version matters: on 3.14 before 3.14.8, graphs of Tasks awaited through <code>shield()</code> could raise, so the dump catches errors per Task.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "A diagnostic tool from the standard library will work when I need it."</p>
+<p><strong>Why it is wrong:</strong> it is new code like any other, it depends on permissions nobody tested, and it runs at the worst moment. The 3.14 call graph shipped with a bug that the gateway's own single-flight pattern triggers. Diagnostics need the same rehearsal as backups.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>3.14.0 to 3.14.7: a shield-awaited Task's graph can raise <code>AttributeError</code>; fixed in 3.14.8.</li>
+<li>Outside tools need permission and a 3.14 interpreter on the host; rehearse them.</li>
+<li>The virtual clock hides blocking calls; keep one real-time test for them.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Diagnostics fail too, so pin a Python with the call-graph fixes, rehearse the outside tools, keep an in-process dump that survives errors, and keep one real-time test for what the virtual clock cannot see.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c14 c42 c43">
+<p class="q">On Python 3.14.6, <code>dump_tasks()</code> prints "(one frame)" for <code>fill seller-e kettle-1l</code> while every other Task gets a full call graph. What does that tell you?</p>
+<ol>
+<li data-why="dump_tasks() walks asyncio.all_tasks(), which lists only unfinished Tasks, so the fill it dumped is still running; the error comes from a finished Task in its awaited-by set.">The fill has already finished</li>
+<li data-why="The fallback is per Task; the others printed their graphs, so the platform supports them.">The call graph is not supported on this platform</li>
+<li>A request that waited for the fill through shield() has finished and is still recorded as awaiting it, which 3.14.8 fixes</li>
+</ol>
+<p class="ts-why">The finished waiter left in the fill's awaited-by set is what makes formatting fail, and only for the fill. The fallback kept the rest of the dump.</p>
+</div>
+</section>
+<section class="ts-part" id="metrics-that-lie" data-rung="4" data-min="13">
+<h2>Metrics that lie: true numbers that point the wrong way</h2>
+<p class="ts-bridge">Last part: diagnostic tools fail. Still unsolved: metrics that work perfectly and still mislead, because of how they were aggregated or where they were measured.</p>
+<p class="ts-problem">Before this page, the gateway's dashboard said "all sellers healthy" during an outage. Gateway v10 has histograms and more counts, and a dashboard built carelessly from them can mislead just as badly.</p>
+<h3>Introduction</h3>
+<p>Each of the four cases below prints the misleading number next to the honest one, from gateway v10 on the virtual clock or from the same arithmetic.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="lying_metrics.py" data-file="lying_metrics.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/lying_metrics.txt" data-verified="ran"></div>
+<p><strong>Explanation of the program</strong></p>
+<ol>
+<li><strong>Averages hide the tail.</strong> A mean of 280 ms reads as "a bit slow"; p99 at most 2,500 ms says 15 shoppers in 1,000 waited about ten times longer. <span class="ts-claim" data-claim="c38" data-src="s20">Google's SRE book warns against designing monitoring around means, and recommends recording request counts in latency buckets, rendered as a histogram, with roughly exponential bucket boundaries.</span></li>
+<li><strong>Only the survivors.</strong> A histogram fed only with seller-c's answered calls says p99 at most 250 ms on a day when 30 of its 100 calls hung for 2 s. Fed with every call, as gateway v10 does, p99 is at most 2,500 ms. <span class="ts-claim" data-claim="c37" data-src="s20">The same chapter names the four golden signals as latency, traffic, errors and saturation, and says to distinguish the latency of successful requests from the latency of failed ones.</span></li>
+<li><strong>The wrong start point.</strong> <code>Answer.ms</code>, measured inside <code>compare()</code>, says 250 ms; the shopper waited 1,250 ms, because the audit wait came after <code>compare()</code>. Gateway v10's request histogram starts when the line arrives.</li>
+<li><strong>Averaged lag.</strong> One 300 ms stall in a minute of 50 ms samples averages to 0.25 ms. The worst value per scrape shows 300 ms.</li>
+</ol>
+<h3>What the user sees, the signal and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Lie</th><th>What users see while the graph is green</th><th>Honest signal</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Mean latency</td><td>1 in 100 waits seconds</td><td>p99 from a histogram</td><td>Histograms; alert on a percentile or on the share over a threshold</td></tr>
+<tr><td>Survivor latency</td><td>A seller hangs; requests time out on it</td><td>Every call's duration, plus timeout and failure counts</td><td>Record durations for every outcome</td></tr>
+<tr><td>Wrong start point</td><td>Answers arrive late</td><td>Latency from arrival to answer</td><td>Measure at the edge, around the whole request</td></tr>
+<tr><td>Averaged lag</td><td>Short freezes</td><td>Worst lag per scrape, and the lag histogram</td><td>Export the maximum and the histogram, never only the mean</td></tr>
+<tr><td>Counted before the end (rung 1)</td><td>Requests hang</td><td>An end-of-request count and requests in progress</td><td>Count outcomes when the request ends, in every way it can end</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "If each number on the dashboard is correct, the dashboard is correct."</p>
+<p><strong>Why it is wrong:</strong> each of the four misleading numbers above is computed correctly. What is wrong is the question it answers: an average instead of a tail, successes instead of all calls, part of a request instead of all of it, an average of samples instead of their worst. Before trusting a graph, ask what was measured, from where to where, and what was left out.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Mean 280 ms vs p99 ≤ 2,500 ms; survivors p99 ≤ 250 ms vs every call ≤ 2,500 ms.</li>
+<li>Answer.ms 250 ms vs the shopper's 1,250 ms; lag average 0.25 ms vs worst 300 ms.</li>
+<li>Measure at the edge, every outcome, tails not means, maxima not averages.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A metric lies when it averages away the tail, drops the failures, starts the clock late or smooths out the spike, so measure every outcome from the edge and look at tails and maxima.</p>
+<div class="ts-quiz" data-answer="a" data-claims="c37">
+<p class="q">seller-e's dashboard shows p99 latency 900 ms, steady all week, while "requests answered without seller-e" rose from 60% to 95%. Which explanation fits?</p>
+<ol>
+<li>The latency histogram counts only answered calls, and seller-e answers fewer and fewer of them</li>
+<li data-why="If seller-e had become faster, more requests would include it, not fewer.">seller-e became faster</li>
+<li data-why="A steady p99 cannot explain a rise in requests without seller-e; the two numbers disagree, which points at what the histogram leaves out.">The 250 ms budget was raised</li>
+</ol>
+<p class="ts-why">A histogram fed only on successes stays flat while failures grow, because each failure simply leaves it. The rise in requests without seller-e is the real signal; recording every call's duration and its outcome makes the two agree.</p>
+</div>
+</section>
+<section class="ts-part" id="ten-x" data-rung="4" data-min="13">
+<h2>Telemetry at ten times the load, and a hostile request id</h2>
+<p class="ts-bridge">Last part: metrics that mislead. Still unsolved: what the telemetry itself costs as traffic grows, and what a malicious client can do to it.</p>
+<p class="ts-problem">A sale brings ten times the traffic. The gateway holds, but the logging pipeline falls hours behind, the metrics bill triples after someone adds an item label "to see which products are slow", and a security review finds log lines that the gateway never wrote.</p>
+<h3>Introduction</h3>
+<p>Telemetry is part of the system and scales with it. This part measures gateway v10's log volume per request, works out what labels cost, and shows the one place where a client controls what gets written to the logs.</p>
+<h3>Program</h3>
+<div class="ts-code" data-lang="python" data-title="telemetry_10x.py" data-file="telemetry_10x.py" data-verified="ran"></div>
+<div class="ts-code" data-lang="text" data-title="Output" data-file="out/telemetry_10x.txt" data-verified="ran"></div>
+<h3>Solved example: what breaks first</h3>
+<p><strong>Given:</strong> the output: 2 lines and 302 bytes per cached request; 8 processes at 2,000 requests a second each (Part 8).</p>
+<p><strong>Step 1.</strong> Today: 16,000 requests a second × 2 lines = 32,000 lines a second, 4.8 MB a second, 0.42 TB a day.</p>
+<p><strong>Step 2.</strong> At ten times the load: 320,000 lines a second, 48.3 MB a second, 4.17 TB a day.</p>
+<p><strong>Step 3.</strong> If the handler writes those lines from the loop's thread to anything slower than a local pipe, each line's write is loop time, and loop lag rises with traffic. <span class="ts-claim" data-claim="c45" data-src="s5">The asyncio documentation warns that network logging can block the event loop, and recommends handling logs in a separate thread or with non-blocking IO.</span></p>
+<p><strong>Result:</strong> the first thing to break is the log pipeline, then the loop if logging is synchronous. Fixes: write to stdout and let the platform ship; keep request-end lines at INFO and sample them if needed; never sample WARNING and above.</p>
+<h3>Labels: the metric bill</h3>
+<p><span class="ts-claim" data-claim="c35" data-src="s19">Prometheus's naming guide warns that every unique combination of label values is a new time series, and says not to use labels for dimensions with high cardinality such as user IDs, email addresses or other unbounded sets of values.</span> <span class="ts-claim" data-claim="c34" data-src="s18">Its instrumentation guide suggests keeping the cardinality of a metric below 10 as a general guideline, and investigating alternatives for any metric over 100 or likely to grow that large.</span> Seller × outcome is 20 series per process. An item label with 50,000 items makes it 1,000,000 per process. "Which products are slow" is a log query, not a label.</p>
+<h3>The attacker: a request id that writes its own log lines</h3>
+<p>Gateway v10 takes the request id from the shopper's own line, which <code>split()</code> has already stripped of whitespace. Services that take the id from a request header do not get that for free. The program's last part logs one warning with an id that contains a newline and a fake JSON event. In Part 7's text format, the log store receives two lines, and the second is a forged "refund approved" event with request id "admin". In the JSON format it receives one line, with the newline escaped inside the string. Defences: validate incoming ids (length, characters) at the edge, generate your own when invalid, and format with an encoder, never by joining strings.</p>
+<h3>What the user sees, the signal and the fix</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Failure at 10×</th><th>What the team sees</th><th>Signal</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Log volume</td><td>Logs hours behind during the sale; bill spike</td><td>Ingest lag in the log pipeline; bytes per request</td><td>Lines per request fixed by design; stdout; sample INFO, never WARNING</td></tr>
+<tr><td>Synchronous log handler</td><td>Latency rises with traffic, all endpoints</td><td>Loop lag rises with request rate</td><td>A queue and a thread for handlers, or stdout</td></tr>
+<tr><td>Label cardinality</td><td>Metrics backend slow or expensive</td><td>Series count per metric</td><td>Bounded labels only; per-item questions go to logs</td></tr>
+<tr><td>Log injection</td><td>Forged events in the audit trail</td><td>Lines that fail to parse, ids that fail validation</td><td>Validate ids; a structured encoder</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "More telemetry is always safer."</p>
+<p><strong>Why it is wrong:</strong> every line and every series costs CPU on the loop's thread, network, storage and money, and grows with traffic or with label values. A log line per seller call per request at 10× the load is millions of lines a minute. Telemetry needs a budget per request like any other work.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Measured: 2 lines, 302 bytes per request; 10× load is 48 MB a second of logs across 8 processes.</li>
+<li>Labels multiply series; keep them bounded.</li>
+<li>Untrusted ids: validate them, and log through an encoder.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Telemetry scales with traffic and with label values, so give it a per-request budget, keep labels bounded, ship logs off the loop's thread, and never let a client's text reach a log line unencoded.</p>
+<div class="ts-quiz" data-answer="b" data-claims="c35">
+<p class="q">To find slow products, a developer adds an <code>item</code> label to the seller-call histogram: 50,000 items, 5 sellers, 7 buckets (the last one unbounded) plus count and sum. Roughly how many series is that per process?</p>
+<ol>
+<li data-why="That counts sellers and items but forgets that every bucket, plus the count and the sum, is its own series.">250,000</li>
+<li>2,250,000</li>
+<li data-why="That counts items and buckets but forgets that the seller label multiplies them again.">450,000</li>
+</ol>
+<p class="ts-why">Every combination of label values is a series: 50,000 items × 5 sellers × (7 buckets + count + sum) = 2,250,000. The question "which products are slow?" belongs in a log query over the seller-call lines.</p>
+</div>
+</section>
+<section class="ts-part" id="what-to-alert-on" data-rung="4" data-min="13">
+<h2>What to alert on, and what only to graph</h2>
+<p class="ts-bridge">Last part: telemetry has a cost. Still unsolved: of all these numbers, which should wake someone at 3 a.m., and which should only be on a dashboard.</p>
+<p class="ts-problem">Gateway v10 exports loop lag, seller histograms, outcome counts, audit timeouts and requests in progress. The first draft of alerts has 14 rules; in its first week it pages 40 times, mostly for seller-e's timeouts, which happen on every request by design.</p>
+<h3>Introduction</h3>
+<p>An alert is a promise that someone must act now. This part separates the gateway's signals into what users feel and why they feel it, and pages only on the first.</p>
+<h3>Definitions</h3>
+<ol>
+<li><span class="ts-claim" data-claim="c39" data-src="s20">Google's SRE book frames monitoring as two questions, what is broken (the symptom) and why (the cause), says every page should be actionable, and says it is better to spend much more effort catching symptoms than causes.</span></li>
+<li>An <dfn data-def="A target for a measured share of good events over a time window, such as 99.9% of requests answered within 300 ms over 30 days.">SLO</dfn> (service level objective) is a target for the share of good events, for example 99.9% of requests answered within 300 ms over 30 days. The 0.1% left is the error budget.</li>
+<li><span class="ts-claim" data-claim="c40" data-src="s21">The SRE workbook defines burn rate as how fast, relative to the SLO, the service consumes its error budget, and for a 99.9% SLO over a 30-day window recommends paging when the burn rate is 14.4 over both the last hour and the last 5 minutes, which is 2% of the budget, or 6 over 6 hours and 30 minutes, which is 5%.</span></li>
+</ol>
+<h3>Working: sorting gateway v10's signals</h3>
+<ol class="ts-steps">
+<li><strong>Symptom: the SLO.</strong> A good request is answered within 300 ms (250 ms budget plus margin). Read it from the request histogram's 250 and 500 buckets, and from busy and stopped counts. Page on burn rate.</li>
+<li><strong>Symptom: requests in progress at the front door's limit.</strong> Page if it stays at the limit for minutes: requests are not finishing, whatever the cause.</li>
+<li><strong>Cause: loop lag.</strong> Graph it; open a ticket if its p99 stays above 50 ms. It explains a burning SLO; alone it rarely needs a human at night.</li>
+<li><strong>Cause: per-seller timeouts and failures.</strong> Graph them against each seller's normal: seller-e times out on most requests by design, so an absolute threshold pages forever.</li>
+<li><strong>Cause: audit timeouts.</strong> Ticket on any sustained rate: the rows are late, the store needs attention, shoppers are already protected by the limit.</li>
+</ol>
+<p><strong>Why each step is where it is</strong></p>
+<ul>
+<li>Steps 1 and 2 are what shoppers feel, so they page. Rung 1's incident would have tripped step 2 within seconds at 2,000 requests a second.</li>
+<li>Steps 3 to 5 are why; they are on the dashboard the paged engineer opens, and in tickets for daytime.</li>
+</ul>
+<h3>Solved example: one burn-rate page</h3>
+<p><strong>Given:</strong> a 99.9% SLO over 30 days; the audit store stalls and 1.5% of requests take 1,250 ms for an hour.</p>
+<p><strong>Step 1.</strong> Error budget: 0.1% of requests.</p>
+<p><strong>Step 2.</strong> Burn rate: 1.5% ÷ 0.1% = 15.</p>
+<p><strong>Step 3.</strong> 15 is above 14.4 over the hour and over the last 5 minutes, so the first rule pages.</p>
+<p><strong>Result:</strong> one page, about the symptom, after an hour at most, with audit timeouts on the dashboard pointing at the cause. A rule "audit timeouts &gt; 0" would have paged within seconds, and would also page for every two-second blip the limit already absorbs.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Alert on every cause we know about, so we hear about problems early."</p>
+<p><strong>Why it is wrong:</strong> causes fire when users are fine (seller-e's normal timeouts) and miss failures nobody predicted (rung 1's store stall had no cause-alert at all). Symptoms catch both known and unknown causes, and causes on the dashboard explain them. The 40 pages a week train people to ignore the pager.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Page on symptoms: SLO burn rate, requests stuck at the front door's limit.</li>
+<li>Graph and ticket on causes: loop lag, per-seller timeouts against normal, audit timeouts.</li>
+<li>For a 99.9% SLO: burn rate 14.4 over 1 h and 5 min, or 6 over 6 h and 30 min.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Page on what shoppers feel, the SLO's burn rate and requests that stop finishing, and keep loop lag, seller timeouts and audit timeouts on the dashboard to explain the page.</p>
+<div class="ts-quiz" data-answer="c" data-claims="c39 c40">
+<p class="q">Which of these should page the on-call engineer at 3 a.m.?</p>
+<ol>
+<li data-why="seller-e times out on most requests by design; this fires constantly and needs no action.">seller-e's timeouts exceed 50% for 5 minutes</li>
+<li data-why="Lag explains slowness; if requests are still answered within the SLO, nobody needs to act at night.">Loop lag p99 above 50 ms for 10 minutes</li>
+<li>The share of requests over 300 ms burns a 30-day error budget at 14.4 times the sustainable rate over both the last hour and the last 5 minutes</li>
+</ol>
+<p class="ts-why">Only the burn-rate rule is a symptom users feel, and the workbook's numbers make it both fast and resistant to blips. The other two belong on the dashboard the engineer opens after the page.</p>
+</div>
+<div class="ts-explain" data-points="Real time, leaked Tasks and shared loops make async tests flaky; virtual clock, fresh loops and leak checks fix them|Diagnostic tools fail: the 3.14 call graph bug, attach permissions, the virtual clock's blind spots|Metrics lie by averaging, dropping failures, starting late or smoothing spikes|Page on symptoms such as SLO burn rate; keep causes on the dashboard">
+<p class="q">In your own words: what goes wrong when you try to see and test an async service, and the one habit that prevents each?</p>
+<div class="ts-model"><p>Tests flake because they wait in real time, leak Tasks or share a loop; a virtual clock, a fresh loop per test and a leftover-Task check prevent all three. The tools fail too: 3.14's call graph raised on shield-awaited Tasks before 3.14.8, outside tools need permission, and the virtual clock hides blocking calls; rehearse the tools, keep an in-process dump that catches errors, and keep one real-time test. Metrics mislead by averaging tails, dropping failures, starting the clock late and smoothing spikes; measure every outcome from the edge and look at tails and maxima. And alerts must page on symptoms, like SLO burn rate, not on causes like loop lag or seller-e's normal timeouts.</p></div>
+</div>
+</section>
+<section class="ts-part" id="choose-testing" data-rung="5" data-min="13">
+<h2>Real time, an isolated loop, pytest-asyncio or a virtual clock: which tests to write</h2>
+<p class="ts-bridge">Last part: page on symptoms, graph the causes. Still unsolved: for the tests, which approach for which question, and what a balanced suite for the gateway looks like.</p>
+<p class="ts-problem">The team is rewriting the gateway's test suite. One engineer wants everything on pytest-asyncio, another wants only the standard library, a third wants every test against real sockets "because that is what production does". Each is right about something.</p>
+<h3>Introduction</h3>
+<p>Each approach on this page answers a different question. The table compares them on the criteria that decide: what they can check exactly, what they cannot see, their speed, and their dependencies.</p>
+<h3>Comparison</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Approach</th><th>Checks exactly</th><th>Cannot see</th><th>Speed and stability</th><th>Pick it when</th></tr></thead>
+<tbody>
+<tr><td>Real time with a tolerance (Parts 1 to 8)</td><td>Nothing; times within ±60 ms</td><td>Exact orderings; flakes on busy machines</td><td>As slow as the scenario; flaky under load</td><td>A few integration tests of real I/O, blocking calls and debug mode</td></tr>
+<tr><td><code>asyncio.run</code> per test, plain pytest</td><td>Outcomes; times only if the clock is virtual</td><td>Nothing extra</td><td>Fast with the virtual clock</td><td>No plugin wanted; tests are functions</td></tr>
+<tr><td><span class="ts-claim" data-claim="c25" data-src="s8">unittest.IsolatedAsyncioTestCase, added in Python 3.8, accepts coroutines as test methods, and its loop_factory attribute, added in 3.13, is the loop_factory passed to asyncio.Runner.</span></td><td>Same, with <code>loop_factory</code> set to the virtual clock</td><td>Leaks, unless checked: it cancels them</td><td>Fast; debug mode on</td><td>Standard library only; class-based suites</td></tr>
+<tr><td><span class="ts-claim" data-claim="c50" data-src="s17">pytest-asyncio runs each test in its own event loop by default, and tests can share one loop by passing a loop_scope of function, class, module, package or session to the asyncio mark.</span></td><td>Same, with async fixtures</td><td>Leaks across tests if a wider loop scope is chosen</td><td>Fast with a virtual-clock loop</td><td>A pytest suite with async fixtures shared across tests</td></tr>
+<tr><td>Virtual clock (this page)</td><td>Every timer: budgets, deadlines, drains, lag</td><td>Threads, processes, real sockets, blocking calls</td><td>Milliseconds per test; deterministic</td><td>All logic that depends on time</td></tr>
+<tr><td>Real sockets and pools, on each loop you deploy</td><td>Wire format, pools, real latency</td><td>Exact timing</td><td>Seconds; needs a tolerance</td><td>A thin integration layer, including uvloop if deployed</td></tr>
+</tbody>
+</table></div>
+<h3>Decision rules</h3>
+<ul>
+<li><strong>Does the behaviour depend on time?</strong> Virtual clock, with stubs at the seam and inline pools. Assert exact values.</li>
+<li><strong>Does it depend on the network, threads, processes or the loop implementation?</strong> A small real-time integration layer, on every loop you deploy.</li>
+<li><strong>Could the code block the loop?</strong> One real-time test with debug mode on and <code>slow_callback_duration</code> lowered, because the virtual clock cannot see it.</li>
+<li><strong>Every test, whatever the runner:</strong> a fresh loop, the real shutdown, and a check that no Task is left.</li>
+<li><strong>Which runner</strong> (plain pytest, IsolatedAsyncioTestCase, pytest-asyncio) is a matter of team habit; the clock and the leak check matter more than the runner.</li>
+</ul>
+<h3>Solved example: the gateway's suite</h3>
+<p><strong>Given:</strong> this folder's tests.</p>
+<p><strong>Step 1.</strong> Logic on the virtual clock: <code>test_gateway10.py</code>'s 8 tests and <code>test_isolated10.py</code>'s 2 run in milliseconds each.</p>
+<p><strong>Step 2.</strong> Integration on real sockets: the page programs (<code>incident_v10</code>, <code>uvloop_run</code> and Parts 1 to 8's), compared within 60 ms.</p>
+<p><strong>Step 3.</strong> Blocking: Part 4's debug-mode tests, in real time.</p>
+<p><strong>Result:</strong> the bulk of the timing logic now runs in a fraction of a second, exactly; the slow, tolerant tests are kept to the few questions only they can answer.</p>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Tests against real sockets are more realistic, so all tests should use them."</p>
+<p><strong>Why it is wrong:</strong> realistic about I/O, unrealistic about time: they run on whatever the CI machine's load allows, so a timing assertion is either loose enough to miss bugs or tight enough to flake. A shutdown's ordering bug and a drain deadline that is 30 ms too short are found by exact tests, which only a controlled clock gives.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Time logic: virtual clock, stubs, exact asserts. I/O and loops: a thin real-time layer.</li>
+<li>Blocking calls: one real-time test with debug mode.</li>
+<li>Whatever the runner: fresh loop, real shutdown, leak check.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Test time-dependent logic exactly on a virtual clock, test I/O and loop choice in a thin real-time layer, keep one real-time test for blocking, and check for leaked Tasks everywhere.</p>
+<div class="ts-quiz" data-answer="b" data-kind="reasoning">
+<p class="q">A new test must show that a request whose shopper hangs up at 100 ms writes "hung up after 100 ms", exactly. Which approach?</p>
+<ol>
+<li data-why="Real time gives about 100 ms, give or take the machine's load; 'exactly 100' would flake.">Real sockets and a real client that closes after 100 ms</li>
+<li>Stubs, a fake connection, and <code>hang_up()</code> scheduled at 100 ms on the virtual clock</li>
+<li data-why="The runner does not decide whether time is exact; the clock does.">pytest-asyncio with a session-scoped loop</li>
+</ol>
+<p class="ts-why">The assertion is about an exact time, so the clock must be controlled. That is the existing hang-up test in <code>test_gateway10.py</code>.</p>
+</div>
+</section>
+<section class="ts-part" id="observability-checklist" data-rung="5" data-min="11">
+<h2>An observability checklist for an async service</h2>
+<p class="ts-bridge">Last part: which tests to write. Still unsolved: the same for production: a list that turns this page into a review checklist for any async service.</p>
+<p class="ts-problem">A team is about to launch a new async service and asks: "what do we need so that the next silent hang takes minutes, not hours?"</p>
+<h3>Introduction</h3>
+<p>Each item below is something this page measured as missing, and what it costs to add it. It is ordered by what an engineer reaches for first in an incident.</p>
+<h3>The checklist</h3>
+<div class="ts-table-wrap"><table class="ts-table">
+<thead><tr><th>Item</th><th>Why (measured on this page)</th><th>Cost</th></tr></thead>
+<tbody>
+<tr><td>A time limit on every wait for a dependency, response path or not</td><td>The audit stall went from "never answers" to 1 s, counted and logged</td><td>Deciding what to give up on</td></tr>
+<tr><td>Requests in progress, and an end-of-request count for every way a request ends</td><td>The only number that moved in rung 1; counts recorded early showed stuck requests as successes</td><td>A gauge and a counter</td></tr>
+<tr><td>Latency histograms from the edge, every outcome included</td><td>Mean 280 ms hid p99 ≤ 2,500 ms; Answer.ms hid 1 s of audit wait</td><td>A few series per endpoint</td></tr>
+<tr><td>Per-dependency duration histograms and outcome counts</td><td>Successes-only said p99 ≤ 250 ms while 30% of calls hung</td><td>20 series for 5 sellers × 4 outcomes</td></tr>
+<tr><td>Loop lag: worst per scrape and a histogram</td><td>Saw a 300 ms block and overload; an average said 0.25 ms</td><td>One Task waking every 50 ms</td></tr>
+<tr><td>Structured logs with the request id, through an encoder</td><td>One filter found shop-6's story; a newline in an id forged a line in text format</td><td>About 150 bytes per line; ship off the loop's thread</td></tr>
+<tr><td>Named Tasks</td><td><code>Task-53</code> versus <code>shop-6 kettle-1l</code> in every dump</td><td>One <code>set_name()</code></td></tr>
+<tr><td>An in-process task dump on a signal or admin endpoint</td><td>Works without ptrace permission and on 3.11 to 3.13</td><td>A dozen lines; catch errors per Task</td></tr>
+<tr><td>A rehearsed <code>python -m asyncio pstree</code> on 3.14.8 or later</td><td>The whole await chain without touching the process; earlier 3.14 releases can raise</td><td>Permissions and an interpreter on the host</td></tr>
+<tr><td>Alerts on symptoms (SLO burn rate, stuck at the limit); causes on the dashboard</td><td>Cause alerts page for seller-e's normal timeouts and miss the unpredicted</td><td>An SLO the team agrees on</td></tr>
+<tr><td>Debug mode in tests and staging, off in production</td><td>Finds blocking calls by name; blind to waits</td><td>CI time; not for production</td></tr>
+</tbody>
+</table></div>
+<div class="ts-note" data-label="Beyond senior">
+<p>Distributed tracing across services, fleet-wide log and metric budgets, and org-wide SLO policy are the staff-level versions of these items. The checklist above is what one service owner is expected to have.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "Observability is a tool you buy."</p>
+<p><strong>Why it is wrong:</strong> a tool stores and displays signals; the service has to emit the right ones. Every row above is a decision in the service's own code: where a clock starts, which waits have limits, which outcomes are counted, what a Task is called. No backend recovers a request id that was never logged.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Limits on waits; in-progress and end counts; histograms from the edge with every outcome.</li>
+<li>Loop lag maxima; structured, encoded logs with ids; named Tasks; an in-process dump.</li>
+<li>Rehearsed outside tools; symptom alerts; debug mode in tests.</li>
+</ul>
+</div>
+<p class="ts-takeaway">An async service is observable when every wait has a limit, every request's end is counted and logged with its id from the edge, the loop's lag is kept as maxima, and its Tasks can be dumped by name from inside and outside the process.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Requests hang in production. Put the on-call engineer's first moves in a sensible order.</p>
+<ol>
+<li>Confirm the symptom: requests in progress at the limit, the SLO burning</li>
+<li>Rule the loop in or out: loop lag and CPU on the loop's thread</li>
+<li>Dump the Tasks before anything else changes: pstree, or the in-process dump</li>
+<li>Read one stuck request's chain, and its request id's log lines</li>
+<li>Mitigate (a limit, a restart, a rollback), then add the missing signal</li>
+</ol>
+<p class="ts-why">Symptoms first, to know it is real; lag next, because a blocked loop and stuck awaits need different tools; the dump before any restart, because a restart destroys it; then the details; then the fix and the lesson.</p>
+</div>
+</section>
+<section class="ts-part" id="interview-drill" data-rung="5" data-min="15">
+<h2>Interview drill: seeing and testing an async service</h2>
+<p class="ts-bridge">Last part: the checklist. Still unsolved: explaining it out loud, with mechanisms, numbers and trade-offs, the way an interviewer asks.</p>
+<p class="ts-problem">"How would you debug it?" and "how do you test it?" are the follow-ups to almost every async design question. A weak answer names tools. A strong one says what each tool can and cannot see, with numbers, and what it costs.</p>
+<h3>Introduction</h3>
+<p>Three prompts follow. Each draws on this page and at least one earlier part. Try each before opening the reference answer.</p>
+<h3>Prompt 1: "p99 jumped from 250 ms to 2 s; CPU is at 5%; nothing in the logs"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">An asyncio API on Python 3.14. p99 is 2 s, p50 is unchanged at 120 ms, CPU on the loop's thread is 5%, loop lag is 0 to 1 ms, there are no errors. Diagnose, without restarting.</p>
+<div class="ts-reveal"><p>Low CPU and near-zero lag rule out the loop: no blocking call, no overload (Part 4's trap 2, this page's lag metric). An unchanged p50 with a 2 s p99 means a minority of requests wait on something with a long or missing timeout; with no errors, the wait ends in success or the client gives up. Next, before any restart, dump the Tasks: <code>python -m asyncio pstree PID</code> if permitted, else the in-process dump on a signal, and look for many requests parked at the same frame. Read one chain to the dependency, and check its own Tasks, as the audit writers here. Then confirm with that dependency's duration histogram, if it records every outcome. Fix: a time limit on that wait sized below the client's timeout, so the hang becomes a counted, logged timeout, plus the missing histogram. Trade-off: the limit turns slowness into failures or late writes for that dependency, which must be acceptable for it.</p></div>
+</div>
+<h3>Prompt 2: "Make this test suite fast and stop it flaking"</h3>
+<div class="ts-explain" data-points="Replace real sleeps with a controlled clock: every asyncio timer reads loop.time(), so a SelectorEventLoop with a selector that jumps to the next timer runs real values in no time|Stub dependencies at one seam and run pools inline, because threads and real sockets take real time the clock cannot skip|A fresh loop per test, the real shutdown, and a failing check for leftover Tasks remove leaks and shared-loop errors|Keep a thin real-time layer for I/O, the deployed loop and blocking calls with debug mode">
+<p class="q">An async service's 400 tests take 9 minutes and about one run in ten fails a different test. Most use real sockets and <code>asyncio.sleep</code> with short timeouts. What do you change, and in what order?</p>
+<div class="ts-model"><p>First stop the flakes, because they hide real failures: run every test on a fresh loop, create asyncio objects inside tests rather than at import, reset module-level state, and fail any test that leaves a Task running; the failures that appear are real leaks. Then take time out of the tests: find the seam where the service calls its dependencies, replace them there with stubs that sleep, run thread and process pools inline, and run on a loop whose selector jumps the clock to the next timer, so the real timeouts, 250 ms or 30 s, run in milliseconds with exact assertions. Restore production values instead of the shortened ones. Keep a thin integration layer on real sockets, on each loop implementation in production, and one real-time test with debug mode for blocking calls. The trade-off: the stubs must keep matching the real dependencies, which the integration layer checks.</p></div>
+</div>
+<h3>Prompt 3: "Design the observability for the price gateway"</h3>
+<div class="ts-predict" data-kind="reasoning">
+<p class="q">You own the gateway from this series. List what you emit, what you page on, and what you would refuse to add, with numbers.</p>
+<div class="ts-reveal"><p>Emit: a request histogram from the line's arrival to the answer, with bounds about twice apart including 250 ms; counts of answered, partial, busy, hung up and stopped by shutdown; requests in progress; per-seller call histograms and counts for every outcome, 5 × 4 series; loop lag as worst-per-scrape plus a histogram; audit timeouts; one JSON line per request end and per seller call with the request id, about 300 bytes per request; named Tasks and an in-process dump on SIGUSR1, plus a rehearsed pstree on 3.14.8+. Page on: SLO burn rate (99.9% within 300 ms; 14.4 over 1 h and 5 min) and requests in progress at the front door's limit for minutes. Dashboard, not pager: loop lag, seller timeouts against their normal (seller-e times out by design), audit timeouts. Refuse: an item or shopper label on metrics (50,000 items turns 20 series into 1,000,000), per-seller-call INFO lines for cache hits, debug mode in production. Trade-off: every signal costs CPU, bytes and money at 10× the load, so each must answer a question someone will ask in an incident.</p></div>
+</div>
+<div class="ts-interview">
+<p><strong>What separates a senior answer here:</strong> it distinguishes a blocked loop from stuck awaits before naming a tool, and knows which tools see which (debug mode and lag for the first, task dumps and call graphs for the second); it measures from the edge, records every outcome, and reads tails, not means; it pages on symptoms and keeps causes on the dashboard; it makes tests exact by controlling the clock rather than shrinking timeouts, and says what that clock cannot see; and it treats telemetry as a cost with a budget.</p>
+</div>
+<div class="ts-note" data-label="Common misunderstanding">
+<p><strong>Wrong belief:</strong> "In an interview, 'add logging and metrics' answers the debugging question."</p>
+<p><strong>Why it is wrong:</strong> rung 1's gateway had logging and metrics, and both reported a healthy service during the outage. Interviewers probe which signal would have caught this failure, and why the others did not.</p>
+</div>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>Lag and CPU first: blocked loop, or stuck awaits?</li>
+<li>Dump Tasks before restarting; read one chain to the dependency.</li>
+<li>Exact tests via a controlled clock; a thin real-time layer for the rest.</li>
+</ul>
+</div>
+<p class="ts-takeaway">A senior answer about seeing and testing async code starts by asking whether the loop is blocked or the requests are waiting, names the tool that sees each, and backs every signal and test with what it costs and what it misses.</p>
+<div class="ts-quiz" data-answer="a" data-kind="reasoning">
+<p class="q">This needs Part 6. During an incident the front door answers <code>busy</code> to 90% of requests, loop lag is 0, and requests in progress sit at 200. An engineer proposes raising <code>max_requests</code> to 2,000. What happens?</p>
+<ol>
+<li>1,800 more requests get stuck at the same wait, and memory grows, without one more answer</li>
+<li data-why="Busy is a symptom of requests not finishing; more room lets more in, but none of them finish either.">The busy rate drops and shoppers get answers again</li>
+<li data-why="Lag is 0 because the loop is idle; more parked Tasks do not make it busy.">Loop lag rises because the loop has more requests</li>
+</ol>
+<p class="ts-why">The front door is refusing because nothing finishes (rung 1's solved example). More room only lets more requests reach the same stuck wait. The fix is at the wait: a limit, then the cause.</p>
+</div>
+</section>
+<section class="ts-part" id="whats-next" data-rung="5" data-min="8">
+<h2>What this page added, what is still broken, and what comes next</h2>
+<p class="ts-bridge">Last part: the interview drill. Still unsolved: nothing new. Every layer of the gateway now exists, can be seen and can be tested; what remains is putting it all together.</p>
+<p class="ts-problem">Gateway v10 is the last version of the code in this series. Part 10 adds no mechanism: it assembles every layer, sizes the whole system, and walks its failures across layers.</p>
+<h3>What this page added</h3>
+<ul>
+<li>The incident: an audit store that stalled, five requests stuck, 0 log lines, a green dashboard, 0 ms of loop lag.</li>
+<li>The tools: debug mode (blind to waits), <code>all_tasks()</code> and <code>get_stack()</code> (one frame), 3.14's call graph (the whole chain and who awaits it), <code>python -m asyncio ps</code> and <code>pstree</code> (from outside, with permissions), and loop lag as a metric (busy loops, not stuck awaits).</li>
+<li>Gateway v10: loop lag, seller and request histograms with every outcome, JSON lines with the request id, named Tasks, a 1 s audit wait, a SIGUSR1 dump; the same gateway on uvloop.</li>
+<li>Tests: stub sellers at the <code>_call_by</code> seam, inline pools, a virtual-clock loop, exact assertions, and a leak check on every test.</li>
+<li>What breaks: flaky tests, the 3.14.0 to 3.14.7 call-graph bug, metrics that lie, telemetry at 10×, and which signals page.</li>
+</ul>
+<h3>Program: what your Python version gives you</h3>
+<div class="ts-code" data-lang="python" data-title="version_probe9.py" data-file="version_probe9.py" data-verified="ran"></div>
+<div class="ts-tabs">
+<div data-tab="3.11"><div class="ts-code" data-lang="text" data-title="Output on Python 3.11" data-file="out/version_probe9_3.11.txt" data-verified="ran"></div></div>
+<div data-tab="3.12"><div class="ts-code" data-lang="text" data-title="Output on Python 3.12" data-file="out/version_probe9_3.12.txt" data-verified="ran"></div></div>
+<div data-tab="3.13"><div class="ts-code" data-lang="text" data-title="Output on Python 3.13" data-file="out/version_probe9_3.13.txt" data-verified="ran"></div></div>
+<div data-tab="3.14"><div class="ts-code" data-lang="text" data-title="Output on Python 3.14" data-file="out/version_probe9_3.14.txt" data-verified="ran"></div></div>
+</div>
+<p><strong>Explanation of the program:</strong> every version has <code>get_stack()</code> and runs the virtual clock through <code>asyncio.Runner</code>; 3.12 adds <code>asyncio.run(..., loop_factory=)</code>; 3.13 adds <code>IsolatedAsyncioTestCase.loop_factory</code>; 3.14 adds the call graph and the <code>ps</code> and <code>pstree</code> commands.</p>
+<h3>What is still broken</h3>
+<ul>
+<li><strong>Nothing new.</strong> Every failure this series has found has a fix, a signal and a test in the code. What no page has done is look at all of them at once.</li>
+<li>The questions left are whole-system ones: how many processes, threads, connections and how much memory for a given traffic; how a failure in one layer shows up in the others (the audit writes that pile up behind a full queue and are lost at a deploy, from this page, is one); and how to defend the design in an interview from end to end.</li>
+</ul>
+<h3>Next: Part 10 — The whole gateway: sizing, failures and a full mock interview</h3>
+<p>Part 10 assembles gateway v10 from all nine layers, sizes it for a target load, walks its failures across layers, and ends with a mock interview that draws on every earlier page.</p>
+<div class="ts-note" data-label="Points to remember">
+<ul>
+<li>This page: seeing a stuck async service, and testing it exactly without real time.</li>
+<li>Still broken: nothing new; the system needs assembling, sizing and defending.</li>
+<li>Part 10: the whole gateway.</li>
+</ul>
+</div>
+<p class="ts-takeaway">Gateway v10 can now be seen when it stalls and tested to the millisecond, so the series has every piece and Part 10 puts them together.</p>
+<div class="ts-order" data-kind="reasoning">
+<p class="q">Put the versions of the gateway in the order they were built.</p>
+<ol>
+<li>v1 on the toy loop: five tasks on one thread, an answer at the 250 ms budget</li>
+<li>v3: asyncio streams and Tasks, with a hand-made budget</li>
+<li>v4: a TaskGroup, a shared Semaphore and one timeout_at deadline per request</li>
+<li>v6: a hang-up watcher, the deadline passed to seller-e's SDK, a shielded audit row</li>
+<li>v8: a single-flight price cache, a request id that follows the work, a thread-safe feed</li>
+<li>v10: loop lag, histograms, JSON logs, named Tasks, an audit limit, a task dump, and tests on a virtual clock</li>
+</ol>
+<p class="ts-why">Each version fixes what the one before could not do; v10 changes no answer, and makes the other nine visible and testable.</p>
+</div>
+</section>

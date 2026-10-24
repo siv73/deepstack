@@ -1,0 +1,6 @@
+-- OneLock: kettle-1l is already cached, toaster-2s is not --
+  shopper-1 asks for toaster-2s at   0 ms, answered at  900 ms
+  shopper-2 asks for kettle-1l  at  10 ms, answered at  900 ms
+-- PerKey: kettle-1l is already cached, toaster-2s is not --
+  shopper-2 asks for kettle-1l  at  10 ms, answered at   10 ms
+  shopper-1 asks for toaster-2s at   0 ms, answered at  900 ms

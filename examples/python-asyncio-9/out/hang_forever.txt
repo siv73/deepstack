@@ -1,0 +1,18 @@
+a Task that refuses to be cancelled: SIGKILL after about 1800 ms
+    main returns; asyncio.run cancels what is left
+    background task: cancelled
+    background task: ignoring it and carrying on
+a Task that refuses to be cancelled (fixed): exit 0 after about 300 ms
+    main returns; asyncio.run cancels what is left
+    background task: cancelled
+    asyncio.run returned
+a connection that never closes: SIGKILL after about 1800 ms
+    leaving async with server: close(), then wait_closed()
+a connection that never closes (fixed): exit 0 after about 300 ms
+    leaving async with server: close(), then wait_closed()
+    asyncio.run returned
+a thread that is still running: SIGKILL after about 1800 ms
+    main returns; asyncio.run waits for the default executor's threads
+a thread that is still running (fixed): exit 0 after about 400 ms
+    main returns; asyncio.run waits for the default executor's threads
+    asyncio.run returned
