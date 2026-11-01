@@ -19,7 +19,7 @@ examples = [
     "uvloop==0.23.0",
 ]
 dev = [
-    "pytest>=8.3",
+    "pytest>=9.2.0",
     "ruff>=0.8",
 ]
 
