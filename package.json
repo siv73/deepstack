@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
-    "axe-core": "4.13.0",
+    "axe-core": "4.14.0",
     "html-validate": "11.16.0"
   }
 }
